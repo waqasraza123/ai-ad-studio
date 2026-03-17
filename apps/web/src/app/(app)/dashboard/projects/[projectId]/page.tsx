@@ -1,9 +1,12 @@
 import { notFound } from "next/navigation"
 import { ConceptList } from "@/features/concepts/components/concept-list"
 import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
+import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
 import {
+  mapConceptPreviewAssetsByConceptId,
   toConceptCardViewModel,
-  toConceptGenerationState
+  toConceptGenerationState,
+  toConceptPreviewState
 } from "@/features/concepts/mappers/concept-view-model"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
@@ -11,7 +14,10 @@ import { toProjectDetailSummary } from "@/features/projects/mappers/project-view
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
-import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
+import {
+  listAssetsByProjectIdForOwner,
+  listConceptPreviewAssetsByProjectIdForOwner
+} from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
@@ -32,12 +38,13 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
-  const [project, projectInput, assets, concepts, jobs] = await Promise.all([
+  const [project, projectInput, assets, concepts, jobs, previewAssets] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
     listAssetsByProjectIdForOwner(projectId, user.id),
     listConceptsByProjectIdForOwner(projectId, user.id),
-    listJobsByProjectIdForOwner(projectId, user.id)
+    listJobsByProjectIdForOwner(projectId, user.id),
+    listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id)
   ])
 
   if (!project) {
@@ -51,7 +58,21 @@ export default async function ProjectDetailPage({
   })
 
   const conceptGenerationState = toConceptGenerationState(jobs, concepts.length)
-  const conceptViewModels = concepts.map(toConceptCardViewModel)
+  const conceptPreviewState = toConceptPreviewState({
+    concepts,
+    jobs,
+    previewAssetsCount: previewAssets.length
+  })
+
+  const previewAssetsByConceptId = mapConceptPreviewAssetsByConceptId(previewAssets)
+
+  const conceptViewModels = concepts.map((concept) =>
+    toConceptCardViewModel({
+      concept,
+      previewAsset: previewAssetsByConceptId.get(concept.id) ?? null,
+      selectedConceptId: project.selected_concept_id
+    })
+  )
 
   return (
     <div className="space-y-6">
@@ -65,7 +86,7 @@ export default async function ProjectDetailPage({
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             This page now holds the persisted project inputs, asset intake flow,
-            and the first async concept-generation workflow.
+            concept generation, preview generation, and selected concept state.
           </p>
         </SurfaceCard>
 
@@ -106,13 +127,21 @@ export default async function ProjectDetailPage({
         </SurfaceCard>
       </section>
 
-      <GenerateConceptsPanel
-        description={conceptGenerationState.description}
-        label={conceptGenerationState.label}
-        projectId={projectId}
-      />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <GenerateConceptsPanel
+          description={conceptGenerationState.description}
+          label={conceptGenerationState.label}
+          projectId={projectId}
+        />
+        <GenerateConceptPreviewsPanel
+          description={conceptPreviewState.description}
+          isBlocked={conceptPreviewState.isBlocked}
+          label={conceptPreviewState.label}
+          projectId={projectId}
+        />
+      </div>
 
-      <ConceptList concepts={conceptViewModels} />
+      <ConceptList concepts={conceptViewModels} projectId={projectId} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <ProjectBriefForm projectId={projectId} projectInput={projectInput} />

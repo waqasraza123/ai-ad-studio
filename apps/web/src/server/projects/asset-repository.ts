@@ -24,6 +24,27 @@ export async function listAssetsByProjectIdForOwner(projectId: string, ownerId: 
   return (data ?? []) as AssetRecord[]
 }
 
+export async function listConceptPreviewAssetsByProjectIdForOwner(
+  projectId: string,
+  ownerId: string
+) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("assets")
+    .select(assetSelection)
+    .eq("project_id", projectId)
+    .eq("owner_id", ownerId)
+    .eq("kind", "concept_preview")
+    .order("created_at", { ascending: true })
+
+  if (error) {
+    throw new Error("Failed to list concept preview assets")
+  }
+
+  return (data ?? []) as AssetRecord[]
+}
+
 export async function createAssetRecord(input: {
   ownerId: string
   placeholder: CreateAssetPlaceholderInput

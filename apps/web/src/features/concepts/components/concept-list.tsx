@@ -1,11 +1,13 @@
 import { Lightbulb } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
-import { ConceptCard } from "./concept-card"
+import { ConceptPreviewCard } from "./concept-preview-card"
 
 type ConceptViewModel = {
   angle: string
   hook: string
   id: string
+  isSelected: boolean
+  previewDataUrl: string | null
   script: string
   status: string
   title: string
@@ -13,9 +15,10 @@ type ConceptViewModel = {
 
 type ConceptListProps = {
   concepts: ConceptViewModel[]
+  projectId: string
 }
 
-export function ConceptList({ concepts }: ConceptListProps) {
+export function ConceptList({ concepts, projectId }: ConceptListProps) {
   if (concepts.length === 0) {
     return (
       <SurfaceCard className="p-6">
@@ -36,10 +39,14 @@ export function ConceptList({ concepts }: ConceptListProps) {
   return (
     <div className="grid gap-4 xl:grid-cols-3">
       {concepts.map((concept) => (
-        <ConceptCard
+        <ConceptPreviewCard
           key={concept.id}
           angle={concept.angle}
           hook={concept.hook}
+          id={concept.id}
+          isSelected={concept.isSelected}
+          previewDataUrl={concept.previewDataUrl}
+          projectId={projectId}
           script={concept.script}
           status={concept.status}
           title={concept.title}

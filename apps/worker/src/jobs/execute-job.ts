@@ -1,6 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { handleGenerateConceptPreviewJob } from "./handlers/generate-concept-preview-job"
 import { handleGenerateConceptsJob } from "./handlers/generate-concepts-job"
-import { markJobFailed, markJobSucceeded, type WorkerJobRecord } from "@/repositories/jobs-repository"
+import {
+  markJobFailed,
+  markJobSucceeded,
+  type WorkerJobRecord
+} from "@/repositories/jobs-repository"
 import { updateProjectStatus } from "@/repositories/projects-repository"
 
 export async function executeJob(
@@ -10,6 +15,17 @@ export async function executeJob(
   try {
     if (job.type === "generate_concepts") {
       const result = await handleGenerateConceptsJob(supabase, job)
+
+      await markJobSucceeded(supabase, {
+        jobId: job.id,
+        result
+      })
+
+      return
+    }
+
+    if (job.type === "generate_concept_preview") {
+      const result = await handleGenerateConceptPreviewJob(supabase, job)
 
       await markJobSucceeded(supabase, {
         jobId: job.id,

@@ -80,3 +80,27 @@ export async function updateProjectStatus(input: {
 
   return data as ProjectRecord
 }
+
+export async function selectConceptForProject(input: {
+  conceptId: string
+  ownerId: string
+  projectId: string
+}) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("projects")
+    .update({
+      selected_concept_id: input.conceptId
+    })
+    .eq("id", input.projectId)
+    .eq("owner_id", input.ownerId)
+    .select(projectSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to select concept for project")
+  }
+
+  return data as ProjectRecord
+}
