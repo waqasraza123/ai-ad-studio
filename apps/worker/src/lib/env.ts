@@ -7,7 +7,11 @@ const workerEnvironmentSchema = z.object({
   R2_ACCOUNT_ID: z.string().min(1),
   R2_ACCESS_KEY_ID: z.string().min(1),
   R2_SECRET_ACCESS_KEY: z.string().min(1),
-  R2_BUCKET_NAME: z.string().min(1)
+  R2_BUCKET_NAME: z.string().min(1),
+  OPENAI_API_KEY: z.string().min(1),
+  OPENAI_CONCEPT_MODEL: z.string().min(1).default("gpt-4o-mini"),
+  RUNWAYML_API_SECRET: z.string().min(1),
+  RUNWAY_IMAGE_MODEL: z.string().min(1).default("gen4_image_turbo")
 })
 
 export type WorkerEnvironment = z.infer<typeof workerEnvironmentSchema>
@@ -19,7 +23,9 @@ export function hasWorkerEnvironmentConfiguration() {
       process.env.R2_ACCOUNT_ID &&
       process.env.R2_ACCESS_KEY_ID &&
       process.env.R2_SECRET_ACCESS_KEY &&
-      process.env.R2_BUCKET_NAME
+      process.env.R2_BUCKET_NAME &&
+      process.env.OPENAI_API_KEY &&
+      process.env.RUNWAYML_API_SECRET
   )
 }
 
@@ -31,6 +37,10 @@ export function getWorkerEnvironment() {
     R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
     R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
     R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
-    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME
+    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+    OPENAI_CONCEPT_MODEL: process.env.OPENAI_CONCEPT_MODEL,
+    RUNWAYML_API_SECRET: process.env.RUNWAYML_API_SECRET,
+    RUNWAY_IMAGE_MODEL: process.env.RUNWAY_IMAGE_MODEL
   })
 }

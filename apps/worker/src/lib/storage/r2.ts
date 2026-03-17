@@ -76,3 +76,27 @@ export async function createSignedDownloadUrl(storageKey: string) {
     }
   )
 }
+
+export async function downloadObjectAsDataUri(input: {
+  contentType: string
+  storageKey: string
+}) {
+  const environment = getWorkerEnvironment()
+  const client = createR2Client()
+
+  const response = await client.send(
+    new GetObjectCommand({
+      Bucket: environment.R2_BUCKET_NAME,
+      Key: input.storageKey
+    })
+  )
+
+  if (!response.Body) {
+    throw new Error("R2 object body not found")
+  }
+
+  const bytes = await response.Body.transformToByteArray()
+  const base64Content = Buffer.from(bytes).toString("base64")
+
+  return `data:${input.contentType};base64,${base64Content}`
+}

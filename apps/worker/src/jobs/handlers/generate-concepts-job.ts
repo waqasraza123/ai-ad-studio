@@ -1,5 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
-import { MockConceptProvider } from "@/providers/mock-concept-provider"
+import { OpenAiConceptProvider } from "@/providers/openai-concept-provider"
 import {
   createConceptsForProject,
   deleteConceptsByProjectId
@@ -28,9 +28,10 @@ export async function handleGenerateConceptsJob(
     throw new Error("Project brief not found for concept generation")
   }
 
-  const provider = new MockConceptProvider()
-  const conceptDrafts = provider.generateConcepts({
+  const provider = new OpenAiConceptProvider()
+  const conceptPayload = await provider.generateConcepts({
     brandTone: projectInput.brand_tone,
+    callToAction: projectInput.call_to_action,
     offerText: projectInput.offer_text,
     productDescription: projectInput.product_description,
     productName: projectInput.product_name,
@@ -42,7 +43,7 @@ export async function handleGenerateConceptsJob(
 
   await createConceptsForProject(
     supabase,
-    conceptDrafts.map((concept, index) => ({
+    conceptPayload.concepts.map((concept, index) => ({
       angle: concept.angle,
       caption_style: concept.captionStyle,
       hook: concept.hook,
@@ -62,8 +63,8 @@ export async function handleGenerateConceptsJob(
   })
 
   return {
-    conceptCount: conceptDrafts.length,
-    projectId: project.id,
-    provider: "mock-concept-provider"
+    conceptCount: conceptPayload.concepts.length,
+    model: "openai",
+    projectId: project.id
   }
 }

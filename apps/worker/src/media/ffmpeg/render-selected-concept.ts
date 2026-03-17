@@ -1,11 +1,9 @@
-import { writeFile } from "node:fs/promises"
-import { join } from "node:path"
 import { spawn } from "node:child_process"
 
 type RenderSelectedConceptVideoInput = {
   captionLines: string[]
+  inputFilePath: string
   outputFilePath: string
-  previewSvgContent: string
 }
 
 function escapeDrawText(value: string) {
@@ -67,13 +65,6 @@ function runCommand(command: string, args: string[]) {
 export async function renderSelectedConceptVideo(
   input: RenderSelectedConceptVideoInput
 ) {
-  const previewSvgPath = join(
-    input.outputFilePath.slice(0, input.outputFilePath.lastIndexOf("/")),
-    "preview-frame.svg"
-  )
-
-  await writeFile(previewSvgPath, input.previewSvgContent, "utf8")
-
   const filterGraph = buildFilterGraph(input.captionLines)
 
   await runCommand("ffmpeg", [
@@ -81,7 +72,7 @@ export async function renderSelectedConceptVideo(
     "-loop",
     "1",
     "-i",
-    previewSvgPath,
+    input.inputFilePath,
     "-f",
     "lavfi",
     "-i",

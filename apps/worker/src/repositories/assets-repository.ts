@@ -3,7 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js"
 type ConceptPreviewAssetInsertRecord = {
   kind: "concept_preview"
   metadata: Record<string, unknown>
-  mime_type: "image/svg+xml"
+  mime_type: "image/svg+xml" | "image/webp"
   owner_id: string
   project_id: string
   storage_key: string

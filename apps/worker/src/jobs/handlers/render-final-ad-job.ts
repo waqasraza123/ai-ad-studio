@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { randomUUID } from "node:crypto"
 import { join } from "node:path"
+import { writeFile } from "node:fs/promises"
 import { uploadFileArtifactToR2 } from "@/lib/storage/r2"
 import { createRenderWorkspace, cleanupRenderWorkspace } from "@/media/temp/temp-paths"
 import { renderSelectedConceptVideo } from "@/media/ffmpeg/render-selected-concept"
@@ -10,13 +11,71 @@ import { createExportRecord } from "@/repositories/exports-repository"
 import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 
-function decodePreviewSvgFromDataUrl(previewDataUrl: string) {
-  const encodedContent = previewDataUrl.replace(
-    "data:image/svg+xml;charset=utf-8,",
-    ""
-  )
+function decodeDataUri(input: string) {
+  const [header, payload] = input.split(",", 2)
 
-  return decodeURIComponent(encodedContent)
+  if (!header || !payload) {
+    throw new Error("Invalid data URI")
+  }
+
+  const mimeType = header
+    .replace("data:", "")
+    .replace(";base64", "")
+    .replace(";charset=utf-8", "")
+
+  if (header.includes(";base64")) {
+    return {
+      bytes: Buffer.from(payload, "base64"),
+      mimeType
+    }
+  }
+
+  return {
+    bytes: Buffer.from(decodeURIComponent(payload), "utf8"),
+    mimeType
+  }
+}
+
+function extensionFromMimeType(mimeType: string) {
+  if (mimeType.includes("svg")) return "svg"
+  if (mimeType.includes("png")) return "png"
+  if (mimeType.includes("jpeg") || mimeType.includes("jpg")) return "jpg"
+  if (mimeType.includes("webp")) return "webp"
+  return "img"
+}
+
+async function materializePreviewImage(input: {
+  previewDataUrl: string
+  workspacePath: string
+}) {
+  if (input.previewDataUrl.startsWith("data:")) {
+    const decoded = decodeDataUri(input.previewDataUrl)
+    const filePath = join(
+      input.workspacePath,
+      `preview-frame.${extensionFromMimeType(decoded.mimeType)}`
+    )
+
+    await writeFile(filePath, decoded.bytes)
+
+    return filePath
+  }
+
+  const response = await fetch(input.previewDataUrl)
+
+  if (!response.ok) {
+    throw new Error("Failed to download preview image for render")
+  }
+
+  const contentType = response.headers.get("content-type") || "image/png"
+  const filePath = join(
+    input.workspacePath,
+    `preview-frame.${extensionFromMimeType(contentType)}`
+  )
+  const arrayBuffer = await response.arrayBuffer()
+
+  await writeFile(filePath, Buffer.from(arrayBuffer))
+
+  return filePath
 }
 
 function createCaptionLines(input: {
@@ -59,19 +118,20 @@ export async function handleRenderFinalAdJob(
   }
 
   const previewAsset = (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
-
-  const resolvedPreviewAsset =
+  const previewDataUrl =
     previewAsset && typeof previewAsset.previewDataUrl === "string"
-      ? previewAsset
+      ? previewAsset.previewDataUrl
       : null
 
-  if (!resolvedPreviewAsset) {
+  if (!previewDataUrl) {
     throw new Error("Selected concept preview data was not included in the render job")
   }
 
-  const previewDataUrl = String(resolvedPreviewAsset.previewDataUrl)
-  const previewSvgContent = decodePreviewSvgFromDataUrl(previewDataUrl)
   const workspacePath = await createRenderWorkspace(`ai-ad-studio-render-${project.id}`)
+  const inputFilePath = await materializePreviewImage({
+    previewDataUrl,
+    workspacePath
+  })
   const outputFilePath = join(workspacePath, "final-export.mp4")
 
   try {
@@ -82,8 +142,8 @@ export async function handleRenderFinalAdJob(
           typeof job.payload.callToAction === "string" ? job.payload.callToAction : null,
         hook: selectedConcept.hook
       }),
-      outputFilePath,
-      previewSvgContent
+      inputFilePath,
+      outputFilePath
     })
 
     const storageKey = `projects/${project.id}/exports/${randomUUID()}.mp4`
