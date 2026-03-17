@@ -10,6 +10,8 @@ const workerEnvironmentSchema = z.object({
   R2_BUCKET_NAME: z.string().min(1),
   OPENAI_API_KEY: z.string().min(1),
   OPENAI_CONCEPT_MODEL: z.string().min(1).default("gpt-4o-mini"),
+  OPENAI_TTS_MODEL: z.string().min(1).default("gpt-4o-mini-tts"),
+  OPENAI_TTS_VOICE: z.string().min(1).default("alloy"),
   RUNWAYML_API_SECRET: z.string().min(1),
   RUNWAY_IMAGE_MODEL: z.string().min(1).default("gen4_image_turbo")
 })
@@ -40,6 +42,8 @@ export function getWorkerEnvironment() {
     R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
     OPENAI_API_KEY: process.env.OPENAI_API_KEY,
     OPENAI_CONCEPT_MODEL: process.env.OPENAI_CONCEPT_MODEL,
+    OPENAI_TTS_MODEL: process.env.OPENAI_TTS_MODEL,
+    OPENAI_TTS_VOICE: process.env.OPENAI_TTS_VOICE,
     RUNWAYML_API_SECRET: process.env.RUNWAYML_API_SECRET,
     RUNWAY_IMAGE_MODEL: process.env.RUNWAY_IMAGE_MODEL
   })

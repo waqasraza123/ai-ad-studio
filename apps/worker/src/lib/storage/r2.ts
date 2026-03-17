@@ -1,6 +1,7 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
-import { readFile } from "node:fs/promises"
+import { readFile, writeFile } from "node:fs/promises"
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
+import { basename } from "node:path"
 import { getWorkerEnvironment } from "@/lib/env"
 
 function createR2Client() {
@@ -99,4 +100,26 @@ export async function downloadObjectAsDataUri(input: {
   const base64Content = Buffer.from(bytes).toString("base64")
 
   return `data:${input.contentType};base64,${base64Content}`
+}
+
+export async function downloadObjectToFile(input: {
+  filePath: string
+  storageKey: string
+}) {
+  const environment = getWorkerEnvironment()
+  const client = createR2Client()
+
+  const response = await client.send(
+    new GetObjectCommand({
+      Bucket: environment.R2_BUCKET_NAME,
+      Key: input.storageKey
+    })
+  )
+
+  if (!response.Body) {
+    throw new Error(`R2 object body not found for ${basename(input.storageKey)}`)
+  }
+
+  const bytes = await response.Body.transformToByteArray()
+  await writeFile(input.filePath, Buffer.from(bytes))
 }

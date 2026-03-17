@@ -1,13 +1,20 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { randomUUID } from "node:crypto"
-import { join } from "node:path"
 import { writeFile } from "node:fs/promises"
-import { uploadFileArtifactToR2 } from "@/lib/storage/r2"
+import { join } from "node:path"
+import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
+import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
+import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
+import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
 import { createRenderWorkspace, cleanupRenderWorkspace } from "@/media/temp/temp-paths"
-import { renderSelectedConceptVideo } from "@/media/ffmpeg/render-selected-concept"
-import { createRenderAsset } from "@/repositories/assets-repository"
+import { OpenAiTtsProvider } from "@/providers/openai-tts-provider"
+import {
+  createRenderAsset,
+  createVoiceoverAsset
+} from "@/repositories/assets-repository"
 import { listConceptsByProjectId } from "@/repositories/concepts-repository"
 import { createExportRecord } from "@/repositories/exports-repository"
+import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
 import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 
@@ -78,21 +85,8 @@ async function materializePreviewImage(input: {
   return filePath
 }
 
-function createCaptionLines(input: {
-  angle: string
-  callToAction: string | null
-  hook: string
-}) {
-  const lines = [
-    input.hook.trim(),
-    input.angle.trim(),
-    input.callToAction?.trim() || "Shop now"
-  ]
-
-  return lines
-    .filter((line) => line.length > 0)
-    .map((line) => (line.length > 46 ? `${line.slice(0, 43)}...` : line))
-    .slice(0, 3)
+function uniqueNonEmpty(values: string[]) {
+  return [...new Set(values.filter(Boolean))]
 }
 
 export async function handleRenderFinalAdJob(
@@ -109,7 +103,11 @@ export async function handleRenderFinalAdJob(
     throw new Error("No selected concept found for final render")
   }
 
-  const concepts = await listConceptsByProjectId(supabase, job.project_id)
+  const [concepts, projectAssets] = await Promise.all([
+    listConceptsByProjectId(supabase, job.project_id),
+    listProjectAssetsByProjectId(supabase, job.project_id)
+  ])
+
   const selectedConcept =
     concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
 
@@ -128,22 +126,98 @@ export async function handleRenderFinalAdJob(
   }
 
   const workspacePath = await createRenderWorkspace(`ai-ad-studio-render-${project.id}`)
-  const inputFilePath = await materializePreviewImage({
-    previewDataUrl,
-    workspacePath
-  })
   const outputFilePath = join(workspacePath, "final-export.mp4")
+  const voiceoverFilePath = join(workspacePath, "voiceover.mp3")
 
   try {
-    await renderSelectedConceptVideo({
-      captionLines: createCaptionLines({
-        angle: selectedConcept.angle,
-        callToAction:
-          typeof job.payload.callToAction === "string" ? job.payload.callToAction : null,
-        hook: selectedConcept.hook
-      }),
-      inputFilePath,
-      outputFilePath
+    const previewImagePath = await materializePreviewImage({
+      previewDataUrl,
+      workspacePath
+    })
+
+    const productAssets = projectAssets.filter(
+      (asset) => asset.kind === "product_image"
+    )
+
+    const downloadedProductImagePaths = await Promise.all(
+      productAssets.slice(0, 2).map(async (asset, index) => {
+        const targetPath = join(
+          workspacePath,
+          `product-image-${index + 1}.${extensionFromMimeType(asset.mime_type)}`
+        )
+
+        await downloadObjectToFile({
+          filePath: targetPath,
+          storageKey: asset.storage_key
+        })
+
+        return targetPath
+      })
+    )
+
+    const sceneImagePaths = uniqueNonEmpty([
+      previewImagePath,
+      ...downloadedProductImagePaths
+    ])
+
+    const primaryScenePath = sceneImagePaths[0]
+
+    if (!primaryScenePath) {
+      throw new Error("No scene image was available for final render")
+    }
+
+    const normalizedScenePaths: string[] =
+      sceneImagePaths.length >= 3
+        ? sceneImagePaths.slice(0, 3)
+        : [
+            primaryScenePath,
+            sceneImagePaths[1] ?? primaryScenePath,
+            sceneImagePaths[2] ?? primaryScenePath
+          ]
+
+    const ttsProvider = new OpenAiTtsProvider()
+    await ttsProvider.generateVoiceover({
+      outputFilePath: voiceoverFilePath,
+      script: selectedConcept.script
+    })
+
+    const voiceoverDurationSeconds = await getMediaDurationSeconds(voiceoverFilePath)
+    const captionTimeline = buildCaptionTimeline({
+      script: selectedConcept.script,
+      totalDurationSeconds: Math.min(10, voiceoverDurationSeconds)
+    })
+
+    await renderMultiSceneAd({
+      audioFilePath: voiceoverFilePath,
+      captionTimeline,
+      ctaText:
+        typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
+          ? job.payload.callToAction.trim()
+          : "Shop now",
+      imageFilePaths: normalizedScenePaths,
+      outputFilePath,
+      projectName: project.name,
+      workspacePath
+    })
+
+    const voiceoverStorageKey = `projects/${project.id}/voiceover/${randomUUID()}.mp3`
+    await uploadFileArtifactToR2({
+      contentType: "audio/mpeg",
+      filePath: voiceoverFilePath,
+      storageKey: voiceoverStorageKey
+    })
+
+    await createVoiceoverAsset(supabase, {
+      kind: "voiceover_audio",
+      metadata: {
+        provider: "openai_tts",
+        script: selectedConcept.script
+      },
+      mime_type: "audio/mpeg",
+      owner_id: project.owner_id,
+      project_id: project.id,
+      storage_key: voiceoverStorageKey,
+      duration_ms: Math.round(voiceoverDurationSeconds * 1000)
     })
 
     const storageKey = `projects/${project.id}/exports/${randomUUID()}.mp4`
@@ -157,9 +231,11 @@ export async function handleRenderFinalAdJob(
     const renderAsset = await createRenderAsset(supabase, {
       kind: "export_video",
       metadata: {
+        captionCueCount: captionTimeline.length,
         previewDataUrl,
-        renderMode: "ffmpeg_static_composition",
-        selectedConceptId: selectedConcept.id
+        renderMode: "ffmpeg_multi_scene_with_tts",
+        selectedConceptId: selectedConcept.id,
+        voiceoverProvider: "openai_tts"
       },
       mime_type: "video/mp4",
       owner_id: project.owner_id,
@@ -185,7 +261,8 @@ export async function handleRenderFinalAdJob(
     return {
       exportId: exportRecord.id,
       projectId: project.id,
-      storageKey
+      storageKey,
+      voiceoverDurationSeconds
     }
   } finally {
     await cleanupRenderWorkspace(workspacePath)
