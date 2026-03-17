@@ -1,6 +1,7 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { LayoutDashboard, PlusSquare, Sparkles, Video } from "lucide-react"
+import { LayoutDashboard, LogOut, PlusSquare, Sparkles, Video } from "lucide-react"
+import { signOut } from "@/app/(app)/actions"
 import { cn } from "@/lib/utils"
 
 const navigationItems = [
@@ -28,9 +29,10 @@ const navigationItems = [
 
 type AppShellProps = {
   children: ReactNode
+  userEmail?: string
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, userEmail }: AppShellProps) {
   return (
     <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.18),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] text-slate-50">
       <div className="mx-auto grid min-h-screen max-w-[1600px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-6 lg:py-6">
@@ -40,7 +42,7 @@ export function AppShell({ children }: AppShellProps) {
               AI Ad Studio
             </Link>
             <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-200">
-              Phase 2
+              Phase 3
             </span>
           </div>
 
@@ -98,12 +100,24 @@ export function AppShell({ children }: AppShellProps) {
             </div>
 
             <div className="flex items-center gap-3">
-              <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 md:block">
-                Single-user portfolio mode
-              </div>
-              <div className="grid h-10 w-10 place-items-center rounded-full border border-white/10 bg-white/[0.05] text-sm font-semibold text-white">
-                WR
-              </div>
+              {userEmail ? (
+                <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 md:block">
+                  {userEmail}
+                </div>
+              ) : (
+                <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 md:block">
+                  Auth not configured
+                </div>
+              )}
+
+              {userEmail ? (
+                <form action={signOut}>
+                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-white transition hover:bg-white/[0.08]">
+                    <LogOut className="h-4 w-4" />
+                    <span>Sign out</span>
+                  </button>
+                </form>
+              ) : null}
             </div>
           </header>
 
