@@ -77,3 +77,40 @@ export type AssetRecord = {
   metadata: Record<string, unknown>
   created_at: string
 }
+
+export type ConceptRecord = {
+  id: string
+  project_id: string
+  owner_id: string
+  title: string
+  angle: string
+  hook: string
+  script: string
+  caption_style: string | null
+  visual_direction: string | null
+  status: ConceptStatus
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type JobRecord = {
+  id: string
+  project_id: string
+  owner_id: string
+  type: JobType
+  status: JobStatus
+  provider: string | null
+  provider_job_id: string | null
+  payload: Record<string, unknown>
+  result: Record<string, unknown>
+  error: Record<string, unknown>
+  attempts: number
+  max_attempts: number
+  scheduled_at: string
+  started_at: string | null
+  finished_at: string | null
+  heartbeat_at: string | null
+  created_at: string
+  updated_at: string
+}

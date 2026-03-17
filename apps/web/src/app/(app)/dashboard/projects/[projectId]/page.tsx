@@ -1,12 +1,20 @@
 import { notFound } from "next/navigation"
+import { ConceptList } from "@/features/concepts/components/concept-list"
+import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
+import {
+  toConceptCardViewModel,
+  toConceptGenerationState
+} from "@/features/concepts/mappers/concept-view-model"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -24,10 +32,12 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
-  const [project, projectInput, assets] = await Promise.all([
+  const [project, projectInput, assets, concepts, jobs] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
-    listAssetsByProjectIdForOwner(projectId, user.id)
+    listAssetsByProjectIdForOwner(projectId, user.id),
+    listConceptsByProjectIdForOwner(projectId, user.id),
+    listJobsByProjectIdForOwner(projectId, user.id)
   ])
 
   if (!project) {
@@ -40,6 +50,9 @@ export default async function ProjectDetailPage({
     projectInput
   })
 
+  const conceptGenerationState = toConceptGenerationState(jobs, concepts.length)
+  const conceptViewModels = concepts.map(toConceptCardViewModel)
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -51,8 +64,8 @@ export default async function ProjectDetailPage({
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now holds the persisted project inputs and asset intake flow.
-            It becomes the concept generation workspace in the next phase.
+            This page now holds the persisted project inputs, asset intake flow,
+            and the first async concept-generation workflow.
           </p>
         </SurfaceCard>
 
@@ -92,6 +105,14 @@ export default async function ProjectDetailPage({
           </p>
         </SurfaceCard>
       </section>
+
+      <GenerateConceptsPanel
+        description={conceptGenerationState.description}
+        label={conceptGenerationState.label}
+        projectId={projectId}
+      />
+
+      <ConceptList concepts={conceptViewModels} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <ProjectBriefForm projectId={projectId} projectInput={projectInput} />

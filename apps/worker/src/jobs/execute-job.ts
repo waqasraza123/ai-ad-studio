@@ -1,0 +1,38 @@
+import type { SupabaseClient } from "@supabase/supabase-js"
+import { handleGenerateConceptsJob } from "./handlers/generate-concepts-job"
+import { markJobFailed, markJobSucceeded, type WorkerJobRecord } from "@/repositories/jobs-repository"
+import { updateProjectStatus } from "@/repositories/projects-repository"
+
+export async function executeJob(
+  supabase: SupabaseClient,
+  job: WorkerJobRecord
+) {
+  try {
+    if (job.type === "generate_concepts") {
+      const result = await handleGenerateConceptsJob(supabase, job)
+
+      await markJobSucceeded(supabase, {
+        jobId: job.id,
+        result
+      })
+
+      return
+    }
+
+    throw new Error(`Unsupported job type: ${job.type}`)
+  } catch (error) {
+    await updateProjectStatus(supabase, {
+      projectId: job.project_id,
+      status: "failed"
+    })
+
+    await markJobFailed(supabase, {
+      error: {
+        message: error instanceof Error ? error.message : "Unknown worker error"
+      },
+      jobId: job.id
+    })
+
+    throw error
+  }
+}
