@@ -1,0 +1,30 @@
+{
+  "name": "ai-ad-studio",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.11.1",
+  "scripts": {
+    "build": "turbo build",
+    "clean": "git clean -xfd -e .env",
+    "dev": "turbo dev --parallel",
+    "dev:web": "pnpm --filter @ai-ad-studio/web dev",
+    "dev:worker": "pnpm --filter @ai-ad-studio/worker dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "typecheck": "turbo typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^25.5.0",
+    "eslint": "^10.0.3",
+    "globals": "^17.4.0",
+    "prettier": "^3.8.1",
+    "tsx": "^4.21.0",
+    "turbo": "^2.8.17",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.57.1",
+    "vitest": "^4.1.0"
+  }
+}
