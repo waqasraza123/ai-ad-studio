@@ -1,20 +1,21 @@
-import Link from "next/link"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type ExportSummaryProps = {
   createdAtLabel: string
-  exportId: string
+  downloadHref: string | null
   projectName: string
   previewDataUrl: string | null
   status: string
+  videoSrc: string | null
 }
 
 export function ExportSummary({
   createdAtLabel,
-  exportId,
+  downloadHref,
   projectName,
   previewDataUrl,
-  status
+  status,
+  videoSrc
 }: ExportSummaryProps) {
   return (
     <SurfaceCard className="p-6">
@@ -26,7 +27,15 @@ export function ExportSummary({
       </h2>
 
       <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04]">
-        {previewDataUrl ? (
+        {videoSrc ? (
+          <video
+            className="aspect-video w-full bg-slate-950"
+            controls
+            playsInline
+            preload="metadata"
+            src={videoSrc}
+          />
+        ) : previewDataUrl ? (
           <img
             alt={`${projectName} export preview`}
             className="aspect-video w-full object-cover"
@@ -50,14 +59,16 @@ export function ExportSummary({
         </div>
       </div>
 
-      <div className="mt-6">
-        <Link
-          href={`/dashboard/projects/${exportId.startsWith("project:") ? exportId.slice(8) : ""}`}
-          className="hidden"
-        >
-          Hidden link anchor
-        </Link>
-      </div>
+      {downloadHref ? (
+        <div className="mt-6">
+          <a
+            className="inline-flex h-11 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-5 text-sm font-medium text-indigo-100 transition hover:bg-indigo-500/20"
+            href={downloadHref}
+          >
+            Open video asset
+          </a>
+        </div>
+      ) : null}
     </SurfaceCard>
   )
 }

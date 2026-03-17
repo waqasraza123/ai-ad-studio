@@ -4,10 +4,25 @@ import { revalidatePath } from "next/cache"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
+import { listConceptPreviewAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import {
   getProjectByIdForOwner,
   updateProjectStatus
 } from "@/server/projects/project-repository"
+import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
+
+function getPreviewAssetForConcept(
+  conceptId: string,
+  previewAssets: {
+    metadata: Record<string, unknown>
+  }[]
+) {
+  return (
+    previewAssets.find(
+      (asset) => asset.metadata.conceptId === conceptId
+    ) ?? null
+  )
+}
 
 export async function renderProjectAction(projectId: string) {
   const user = await getAuthenticatedUser()
@@ -16,9 +31,11 @@ export async function renderProjectAction(projectId: string) {
     throw new Error("Authentication is required")
   }
 
-  const [project, jobs] = await Promise.all([
+  const [project, jobs, projectInput, previewAssets] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
-    listJobsByProjectIdForOwner(projectId, user.id)
+    listJobsByProjectIdForOwner(projectId, user.id),
+    getProjectInputByProjectIdForOwner(projectId, user.id),
+    listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id)
   ])
 
   if (!project) {
@@ -35,6 +52,18 @@ export async function renderProjectAction(projectId: string) {
     throw new Error("Selected concept not found")
   }
 
+  const selectedPreviewAsset = getPreviewAssetForConcept(
+    selectedConcept.id,
+    previewAssets
+  )
+
+  if (
+    !selectedPreviewAsset ||
+    typeof selectedPreviewAsset.metadata.previewDataUrl !== "string"
+  ) {
+    throw new Error("Generate previews before rendering the project")
+  }
+
   const activeRenderJob = jobs.find(
     (job) =>
       job.type === "render_final_ad" &&
@@ -49,8 +78,12 @@ export async function renderProjectAction(projectId: string) {
   await createJob({
     ownerId: user.id,
     payload: {
+      callToAction: projectInput?.call_to_action ?? null,
       conceptId: selectedConcept.id,
       initiatedBy: "web",
+      previewAsset: {
+        previewDataUrl: selectedPreviewAsset.metadata.previewDataUrl
+      },
       stage: "final_render"
     },
     projectId,

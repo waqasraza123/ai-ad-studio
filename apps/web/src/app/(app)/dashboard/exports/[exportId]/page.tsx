@@ -55,17 +55,23 @@ export default async function ExportDetailPage({
       ? exportAsset.metadata.previewDataUrl
       : null
 
+  const videoSrc =
+    exportAsset?.mime_type === "video/mp4"
+      ? `/api/exports/${exportRecord.id}/download`
+      : null
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <ExportSummary
         createdAtLabel={formatTimestamp(exportRecord.created_at)}
-        exportId={`project:${project.id}`}
+        downloadHref={videoSrc}
         projectName={project.name}
         previewDataUrl={previewDataUrl}
         status={exportRecord.status}
+        videoSrc={videoSrc}
       />
 
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">Selected concept</p>
           <p className="mt-2 text-sm font-medium text-white">
@@ -78,7 +84,15 @@ export default async function ExportDetailPage({
           <p className="mt-2 text-sm font-medium text-white">
             {typeof exportAsset?.metadata.renderMode === "string"
               ? exportAsset.metadata.renderMode
-              : "mock_export_preview"}
+              : "unknown"}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Video specs</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {exportAsset?.width ?? 0} × {exportAsset?.height ?? 0} ·{" "}
+            {Math.round((exportAsset?.duration_ms ?? 0) / 1000)}s
           </p>
         </div>
       </div>

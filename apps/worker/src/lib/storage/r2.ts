@@ -1,4 +1,6 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3"
+import { readFile } from "node:fs/promises"
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner"
 import { getWorkerEnvironment } from "@/lib/env"
 
 function createR2Client() {
@@ -34,4 +36,43 @@ export async function uploadTextArtifactToR2(input: {
   return {
     storageKey: input.storageKey
   }
+}
+
+export async function uploadFileArtifactToR2(input: {
+  contentType: string
+  filePath: string
+  storageKey: string
+}) {
+  const environment = getWorkerEnvironment()
+  const client = createR2Client()
+  const fileBuffer = await readFile(input.filePath)
+
+  await client.send(
+    new PutObjectCommand({
+      Body: fileBuffer,
+      Bucket: environment.R2_BUCKET_NAME,
+      ContentType: input.contentType,
+      Key: input.storageKey
+    })
+  )
+
+  return {
+    storageKey: input.storageKey
+  }
+}
+
+export async function createSignedDownloadUrl(storageKey: string) {
+  const environment = getWorkerEnvironment()
+  const client = createR2Client()
+
+  return getSignedUrl(
+    client,
+    new GetObjectCommand({
+      Bucket: environment.R2_BUCKET_NAME,
+      Key: storageKey
+    }),
+    {
+      expiresIn: 3600
+    }
+  )
 }

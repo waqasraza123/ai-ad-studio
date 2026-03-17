@@ -16,6 +16,9 @@ type RenderAssetInsertRecord = {
   owner_id: string
   project_id: string
   storage_key: string
+  duration_ms?: number | null
+  height?: number | null
+  width?: number | null
 }
 
 export async function deleteConceptPreviewAssetsByProjectId(
@@ -51,7 +54,9 @@ export async function createRenderAsset(
   const { data, error } = await supabase
     .from("assets")
     .insert(asset)
-    .select("id, project_id, owner_id, kind, storage_key, mime_type, metadata, created_at")
+    .select(
+      "id, project_id, owner_id, kind, storage_key, mime_type, width, height, duration_ms, metadata, created_at"
+    )
     .single()
 
   if (error) {
@@ -65,6 +70,9 @@ export async function createRenderAsset(
     kind: "export_video"
     storage_key: string
     mime_type: string
+    width: number | null
+    height: number | null
+    duration_ms: number | null
     metadata: Record<string, unknown>
     created_at: string
   }
