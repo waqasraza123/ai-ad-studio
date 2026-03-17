@@ -1,19 +1,13 @@
+import { DemoStrip } from "@/components/marketing/demo-strip"
+import { FeatureGrid } from "@/components/marketing/feature-grid"
+import { HeroSection } from "@/components/marketing/hero-section"
+
 export default function HomePage() {
   return (
-    <main className="page">
-      <section className="hero">
-        <p className="eyebrow">Phase 1 scaffold is live</p>
-        <h1>AI Ad Studio</h1>
-        <p className="description">
-          Production-grade monorepo foundation for a premium AI product ad
-          generation platform.
-        </p>
-        <div className="actions">
-          <a className="primaryAction" href="/api/health">
-            Health check
-          </a>
-        </div>
-      </section>
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] text-slate-50">
+      <HeroSection />
+      <DemoStrip />
+      <FeatureGrid />
     </main>
   )
 }
