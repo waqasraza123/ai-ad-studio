@@ -114,3 +114,15 @@ export type JobRecord = {
   created_at: string
   updated_at: string
 }
+
+export type ExportRecord = {
+  id: string
+  project_id: string
+  concept_id: string | null
+  owner_id: string
+  asset_id: string | null
+  status: "queued" | "rendering" | "ready" | "failed"
+  version: number
+  created_at: string
+  updated_at: string
+}

@@ -1,8 +1,7 @@
 import "server-only"
-import { randomUUID } from "node:crypto"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { CreateAssetPlaceholderInput } from "@/features/projects/schemas/project-schema"
-import type { AssetRecord } from "@/server/database/types"
+import type { AssetRecord, AssetKind } from "@/server/database/types"
 
 const assetSelection =
   "id, project_id, owner_id, kind, storage_key, mime_type, width, height, duration_ms, metadata, created_at"
@@ -45,33 +44,33 @@ export async function listConceptPreviewAssetsByProjectIdForOwner(
   return (data ?? []) as AssetRecord[]
 }
 
-export async function createAssetRecord(input: {
+export async function createUploadedAssetRecord(input: {
+  kind: Extract<AssetKind, "product_image" | "logo">
+  metadata: CreateAssetPlaceholderInput
   ownerId: string
-  placeholder: CreateAssetPlaceholderInput
+  storageKey: string
 }) {
   const supabase = await createSupabaseServerClient()
-  const generatedAssetId = randomUUID()
 
   const { data, error } = await supabase
     .from("assets")
     .insert({
-      id: generatedAssetId,
-      owner_id: input.ownerId,
-      project_id: input.placeholder.projectId,
-      kind: input.placeholder.kind,
-      storage_key: `pending/${input.placeholder.projectId}/${generatedAssetId}/${input.placeholder.fileName}`,
-      mime_type: input.placeholder.mimeType,
+      kind: input.kind,
       metadata: {
-        originalFileName: input.placeholder.fileName,
-        sizeBytes: input.placeholder.sizeBytes,
-        uploadStatus: "pending_storage"
-      }
+        originalFileName: input.metadata.fileName,
+        sizeBytes: input.metadata.sizeBytes,
+        uploadStatus: "uploaded"
+      },
+      mime_type: input.metadata.mimeType,
+      owner_id: input.ownerId,
+      project_id: input.metadata.projectId,
+      storage_key: input.storageKey
     })
     .select(assetSelection)
     .single()
 
   if (error) {
-    throw new Error("Failed to create asset record")
+    throw new Error("Failed to create uploaded asset record")
   }
 
   return data as AssetRecord

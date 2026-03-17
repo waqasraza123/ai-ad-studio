@@ -6,14 +6,17 @@ import {
   mapConceptPreviewAssetsByConceptId,
   toConceptCardViewModel,
   toConceptGenerationState,
-  toConceptPreviewState
+  toConceptPreviewState,
+  toRenderState
 } from "@/features/concepts/mappers/concept-view-model"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
+import { RenderPanel } from "@/features/renders/components/render-panel"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
+import { getLatestExportByProjectIdForOwner } from "@/server/exports/export-repository"
 import {
   listAssetsByProjectIdForOwner,
   listConceptPreviewAssetsByProjectIdForOwner
@@ -38,14 +41,16 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
-  const [project, projectInput, assets, concepts, jobs, previewAssets] = await Promise.all([
-    getProjectByIdForOwner(projectId, user.id),
-    getProjectInputByProjectIdForOwner(projectId, user.id),
-    listAssetsByProjectIdForOwner(projectId, user.id),
-    listConceptsByProjectIdForOwner(projectId, user.id),
-    listJobsByProjectIdForOwner(projectId, user.id),
-    listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id)
-  ])
+  const [project, projectInput, assets, concepts, jobs, previewAssets, latestExport] =
+    await Promise.all([
+      getProjectByIdForOwner(projectId, user.id),
+      getProjectInputByProjectIdForOwner(projectId, user.id),
+      listAssetsByProjectIdForOwner(projectId, user.id),
+      listConceptsByProjectIdForOwner(projectId, user.id),
+      listJobsByProjectIdForOwner(projectId, user.id),
+      listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id),
+      getLatestExportByProjectIdForOwner(projectId, user.id)
+    ])
 
   if (!project) {
     notFound()
@@ -74,6 +79,15 @@ export default async function ProjectDetailPage({
     })
   )
 
+  const selectedConcept =
+    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
+
+  const renderState = toRenderState({
+    hasLatestExport: Boolean(latestExport),
+    jobs,
+    selectedConceptTitle: selectedConcept?.title ?? null
+  })
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -85,8 +99,9 @@ export default async function ProjectDetailPage({
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now holds the persisted project inputs, asset intake flow,
-            concept generation, preview generation, and selected concept state.
+            This page now holds the persisted project inputs, storage-backed asset
+            intake flow, concept generation, preview generation, selected concept
+            state, and the final render scaffold.
           </p>
         </SurfaceCard>
 
@@ -142,6 +157,14 @@ export default async function ProjectDetailPage({
       </div>
 
       <ConceptList concepts={conceptViewModels} projectId={projectId} />
+
+      <RenderPanel
+        latestExportId={latestExport?.id ?? null}
+        projectId={projectId}
+        renderJobDescription={renderState.description}
+        renderJobLabel={renderState.label}
+        selectedConceptTitle={selectedConcept?.title ?? null}
+      />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <ProjectBriefForm projectId={projectId} projectInput={projectInput} />

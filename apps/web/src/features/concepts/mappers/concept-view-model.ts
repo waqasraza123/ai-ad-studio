@@ -144,3 +144,57 @@ export function toConceptPreviewState(input: {
     label: "Idle"
   }
 }
+
+export function toRenderState(input: {
+  hasLatestExport: boolean
+  jobs: JobRecord[]
+  selectedConceptTitle: string | null
+}) {
+  const latestRenderJob = input.jobs.find((job) => job.type === "render_final_ad")
+
+  if (latestRenderJob?.status === "queued") {
+    return {
+      description:
+        "A final render job is queued. Keep the worker running to scaffold the export flow.",
+      label: "Queued"
+    }
+  }
+
+  if (latestRenderJob?.status === "running") {
+    return {
+      description:
+        "The worker is creating the scaffolded final export artifact and export record.",
+      label: "Running"
+    }
+  }
+
+  if (latestRenderJob?.status === "failed") {
+    return {
+      description:
+        "The last render attempt failed. Check worker logs and trigger another run.",
+      label: "Failed"
+    }
+  }
+
+  if (input.hasLatestExport) {
+    return {
+      description:
+        "A scaffolded export exists. Open it to validate the end-to-end render lifecycle.",
+      label: "Ready"
+    }
+  }
+
+  if (!input.selectedConceptTitle) {
+    return {
+      description:
+        "Select a concept before triggering the final render scaffold.",
+      label: "Waiting"
+    }
+  }
+
+  return {
+    description:
+      "Trigger a durable render job for the selected concept. This phase creates a mocked export artifact through the real job and export pipeline.",
+    label: "Idle"
+  }
+}

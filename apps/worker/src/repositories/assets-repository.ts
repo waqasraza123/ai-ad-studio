@@ -9,6 +9,15 @@ type ConceptPreviewAssetInsertRecord = {
   storage_key: string
 }
 
+type RenderAssetInsertRecord = {
+  kind: "export_video"
+  metadata: Record<string, unknown>
+  mime_type: string
+  owner_id: string
+  project_id: string
+  storage_key: string
+}
+
 export async function deleteConceptPreviewAssetsByProjectId(
   supabase: SupabaseClient,
   projectId: string
@@ -32,5 +41,31 @@ export async function createConceptPreviewAssets(
 
   if (error) {
     throw new Error("Failed to create concept preview assets")
+  }
+}
+
+export async function createRenderAsset(
+  supabase: SupabaseClient,
+  asset: RenderAssetInsertRecord
+) {
+  const { data, error } = await supabase
+    .from("assets")
+    .insert(asset)
+    .select("id, project_id, owner_id, kind, storage_key, mime_type, metadata, created_at")
+    .single()
+
+  if (error) {
+    throw new Error("Failed to create render asset")
+  }
+
+  return data as {
+    id: string
+    project_id: string
+    owner_id: string
+    kind: "export_video"
+    storage_key: string
+    mime_type: string
+    metadata: Record<string, unknown>
+    created_at: string
   }
 }

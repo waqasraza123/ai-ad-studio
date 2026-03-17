@@ -22,6 +22,15 @@ export function hasSupabaseAuthConfiguration() {
   )
 }
 
+export function hasR2StorageConfiguration() {
+  return Boolean(
+    process.env.R2_ACCOUNT_ID &&
+      process.env.R2_ACCESS_KEY_ID &&
+      process.env.R2_SECRET_ACCESS_KEY &&
+      process.env.R2_BUCKET_NAME
+  )
+}
+
 export function getPublicEnvironment() {
   return publicEnvironmentSchema.parse({
     NEXT_PUBLIC_APP_NAME: process.env.NEXT_PUBLIC_APP_NAME,
