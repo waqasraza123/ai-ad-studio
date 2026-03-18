@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation"
+import { getPublicEnvironment } from "@/lib/env"
 import { ExportSummary } from "@/features/exports/components/export-summary"
+import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import { getExportByIdForOwner } from "@/server/exports/export-repository"
+import { getShareLinkByExportIdForOwner } from "@/server/exports/share-link-repository"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 
@@ -45,12 +48,13 @@ export default async function ExportDetailPage({
     notFound()
   }
 
-  const [project, concept, assets] = await Promise.all([
+  const [project, concept, assets, shareLink] = await Promise.all([
     getProjectByIdForOwner(exportRecord.project_id, user.id),
     exportRecord.concept_id
       ? getConceptByIdForOwner(exportRecord.concept_id, user.id)
       : Promise.resolve(null),
-    listAssetsByProjectIdForOwner(exportRecord.project_id, user.id)
+    listAssetsByProjectIdForOwner(exportRecord.project_id, user.id),
+    getShareLinkByExportIdForOwner(exportRecord.id, user.id)
   ])
 
   if (!project) {
@@ -72,6 +76,11 @@ export default async function ExportDetailPage({
 
   const voiceoverAsset =
     assets.find((asset) => asset.kind === "voiceover_audio") ?? null
+
+  const environment = getPublicEnvironment()
+  const shareUrl = shareLink
+    ? `${environment.NEXT_PUBLIC_APP_URL}/share/${shareLink.token}`
+    : null
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -164,6 +173,8 @@ export default async function ExportDetailPage({
           </p>
         </div>
       ) : null}
+
+      <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
     </div>
   )
 }

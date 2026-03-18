@@ -25,6 +25,22 @@ export async function listExportsByProjectIdForOwner(
   return (data ?? []) as ExportRecord[]
 }
 
+export async function listAllExportsByOwner(ownerId: string) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("exports")
+    .select(exportSelection)
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to list all exports")
+  }
+
+  return (data ?? []) as ExportRecord[]
+}
+
 export async function getLatestExportByProjectIdForOwner(
   projectId: string,
   ownerId: string

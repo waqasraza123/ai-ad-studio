@@ -142,3 +142,13 @@ export type ExportRecord = {
   created_at: string
   updated_at: string
 }
+
+export type ShareLinkRecord = {
+  id: string
+  project_id: string
+  export_id: string
+  owner_id: string
+  token: string
+  is_active: boolean
+  created_at: string
+}

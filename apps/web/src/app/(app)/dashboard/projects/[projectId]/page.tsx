@@ -11,6 +11,8 @@ import {
   getLatestPlatformPreset,
   getLatestVariantKey
 } from "@/features/concepts/mappers/concept-view-model"
+import { ExportSummary } from "@/features/exports/components/export-summary"
+import { ProjectExportsPanel } from "@/features/exports/components/project-exports-panel"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
@@ -19,7 +21,10 @@ import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
-import { getLatestExportByProjectIdForOwner } from "@/server/exports/export-repository"
+import {
+  getLatestExportByProjectIdForOwner,
+  listExportsByProjectIdForOwner
+} from "@/server/exports/export-repository"
 import {
   listAssetsByProjectIdForOwner,
   listConceptPreviewAssetsByProjectIdForOwner
@@ -34,6 +39,13 @@ type ProjectDetailPageProps = {
   }>
 }
 
+function formatTimestamp(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value))
+}
+
 export default async function ProjectDetailPage({
   params
 }: ProjectDetailPageProps) {
@@ -44,16 +56,25 @@ export default async function ProjectDetailPage({
     notFound()
   }
 
-  const [project, projectInput, assets, concepts, jobs, previewAssets, latestExport] =
-    await Promise.all([
-      getProjectByIdForOwner(projectId, user.id),
-      getProjectInputByProjectIdForOwner(projectId, user.id),
-      listAssetsByProjectIdForOwner(projectId, user.id),
-      listConceptsByProjectIdForOwner(projectId, user.id),
-      listJobsByProjectIdForOwner(projectId, user.id),
-      listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id),
-      getLatestExportByProjectIdForOwner(projectId, user.id)
-    ])
+  const [
+    project,
+    projectInput,
+    assets,
+    concepts,
+    jobs,
+    previewAssets,
+    latestExport,
+    exports
+  ] = await Promise.all([
+    getProjectByIdForOwner(projectId, user.id),
+    getProjectInputByProjectIdForOwner(projectId, user.id),
+    listAssetsByProjectIdForOwner(projectId, user.id),
+    listConceptsByProjectIdForOwner(projectId, user.id),
+    listJobsByProjectIdForOwner(projectId, user.id),
+    listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id),
+    getLatestExportByProjectIdForOwner(projectId, user.id),
+    listExportsByProjectIdForOwner(projectId, user.id)
+  ])
 
   if (!project) {
     notFound()
@@ -106,6 +127,19 @@ export default async function ProjectDetailPage({
       })
     : []
 
+  const latestExportAsset =
+    latestExport ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null : null
+
+  const latestPreviewDataUrl =
+    latestExportAsset && typeof latestExportAsset.metadata.previewDataUrl === "string"
+      ? latestExportAsset.metadata.previewDataUrl
+      : null
+
+  const latestVideoSrc =
+    latestExport && latestExportAsset?.mime_type === "video/mp4"
+      ? `/api/exports/${latestExport.id}/download`
+      : null
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -118,7 +152,8 @@ export default async function ProjectDetailPage({
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             This page now includes safety-reviewed concepts, structured scene
-            planning, render variants, and multi-format export presets.
+            planning, render variants, multi-format exports, and project export
+            management.
           </p>
         </SurfaceCard>
 
@@ -185,6 +220,19 @@ export default async function ProjectDetailPage({
         selectedConceptTitle={selectedConcept?.title ?? null}
         selectedVariantKey={selectedVariantKey}
       />
+
+      {latestExport ? (
+        <ExportSummary
+          createdAtLabel={formatTimestamp(latestExport.created_at)}
+          downloadHref={latestVideoSrc}
+          projectName={project.name}
+          previewDataUrl={latestPreviewDataUrl}
+          status={latestExport.status}
+          videoSrc={latestVideoSrc}
+        />
+      ) : null}
+
+      <ProjectExportsPanel exports={exports} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <ProjectBriefForm projectId={projectId} projectInput={projectInput} />
