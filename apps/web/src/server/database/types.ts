@@ -47,6 +47,8 @@ export type PlatformPresetKey =
   | "youtube_shorts"
   | "youtube_landscape"
 
+export type NotificationSeverity = "info" | "success" | "warning" | "error"
+
 export type ProjectRecord = {
   id: string
   owner_id: string
@@ -177,5 +179,21 @@ export type UsageEventRecord = {
   units: number
   estimated_cost_usd: number
   metadata: Record<string, unknown>
+  created_at: string
+}
+
+export type NotificationRecord = {
+  id: string
+  owner_id: string
+  project_id: string | null
+  export_id: string | null
+  job_id: string | null
+  kind: string
+  title: string
+  body: string
+  severity: NotificationSeverity
+  action_url: string | null
+  metadata: Record<string, unknown>
+  read_at: string | null
   created_at: string
 }

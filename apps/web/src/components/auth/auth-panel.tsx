@@ -61,7 +61,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
           <form action={signInWithPassword} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <LockKeyhole className="h-4 w-4 text-indigo-200" />
+                <LockKeyhole className="h-4 w-4 text-amber-200" />
               </div>
               <div>
                 <p className="text-sm font-medium text-white">Sign in</p>
@@ -78,7 +78,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
                   placeholder="waqas@example.com"
                 />
               </label>
@@ -89,7 +89,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
                   placeholder="••••••••"
                 />
               </label>
@@ -103,7 +103,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
           <form action={signUpWithPassword} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <UserRoundPlus className="h-4 w-4 text-indigo-200" />
+                <UserRoundPlus className="h-4 w-4 text-amber-200" />
               </div>
               <div>
                 <p className="text-sm font-medium text-white">Create account</p>
@@ -120,7 +120,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
                   name="email"
                   type="email"
                   autoComplete="email"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
                   placeholder="waqas@example.com"
                 />
               </label>
@@ -131,7 +131,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
                   name="password"
                   type="password"
                   autoComplete="new-password"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
                   placeholder="Create a password"
                 />
               </label>

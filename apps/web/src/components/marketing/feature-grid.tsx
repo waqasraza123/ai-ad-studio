@@ -48,7 +48,7 @@ export function FeatureGrid() {
             return (
               <SurfaceCard key={feature.title} className="p-6">
                 <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                  <Icon className="h-5 w-5 text-indigo-200" />
+                  <Icon className="h-5 w-5 text-amber-200" />
                 </div>
                 <h3 className="mt-5 text-xl font-medium text-white">{feature.title}</h3>
                 <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">

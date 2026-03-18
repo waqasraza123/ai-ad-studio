@@ -11,9 +11,53 @@ import {
 } from "@/repositories/jobs-repository"
 import { createJobTrace } from "@/repositories/job-traces-repository"
 import { updateProjectStatus } from "@/repositories/projects-repository"
+import { createNotifications } from "@/notifications/notification-service"
 
 function canRetryJob(job: WorkerJobRecord) {
   return job.attempts < job.max_attempts
+}
+
+function extractExportNotifications(
+  result: Record<string, unknown>,
+  job: WorkerJobRecord
+) {
+  const exportsCreated = result.exportsCreated
+
+  if (!Array.isArray(exportsCreated)) {
+    return []
+  }
+
+  return exportsCreated
+    .map((exportItem) => {
+      if (!exportItem || typeof exportItem !== "object") {
+        return null
+      }
+
+      const exportId =
+        typeof exportItem.exportId === "string" ? exportItem.exportId : null
+      const aspectRatio =
+        typeof exportItem.aspectRatio === "string" ? exportItem.aspectRatio : "new"
+
+      if (!exportId) {
+        return null
+      }
+
+      return {
+        action_url: `/dashboard/exports/${exportId}`,
+        body: `A ${aspectRatio} export is ready for review and download.`,
+        export_id: exportId,
+        job_id: job.id,
+        kind: "export_ready",
+        metadata: {
+          aspectRatio
+        },
+        owner_id: job.owner_id,
+        project_id: job.project_id,
+        severity: "success" as const,
+        title: "Export ready"
+      }
+    })
+    .filter((value): value is NonNullable<typeof value> => value !== null)
 }
 
 export async function executeJob(
@@ -38,6 +82,22 @@ export async function executeJob(
       stage: "job_cancelled_before_start",
       trace_type: "lifecycle"
     })
+
+    await createNotifications(supabase, [
+      {
+        action_url: `/dashboard/debug/jobs/${job.id}`,
+        body: `The ${job.type} job was cancelled before execution began.`,
+        job_id: job.id,
+        kind: "job_cancelled",
+        metadata: {
+          reason: latestBeforeStart.cancel_reason ?? "Cancelled before execution"
+        },
+        owner_id: job.owner_id,
+        project_id: job.project_id,
+        severity: "warning",
+        title: "Job cancelled"
+      }
+    ])
 
     return
   }
@@ -65,6 +125,22 @@ export async function executeJob(
           jobId: job.id,
           reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
         })
+
+        await createNotifications(supabase, [
+          {
+            action_url: `/dashboard/debug/jobs/${job.id}`,
+            body: `The ${job.type} job was cancelled during execution.`,
+            job_id: job.id,
+            kind: "job_cancelled",
+            metadata: {
+              reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+            },
+            owner_id: job.owner_id,
+            project_id: job.project_id,
+            severity: "warning",
+            title: "Job cancelled"
+          }
+        ])
       } else {
         await markJobSucceeded(supabase, {
           jobId: job.id,
@@ -95,6 +171,22 @@ export async function executeJob(
           jobId: job.id,
           reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
         })
+
+        await createNotifications(supabase, [
+          {
+            action_url: `/dashboard/debug/jobs/${job.id}`,
+            body: `The ${job.type} job was cancelled during execution.`,
+            job_id: job.id,
+            kind: "job_cancelled",
+            metadata: {
+              reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+            },
+            owner_id: job.owner_id,
+            project_id: job.project_id,
+            severity: "warning",
+            title: "Job cancelled"
+          }
+        ])
       } else {
         await markJobSucceeded(supabase, {
           jobId: job.id,
@@ -125,11 +217,30 @@ export async function executeJob(
           jobId: job.id,
           reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
         })
+
+        await createNotifications(supabase, [
+          {
+            action_url: `/dashboard/debug/jobs/${job.id}`,
+            body: `The ${job.type} job was cancelled during execution.`,
+            job_id: job.id,
+            kind: "job_cancelled",
+            metadata: {
+              reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+            },
+            owner_id: job.owner_id,
+            project_id: job.project_id,
+            severity: "warning",
+            title: "Job cancelled"
+          }
+        ])
       } else {
         await markJobSucceeded(supabase, {
           jobId: job.id,
           result
         })
+
+        const exportNotifications = extractExportNotifications(result, job)
+        await createNotifications(supabase, exportNotifications)
       }
 
       await createJobTrace(supabase, {
@@ -153,12 +264,10 @@ export async function executeJob(
 
     const shouldRetry = canRetryJob(job)
 
-    if (!shouldRetry) {
-      await updateProjectStatus(supabase, {
-        projectId: job.project_id,
-        status: "failed"
-      })
-    }
+    await updateProjectStatus(supabase, {
+      projectId: job.project_id,
+      status: shouldRetry ? "rendering" : "failed"
+    })
 
     await markJobFailed(supabase, {
       attempts: job.attempts,
@@ -182,6 +291,26 @@ export async function executeJob(
       stage: shouldRetry ? "job_failed_will_retry" : "job_failed",
       trace_type: "error"
     })
+
+    await createNotifications(supabase, [
+      {
+        action_url: `/dashboard/debug/jobs/${job.id}`,
+        body: shouldRetry
+          ? `The ${job.type} job failed and has been scheduled for another attempt.`
+          : `The ${job.type} job failed and requires attention.`,
+        job_id: job.id,
+        kind: shouldRetry ? "job_failed_retrying" : "job_failed",
+        metadata: {
+          attempts: job.attempts,
+          message,
+          shouldRetry
+        },
+        owner_id: job.owner_id,
+        project_id: job.project_id,
+        severity: shouldRetry ? "warning" : "error",
+        title: shouldRetry ? "Job failed and will retry" : "Job failed"
+      }
+    ])
 
     throw error
   }

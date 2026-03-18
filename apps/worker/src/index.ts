@@ -1,43 +1,42 @@
-import { createWorkerSupabaseClient } from "./lib/supabase"
-import {
-  getWorkerEnvironment,
-  hasWorkerEnvironmentConfiguration
-} from "./lib/env"
-import { processNextJob } from "./jobs/process-next-job"
+import { hasWorkerEnvironmentConfiguration, getWorkerEnvironment } from "@/lib/env"
+import { createSupabaseAdminClient } from "@/lib/supabase-admin"
+import { executeJob } from "@/jobs/execute-job"
+import { createLongRunningQueueNotifications } from "@/notifications/notification-service"
+import { claimNextJob, refreshJobHeartbeat } from "@/repositories/jobs-repository"
 
-function log(message: string) {
-  console.log(`[worker] ${message}`)
+function wait(milliseconds: number) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, milliseconds)
+  })
 }
 
-async function run() {
+async function runWorkerLoop() {
   if (!hasWorkerEnvironmentConfiguration()) {
-    log("Supabase worker environment is not configured. Waiting for credentials.")
+    console.log("[worker] Supabase worker environment is not configured. Waiting for credentials.")
     return
   }
 
   const environment = getWorkerEnvironment()
-  const supabase = createWorkerSupabaseClient()
+  const supabase = createSupabaseAdminClient()
 
-  log(`AI Ad Studio worker booted. Poll interval: ${environment.WORKER_POLL_INTERVAL_MS}ms`)
-
-  const tick = async () => {
+  for (;;) {
     try {
-      const result = await processNextJob(supabase)
+      await createLongRunningQueueNotifications(supabase)
 
-      if (result.processed) {
-        log(`Processed job ${result.jobId} (${result.type})`)
+      const job = await claimNextJob(supabase)
+
+      if (!job) {
+        await wait(environment.WORKER_POLL_INTERVAL_MS)
+        continue
       }
+
+      await refreshJobHeartbeat(supabase, job.id)
+      await executeJob(supabase, job)
     } catch (error) {
-      log(
-        error instanceof Error
-          ? `Job processing failed: ${error.message}`
-          : "Job processing failed"
-      )
+      console.error(error)
+      await wait(environment.WORKER_POLL_INTERVAL_MS)
     }
   }
-
-  await tick()
-  setInterval(tick, environment.WORKER_POLL_INTERVAL_MS)
 }
 
-void run()
+void runWorkerLoop()

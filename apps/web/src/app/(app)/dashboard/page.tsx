@@ -12,8 +12,20 @@ export default async function DashboardPage() {
     return null
   }
 
-  const projects = await listProjectsByOwner(user.id)
-  const viewModels = projects.map(toProjectCardViewModel)
+  let projectsLoadFailed = false
+  let viewModels: ReturnType<typeof toProjectCardViewModel>[] = []
+
+  try {
+    const projects = await listProjectsByOwner(user.id)
+    viewModels = projects.map(toProjectCardViewModel)
+  } catch (error) {
+    projectsLoadFailed = true
+
+    console.error("DashboardPage failed to load projects", {
+      error,
+      ownerId: user.id
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -24,17 +36,17 @@ export default async function DashboardPage() {
               Dashboard
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
-              Real project workspace is now active
+              Project workspace is now active
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-              Create projects, save the creative brief, and register source assets
-              before concept generation is connected in the next phase.
+              Create projects, save the creative brief, and register source
+              assets before concept generation is connected in the next phase.
             </p>
           </div>
 
           <Link
             href="/dashboard/projects/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-500/10 px-5 text-sm font-medium text-indigo-100 transition hover:bg-indigo-500/20"
+            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
           >
             <PlusSquare className="h-4 w-4" />
             <span>New project</span>
@@ -42,7 +54,10 @@ export default async function DashboardPage() {
         </div>
       </section>
 
-      <ProjectList projects={viewModels} />
+      <ProjectList
+        projects={viewModels}
+        projectsLoadFailed={projectsLoadFailed}
+      />
     </div>
   )
 }

@@ -53,7 +53,7 @@ export function JobDebugList({ jobs, projectsById }: JobDebugListProps) {
                   attempts {job.attempts}/{job.max_attempts}
                 </span>
                 {job.provider ? (
-                  <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
+                  <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
                     {job.provider}
                   </span>
                 ) : null}

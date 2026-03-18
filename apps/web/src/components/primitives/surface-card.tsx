@@ -13,7 +13,7 @@ export function SurfaceCard({
   return (
     <div
       className={cn(
-        "rounded-3xl border border-white/10 bg-white/[0.04] shadow-[0_24px_80px_rgba(0,0,0,0.28)] backdrop-blur-xl",
+        "rounded-[1.75rem] border border-white/10 bg-white/[0.035] shadow-[0_28px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl",
         className
       )}
       {...props}

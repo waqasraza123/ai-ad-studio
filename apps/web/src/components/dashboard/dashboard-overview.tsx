@@ -72,7 +72,7 @@ export function DashboardOverview() {
             </div>
 
             <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 md:flex md:items-center md:gap-2">
-              <ArrowUpRight className="h-4 w-4 text-indigo-200" />
+              <ArrowUpRight className="h-4 w-4 text-amber-200" />
               Studio dashboard
             </div>
           </div>
@@ -87,7 +87,7 @@ export function DashboardOverview() {
                 <p className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-white">
                   {stat.value}
                 </p>
-                <p className="mt-2 text-sm text-indigo-200">{stat.delta}</p>
+                <p className="mt-2 text-sm text-amber-200">{stat.delta}</p>
               </div>
             ))}
           </div>
@@ -103,8 +103,8 @@ export function DashboardOverview() {
 
               return (
                 <div key={item.label} className="flex items-center gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10">
-                    <Icon className="h-4 w-4 text-indigo-200" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10">
+                    <Icon className="h-4 w-4 text-amber-200" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-white">{item.label}</p>
@@ -147,7 +147,7 @@ export function DashboardOverview() {
             Export panel
           </p>
           <div className="mt-5 grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
-            <div className="rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(129,140,248,0.18),transparent_16rem),linear-gradient(180deg,rgba(15,23,42,0.9),rgba(2,6,23,0.94))] p-4">
+            <div className="rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.14),transparent_16rem),linear-gradient(180deg,rgba(15,23,42,0.9),rgba(2,6,23,0.94))] p-4">
               <div className="aspect-[16/10] rounded-[1.25rem] border border-white/10 bg-white/[0.04]" />
               <div className="mt-4">
                 <p className="text-sm font-medium text-white">

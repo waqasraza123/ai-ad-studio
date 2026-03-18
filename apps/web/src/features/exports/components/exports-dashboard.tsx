@@ -86,7 +86,7 @@ export function ExportsDashboard({
                 {Array.from(latestPerFormat.values()).map((exportRecord) => (
                   <a
                     key={exportRecord.id}
-                    className="inline-flex h-10 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-4 text-sm font-medium text-indigo-100 transition hover:bg-indigo-500/20"
+                    className="inline-flex h-10 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-4 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
                     href={`/dashboard/exports/${exportRecord.id}`}
                   >
                     Latest {exportRecord.aspect_ratio}

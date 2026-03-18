@@ -67,7 +67,7 @@ export function RenderPanel({
         <label className="grid gap-2">
           <span className="text-sm text-slate-300">Platform preset</span>
           <select
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-amber-300/40"
             defaultValue={platformPreset}
             name="platformPreset"
           >
@@ -83,7 +83,7 @@ export function RenderPanel({
         <label className="grid gap-2">
           <span className="text-sm text-slate-300">Render variant</span>
           <select
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-amber-300/40"
             defaultValue={selectedVariantKey}
             name="variantKey"
           >
@@ -99,7 +99,7 @@ export function RenderPanel({
             {presetDefinition.aspectRatios.map((aspectRatio) => (
               <span
                 key={aspectRatio}
-                className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100"
+                className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100"
               >
                 {aspectRatio}
               </span>
@@ -143,7 +143,7 @@ export function RenderPanel({
         <div className="mt-6">
           <Link
             href={`/dashboard/exports/${latestExportId}`}
-            className="inline-flex h-11 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-5 text-sm font-medium text-indigo-100 transition hover:bg-indigo-500/20"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
           >
             Open latest export
           </Link>

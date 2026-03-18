@@ -38,8 +38,8 @@ export function WorkflowStrip() {
 
             return (
               <SurfaceCard key={step.title} className="p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-indigo-400/20 bg-indigo-400/10">
-                  <Icon className="h-5 w-5 text-indigo-200" />
+                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10">
+                  <Icon className="h-5 w-5 text-amber-200" />
                 </div>
                 <h3 className="mt-5 text-lg font-medium text-white">{step.title}</h3>
                 <p className="mt-2 text-sm leading-7 text-slate-400">

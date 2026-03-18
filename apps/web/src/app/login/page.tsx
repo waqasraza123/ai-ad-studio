@@ -26,7 +26,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   if (!hasSupabaseAuthConfiguration()) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
         <ConfigurationRequired
           title="Connect Supabase to prove auth end to end"
           description="This repo now contains the auth integration points, protected route logic, and versioned schema files. Add your Supabase credentials locally to validate real sign-in and session flow."
@@ -45,7 +45,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const infoMessage = readSearchParam(params, "message")
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <AuthPanel errorMessage={errorMessage} infoMessage={infoMessage} />
       </div>

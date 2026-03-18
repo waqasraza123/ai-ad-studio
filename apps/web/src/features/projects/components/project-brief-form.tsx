@@ -30,7 +30,7 @@ export function ProjectBriefForm({
             <input
               name="productName"
               defaultValue={projectInput?.product_name ?? ""}
-              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
               placeholder="HydraGlow Serum"
             />
           </label>
@@ -40,7 +40,7 @@ export function ProjectBriefForm({
             <input
               name="callToAction"
               defaultValue={projectInput?.call_to_action ?? ""}
-              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
               placeholder="Shop now"
             />
           </label>
@@ -51,7 +51,7 @@ export function ProjectBriefForm({
           <textarea
             name="productDescription"
             defaultValue={projectInput?.product_description ?? ""}
-            className="min-h-32 rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+            className="min-h-32 rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
             placeholder="Describe the product clearly so the concept pipeline can build hooks, angles, and visual direction later."
           />
         </label>
@@ -62,7 +62,7 @@ export function ProjectBriefForm({
             <input
               name="offerText"
               defaultValue={projectInput?.offer_text ?? ""}
-              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
               placeholder="20 percent off launch week"
             />
           </label>
@@ -72,7 +72,7 @@ export function ProjectBriefForm({
             <input
               name="targetAudience"
               defaultValue={projectInput?.target_audience ?? ""}
-              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
               placeholder="Skincare buyers 22 to 35"
             />
           </label>
@@ -82,7 +82,7 @@ export function ProjectBriefForm({
             <input
               name="brandTone"
               defaultValue={projectInput?.brand_tone ?? ""}
-              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
               placeholder="Premium and clean"
             />
           </label>
@@ -93,7 +93,7 @@ export function ProjectBriefForm({
           <input
             name="visualStyle"
             defaultValue={projectInput?.visual_style ?? ""}
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-indigo-300/40"
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
             placeholder="Minimal studio lighting with soft luxury feel"
           />
         </label>

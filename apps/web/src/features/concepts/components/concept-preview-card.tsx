@@ -37,7 +37,7 @@ export function ConceptPreviewCard({
 
   return (
     <SurfaceCard
-      className={isSelected ? "border-indigo-300/40 bg-indigo-500/[0.08] p-5" : "p-5"}
+      className={isSelected ? "border-amber-300/40 bg-amber-500/[0.08] p-5" : "p-5"}
     >
       <div className="overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04]">
         {previewDataUrl ? (
@@ -47,10 +47,10 @@ export function ConceptPreviewCard({
             src={previewDataUrl}
           />
         ) : (
-          <div className="grid aspect-[4/5] place-items-center bg-[radial-gradient(circle_at_top,rgba(129,140,248,0.16),transparent_16rem),linear-gradient(180deg,rgba(15,23,42,0.9),rgba(2,6,23,0.94))]">
+          <div className="grid aspect-[4/5] place-items-center bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.14),transparent_16rem),linear-gradient(180deg,rgba(15,23,42,0.9),rgba(2,6,23,0.94))]">
             <div className="text-center">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <ImageIcon className="h-5 w-5 text-indigo-200" />
+                <ImageIcon className="h-5 w-5 text-amber-200" />
               </div>
               <p className="mt-4 text-sm text-slate-300">Preview pending</p>
             </div>

@@ -40,7 +40,10 @@ export async function listProjectsByOwner(ownerId: string) {
   return (data ?? []) as ProjectRecord[]
 }
 
-export async function getProjectByIdForOwner(projectId: string, ownerId: string) {
+export async function getProjectByIdForOwner(
+  projectId: string,
+  ownerId: string
+) {
   const supabase = await createSupabaseServerClient()
 
   const { data, error } = await supabase

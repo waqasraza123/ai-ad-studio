@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowRight, FolderOpen } from "lucide-react"
+import { ArrowRight, FolderOpen, TriangleAlert } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type ProjectCardViewModel = {
@@ -12,26 +12,56 @@ type ProjectCardViewModel = {
 
 type ProjectListProps = {
   projects: ProjectCardViewModel[]
+  projectsLoadFailed?: boolean
 }
 
-export function ProjectList({ projects }: ProjectListProps) {
+export function ProjectList({
+  projects,
+  projectsLoadFailed = false
+}: ProjectListProps) {
+  if (projectsLoadFailed) {
+    return (
+      <SurfaceCard className="p-8">
+        <div className="flex h-14 w-14 items-center justify-center rounded-[1.5rem] border border-amber-400/20 bg-amber-500/10">
+          <TriangleAlert className="h-6 w-6 text-amber-200" />
+        </div>
+        <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
+          Projects are temporarily unavailable
+        </h2>
+        <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">
+          We could not load your projects right now. This usually means a
+          temporary backend or database issue. You can still create a new
+          project and refresh this page again in a moment.
+        </p>
+        <div className="mt-8">
+          <Link
+            href="/dashboard/projects/new"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
+          >
+            Create new project
+          </Link>
+        </div>
+      </SurfaceCard>
+    )
+  }
+
   if (projects.length === 0) {
     return (
       <SurfaceCard className="p-8">
         <div className="flex h-14 w-14 items-center justify-center rounded-[1.5rem] border border-white/10 bg-white/[0.05]">
-          <FolderOpen className="h-6 w-6 text-indigo-200" />
+          <FolderOpen className="h-6 w-6 text-amber-200" />
         </div>
         <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
           No projects yet
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">
-          Create your first project to start the structured flow from product brief
-          to concept generation and final export.
+          Create your first project to start the structured flow from product
+          brief to concept generation and final export.
         </p>
         <div className="mt-8">
           <Link
             href="/dashboard/projects/new"
-            className="inline-flex h-11 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-5 text-sm font-medium text-indigo-100 transition hover:bg-indigo-500/20"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
           >
             Create first project
           </Link>
@@ -58,7 +88,7 @@ export function ProjectList({ projects }: ProjectListProps) {
               </span>
             </div>
 
-            <div className="mt-8 flex items-center gap-2 text-sm text-indigo-200">
+            <div className="mt-8 flex items-center gap-2 text-sm text-amber-200">
               <span>Open project</span>
               <ArrowRight className="h-4 w-4" />
             </div>

@@ -30,7 +30,7 @@ const floatingCards = [
 export function HeroPreview() {
   return (
     <div className="relative mx-auto mt-10 h-[28rem] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.88),rgba(2,6,23,0.92))] shadow-[0_40px_120px_rgba(0,0,0,0.45)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(129,140,248,0.24),transparent_28rem)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.16),transparent_30rem)]" />
       <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
 
       <motion.div
@@ -80,7 +80,7 @@ export function HeroPreview() {
                   "Final 10s render queued"
                 ].map((item, index) => (
                   <div key={item} className="flex items-center gap-3">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-400/10 text-xs font-semibold text-indigo-200">
+                    <div className="flex h-7 w-7 items-center justify-center rounded-full border border-amber-400/20 bg-amber-400/10 text-xs font-semibold text-amber-200">
                       {index + 1}
                     </div>
                     <p className="text-sm text-slate-200">{item}</p>
@@ -133,7 +133,7 @@ export function HeroPreview() {
             className={`absolute ${card.className} rounded-[1.25rem] border border-white/10 bg-slate-950/75 p-4 backdrop-blur-xl`}
           >
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
-              <Icon className="h-4 w-4 text-indigo-300" />
+              <Icon className="h-4 w-4 text-amber-300" />
               <span>{card.label}</span>
             </div>
             <p className="mt-3 text-sm font-medium text-white">{card.title}</p>

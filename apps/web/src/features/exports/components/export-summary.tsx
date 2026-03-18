@@ -62,7 +62,7 @@ export function ExportSummary({
       {downloadHref ? (
         <div className="mt-6">
           <a
-            className="inline-flex h-11 items-center justify-center rounded-full border border-indigo-400/20 bg-indigo-500/10 px-5 text-sm font-medium text-indigo-100 transition hover:bg-indigo-500/20"
+            className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
             href={downloadHref}
           >
             Open video asset

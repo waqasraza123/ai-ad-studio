@@ -26,7 +26,7 @@ export function ConceptList({ concepts, projectId }: ConceptListProps) {
     return (
       <SurfaceCard className="p-6">
         <div className="flex h-14 w-14 items-center justify-center rounded-[1.5rem] border border-white/10 bg-white/[0.05]">
-          <Lightbulb className="h-6 w-6 text-indigo-200" />
+          <Lightbulb className="h-6 w-6 text-amber-200" />
         </div>
         <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
           No concepts yet

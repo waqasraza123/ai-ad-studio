@@ -34,9 +34,9 @@ type AppShellProps = {
 
 export function AppShell({ children, userEmail }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.18),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] text-slate-50">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.14),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] text-slate-50">
       <div className="mx-auto grid min-h-screen max-w-[1600px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-6 lg:py-6">
-        <aside className="rounded-[2rem] border border-white/10 bg-white/[0.045] p-5 shadow-[0_24px_80px_rgba(0,0,0,0.35)] backdrop-blur-xl">
+        <aside className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_90px_rgba(0,0,0,0.36)] backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <Link href="/" className="text-lg font-semibold tracking-tight text-white">
               AI Ad Studio
@@ -67,25 +67,25 @@ export function AppShell({ children, userEmail }: AppShellProps) {
                     "group flex items-center gap-3 rounded-2xl border border-transparent px-4 py-3 text-sm text-slate-300 transition hover:border-white/10 hover:bg-white/[0.05] hover:text-white"
                   )}
                 >
-                  <Icon className="h-4 w-4 text-slate-400 transition group-hover:text-indigo-300" />
+                  <Icon className="h-4 w-4 text-slate-400 transition group-hover:text-amber-200" />
                   <span>{item.label}</span>
                 </Link>
               )
             })}
           </nav>
 
-          <div className="mt-10 rounded-2xl border border-indigo-400/20 bg-indigo-500/10 p-4">
-            <p className="text-xs uppercase tracking-[0.22em] text-indigo-200/80">
+          <div className="mt-10 rounded-[1.25rem] border border-amber-400/20 bg-amber-500/10 p-4">
+            <p className="text-xs uppercase tracking-[0.22em] text-amber-200/80">
               Render profile
             </p>
             <p className="mt-2 text-sm font-medium text-white">10s vertical ads</p>
-            <p className="mt-1 text-sm text-indigo-100/75">
+            <p className="mt-1 text-sm text-amber-100/75">
               3 concepts, 1 preview frame each, 1 final export.
             </p>
           </div>
         </aside>
 
-        <div className="flex min-h-full flex-col rounded-[2rem] border border-white/10 bg-white/[0.035] shadow-[0_24px_80px_rgba(0,0,0,0.3)] backdrop-blur-xl">
+        <div className="flex min-h-full flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.032] shadow-[0_28px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl">
           <header className="flex items-center justify-between border-b border-white/10 px-5 py-4 lg:px-8">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-slate-400">

@@ -45,7 +45,7 @@ export function ProjectUploadPanel({
           <input
             name="file"
             type="file"
-            className="block h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-indigo-500/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-indigo-100"
+            className="block h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 file:mr-3 file:rounded-full file:border-0 file:bg-amber-500/20 file:px-4 file:py-2 file:text-sm file:font-medium file:text-amber-100"
           />
         </label>
 
@@ -54,7 +54,7 @@ export function ProjectUploadPanel({
           <select
             name="kind"
             defaultValue="product_image"
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-amber-300/40"
           >
             <option value="product_image">Product image</option>
             <option value="logo">Logo</option>
