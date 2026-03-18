@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { AnalyticsOverview } from "@/features/analytics/components/analytics-overview"
+import { ApprovalGatePanel } from "@/features/approvals/components/approval-gate-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { ConceptList } from "@/features/concepts/components/concept-list"
 import { ExportSummary } from "@/features/exports/components/export-summary"
@@ -23,6 +24,7 @@ import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listUsageEventsByProjectIdForOwner } from "@/server/analytics/usage-event-repository"
+import { getLatestApprovalByProjectIdForOwner } from "@/server/approvals/approval-repository"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import {
   getLatestExportByProjectIdForOwner,
@@ -68,7 +70,8 @@ export default async function ProjectDetailPage({
     previewAssets,
     latestExport,
     exports,
-    usageEvents
+    usageEvents,
+    latestApproval
   ] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
@@ -78,7 +81,8 @@ export default async function ProjectDetailPage({
     listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id),
     getLatestExportByProjectIdForOwner(projectId, user.id),
     listExportsByProjectIdForOwner(projectId, user.id),
-    listUsageEventsByProjectIdForOwner(projectId, user.id)
+    listUsageEventsByProjectIdForOwner(projectId, user.id),
+    getLatestApprovalByProjectIdForOwner(projectId, user.id)
   ])
 
   if (!project) {
@@ -98,8 +102,7 @@ export default async function ProjectDetailPage({
     previewAssetsCount: previewAssets.length
   })
 
-  const previewAssetsByConceptId =
-    mapConceptPreviewAssetsByConceptId(previewAssets)
+  const previewAssetsByConceptId = mapConceptPreviewAssetsByConceptId(previewAssets)
 
   const conceptViewModels = concepts.map((concept) =>
     toConceptCardViewModel({
@@ -110,8 +113,7 @@ export default async function ProjectDetailPage({
   )
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ??
-    null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
 
   const renderState = toRenderState({
     hasLatestExport: Boolean(latestExport),
@@ -135,7 +137,7 @@ export default async function ProjectDetailPage({
     : []
 
   const latestExportAsset = latestExport
-    ? (assets.find((asset) => asset.id === latestExport.asset_id) ?? null)
+    ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null
     : null
 
   const latestPreviewDataUrl =
@@ -145,7 +147,7 @@ export default async function ProjectDetailPage({
       : null
 
   const latestVideoSrc =
-    latestExport && latestExportAsset?.mime_type === "video/mp4"
+    latestExportAsset?.mime_type === "video/mp4"
       ? `/api/exports/${latestExport.id}/download`
       : null
 
@@ -160,9 +162,8 @@ export default async function ProjectDetailPage({
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now includes safety-reviewed concepts, structured scene
-            planning, export management, and project-level provider cost
-            tracking.
+            This page now includes safety-reviewed concepts, export management, cost
+            tracking, and human approval gates before expensive render execution.
           </p>
         </SurfaceCard>
 
@@ -228,6 +229,11 @@ export default async function ProjectDetailPage({
         scenePlan={scenePlan}
         selectedConceptTitle={selectedConcept?.title ?? null}
         selectedVariantKey={selectedVariantKey}
+      />
+
+      <ApprovalGatePanel
+        approval={latestApproval}
+        selectedConcept={selectedConcept}
       />
 
       {latestExport ? (

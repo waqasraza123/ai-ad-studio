@@ -1,6 +1,10 @@
 # AI Ad Studio
 
-AI Ad Studio is a premium portfolio product for generating product ad concepts and rendering short vertical ads.
+AI Ad Studio is a premium product for generating product ad concepts and rendering short vertical ads.
+
+## Screenshots
+
+![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.02.25 PM.png>) ![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.02.42 PM.png>) ![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.02.58 PM.png>) ![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.03.13 PM.png>) ![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.03.37 PM.png>)
 
 ## Workspace
 

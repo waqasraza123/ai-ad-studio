@@ -19,6 +19,7 @@ export type JobStatus =
   | "queued"
   | "running"
   | "waiting_provider"
+  | "blocked"
   | "succeeded"
   | "failed"
   | "cancelled"
@@ -48,6 +49,7 @@ export type PlatformPresetKey =
   | "youtube_landscape"
 
 export type NotificationSeverity = "info" | "success" | "warning" | "error"
+export type ApprovalStatus = "pending" | "approved" | "rejected"
 
 export type ProjectRecord = {
   id: string
@@ -195,5 +197,30 @@ export type NotificationRecord = {
   action_url: string | null
   metadata: Record<string, unknown>
   read_at: string | null
+  created_at: string
+}
+
+export type OwnerGuardrailsRecord = {
+  owner_id: string
+  monthly_total_budget_usd: number
+  monthly_openai_budget_usd: number
+  monthly_runway_budget_usd: number
+  max_concurrent_render_jobs: number
+  max_concurrent_preview_jobs: number
+  auto_block_on_budget: boolean
+  updated_at: string
+  created_at: string
+}
+
+export type ApprovalRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  job_id: string
+  concept_id: string | null
+  status: ApprovalStatus
+  decision_note: string | null
+  requested_at: string
+  decided_at: string | null
   created_at: string
 }

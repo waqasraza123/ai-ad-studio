@@ -8,6 +8,10 @@ const projectSelection =
 export async function createProject(input: { name: string; ownerId: string }) {
   const supabase = await createSupabaseServerClient()
 
+  // #region agent log
+  fetch('http://127.0.0.1:7682/ingest/8799e641-d605-442c-ab12-29862cd0eef4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'42c6b9'},body:JSON.stringify({sessionId:'42c6b9',runId:'create-project-pre',hypothesisId:'CP5',location:'src/server/projects/project-repository.ts:13',message:'createProject:start',data:{ownerIdPresent:Boolean(input.ownerId),nameLength:input.name.length},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
+
   const { data, error } = await supabase
     .from("projects")
     .insert({
@@ -18,8 +22,31 @@ export async function createProject(input: { name: string; ownerId: string }) {
     .single()
 
   if (error) {
+    const errorRecord = error as unknown as Record<string, unknown>
+    const errorCode =
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      typeof errorRecord.code === "string"
+        ? String(errorRecord.code)
+        : null
+    const errorMessage =
+      typeof error === "object" &&
+      error !== null &&
+      "message" in error &&
+      typeof errorRecord.message === "string"
+        ? String(errorRecord.message)
+        : null
+
+    // #region agent log
+    fetch('http://127.0.0.1:7682/ingest/8799e641-d605-442c-ab12-29862cd0eef4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'42c6b9'},body:JSON.stringify({sessionId:'42c6b9',runId:'create-project-pre',hypothesisId:'CP6',location:'src/server/projects/project-repository.ts:33',message:'createProject:error',data:{errorCode,errorMessage},timestamp:Date.now()})}).catch(()=>{});
+    // #endregion
     throw new Error("Failed to create project")
   }
+
+  // #region agent log
+  fetch('http://127.0.0.1:7682/ingest/8799e641-d605-442c-ab12-29862cd0eef4',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'42c6b9'},body:JSON.stringify({sessionId:'42c6b9',runId:'create-project-pre',hypothesisId:'CP7',location:'src/server/projects/project-repository.ts:40',message:'createProject:success',data:{returnedIdPresent:Boolean((data as { id?: string } | null)?.id)},timestamp:Date.now()})}).catch(()=>{});
+  // #endregion
 
   return data as ProjectRecord
 }

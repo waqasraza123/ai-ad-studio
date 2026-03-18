@@ -1,9 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import {
+  ensureRenderApproval,
+  getApprovalByJobId
+} from "@/approvals/approval-service"
+import { evaluateOwnerGuardrails } from "@/guardrails/owner-guardrails"
+import { createNotifications } from "@/notifications/notification-service"
 import { handleGenerateConceptPreviewJob } from "./handlers/generate-concept-preview-job"
 import { handleGenerateConceptsJob } from "./handlers/generate-concepts-job"
 import { handleRenderFinalAdJob } from "./handlers/render-final-ad-job"
 import {
   getJobById,
+  markJobBlocked,
   markJobCancelled,
   markJobFailed,
   markJobSucceeded,
@@ -11,53 +18,9 @@ import {
 } from "@/repositories/jobs-repository"
 import { createJobTrace } from "@/repositories/job-traces-repository"
 import { updateProjectStatus } from "@/repositories/projects-repository"
-import { createNotifications } from "@/notifications/notification-service"
 
 function canRetryJob(job: WorkerJobRecord) {
   return job.attempts < job.max_attempts
-}
-
-function extractExportNotifications(
-  result: Record<string, unknown>,
-  job: WorkerJobRecord
-) {
-  const exportsCreated = result.exportsCreated
-
-  if (!Array.isArray(exportsCreated)) {
-    return []
-  }
-
-  return exportsCreated
-    .map((exportItem) => {
-      if (!exportItem || typeof exportItem !== "object") {
-        return null
-      }
-
-      const exportId =
-        typeof exportItem.exportId === "string" ? exportItem.exportId : null
-      const aspectRatio =
-        typeof exportItem.aspectRatio === "string" ? exportItem.aspectRatio : "new"
-
-      if (!exportId) {
-        return null
-      }
-
-      return {
-        action_url: `/dashboard/exports/${exportId}`,
-        body: `A ${aspectRatio} export is ready for review and download.`,
-        export_id: exportId,
-        job_id: job.id,
-        kind: "export_ready",
-        metadata: {
-          aspectRatio
-        },
-        owner_id: job.owner_id,
-        project_id: job.project_id,
-        severity: "success" as const,
-        title: "Export ready"
-      }
-    })
-    .filter((value): value is NonNullable<typeof value> => value !== null)
 }
 
 export async function executeJob(
@@ -102,11 +65,166 @@ export async function executeJob(
     return
   }
 
+  if (job.type === "render_final_ad") {
+    const approval = await ensureRenderApproval(supabase, {
+      conceptId:
+        typeof job.payload.conceptId === "string" ? job.payload.conceptId : null,
+      jobId: job.id,
+      ownerId: job.owner_id,
+      projectId: job.project_id
+    })
+
+    if (approval.status === "pending") {
+      await markJobBlocked(supabase, {
+        jobId: job.id,
+        reason: "approval_required"
+      })
+
+      await createJobTrace(supabase, {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: {
+          approvalId: approval.id,
+          status: approval.status
+        },
+        project_id: job.project_id,
+        stage: "job_waiting_for_approval",
+        trace_type: "approval"
+      })
+
+      await createNotifications(supabase, [
+        {
+          action_url: `/dashboard/projects/${job.project_id}`,
+          body: "A final render is waiting for your approval before expensive execution can begin.",
+          job_id: job.id,
+          kind: "approval_required",
+          metadata: {
+            approvalId: approval.id
+          },
+          owner_id: job.owner_id,
+          project_id: job.project_id,
+          severity: "warning",
+          title: "Approval required for final render"
+        }
+      ])
+
+      return
+    }
+
+    if (approval.status === "rejected") {
+      await markJobBlocked(supabase, {
+        jobId: job.id,
+        reason: "approval_rejected"
+      })
+
+      await createJobTrace(supabase, {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: {
+          approvalId: approval.id,
+          decisionNote: approval.decision_note,
+          status: approval.status
+        },
+        project_id: job.project_id,
+        stage: "job_blocked_by_rejection",
+        trace_type: "approval"
+      })
+
+      await createNotifications(supabase, [
+        {
+          action_url: `/dashboard/projects/${job.project_id}`,
+          body: "The final render request was rejected and will not proceed until a new render is queued.",
+          job_id: job.id,
+          kind: "approval_rejected",
+          metadata: {
+            approvalId: approval.id
+          },
+          owner_id: job.owner_id,
+          project_id: job.project_id,
+          severity: "warning",
+          title: "Final render rejected"
+        }
+      ])
+
+      await updateProjectStatus(supabase, {
+        projectId: job.project_id,
+        status: "failed"
+      })
+
+      return
+    }
+
+    await createJobTrace(supabase, {
+      job_id: job.id,
+      owner_id: job.owner_id,
+      payload: {
+        approvalId: approval.id,
+        decidedAt: approval.decided_at,
+        decisionNote: approval.decision_note,
+        status: approval.status
+      },
+      project_id: job.project_id,
+      stage: "approval_confirmed",
+      trace_type: "approval"
+    })
+  }
+
+  const guardrailDecision = await evaluateOwnerGuardrails(supabase, job)
+
+  if (!guardrailDecision.allowed) {
+    await markJobBlocked(supabase, {
+      jobId: job.id,
+      reason: guardrailDecision.reason
+    })
+
+    await createJobTrace(supabase, {
+      job_id: job.id,
+      owner_id: job.owner_id,
+      payload: {
+        guardrails: guardrailDecision.guardrails,
+        monthlyOpenAiCost: guardrailDecision.monthlyOpenAiCost,
+        monthlyRunwayCost: guardrailDecision.monthlyRunwayCost,
+        monthlyTotalCost: guardrailDecision.monthlyTotalCost,
+        reason: guardrailDecision.reason
+      },
+      project_id: job.project_id,
+      stage: "job_blocked_by_guardrail",
+      trace_type: "guardrail"
+    })
+
+    await createNotifications(supabase, [
+      {
+        action_url: `/dashboard/debug/jobs/${job.id}`,
+        body: `The ${job.type} job was blocked because ${guardrailDecision.reason}. Review owner settings to raise limits or disable auto-blocking.`,
+        job_id: job.id,
+        kind: "job_blocked_by_guardrail",
+        metadata: {
+          reason: guardrailDecision.reason
+        },
+        owner_id: job.owner_id,
+        project_id: job.project_id,
+        severity: "warning",
+        title: "Job blocked by cost guardrail"
+      }
+    ])
+
+    await updateProjectStatus(supabase, {
+      projectId: job.project_id,
+      status: "failed"
+    })
+
+    return
+  }
+
   await createJobTrace(supabase, {
     job_id: job.id,
     owner_id: job.owner_id,
     payload: {
       attempts: job.attempts,
+      guardrails: guardrailDecision.guardrails,
+      monthlyOpenAiCost: guardrailDecision.monthlyOpenAiCost,
+      monthlyRunwayCost: guardrailDecision.monthlyRunwayCost,
+      monthlyTotalCost: guardrailDecision.monthlyTotalCost,
       payload: job.payload,
       type: job.type
     },
@@ -239,7 +357,24 @@ export async function executeJob(
           result
         })
 
-        const exportNotifications = extractExportNotifications(result, job)
+        const exportNotifications = Array.isArray(result.exportsCreated)
+          ? result.exportsCreated.map((exportItem) => ({
+              action_url: `/dashboard/exports/${String((exportItem as { exportId?: unknown }).exportId ?? "")}`,
+              body: `A ${String((exportItem as { aspectRatio?: unknown }).aspectRatio ?? "new")} export is ready for review and download.`,
+              export_id: String((exportItem as { exportId?: unknown }).exportId ?? ""),
+              job_id: job.id,
+              kind: "export_ready",
+              metadata: {
+                aspectRatio:
+                  (exportItem as { aspectRatio?: unknown }).aspectRatio ?? null
+              },
+              owner_id: job.owner_id,
+              project_id: job.project_id,
+              severity: "success" as const,
+              title: "Export ready"
+            }))
+          : []
+
         await createNotifications(supabase, exportNotifications)
       }
 
