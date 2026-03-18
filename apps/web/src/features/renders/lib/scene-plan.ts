@@ -13,7 +13,9 @@ export type ScenePlanItem = {
 
 function shorten(value: string, limit: number) {
   const normalized = value.trim()
-  return normalized.length > limit ? `${normalized.slice(0, limit - 3)}...` : normalized
+  return normalized.length > limit
+    ? `${normalized.slice(0, limit - 3)}...`
+    : normalized
 }
 
 export function buildScenePlanPreview(input: {
@@ -23,7 +25,7 @@ export function buildScenePlanPreview(input: {
   script: string
   template: AdTemplateRecord | null
   variantKey: RenderVariantKey
-}) {
+}): ScenePlanItem[] {
   const ctaText = input.callToAction?.trim() || "Shop now"
   const presetMotion =
     input.platformPreset === "youtube_landscape"
@@ -46,23 +48,28 @@ export function buildScenePlanPreview(input: {
     input.variantKey === "cta_heavy"
       ? `aggressive CTA transition with ${presetMotion}`
       : `clean CTA close with ${presetMotion}`
-  ]
+  ] as const
 
   return [
     {
-      captionText: shorten(input.hook, input.variantKey === "caption_heavy" ? 86 : 70),
+      captionText: shorten(
+        input.hook,
+        input.variantKey === "caption_heavy" ? 86 : 70
+      ),
       durationSeconds: 3,
       motionStyle: templateScenes[0]?.motion_style ?? defaultMotion[0],
-      purpose: "opener" as const
+      purpose: "opener"
     },
     {
       captionText: shorten(
-        input.variantKey === "cta_heavy" ? `${input.script} ${ctaText}` : input.script,
+        input.variantKey === "cta_heavy"
+          ? `${input.script} ${ctaText}`
+          : input.script,
         input.variantKey === "caption_heavy" ? 98 : 76
       ),
       durationSeconds: 4,
       motionStyle: templateScenes[1]?.motion_style ?? defaultMotion[1],
-      purpose: "product_emphasis" as const
+      purpose: "product_emphasis"
     },
     {
       captionText:
@@ -71,7 +78,7 @@ export function buildScenePlanPreview(input: {
           : `Close with CTA: ${ctaText}`,
       durationSeconds: 3,
       motionStyle: templateScenes[2]?.motion_style ?? defaultMotion[2],
-      purpose: "cta_close" as const
+      purpose: "cta_close"
     }
   ]
 }

@@ -4,41 +4,36 @@ import { revalidatePath } from "next/cache"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   getConceptByIdForOwner,
-  listConceptsByProjectIdForOwner,
   updateConceptStatusForOwner
 } from "@/server/concepts/concept-repository"
-import { selectConceptForProject } from "@/server/projects/project-repository"
+import { selectProjectConcept } from "@/server/projects/project-repository"
 
-export async function selectConceptAction(projectId: string, conceptId: string) {
+export async function selectConceptAction(
+  projectId: string,
+  conceptId: string
+) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
     throw new Error("Authentication is required")
   }
 
-  const [concept, concepts] = await Promise.all([
-    getConceptByIdForOwner(conceptId, user.id),
-    listConceptsByProjectIdForOwner(projectId, user.id)
-  ])
+  const concept = await getConceptByIdForOwner(conceptId, user.id)
 
-  if (!concept || concept.project_id !== projectId) {
+  if (!concept) {
     throw new Error("Concept not found")
   }
 
-  await Promise.all(
-    concepts.map((projectConcept) =>
-      updateConceptStatusForOwner({
-        conceptId: projectConcept.id,
-        ownerId: user.id,
-        status: projectConcept.id === conceptId ? "selected" : "preview_ready"
-      })
-    )
-  )
-
-  await selectConceptForProject({
+  await selectProjectConcept({
     conceptId,
     ownerId: user.id,
     projectId
+  })
+
+  await updateConceptStatusForOwner({
+    conceptId,
+    ownerId: user.id,
+    status: "selected"
   })
 
   revalidatePath(`/dashboard/projects/${projectId}`)

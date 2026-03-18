@@ -1,21 +1,21 @@
 import { notFound } from "next/navigation"
 import { AnalyticsOverview } from "@/features/analytics/components/analytics-overview"
-import { ApprovalGatePanel } from "@/features/approvals/components/approval-gate-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
+import { ApprovalGatePanel } from "@/features/approvals/components/approval-gate-panel"
 import { ConceptList } from "@/features/concepts/components/concept-list"
-import { ExportSummary } from "@/features/exports/components/export-summary"
-import { ProjectExportsPanel } from "@/features/exports/components/project-exports-panel"
-import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
-import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
 import {
+  getLatestPlatformPreset,
+  getLatestVariantKey,
   mapConceptPreviewAssetsByConceptId,
   toConceptCardViewModel,
   toConceptGenerationState,
   toConceptPreviewState,
-  toRenderState,
-  getLatestPlatformPreset,
-  getLatestVariantKey
+  toRenderState
 } from "@/features/concepts/mappers/concept-view-model"
+import { ExportSummary } from "@/features/exports/components/export-summary"
+import { ProjectExportsPanel } from "@/features/exports/components/project-exports-panel"
+import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
+import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
@@ -23,14 +23,15 @@ import { RenderPanel } from "@/features/renders/components/render-panel"
 import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { TemplateSelectorPanel } from "@/features/templates/components/template-selector-panel"
 import { SurfaceCard } from "@/components/primitives/surface-card"
-import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listUsageEventsByProjectIdForOwner } from "@/server/analytics/usage-event-repository"
 import { getLatestApprovalByProjectIdForOwner } from "@/server/approvals/approval-repository"
+import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import {
   getLatestExportByProjectIdForOwner,
   listExportsByProjectIdForOwner
 } from "@/server/exports/export-repository"
+import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import {
   listAssetsByProjectIdForOwner,
   listConceptPreviewAssetsByProjectIdForOwner
@@ -38,7 +39,6 @@ import {
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { listTemplatesByOwner } from "@/server/templates/template-repository"
-import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -94,7 +94,9 @@ export default async function ProjectDetailPage({
   }
 
   const currentTemplate =
-    templates.find((template) => template.id === project.template_id) ?? templates[0] ?? null
+    templates.find((template) => template.id === project.template_id) ??
+    templates[0] ??
+    null
 
   const summary = toProjectDetailSummary({
     assets,
@@ -109,7 +111,8 @@ export default async function ProjectDetailPage({
     previewAssetsCount: previewAssets.length
   })
 
-  const previewAssetsByConceptId = mapConceptPreviewAssetsByConceptId(previewAssets)
+  const previewAssetsByConceptId =
+    mapConceptPreviewAssetsByConceptId(previewAssets)
 
   const conceptViewModels = concepts.map((concept) =>
     toConceptCardViewModel({
@@ -120,7 +123,8 @@ export default async function ProjectDetailPage({
   )
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ??
+    null
 
   const renderState = toRenderState({
     hasLatestExport: Boolean(latestExport),
@@ -129,7 +133,9 @@ export default async function ProjectDetailPage({
   })
 
   const selectedVariantKey = getLatestVariantKey(latestExport?.variant_key)
-  const selectedPlatformPreset = getLatestPlatformPreset(latestExport?.platform_preset)
+  const selectedPlatformPreset = getLatestPlatformPreset(
+    latestExport?.platform_preset
+  )
 
   const scenePlan = selectedConcept
     ? buildScenePlanPreview({
@@ -142,16 +148,18 @@ export default async function ProjectDetailPage({
       })
     : []
 
-  const latestExportAsset =
-    latestExport ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null : null
+  const latestExportAsset = latestExport
+    ? (assets.find((asset) => asset.id === latestExport.asset_id) ?? null)
+    : null
 
   const latestPreviewDataUrl =
-    latestExportAsset && typeof latestExportAsset.metadata.previewDataUrl === "string"
+    latestExportAsset &&
+    typeof latestExportAsset.metadata.previewDataUrl === "string"
       ? latestExportAsset.metadata.previewDataUrl
       : null
 
   const latestVideoSrc =
-    latestExportAsset?.mime_type === "video/mp4"
+    latestExport && latestExportAsset?.mime_type === "video/mp4"
       ? `/api/exports/${latestExport.id}/download`
       : null
 
@@ -166,8 +174,8 @@ export default async function ProjectDetailPage({
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now includes reusable branded templates, scene packs, CTA presets,
-            approval gates, export management, and cost tracking.
+            This page now includes reusable branded templates, scene packs, CTA
+            presets, approval gates, export management, and cost tracking.
           </p>
         </SurfaceCard>
 
@@ -242,7 +250,10 @@ export default async function ProjectDetailPage({
         />
       </div>
 
-      <ApprovalGatePanel approval={latestApproval} selectedConcept={selectedConcept} />
+      <ApprovalGatePanel
+        approval={latestApproval}
+        selectedConcept={selectedConcept}
+      />
 
       {latestExport ? (
         <ExportSummary
