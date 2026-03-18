@@ -6,7 +6,10 @@ import type { CaptionCue } from "@/media/captions/build-caption-timeline"
 type RenderMultiSceneAdInput = {
   aspectRatio: "9:16" | "1:1" | "16:9"
   audioFilePath: string
+  ctaHeadlinePrefix: string
+  ctaSubheadlineText: string
   ctaText: string
+  emphasisStyle: "clean" | "bold" | "minimal"
   sceneVideoFilePaths: string[]
   outputFilePath: string
   projectName: string
@@ -85,19 +88,33 @@ function getCaptionBox(aspectRatio: "9:16" | "1:1" | "16:9") {
   }
 }
 
+function getHeadlineFontSize(emphasisStyle: "clean" | "bold" | "minimal") {
+  if (emphasisStyle === "bold") {
+    return 108
+  }
+
+  if (emphasisStyle === "minimal") {
+    return 78
+  }
+
+  return 94
+}
+
 async function createCtaCardSvg(input: {
   aspectRatio: "9:16" | "1:1" | "16:9"
+  ctaHeadlinePrefix: string
+  ctaSubheadlineText: string
   ctaText: string
+  emphasisStyle: "clean" | "bold" | "minimal"
   filePath: string
   projectName: string
 }) {
   const { height, width } = getCanvasSize(input.aspectRatio)
-  const projectY =
-    input.aspectRatio === "16:9" ? 360 : input.aspectRatio === "1:1" ? 360 : 760
-  const ctaY =
-    input.aspectRatio === "16:9" ? 530 : input.aspectRatio === "1:1" ? 530 : 920
-  const subY =
-    input.aspectRatio === "16:9" ? 610 : input.aspectRatio === "1:1" ? 610 : 1000
+  const projectY = input.aspectRatio === "16:9" ? 360 : input.aspectRatio === "1:1" ? 360 : 760
+  const ctaY = input.aspectRatio === "16:9" ? 530 : input.aspectRatio === "1:1" ? 530 : 920
+  const subY = input.aspectRatio === "16:9" ? 610 : input.aspectRatio === "1:1" ? 610 : 1000
+  const headlineFontSize = getHeadlineFontSize(input.emphasisStyle)
+  const headlineText = `${input.ctaHeadlinePrefix} ${input.ctaText}`.trim()
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
@@ -111,8 +128,8 @@ async function createCtaCardSvg(input: {
       <rect width="${width}" height="${height}" fill="url(#bg)"/>
       <rect x="72" y="72" width="${width - 144}" height="${height - 144}" rx="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)"/>
       <text x="120" y="${projectY}" fill="#A5B4FC" font-size="30" font-family="Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
-      <text x="120" y="${ctaY}" fill="#FFFFFF" font-size="94" font-weight="700" font-family="Arial, sans-serif">${escapeXml(input.ctaText)}</text>
-      <text x="120" y="${subY}" fill="#CBD5E1" font-size="36" font-family="Arial, sans-serif">Built with AI Ad Studio</text>
+      <text x="120" y="${ctaY}" fill="#FFFFFF" font-size="${headlineFontSize}" font-weight="700" font-family="Arial, sans-serif">${escapeXml(headlineText)}</text>
+      <text x="120" y="${subY}" fill="#CBD5E1" font-size="36" font-family="Arial, sans-serif">${escapeXml(input.ctaSubheadlineText)}</text>
     </svg>
   `.trim()
 
@@ -156,10 +173,7 @@ function buildSceneNormalizeFilters(
 }
 
 function buildConcatFilter(sceneCount: number) {
-  const inputs = Array.from(
-    { length: sceneCount },
-    (_, index) => `[v${index}][${index}:a]`
-  ).join("")
+  const inputs = Array.from({ length: sceneCount }, (_, index) => `[v${index}][${index}:a]`).join("")
   const ctaIndex = sceneCount
   return `${inputs}[v${ctaIndex}][${ctaIndex}:a]concat=n=${sceneCount + 1}:v=1:a=1[basev][basea]`
 }
@@ -195,13 +209,15 @@ function buildCaptionFilters(
 
 export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
   const { height, width } = getCanvasSize(input.aspectRatio)
-  const suffix = input.aspectRatio.replace(":", "x")
-  const ctaSvgPath = join(input.workspacePath, `cta-card-${suffix}.svg`)
-  const ctaVideoPath = join(input.workspacePath, `cta-card-${suffix}.mp4`)
+  const ctaSvgPath = join(input.workspacePath, `cta-card-${input.aspectRatio.replace(":", "x")}.svg`)
+  const ctaVideoPath = join(input.workspacePath, `cta-card-${input.aspectRatio.replace(":", "x")}.mp4`)
 
   await createCtaCardSvg({
     aspectRatio: input.aspectRatio,
+    ctaHeadlinePrefix: input.ctaHeadlinePrefix,
+    ctaSubheadlineText: input.ctaSubheadlineText,
     ctaText: input.ctaText,
+    emphasisStyle: input.emphasisStyle,
     filePath: ctaSvgPath,
     projectName: input.projectName
   })

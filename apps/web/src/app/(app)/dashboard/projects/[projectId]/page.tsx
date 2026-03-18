@@ -21,6 +21,7 @@ import { ProjectUploadPanel } from "@/features/projects/components/project-uploa
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
 import { RenderPanel } from "@/features/renders/components/render-panel"
 import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
+import { TemplateSelectorPanel } from "@/features/templates/components/template-selector-panel"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listUsageEventsByProjectIdForOwner } from "@/server/analytics/usage-event-repository"
@@ -36,6 +37,7 @@ import {
 } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { listTemplatesByOwner } from "@/server/templates/template-repository"
 import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 
 type ProjectDetailPageProps = {
@@ -71,7 +73,8 @@ export default async function ProjectDetailPage({
     latestExport,
     exports,
     usageEvents,
-    latestApproval
+    latestApproval,
+    templates
   ] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
@@ -82,12 +85,16 @@ export default async function ProjectDetailPage({
     getLatestExportByProjectIdForOwner(projectId, user.id),
     listExportsByProjectIdForOwner(projectId, user.id),
     listUsageEventsByProjectIdForOwner(projectId, user.id),
-    getLatestApprovalByProjectIdForOwner(projectId, user.id)
+    getLatestApprovalByProjectIdForOwner(projectId, user.id),
+    listTemplatesByOwner(user.id)
   ])
 
   if (!project) {
     notFound()
   }
+
+  const currentTemplate =
+    templates.find((template) => template.id === project.template_id) ?? templates[0] ?? null
 
   const summary = toProjectDetailSummary({
     assets,
@@ -122,9 +129,7 @@ export default async function ProjectDetailPage({
   })
 
   const selectedVariantKey = getLatestVariantKey(latestExport?.variant_key)
-  const selectedPlatformPreset = getLatestPlatformPreset(
-    latestExport?.platform_preset
-  )
+  const selectedPlatformPreset = getLatestPlatformPreset(latestExport?.platform_preset)
 
   const scenePlan = selectedConcept
     ? buildScenePlanPreview({
@@ -132,17 +137,16 @@ export default async function ProjectDetailPage({
         hook: selectedConcept.hook,
         platformPreset: selectedPlatformPreset,
         script: selectedConcept.script,
+        template: currentTemplate,
         variantKey: selectedVariantKey
       })
     : []
 
-  const latestExportAsset = latestExport
-    ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null
-    : null
+  const latestExportAsset =
+    latestExport ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null : null
 
   const latestPreviewDataUrl =
-    latestExportAsset &&
-    typeof latestExportAsset.metadata.previewDataUrl === "string"
+    latestExportAsset && typeof latestExportAsset.metadata.previewDataUrl === "string"
       ? latestExportAsset.metadata.previewDataUrl
       : null
 
@@ -162,8 +166,8 @@ export default async function ProjectDetailPage({
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now includes safety-reviewed concepts, export management, cost
-            tracking, and human approval gates before expensive render execution.
+            This page now includes reusable branded templates, scene packs, CTA presets,
+            approval gates, export management, and cost tracking.
           </p>
         </SurfaceCard>
 
@@ -191,9 +195,9 @@ export default async function ProjectDetailPage({
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">Brief</p>
+              <p className="text-sm text-slate-400">Template</p>
               <p className="mt-2 text-lg font-medium text-white">
-                {summary.hasBrief ? "Saved" : "Incomplete"}
+                {currentTemplate?.name ?? "None"}
               </p>
             </div>
           </div>
@@ -220,21 +224,25 @@ export default async function ProjectDetailPage({
 
       <ConceptList concepts={conceptViewModels} projectId={projectId} />
 
-      <RenderPanel
-        latestExportId={latestExport?.id ?? null}
-        platformPreset={selectedPlatformPreset}
-        projectId={projectId}
-        renderJobDescription={renderState.description}
-        renderJobLabel={renderState.label}
-        scenePlan={scenePlan}
-        selectedConceptTitle={selectedConcept?.title ?? null}
-        selectedVariantKey={selectedVariantKey}
-      />
+      <div className="grid gap-6 xl:grid-cols-2">
+        <TemplateSelectorPanel
+          currentTemplateId={project.template_id}
+          projectId={projectId}
+          templates={templates}
+        />
+        <RenderPanel
+          latestExportId={latestExport?.id ?? null}
+          platformPreset={selectedPlatformPreset}
+          projectId={projectId}
+          renderJobDescription={renderState.description}
+          renderJobLabel={renderState.label}
+          scenePlan={scenePlan}
+          selectedConceptTitle={selectedConcept?.title ?? null}
+          selectedVariantKey={selectedVariantKey}
+        />
+      </div>
 
-      <ApprovalGatePanel
-        approval={latestApproval}
-        selectedConcept={selectedConcept}
-      />
+      <ApprovalGatePanel approval={latestApproval} selectedConcept={selectedConcept} />
 
       {latestExport ? (
         <ExportSummary

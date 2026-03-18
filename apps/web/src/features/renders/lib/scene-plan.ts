@@ -1,4 +1,5 @@
 import type {
+  AdTemplateRecord,
   PlatformPresetKey,
   RenderVariantKey
 } from "@/server/database/types"
@@ -18,9 +19,10 @@ function shorten(value: string, limit: number) {
 export function buildScenePlanPreview(input: {
   callToAction: string | null
   hook: string
-  script: string
-  variantKey: RenderVariantKey
   platformPreset: PlatformPresetKey
+  script: string
+  template: AdTemplateRecord | null
+  variantKey: RenderVariantKey
 }) {
   const ctaText = input.callToAction?.trim() || "Shop now"
   const presetMotion =
@@ -30,34 +32,37 @@ export function buildScenePlanPreview(input: {
         ? "square-safe framing"
         : "vertical-first framing"
 
-  const baseScenes: ScenePlanItem[] = [
+  const templateScenes = input.template?.scene_pack ?? []
+
+  const defaultMotion = [
+    input.variantKey === "caption_heavy"
+      ? `caption-led hero reveal with ${presetMotion}`
+      : `hero reveal with ${presetMotion}`,
+    input.variantKey === "default"
+      ? `product detail emphasis with ${presetMotion}`
+      : input.variantKey === "cta_heavy"
+        ? `conversion-focused emphasis with ${presetMotion}`
+        : `caption-rich detail emphasis with ${presetMotion}`,
+    input.variantKey === "cta_heavy"
+      ? `aggressive CTA transition with ${presetMotion}`
+      : `clean CTA close with ${presetMotion}`
+  ]
+
+  return [
     {
-      captionText: shorten(
-        input.hook,
-        input.variantKey === "caption_heavy" ? 86 : 70
-      ),
+      captionText: shorten(input.hook, input.variantKey === "caption_heavy" ? 86 : 70),
       durationSeconds: 3,
-      motionStyle:
-        input.variantKey === "caption_heavy"
-          ? `caption-led hero reveal with ${presetMotion}`
-          : `hero reveal with ${presetMotion}`,
-      purpose: "opener"
+      motionStyle: templateScenes[0]?.motion_style ?? defaultMotion[0],
+      purpose: "opener" as const
     },
     {
       captionText: shorten(
-        input.variantKey === "cta_heavy"
-          ? `${input.script} ${ctaText}`
-          : input.script,
+        input.variantKey === "cta_heavy" ? `${input.script} ${ctaText}` : input.script,
         input.variantKey === "caption_heavy" ? 98 : 76
       ),
       durationSeconds: 4,
-      motionStyle:
-        input.variantKey === "default"
-          ? `product detail emphasis with ${presetMotion}`
-          : input.variantKey === "cta_heavy"
-            ? `conversion-focused emphasis with ${presetMotion}`
-            : `caption-rich detail emphasis with ${presetMotion}`,
-      purpose: "product_emphasis"
+      motionStyle: templateScenes[1]?.motion_style ?? defaultMotion[1],
+      purpose: "product_emphasis" as const
     },
     {
       captionText:
@@ -65,13 +70,8 @@ export function buildScenePlanPreview(input: {
           ? `Strong CTA close: ${ctaText}`
           : `Close with CTA: ${ctaText}`,
       durationSeconds: 3,
-      motionStyle:
-        input.variantKey === "cta_heavy"
-          ? `aggressive CTA transition with ${presetMotion}`
-          : `clean CTA close with ${presetMotion}`,
-      purpose: "cta_close"
+      motionStyle: templateScenes[2]?.motion_style ?? defaultMotion[2],
+      purpose: "cta_close" as const
     }
   ]
-
-  return baseScenes
 }

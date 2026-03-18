@@ -19,7 +19,6 @@ export type JobStatus =
   | "queued"
   | "running"
   | "waiting_provider"
-  | "blocked"
   | "succeeded"
   | "failed"
   | "cancelled"
@@ -51,12 +50,26 @@ export type PlatformPresetKey =
 export type NotificationSeverity = "info" | "success" | "warning" | "error"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 
+export type TemplateScenePackItem = {
+  purpose: "opener" | "product_emphasis" | "cta_close"
+  motion_style: string
+  visual_style: string
+  caption_tone: string
+}
+
+export type TemplateCtaPreset = {
+  headline_prefix: string
+  subheadline_text: string
+  emphasis_style: "clean" | "bold" | "minimal"
+}
+
 export type ProjectRecord = {
   id: string
   owner_id: string
   name: string
   status: ProjectStatus
   selected_concept_id: string | null
+  template_id: string | null
   created_at: string
   updated_at: string
 }
@@ -223,4 +236,17 @@ export type ApprovalRecord = {
   requested_at: string
   decided_at: string | null
   created_at: string
+}
+
+export type AdTemplateRecord = {
+  id: string
+  owner_id: string
+  name: string
+  style_key: string
+  description: string
+  scene_pack: TemplateScenePackItem[]
+  cta_preset: TemplateCtaPreset
+  is_default: boolean
+  created_at: string
+  updated_at: string
 }

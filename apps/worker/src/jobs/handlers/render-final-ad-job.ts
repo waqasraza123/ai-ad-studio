@@ -24,6 +24,7 @@ import { getProjectById, updateProjectStatus } from "@/repositories/projects-rep
 import { createUsageEvents } from "@/repositories/usage-events-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 import { getWorkerEnvironment } from "@/lib/env"
+import { getProjectTemplate } from "@/templates/template-service"
 
 type RenderVariantKey = "default" | "caption_heavy" | "cta_heavy"
 type ExportAspectRatio = "9:16" | "1:1" | "16:9"
@@ -156,8 +157,8 @@ async function materializePreviewImage(input: {
   return filePath
 }
 
-function uniqueNonEmpty(values: string[]) {
-  return [...new Set(values.filter((value): value is string => Boolean(value)))]
+function uniqueNonEmpty<T>(values: T[]) {
+  return [...new Set(values.filter(Boolean))]
 }
 
 async function downloadRemoteVideoToFile(input: {
@@ -188,9 +189,13 @@ export async function handleRenderFinalAdJob(
     throw new Error("No selected concept found for final render")
   }
 
-  const [concepts, projectAssets] = await Promise.all([
+  const [concepts, projectAssets, template] = await Promise.all([
     listConceptsByProjectId(supabase, job.project_id),
-    listProjectAssetsByProjectId(supabase, job.project_id)
+    listProjectAssetsByProjectId(supabase, job.project_id),
+    getProjectTemplate(supabase, {
+      ownerId: project.owner_id,
+      templateId: project.template_id
+    })
   ])
 
   const selectedConcept =
@@ -225,6 +230,8 @@ export async function handleRenderFinalAdJob(
         payload: {
           aspectRatios,
           platformPreset,
+          templateId: template.id,
+          templateStyleKey: template.style_key,
           variantKey
         },
         project_id: job.project_id,
@@ -263,19 +270,13 @@ export async function handleRenderFinalAdJob(
       ...downloadedProductImagePaths
     ])
 
-    const primarySceneImagePath = sceneReferenceImagePaths[0]
-
-    if (!primarySceneImagePath) {
-      throw new Error("No scene reference image was available for final render")
-    }
-
-    const normalizedSceneImagePaths: string[] =
+    const normalizedSceneImagePaths =
       sceneReferenceImagePaths.length >= 3
         ? sceneReferenceImagePaths.slice(0, 3)
         : [
-            primarySceneImagePath,
-            sceneReferenceImagePaths[1] ?? primarySceneImagePath,
-            sceneReferenceImagePaths[2] ?? primarySceneImagePath
+            sceneReferenceImagePaths[0],
+            sceneReferenceImagePaths[1] ?? sceneReferenceImagePaths[0],
+            sceneReferenceImagePaths[2] ?? sceneReferenceImagePaths[0]
           ]
 
     const ttsProvider = new OpenAiTtsProvider()
@@ -318,17 +319,14 @@ export async function handleRenderFinalAdJob(
         platformPreset,
         productName: project.name,
         script: selectedConcept.script,
+        templateCtaPreset: template.cta_preset,
+        templateScenePack: template.scene_pack,
         variantKey,
         visualDirection: selectedConcept.visual_direction
       })
     }))
 
-    const primaryScenePlan = scenePlansByAspectRatio[0]?.scenePlan
-    const primaryPlannedScene = primaryScenePlan?.[0]
-
-    if (!primaryScenePlan || !primaryPlannedScene) {
-      throw new Error("No scene plan was available for final render")
-    }
+    const primaryScenePlan = scenePlansByAspectRatio[0]!.scenePlan
 
     await deleteSceneVideoAssetsByProjectId(supabase, project.id)
 
@@ -348,7 +346,7 @@ export async function handleRenderFinalAdJob(
                 : "image/png"
 
         const promptImage = `data:${imageMimeType};base64,${imageBytes.toString("base64")}`
-        const plannedScene = primaryScenePlan[index] ?? primaryPlannedScene
+        const plannedScene = primaryScenePlan[index] ?? primaryScenePlan[0]
 
         const generated = await videoProvider.generateSceneVideo({
           durationSeconds: plannedScene.durationSeconds,
@@ -376,7 +374,9 @@ export async function handleRenderFinalAdJob(
             purpose: plannedScene.purpose,
             runwayTaskId: generated.taskId,
             sceneIndex: index,
-            sourceConceptId: selectedConcept.id
+            sourceConceptId: selectedConcept.id,
+            templateId: template.id,
+            templateStyleKey: template.style_key
           },
           storageKey: sceneStorageKey
         }
@@ -388,7 +388,9 @@ export async function handleRenderFinalAdJob(
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
-          sceneCount: sceneResults.length
+          sceneCount: sceneResults.length,
+          templateId: template.id,
+          templateStyleKey: template.style_key
         },
         project_id: job.project_id,
         stage: "scene_videos_generated",
@@ -407,7 +409,7 @@ export async function handleRenderFinalAdJob(
         storage_key: scene.storageKey,
         duration_ms: primaryScenePlan[index]?.durationSeconds
           ? primaryScenePlan[index]!.durationSeconds * 1000
-          : primaryPlannedScene.durationSeconds * 1000,
+          : 3000,
         height: 1280,
         width: 720
       }))
@@ -455,10 +457,13 @@ export async function handleRenderFinalAdJob(
           aspectRatio,
           audioFilePath: voiceoverFilePath,
           captionTimeline,
+          ctaHeadlinePrefix: template.cta_preset.headline_prefix,
+          ctaSubheadlineText: template.cta_preset.subheadline_text,
           ctaText:
             typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
               ? job.payload.callToAction.trim()
               : "Shop now",
+          emphasisStyle: template.cta_preset.emphasis_style,
           outputFilePath,
           projectName: project.name,
           sceneVideoFilePaths: sceneResults.map((scene) => scene.localSceneFilePath),
@@ -477,12 +482,16 @@ export async function handleRenderFinalAdJob(
         const renderMetadata = {
           aspectRatio,
           captionCueCount: captionTimeline.length,
+          ctaPreset: template.cta_preset,
           platformPreset,
           previewDataUrl,
           renderMode: "ffmpeg_runway_scene_video_composition",
           sceneCount: sceneResults.length,
           scenePlan,
           selectedConceptId: selectedConcept.id,
+          templateId: template.id,
+          templateName: template.name,
+          templateStyleKey: template.style_key,
           variantKey,
           voiceoverProvider: "openai_tts"
         }
@@ -516,7 +525,8 @@ export async function handleRenderFinalAdJob(
             event_type: "scene_video_generation",
             export_id: exportRecord.id,
             metadata: {
-              sceneCount: sceneResults.length
+              sceneCount: sceneResults.length,
+              templateId: template.id
             },
             owner_id: project.owner_id,
             project_id: project.id,
@@ -528,7 +538,8 @@ export async function handleRenderFinalAdJob(
             event_type: "voiceover_generation",
             export_id: exportRecord.id,
             metadata: {
-              durationSeconds: voiceoverDurationSeconds
+              durationSeconds: voiceoverDurationSeconds,
+              templateId: template.id
             },
             owner_id: project.owner_id,
             project_id: project.id,
@@ -542,6 +553,7 @@ export async function handleRenderFinalAdJob(
             metadata: {
               aspectRatio,
               platformPreset,
+              templateId: template.id,
               variantKey
             },
             owner_id: project.owner_id,
@@ -566,7 +578,9 @@ export async function handleRenderFinalAdJob(
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
-          exportsCreated
+          exportsCreated,
+          templateId: template.id,
+          templateStyleKey: template.style_key
         },
         project_id: job.project_id,
         stage: "exports_created",
@@ -583,6 +597,8 @@ export async function handleRenderFinalAdJob(
       exportsCreated,
       projectId: project.id,
       sceneCount: sceneResults.length,
+      templateId: template.id,
+      templateStyleKey: template.style_key,
       variantKey
     }
   } finally {

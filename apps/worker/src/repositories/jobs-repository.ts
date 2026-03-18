@@ -127,6 +127,31 @@ export async function markJobSucceeded(
   }
 }
 
+export async function markJobBlocked(
+  supabase: SupabaseClient,
+  input: {
+    jobId: string
+    reason: string
+  }
+) {
+  const { error } = await supabase
+    .from("jobs")
+    .update({
+      error: {
+        reason: input.reason
+      },
+      finished_at: null,
+      heartbeat_at: null,
+      started_at: null,
+      status: "waiting_provider"
+    })
+    .eq("id", input.jobId)
+
+  if (error) {
+    throw new Error("Failed to mark job as blocked")
+  }
+}
+
 export async function markJobCancelled(
   supabase: SupabaseClient,
   input: {
@@ -171,14 +196,7 @@ export async function markJobFailed(
         ).toISOString()
       : nowIso
 
-  const updatePayload: {
-    error: Record<string, unknown>
-    finished_at: string | null
-    heartbeat_at: null
-    next_attempt_at: string
-    started_at?: string | null
-    status: "queued" | "failed"
-  } = {
+  const updatePayload: Record<string, unknown> = {
     error: input.error,
     finished_at: shouldRetry ? null : nowIso,
     heartbeat_at: null,

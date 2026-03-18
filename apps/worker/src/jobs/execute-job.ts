@@ -1,8 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
-import {
-  ensureRenderApproval,
-  getApprovalByJobId
-} from "@/approvals/approval-service"
+import { ensureRenderApproval } from "@/approvals/approval-service"
 import { evaluateOwnerGuardrails } from "@/guardrails/owner-guardrails"
 import { createNotifications } from "@/notifications/notification-service"
 import { handleGenerateConceptPreviewJob } from "./handlers/generate-concept-preview-job"
@@ -53,7 +50,8 @@ export async function executeJob(
         job_id: job.id,
         kind: "job_cancelled",
         metadata: {
-          reason: latestBeforeStart.cancel_reason ?? "Cancelled before execution"
+          reason:
+            latestBeforeStart.cancel_reason ?? "Cancelled before execution"
         },
         owner_id: job.owner_id,
         project_id: job.project_id,
@@ -68,7 +66,9 @@ export async function executeJob(
   if (job.type === "render_final_ad") {
     const approval = await ensureRenderApproval(supabase, {
       conceptId:
-        typeof job.payload.conceptId === "string" ? job.payload.conceptId : null,
+        typeof job.payload.conceptId === "string"
+          ? job.payload.conceptId
+          : null,
       jobId: job.id,
       ownerId: job.owner_id,
       projectId: job.project_id
@@ -241,7 +241,8 @@ export async function executeJob(
       if (latestAfterHandler?.cancel_requested_at) {
         await markJobCancelled(supabase, {
           jobId: job.id,
-          reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+          reason:
+            latestAfterHandler.cancel_reason ?? "Cancelled during execution"
         })
 
         await createNotifications(supabase, [
@@ -251,7 +252,8 @@ export async function executeJob(
             job_id: job.id,
             kind: "job_cancelled",
             metadata: {
-              reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+              reason:
+                latestAfterHandler.cancel_reason ?? "Cancelled during execution"
             },
             owner_id: job.owner_id,
             project_id: job.project_id,
@@ -287,7 +289,8 @@ export async function executeJob(
       if (latestAfterHandler?.cancel_requested_at) {
         await markJobCancelled(supabase, {
           jobId: job.id,
-          reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+          reason:
+            latestAfterHandler.cancel_reason ?? "Cancelled during execution"
         })
 
         await createNotifications(supabase, [
@@ -297,7 +300,8 @@ export async function executeJob(
             job_id: job.id,
             kind: "job_cancelled",
             metadata: {
-              reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+              reason:
+                latestAfterHandler.cancel_reason ?? "Cancelled during execution"
             },
             owner_id: job.owner_id,
             project_id: job.project_id,
@@ -333,7 +337,8 @@ export async function executeJob(
       if (latestAfterHandler?.cancel_requested_at) {
         await markJobCancelled(supabase, {
           jobId: job.id,
-          reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+          reason:
+            latestAfterHandler.cancel_reason ?? "Cancelled during execution"
         })
 
         await createNotifications(supabase, [
@@ -343,7 +348,8 @@ export async function executeJob(
             job_id: job.id,
             kind: "job_cancelled",
             metadata: {
-              reason: latestAfterHandler.cancel_reason ?? "Cancelled during execution"
+              reason:
+                latestAfterHandler.cancel_reason ?? "Cancelled during execution"
             },
             owner_id: job.owner_id,
             project_id: job.project_id,
@@ -361,7 +367,9 @@ export async function executeJob(
           ? result.exportsCreated.map((exportItem) => ({
               action_url: `/dashboard/exports/${String((exportItem as { exportId?: unknown }).exportId ?? "")}`,
               body: `A ${String((exportItem as { aspectRatio?: unknown }).aspectRatio ?? "new")} export is ready for review and download.`,
-              export_id: String((exportItem as { exportId?: unknown }).exportId ?? ""),
+              export_id: String(
+                (exportItem as { exportId?: unknown }).exportId ?? ""
+              ),
               job_id: job.id,
               kind: "export_ready",
               metadata: {

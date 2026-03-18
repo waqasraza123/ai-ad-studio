@@ -15,6 +15,19 @@ export type PlatformPresetKey =
   | "youtube_shorts"
   | "youtube_landscape"
 
+export type TemplateScenePackItem = {
+  purpose: "opener" | "product_emphasis" | "cta_close"
+  motion_style: string
+  visual_style: string
+  caption_tone: string
+}
+
+export type TemplateCtaPreset = {
+  headline_prefix: string
+  subheadline_text: string
+  emphasis_style: "clean" | "bold" | "minimal"
+}
+
 function shorten(value: string, limit: number) {
   const normalized = value.trim()
   return normalized.length > limit ? `${normalized.slice(0, limit - 3)}...` : normalized
@@ -60,6 +73,8 @@ export function buildStructuredScenePlan(input: {
   platformPreset: PlatformPresetKey
   productName: string
   script: string
+  templateCtaPreset: TemplateCtaPreset
+  templateScenePack: TemplateScenePackItem[]
   variantKey: RenderVariantKey
   visualDirection: string | null
 }) {
@@ -68,6 +83,10 @@ export function buildStructuredScenePlan(input: {
     input.visualDirection?.trim() || "premium studio visuals with clean motion"
   const framing = aspectRatioFraming(input.aspectRatio)
   const preset = presetStyle(input.platformPreset)
+
+  const openerScene = input.templateScenePack[0]
+  const emphasisScene = input.templateScenePack[1]
+  const closeScene = input.templateScenePack[2]
 
   const openerCaption = shorten(
     input.variantKey === "caption_heavy" ? `${input.hook} ${input.script}` : input.hook,
@@ -81,40 +100,29 @@ export function buildStructuredScenePlan(input: {
   )
   const closeCaption =
     input.variantKey === "cta_heavy"
-      ? `Strong CTA close: ${ctaText}`
+      ? `${input.templateCtaPreset.headline_prefix} ${ctaText}`
       : `Close with CTA: ${ctaText}`
 
   return [
     {
       captionText: openerCaption,
       durationSeconds: 3,
-      motionStyle:
-        input.variantKey === "caption_heavy"
-          ? `caption-led hero reveal with ${framing}`
-          : `premium hero reveal with ${framing}`,
-      promptText: `Create an opener scene for ${input.productName}. Hook: ${input.hook}. ${visualDirection}. ${framing}. ${preset}.`,
+      motionStyle: openerScene?.motion_style ?? `premium hero reveal with ${framing}`,
+      promptText: `Create an opener scene for ${input.productName}. Hook: ${input.hook}. ${visualDirection}. ${framing}. ${preset}. Visual style: ${openerScene?.visual_style ?? "premium product reveal"}. Caption tone: ${openerScene?.caption_tone ?? "clear"}.`,
       purpose: "opener" as const
     },
     {
       captionText: productCaption,
       durationSeconds: 4,
-      motionStyle:
-        input.variantKey === "cta_heavy"
-          ? `conversion-focused product emphasis with ${framing}`
-          : input.variantKey === "caption_heavy"
-            ? `caption-rich detail emphasis with ${framing}`
-            : `product-detail emphasis with ${framing}`,
-      promptText: `Create a product emphasis scene for ${input.productName}. Angle: ${input.angle}. Script focus: ${input.script}. ${visualDirection}. ${framing}. ${preset}.`,
+      motionStyle: emphasisScene?.motion_style ?? `product-detail emphasis with ${framing}`,
+      promptText: `Create a product emphasis scene for ${input.productName}. Angle: ${input.angle}. Script focus: ${input.script}. ${visualDirection}. ${framing}. ${preset}. Visual style: ${emphasisScene?.visual_style ?? "product emphasis frame"}. Caption tone: ${emphasisScene?.caption_tone ?? "direct"}.`,
       purpose: "product_emphasis" as const
     },
     {
       captionText: closeCaption,
       durationSeconds: 3,
-      motionStyle:
-        input.variantKey === "cta_heavy"
-          ? `strong CTA close with ${framing}`
-          : `clean CTA close with ${framing}`,
-      promptText: `Create a final conversion scene for ${input.productName}. CTA: ${ctaText}. ${visualDirection}. ${framing}. ${preset}. Motion should set up a final end card.`,
+      motionStyle: closeScene?.motion_style ?? `clean CTA close with ${framing}`,
+      promptText: `Create a final conversion scene for ${input.productName}. CTA: ${ctaText}. ${visualDirection}. ${framing}. ${preset}. Visual style: ${closeScene?.visual_style ?? "conversion end-card frame"}. Caption tone: ${closeScene?.caption_tone ?? "strong"}. Motion should set up a final end card.`,
       purpose: "cta_close" as const
     }
   ]
