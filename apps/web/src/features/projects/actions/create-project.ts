@@ -1,11 +1,12 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createProjectSchema } from "@/features/projects/schemas/project-schema"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { createProjectForOwner } from "@/server/projects/project-repository"
 
-export async function createProjectAction(formData: FormData) {
+export async function createProjectAction(formData: FormData): Promise<void> {
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -28,7 +29,5 @@ export async function createProjectAction(formData: FormData) {
   revalidatePath("/dashboard")
   revalidatePath("/dashboard/projects")
 
-  return {
-    projectId: project.id
-  }
+  redirect(`/dashboard/projects/${project.id}`)
 }

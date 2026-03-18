@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
+import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
@@ -11,6 +12,7 @@ import {
 } from "@/server/exports/share-link-repository"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { getShowcaseItemByExportIdForOwner } from "@/server/showcase/showcase-repository"
 import { getPublicEnvironment } from "@/lib/env"
 
 type ExportDetailPageProps = {
@@ -56,15 +58,17 @@ export default async function ExportDetailPage({
     notFound()
   }
 
-  const [project, concept, assets, shareLink, usageEvents] = await Promise.all([
-    getProjectByIdForOwner(exportRecord.project_id, user.id),
-    exportRecord.concept_id
-      ? getConceptByIdForOwner(exportRecord.concept_id, user.id)
-      : Promise.resolve(null),
-    listAssetsByProjectIdForOwner(exportRecord.project_id, user.id),
-    getShareLinkByExportIdForOwner(exportRecord.id, user.id),
-    listUsageEventsByExportIdForOwner(exportRecord.id, user.id)
-  ])
+  const [project, concept, assets, shareLink, usageEvents, showcaseItem] =
+    await Promise.all([
+      getProjectByIdForOwner(exportRecord.project_id, user.id),
+      exportRecord.concept_id
+        ? getConceptByIdForOwner(exportRecord.concept_id, user.id)
+        : Promise.resolve(null),
+      listAssetsByProjectIdForOwner(exportRecord.project_id, user.id),
+      getShareLinkByExportIdForOwner(exportRecord.id, user.id),
+      listUsageEventsByExportIdForOwner(exportRecord.id, user.id),
+      getShowcaseItemByExportIdForOwner(exportRecord.id, user.id)
+    ])
 
   if (!project) {
     notFound()
@@ -195,7 +199,14 @@ export default async function ExportDetailPage({
         </div>
       ) : null}
 
-      <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
+        <ShowcasePublishPanel
+          exportId={exportRecord.id}
+          showcaseItem={showcaseItem}
+        />
+      </div>
+
       <UsageEventsTable usageEvents={usageEvents} />
     </div>
   )

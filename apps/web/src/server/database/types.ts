@@ -250,3 +250,21 @@ export type AdTemplateRecord = {
   created_at: string
   updated_at: string
 }
+
+export type ShowcaseItemRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  export_id: string
+  title: string
+  summary: string
+  preview_data_url: string | null
+  aspect_ratio: string
+  platform_preset: string
+  template_name: string | null
+  template_style_key: string | null
+  is_published: boolean
+  sort_order: number
+  created_at: string
+  updated_at: string
+}
