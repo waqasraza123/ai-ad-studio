@@ -41,7 +41,6 @@ export function PublicShowcaseGallery({
           className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04]"
         >
           {item.preview_data_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               alt={item.title}
               className="h-72 w-full object-cover"
@@ -55,7 +54,9 @@ export function PublicShowcaseGallery({
 
           <div className="p-5">
             <p className="text-lg font-semibold text-white">{item.title}</p>
-            <p className="mt-3 text-sm leading-7 text-slate-300">{item.summary}</p>
+            <p className="mt-3 text-sm leading-7 text-slate-300">
+              {item.summary}
+            </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">

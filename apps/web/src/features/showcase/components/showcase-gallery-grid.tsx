@@ -25,7 +25,6 @@ export function ShowcaseGalleryGrid({
           className="block rounded-[2rem] border border-white/10 bg-white/[0.04] p-4 transition hover:border-white/20 hover:bg-white/[0.06]"
         >
           {item.preview_data_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
               alt={item.title}
               className="h-64 w-full rounded-[1.5rem] object-cover"
@@ -39,7 +38,9 @@ export function ShowcaseGalleryGrid({
 
           <div className="mt-4">
             <p className="text-sm font-medium text-white">{item.title}</p>
-            <p className="mt-2 text-sm leading-7 text-slate-300">{item.summary}</p>
+            <p className="mt-2 text-sm leading-7 text-slate-300">
+              {item.summary}
+            </p>
 
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
