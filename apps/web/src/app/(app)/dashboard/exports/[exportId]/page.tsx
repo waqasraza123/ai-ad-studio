@@ -84,7 +84,7 @@ export default async function ExportDetailPage({
         videoSrc={videoSrc}
       />
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-5">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">Selected concept</p>
           <p className="mt-2 text-sm font-medium text-white">
@@ -100,11 +100,16 @@ export default async function ExportDetailPage({
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Artifact mode</p>
+          <p className="text-sm text-slate-400">Preset</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {typeof exportAsset?.metadata.renderMode === "string"
-              ? exportAsset.metadata.renderMode
-              : "unknown"}
+            {exportRecord.platform_preset}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Aspect ratio</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {exportRecord.aspect_ratio}
           </p>
         </div>
 
@@ -118,7 +123,16 @@ export default async function ExportDetailPage({
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Artifact mode</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {typeof exportAsset?.metadata.renderMode === "string"
+              ? exportAsset.metadata.renderMode
+              : "unknown"}
+          </p>
+        </div>
+
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">Scene count</p>
           <p className="mt-2 text-sm font-medium text-white">
@@ -134,9 +148,10 @@ export default async function ExportDetailPage({
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Safety modified</p>
+          <p className="text-sm text-slate-400">Video specs</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {concept?.was_safety_modified ? "yes" : "no"}
+            {exportAsset?.width ?? 0} × {exportAsset?.height ?? 0} ·{" "}
+            {Math.round((exportAsset?.duration_ms ?? 0) / 1000)}s
           </p>
         </div>
       </div>

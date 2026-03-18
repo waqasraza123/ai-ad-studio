@@ -5,8 +5,8 @@ import { join } from "node:path"
 import { getWorkerEnvironment } from "@/lib/env"
 import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
 import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
-import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
 import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
+import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
 import {
   cleanupRenderWorkspace,
   createRenderWorkspace
@@ -24,12 +24,16 @@ import { listConceptsByProjectId } from "@/repositories/concepts-repository"
 import { createExportRecord } from "@/repositories/exports-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
-import {
-  getProjectById,
-  updateProjectStatus
-} from "@/repositories/projects-repository"
+import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
 
 type RenderVariantKey = "default" | "caption_heavy" | "cta_heavy"
+type ExportAspectRatio = "9:16" | "1:1" | "16:9"
+type PlatformPresetKey =
+  | "default"
+  | "instagram_reels"
+  | "instagram_feed"
+  | "youtube_shorts"
+  | "youtube_landscape"
 
 function decodeDataUri(input: string) {
   const [header, payload] = input.split(",", 2)
@@ -72,6 +76,32 @@ function readVariantKey(value: unknown): RenderVariantKey {
   return "default"
 }
 
+function readPlatformPreset(value: unknown): PlatformPresetKey {
+  if (
+    value === "instagram_reels" ||
+    value === "instagram_feed" ||
+    value === "youtube_shorts" ||
+    value === "youtube_landscape"
+  ) {
+    return value
+  }
+
+  return "default"
+}
+
+function readAspectRatios(value: unknown): ExportAspectRatio[] {
+  if (!Array.isArray(value)) {
+    return ["9:16"]
+  }
+
+  const normalized = value.filter(
+    (aspectRatio): aspectRatio is ExportAspectRatio =>
+      aspectRatio === "9:16" || aspectRatio === "1:1" || aspectRatio === "16:9"
+  )
+
+  return normalized.length > 0 ? normalized : ["9:16"]
+}
+
 async function materializePreviewImage(input: {
   previewDataUrl: string
   workspacePath: string
@@ -106,7 +136,7 @@ async function materializePreviewImage(input: {
   return filePath
 }
 
-function uniqueNonEmpty(values: string[]) {
+function uniqueNonEmpty(values: Array<string | null | undefined>) {
   return [...new Set(values.filter((value): value is string => Boolean(value)))]
 }
 
@@ -122,6 +152,27 @@ async function downloadRemoteVideoToFile(input: {
 
   const arrayBuffer = await response.arrayBuffer()
   await writeFile(input.filePath, Buffer.from(arrayBuffer))
+}
+
+function getCanvasSize(aspectRatio: ExportAspectRatio) {
+  if (aspectRatio === "1:1") {
+    return {
+      height: 1080,
+      width: 1080
+    }
+  }
+
+  if (aspectRatio === "16:9") {
+    return {
+      height: 1080,
+      width: 1920
+    }
+  }
+
+  return {
+    height: 1920,
+    width: 1080
+  }
 }
 
 export async function handleRenderFinalAdJob(
@@ -144,8 +195,7 @@ export async function handleRenderFinalAdJob(
   ])
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ??
-    null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
 
   if (!selectedConcept) {
     throw new Error("Selected concept record not found for final render")
@@ -168,10 +218,12 @@ export async function handleRenderFinalAdJob(
     `ai-ad-studio-render-${project.id}`
   )
   const voiceoverFilePath = join(workspacePath, "voiceover.mp3")
-  const outputFilePath = join(workspacePath, "final-export.mp4")
 
   try {
     const variantKey = readVariantKey(job.payload.variantKey)
+    const platformPreset = readPlatformPreset(job.payload.platformPreset)
+    const aspectRatios = readAspectRatios(job.payload.aspectRatios)
+
     const previewImagePath = await materializePreviewImage({
       previewDataUrl,
       workspacePath
@@ -223,46 +275,54 @@ export async function handleRenderFinalAdJob(
       script: selectedConcept.script
     })
 
-    const voiceoverDurationSeconds =
-      await getMediaDurationSeconds(voiceoverFilePath)
+    const voiceoverDurationSeconds = await getMediaDurationSeconds(
+      voiceoverFilePath
+    )
     const captionTimeline = buildCaptionTimeline({
       script: selectedConcept.script,
       totalDurationSeconds: Math.min(10, voiceoverDurationSeconds)
     })
 
-    const scenePlan = buildStructuredScenePlan({
-      angle: selectedConcept.angle,
-      callToAction:
-        typeof job.payload.callToAction === "string"
-          ? job.payload.callToAction
-          : null,
-      hook: selectedConcept.hook,
-      productName: project.name,
-      script: selectedConcept.script,
-      variantKey,
-      visualDirection: selectedConcept.visual_direction
-    })
+    const environment = getWorkerEnvironment()
+    const videoProvider = new RunwayVideoProvider(environment.RUNWAYML_API_SECRET)
 
-    const primaryScenePlan = scenePlan[0]
+    const scenePlansByAspectRatio = aspectRatios.map((aspectRatio) => ({
+      aspectRatio,
+      scenePlan: buildStructuredScenePlan({
+        angle: selectedConcept.angle,
+        aspectRatio,
+        callToAction:
+          typeof job.payload.callToAction === "string" ? job.payload.callToAction : null,
+        hook: selectedConcept.hook,
+        platformPreset,
+        productName: project.name,
+        script: selectedConcept.script,
+        variantKey,
+        visualDirection: selectedConcept.visual_direction
+      })
+    }))
 
-    if (!primaryScenePlan) {
-      throw new Error("No scene plan was generated for final render")
+    const primaryScenePlanGroup = scenePlansByAspectRatio[0]
+
+    if (!primaryScenePlanGroup) {
+      throw new Error("No scene plans were generated for export")
     }
 
-    const environment = getWorkerEnvironment()
-    const videoProvider = new RunwayVideoProvider(
-      environment.RUNWAYML_API_SECRET
-    )
+    const primaryScenePlan = primaryScenePlanGroup.scenePlan
+    const primaryPlannedScene = primaryScenePlan[0]
+
+    if (!primaryPlannedScene) {
+      throw new Error("Primary planned scene was not generated")
+    }
 
     await deleteSceneVideoAssetsByProjectId(supabase, project.id)
 
     const sceneResults = await Promise.all(
       normalizedSceneImagePaths.map(async (imagePath, index) => {
-        const imageBytes = await import("node:fs/promises").then(
-          ({ readFile }) => readFile(imagePath)
+        const imageBytes = await import("node:fs/promises").then(({ readFile }) =>
+          readFile(imagePath)
         )
-        const imageExtension =
-          imagePath.split(".").pop()?.toLowerCase() ?? "png"
+        const imageExtension = imagePath.split(".").pop()?.toLowerCase() ?? "png"
         const imageMimeType =
           imageExtension === "webp"
             ? "image/webp"
@@ -273,7 +333,7 @@ export async function handleRenderFinalAdJob(
                 : "image/png"
 
         const promptImage = `data:${imageMimeType};base64,${imageBytes.toString("base64")}`
-        const plannedScene = scenePlan[index] ?? primaryScenePlan
+        const plannedScene = primaryScenePlan[index] ?? primaryPlannedScene
 
         const generated = await videoProvider.generateSceneVideo({
           durationSeconds: plannedScene.durationSeconds,
@@ -324,22 +384,6 @@ export async function handleRenderFinalAdJob(
       }))
     )
 
-    await renderMultiSceneAd({
-      audioFilePath: voiceoverFilePath,
-      captionTimeline,
-      ctaText:
-        typeof job.payload.callToAction === "string" &&
-        job.payload.callToAction.trim().length > 0
-          ? job.payload.callToAction.trim()
-          : "Shop now",
-      outputFilePath,
-      projectName: project.name,
-      sceneVideoFilePaths: sceneResults.map(
-        (scene) => scene.localSceneFilePath
-      ),
-      workspacePath
-    })
-
     const voiceoverStorageKey = `projects/${project.id}/voiceover/${randomUUID()}.mp3`
     await uploadFileArtifactToR2({
       contentType: "audio/mpeg",
@@ -360,45 +404,80 @@ export async function handleRenderFinalAdJob(
       duration_ms: Math.round(voiceoverDurationSeconds * 1000)
     })
 
-    const storageKey = `projects/${project.id}/exports/${randomUUID()}.mp4`
+    const exportsCreated = await Promise.all(
+      scenePlansByAspectRatio.map(async ({ aspectRatio, scenePlan }) => {
+        const outputFilePath = join(
+          workspacePath,
+          `final-export-${aspectRatio.replace(":", "x")}.mp4`
+        )
 
-    await uploadFileArtifactToR2({
-      contentType: "video/mp4",
-      filePath: outputFilePath,
-      storageKey
-    })
+        await renderMultiSceneAd({
+          aspectRatio,
+          audioFilePath: voiceoverFilePath,
+          captionTimeline,
+          ctaText:
+            typeof job.payload.callToAction === "string" &&
+            job.payload.callToAction.trim().length > 0
+              ? job.payload.callToAction.trim()
+              : "Shop now",
+          outputFilePath,
+          projectName: project.name,
+          sceneVideoFilePaths: sceneResults.map((scene) => scene.localSceneFilePath),
+          workspacePath
+        })
 
-    const renderMetadata = {
-      captionCueCount: captionTimeline.length,
-      previewDataUrl,
-      renderMode: "ffmpeg_runway_scene_video_composition",
-      sceneCount: sceneResults.length,
-      scenePlan,
-      selectedConceptId: selectedConcept.id,
-      variantKey,
-      voiceoverProvider: "openai_tts"
-    }
+        const { height, width } = getCanvasSize(aspectRatio)
+        const storageKey = `projects/${project.id}/exports/${aspectRatio.replace(":", "x")}-${randomUUID()}.mp4`
 
-    const renderAsset = await createRenderAsset(supabase, {
-      kind: "export_video",
-      metadata: renderMetadata,
-      mime_type: "video/mp4",
-      owner_id: project.owner_id,
-      project_id: project.id,
-      storage_key: storageKey,
-      duration_ms: 10000,
-      height: 1920,
-      width: 1080
-    })
+        await uploadFileArtifactToR2({
+          contentType: "video/mp4",
+          filePath: outputFilePath,
+          storageKey
+        })
 
-    const exportRecord = await createExportRecord(supabase, {
-      assetId: renderAsset.id,
-      conceptId: selectedConcept.id,
-      ownerId: project.owner_id,
-      projectId: project.id,
-      renderMetadata,
-      variantKey
-    })
+        const renderMetadata = {
+          aspectRatio,
+          captionCueCount: captionTimeline.length,
+          platformPreset,
+          previewDataUrl,
+          renderMode: "ffmpeg_runway_scene_video_composition",
+          sceneCount: sceneResults.length,
+          scenePlan,
+          selectedConceptId: selectedConcept.id,
+          variantKey,
+          voiceoverProvider: "openai_tts"
+        }
+
+        const renderAsset = await createRenderAsset(supabase, {
+          kind: "export_video",
+          metadata: renderMetadata,
+          mime_type: "video/mp4",
+          owner_id: project.owner_id,
+          project_id: project.id,
+          storage_key: storageKey,
+          duration_ms: 10000,
+          height,
+          width
+        })
+
+        const exportRecord = await createExportRecord(supabase, {
+          assetId: renderAsset.id,
+          aspectRatio,
+          conceptId: selectedConcept.id,
+          ownerId: project.owner_id,
+          platformPreset,
+          projectId: project.id,
+          renderMetadata,
+          variantKey
+        })
+
+        return {
+          aspectRatio,
+          exportId: exportRecord.id,
+          storageKey
+        }
+      })
+    )
 
     await updateProjectStatus(supabase, {
       projectId: project.id,
@@ -406,10 +485,9 @@ export async function handleRenderFinalAdJob(
     })
 
     return {
-      exportId: exportRecord.id,
+      exportsCreated,
       projectId: project.id,
       sceneCount: sceneResults.length,
-      storageKey,
       variantKey
     }
   } finally {

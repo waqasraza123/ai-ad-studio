@@ -1,12 +1,20 @@
 import Link from "next/link"
+import { renderProjectAction } from "@/features/renders/actions/render-project"
+import {
+  getPlatformPresetDefinition,
+  platformPresets
+} from "@/features/renders/lib/platform-presets"
+import type {
+  PlatformPresetKey,
+  RenderVariantKey
+} from "@/server/database/types"
+import type { ScenePlanItem } from "@/features/renders/lib/scene-plan"
 import { Button } from "@/components/primitives/button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
-import { renderProjectAction } from "@/features/renders/actions/render-project"
-import type { ScenePlanItem } from "@/features/renders/lib/scene-plan"
-import type { RenderVariantKey } from "@/server/database/types"
 
 type RenderPanelProps = {
   latestExportId: string | null
+  platformPreset: PlatformPresetKey
   projectId: string
   renderJobDescription: string
   renderJobLabel: string
@@ -17,6 +25,7 @@ type RenderPanelProps = {
 
 export function RenderPanel({
   latestExportId,
+  platformPreset,
   projectId,
   renderJobDescription,
   renderJobLabel,
@@ -27,6 +36,7 @@ export function RenderPanel({
   const action = renderProjectAction.bind(null, projectId)
   const isBlocked = renderJobLabel === "Queued" || renderJobLabel === "Running"
   const canRender = Boolean(selectedConceptTitle)
+  const presetDefinition = getPlatformPresetDefinition(platformPreset)
 
   return (
     <SurfaceCard className="p-6">
@@ -35,7 +45,7 @@ export function RenderPanel({
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-          Variant-aware render pipeline
+          Multi-format render pipeline
         </h2>
         <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
           {renderJobLabel}
@@ -55,6 +65,22 @@ export function RenderPanel({
 
       <form action={action} className="mt-6 space-y-5">
         <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Platform preset</span>
+          <select
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+            defaultValue={platformPreset}
+            name="platformPreset"
+          >
+            {platformPresets.map((preset) => (
+              <option key={preset.key} value={preset.key}>
+                {preset.label}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-slate-500">{presetDefinition.description}</p>
+        </label>
+
+        <label className="grid gap-2">
           <span className="text-sm text-slate-300">Render variant</span>
           <select
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
@@ -66,6 +92,20 @@ export function RenderPanel({
             <option value="cta_heavy">CTA heavy</option>
           </select>
         </label>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="text-sm font-medium text-white">Output formats</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {presetDefinition.aspectRatios.map((aspectRatio) => (
+              <span
+                key={aspectRatio}
+                className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100"
+              >
+                {aspectRatio}
+              </span>
+            ))}
+          </div>
+        </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm font-medium text-white">Scene plan preview</p>

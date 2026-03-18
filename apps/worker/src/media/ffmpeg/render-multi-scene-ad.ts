@@ -4,6 +4,7 @@ import { join } from "node:path"
 import type { CaptionCue } from "@/media/captions/build-caption-timeline"
 
 type RenderMultiSceneAdInput = {
+  aspectRatio: "9:16" | "1:1" | "16:9"
   audioFilePath: string
   ctaText: string
   sceneVideoFilePaths: string[]
@@ -33,25 +34,85 @@ function escapeXml(value: string) {
     .replaceAll("'", "&apos;")
 }
 
+function getCanvasSize(aspectRatio: "9:16" | "1:1" | "16:9") {
+  if (aspectRatio === "1:1") {
+    return {
+      height: 1080,
+      width: 1080
+    }
+  }
+
+  if (aspectRatio === "16:9") {
+    return {
+      height: 1080,
+      width: 1920
+    }
+  }
+
+  return {
+    height: 1920,
+    width: 1080
+  }
+}
+
+function getCaptionBox(aspectRatio: "9:16" | "1:1" | "16:9") {
+  if (aspectRatio === "16:9") {
+    return {
+      boxHeight: 170,
+      boxWidth: 1520,
+      fontSize: 40,
+      x: 200,
+      y: 780
+    }
+  }
+
+  if (aspectRatio === "1:1") {
+    return {
+      boxHeight: 170,
+      boxWidth: 860,
+      fontSize: 40,
+      x: 110,
+      y: 760
+    }
+  }
+
+  return {
+    boxHeight: 230,
+    boxWidth: 940,
+    fontSize: 46,
+    x: 70,
+    y: 1460
+  }
+}
+
 async function createCtaCardSvg(input: {
+  aspectRatio: "9:16" | "1:1" | "16:9"
   ctaText: string
   filePath: string
   projectName: string
 }) {
+  const { height, width } = getCanvasSize(input.aspectRatio)
+  const projectY =
+    input.aspectRatio === "16:9" ? 360 : input.aspectRatio === "1:1" ? 360 : 760
+  const ctaY =
+    input.aspectRatio === "16:9" ? 530 : input.aspectRatio === "1:1" ? 530 : 920
+  const subY =
+    input.aspectRatio === "16:9" ? 610 : input.aspectRatio === "1:1" ? 610 : 1000
+
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1920" viewBox="0 0 1080 1920" fill="none">
+    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
       <defs>
-        <linearGradient id="bg" x1="120" y1="80" x2="940" y2="1840" gradientUnits="userSpaceOnUse">
+        <linearGradient id="bg" x1="120" y1="80" x2="${width - 140}" y2="${height - 80}" gradientUnits="userSpaceOnUse">
           <stop stop-color="#111827"/>
           <stop offset="0.55" stop-color="#312E81"/>
           <stop offset="1" stop-color="#020617"/>
         </linearGradient>
       </defs>
-      <rect width="1080" height="1920" fill="url(#bg)"/>
-      <rect x="72" y="72" width="936" height="1776" rx="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)"/>
-      <text x="120" y="760" fill="#A5B4FC" font-size="30" font-family="Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
-      <text x="120" y="920" fill="#FFFFFF" font-size="94" font-weight="700" font-family="Arial, sans-serif">${escapeXml(input.ctaText)}</text>
-      <text x="120" y="1000" fill="#CBD5E1" font-size="36" font-family="Arial, sans-serif">Built with AI Ad Studio</text>
+      <rect width="${width}" height="${height}" fill="url(#bg)"/>
+      <rect x="72" y="72" width="${width - 144}" height="${height - 144}" rx="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)"/>
+      <text x="120" y="${projectY}" fill="#A5B4FC" font-size="30" font-family="Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
+      <text x="120" y="${ctaY}" fill="#FFFFFF" font-size="94" font-weight="700" font-family="Arial, sans-serif">${escapeXml(input.ctaText)}</text>
+      <text x="120" y="${subY}" fill="#CBD5E1" font-size="36" font-family="Arial, sans-serif">Built with AI Ad Studio</text>
     </svg>
   `.trim()
 
@@ -83,17 +144,35 @@ function runCommand(command: string, args: string[]) {
   })
 }
 
-function buildConcatFilter(sceneCount: number) {
-  const inputs = Array.from({ length: sceneCount }, (_, index) => `[${index}:v][${index}:a]`).join("")
-  const ctaIndex = sceneCount
-  return `${inputs}[${ctaIndex}:v][${ctaIndex}:a]concat=n=${sceneCount + 1}:v=1:a=1[basev][basea]`
+function buildSceneNormalizeFilters(
+  aspectRatio: "9:16" | "1:1" | "16:9",
+  sceneCount: number
+) {
+  const { height, width } = getCanvasSize(aspectRatio)
+
+  return Array.from({ length: sceneCount }, (_, index) => {
+    return `[${index}:v]scale=${width}:${height}:force_original_aspect_ratio=increase,crop=${width}:${height},setsar=1[v${index}]`
+  })
 }
 
-function buildCaptionFilters(captionTimeline: CaptionCue[]) {
+function buildConcatFilter(sceneCount: number) {
+  const inputs = Array.from(
+    { length: sceneCount },
+    (_, index) => `[v${index}][${index}:a]`
+  ).join("")
+  const ctaIndex = sceneCount
+  return `${inputs}[v${ctaIndex}][${ctaIndex}:a]concat=n=${sceneCount + 1}:v=1:a=1[basev][basea]`
+}
+
+function buildCaptionFilters(
+  aspectRatio: "9:16" | "1:1" | "16:9",
+  captionTimeline: CaptionCue[]
+) {
   if (captionTimeline.length === 0) {
     return ["[basev]copy[vout]"]
   }
 
+  const box = getCaptionBox(aspectRatio)
   const filters: string[] = []
   let currentLabel = "basev"
 
@@ -102,10 +181,10 @@ function buildCaptionFilters(captionTimeline: CaptionCue[]) {
     const escapedText = escapeDrawText(cue.text)
 
     filters.push(
-      `[${currentLabel}]drawbox=x=70:y=1460:w=940:h=230:color=black@0.32:t=fill:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[box${index}]`
+      `[${currentLabel}]drawbox=x=${box.x}:y=${box.y}:w=${box.boxWidth}:h=${box.boxHeight}:color=black@0.32:t=fill:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[box${index}]`
     )
     filters.push(
-      `[box${index}]drawtext=text='${escapedText}':fontcolor=white:fontsize=46:x=(w-text_w)/2:y=1545:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[${nextLabel}]`
+      `[box${index}]drawtext=text='${escapedText}':fontcolor=white:fontsize=${box.fontSize}:x=(w-text_w)/2:y=${box.y + 85}:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[${nextLabel}]`
     )
 
     currentLabel = nextLabel
@@ -115,10 +194,13 @@ function buildCaptionFilters(captionTimeline: CaptionCue[]) {
 }
 
 export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
-  const ctaSvgPath = join(input.workspacePath, "cta-card.svg")
-  const ctaVideoPath = join(input.workspacePath, "cta-card.mp4")
+  const { height, width } = getCanvasSize(input.aspectRatio)
+  const suffix = input.aspectRatio.replace(":", "x")
+  const ctaSvgPath = join(input.workspacePath, `cta-card-${suffix}.svg`)
+  const ctaVideoPath = join(input.workspacePath, `cta-card-${suffix}.mp4`)
 
   await createCtaCardSvg({
+    aspectRatio: input.aspectRatio,
     ctaText: input.ctaText,
     filePath: ctaSvgPath,
     projectName: input.projectName
@@ -138,7 +220,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "-t",
     "1.5",
     "-vf",
-    "scale=1080:1920,format=yuv420p",
+    `scale=${width}:${height},format=yuv420p`,
     "-c:v",
     "libx264",
     "-pix_fmt",
@@ -155,9 +237,17 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
   ])
 
   const sceneInputs = input.sceneVideoFilePaths.flatMap((filePath) => ["-i", filePath])
+  const sceneNormalizeFilters = buildSceneNormalizeFilters(
+    input.aspectRatio,
+    input.sceneVideoFilePaths.length
+  )
+  const ctaIndex = input.sceneVideoFilePaths.length
+
   const filterComplex = [
+    ...sceneNormalizeFilters,
+    `[${ctaIndex}:v]scale=${width}:${height},setsar=1[v${ctaIndex}]`,
     buildConcatFilter(input.sceneVideoFilePaths.length),
-    ...buildCaptionFilters(input.captionTimeline)
+    ...buildCaptionFilters(input.aspectRatio, input.captionTimeline)
   ].join(";")
 
   await runCommand("ffmpeg", [

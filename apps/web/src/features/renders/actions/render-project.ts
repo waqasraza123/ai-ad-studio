@@ -1,16 +1,20 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import type { PlatformPresetKey, RenderVariantKey } from "@/server/database/types"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
-import type { RenderVariantKey } from "@/server/database/types"
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import { listConceptPreviewAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
-import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import {
   getProjectByIdForOwner,
   updateProjectStatus
 } from "@/server/projects/project-repository"
+import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
+import {
+  getPlatformPresetDefinition,
+  isPlatformPresetKey
+} from "@/features/renders/lib/platform-presets"
 
 function getPreviewAssetForConcept(
   conceptId: string,
@@ -18,13 +22,25 @@ function getPreviewAssetForConcept(
     metadata: Record<string, unknown>
   }[]
 ) {
-  return previewAssets.find((asset) => asset.metadata.conceptId === conceptId) ?? null
+  return (
+    previewAssets.find((asset) => asset.metadata.conceptId === conceptId) ?? null
+  )
 }
 
 function readVariantKey(formData: FormData): RenderVariantKey {
   const value = String(formData.get("variantKey") ?? "default")
 
   if (value === "caption_heavy" || value === "cta_heavy") {
+    return value
+  }
+
+  return "default"
+}
+
+function readPlatformPresetKey(formData: FormData): PlatformPresetKey {
+  const value = String(formData.get("platformPreset") ?? "default")
+
+  if (isPlatformPresetKey(value)) {
     return value
   }
 
@@ -38,7 +54,9 @@ export async function renderProjectAction(projectId: string, formData: FormData)
     throw new Error("Authentication is required")
   }
 
+  const platformPreset = readPlatformPresetKey(formData)
   const variantKey = readVariantKey(formData)
+  const presetDefinition = getPlatformPresetDefinition(platformPreset)
 
   const [project, jobs, projectInput, previewAssets] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
@@ -90,9 +108,11 @@ export async function renderProjectAction(projectId: string, formData: FormData)
   await createJob({
     ownerId: user.id,
     payload: {
+      aspectRatios: presetDefinition.aspectRatios,
       callToAction: projectInput?.call_to_action ?? null,
       conceptId: selectedConcept.id,
       initiatedBy: "web",
+      platformPreset,
       previewAsset: {
         previewDataUrl: selectedPreviewAsset.metadata.previewDataUrl
       },

@@ -1,31 +1,32 @@
 import { notFound } from "next/navigation"
-import { SurfaceCard } from "@/components/primitives/surface-card"
 import { ConceptList } from "@/features/concepts/components/concept-list"
-import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
 import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
+import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
 import {
-  getLatestVariantKey,
   mapConceptPreviewAssetsByConceptId,
   toConceptCardViewModel,
   toConceptGenerationState,
   toConceptPreviewState,
-  toRenderState
+  toRenderState,
+  getLatestPlatformPreset,
+  getLatestVariantKey
 } from "@/features/concepts/mappers/concept-view-model"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
 import { RenderPanel } from "@/features/renders/components/render-panel"
 import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
+import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import { getLatestExportByProjectIdForOwner } from "@/server/exports/export-repository"
-import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import {
   listAssetsByProjectIdForOwner,
   listConceptPreviewAssetsByProjectIdForOwner
 } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -91,10 +92,15 @@ export default async function ProjectDetailPage({
   })
 
   const selectedVariantKey = getLatestVariantKey(latestExport?.variant_key)
+  const selectedPlatformPreset = getLatestPlatformPreset(
+    latestExport?.platform_preset
+  )
+
   const scenePlan = selectedConcept
     ? buildScenePlanPreview({
         callToAction: projectInput?.call_to_action ?? null,
         hook: selectedConcept.hook,
+        platformPreset: selectedPlatformPreset,
         script: selectedConcept.script,
         variantKey: selectedVariantKey
       })
@@ -112,7 +118,7 @@ export default async function ProjectDetailPage({
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             This page now includes safety-reviewed concepts, structured scene
-            planning, render variants, and richer export metadata.
+            planning, render variants, and multi-format export presets.
           </p>
         </SurfaceCard>
 
@@ -171,6 +177,7 @@ export default async function ProjectDetailPage({
 
       <RenderPanel
         latestExportId={latestExport?.id ?? null}
+        platformPreset={selectedPlatformPreset}
         projectId={projectId}
         renderJobDescription={renderState.description}
         renderJobLabel={renderState.label}

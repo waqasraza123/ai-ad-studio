@@ -2,18 +2,17 @@ import type {
   AssetRecord,
   ConceptRecord,
   JobRecord,
+  PlatformPresetKey,
   RenderVariantKey
 } from "@/server/database/types"
 
 function readPreviewDataUrl(asset: AssetRecord) {
   const previewDataUrl = asset.metadata.previewDataUrl
-
   return typeof previewDataUrl === "string" ? previewDataUrl : null
 }
 
 function readPreviewConceptId(asset: AssetRecord) {
   const conceptId = asset.metadata.conceptId
-
   return typeof conceptId === "string" ? conceptId : null
 }
 
@@ -42,7 +41,6 @@ export function mapConceptPreviewAssetsByConceptId(assets: AssetRecord[]) {
     assets
       .map((asset) => {
         const conceptId = readPreviewConceptId(asset)
-
         return conceptId ? [conceptId, asset] : null
       })
       .filter((entry): entry is [string, AssetRecord] => entry !== null)
@@ -130,7 +128,7 @@ export function toConceptPreviewState(input: {
   if (input.previewAssetsCount > 0) {
     return {
       description:
-        "Preview visuals are ready. Select the strongest concept to move into final rendering.",
+        "Preview visuals are ready. Select the strongest concept to take forward.",
       isBlocked: false,
       label: "Ready"
     }
@@ -163,7 +161,7 @@ export function toRenderState(input: {
   if (latestRenderJob?.status === "queued") {
     return {
       description:
-        "A final render job is queued. Keep the worker running to process the selected render variant.",
+        "A final render job is queued. Keep the worker running to process the selected formats and preset.",
       label: "Queued"
     }
   }
@@ -171,7 +169,7 @@ export function toRenderState(input: {
   if (latestRenderJob?.status === "running") {
     return {
       description:
-        "The worker is planning scenes, generating motion, and building the final export artifact.",
+        "The worker is planning scenes, generating motion, and building multiple export outputs.",
       label: "Running"
     }
   }
@@ -187,7 +185,7 @@ export function toRenderState(input: {
   if (input.hasLatestExport) {
     return {
       description:
-        "An export exists. Open it to validate variant behavior, scene planning, and safety-aware metadata.",
+        "Exports exist. Open one to validate preset behavior, scene planning, and format metadata.",
       label: "Ready"
     }
   }
@@ -195,14 +193,14 @@ export function toRenderState(input: {
   if (!input.selectedConceptTitle) {
     return {
       description:
-        "Select a concept before triggering the final render job.",
+        "Select a concept before triggering the final render scaffold.",
       label: "Waiting"
     }
   }
 
   return {
     description:
-      "Trigger a durable render job for the selected concept and chosen variant to produce the final export.",
+      "Trigger a durable render job for the selected concept, platform preset, and output formats.",
     label: "Idle"
   }
 }
@@ -212,6 +210,21 @@ export function getLatestVariantKey(
 ): RenderVariantKey {
   if (variantKey === "caption_heavy" || variantKey === "cta_heavy") {
     return variantKey
+  }
+
+  return "default"
+}
+
+export function getLatestPlatformPreset(
+  platformPreset: PlatformPresetKey | null | undefined
+): PlatformPresetKey {
+  if (
+    platformPreset === "instagram_reels" ||
+    platformPreset === "instagram_feed" ||
+    platformPreset === "youtube_shorts" ||
+    platformPreset === "youtube_landscape"
+  ) {
+    return platformPreset
   }
 
   return "default"

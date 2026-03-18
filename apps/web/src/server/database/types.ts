@@ -39,6 +39,13 @@ export type AssetKind =
   | "export_video"
 
 export type RenderVariantKey = "default" | "caption_heavy" | "cta_heavy"
+export type ExportAspectRatio = "9:16" | "1:1" | "16:9"
+export type PlatformPresetKey =
+  | "default"
+  | "instagram_reels"
+  | "instagram_feed"
+  | "youtube_shorts"
+  | "youtube_landscape"
 
 export type ProjectRecord = {
   id: string
@@ -129,6 +136,8 @@ export type ExportRecord = {
   status: "queued" | "rendering" | "ready" | "failed"
   version: number
   variant_key: RenderVariantKey
+  aspect_ratio: ExportAspectRatio
+  platform_preset: PlatformPresetKey
   render_metadata: Record<string, unknown>
   created_at: string
   updated_at: string
