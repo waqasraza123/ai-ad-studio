@@ -37,7 +37,7 @@ export function FeatureGrid() {
             Why this product shape works
           </p>
           <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-white sm:text-4xl">
-            Built to impress clients before the backend gets deep
+            Designed for structured ad generation
           </h2>
         </div>
 

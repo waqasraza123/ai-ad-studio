@@ -7,6 +7,8 @@ export async function createExportRecord(
     conceptId: string
     ownerId: string
     projectId: string
+    renderMetadata: Record<string, unknown>
+    variantKey: string
   }
 ) {
   const { data, error } = await supabase
@@ -16,9 +18,11 @@ export async function createExportRecord(
       concept_id: input.conceptId,
       owner_id: input.ownerId,
       project_id: input.projectId,
-      status: "ready"
+      render_metadata: input.renderMetadata,
+      status: "ready",
+      variant_key: input.variantKey
     })
-    .select("id, project_id, concept_id, owner_id, asset_id, status, version, created_at, updated_at")
+    .select("id, project_id, concept_id, owner_id, asset_id, status, version, variant_key, render_metadata, created_at, updated_at")
     .single()
 
   if (error) {
@@ -33,6 +37,8 @@ export async function createExportRecord(
     asset_id: string
     status: "ready"
     version: number
+    variant_key: string
+    render_metadata: Record<string, unknown>
     created_at: string
     updated_at: string
   }

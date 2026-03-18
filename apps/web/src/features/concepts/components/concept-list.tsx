@@ -8,9 +8,12 @@ type ConceptViewModel = {
   id: string
   isSelected: boolean
   previewDataUrl: string | null
+  riskFlags: string[]
+  safetyNotes: string | null
   script: string
   status: string
   title: string
+  wasSafetyModified: boolean
 }
 
 type ConceptListProps = {
@@ -47,9 +50,12 @@ export function ConceptList({ concepts, projectId }: ConceptListProps) {
           isSelected={concept.isSelected}
           previewDataUrl={concept.previewDataUrl}
           projectId={projectId}
+          riskFlags={concept.riskFlags}
+          safetyNotes={concept.safetyNotes}
           script={concept.script}
           status={concept.status}
           title={concept.title}
+          wasSafetyModified={concept.wasSafetyModified}
         />
       ))}
     </div>

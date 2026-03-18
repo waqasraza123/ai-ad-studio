@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation"
+import { SurfaceCard } from "@/components/primitives/surface-card"
 import { ConceptList } from "@/features/concepts/components/concept-list"
-import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
 import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
+import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
 import {
+  getLatestVariantKey,
   mapConceptPreviewAssetsByConceptId,
   toConceptCardViewModel,
   toConceptGenerationState,
@@ -13,17 +15,17 @@ import { ProjectBriefForm } from "@/features/projects/components/project-brief-f
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
 import { RenderPanel } from "@/features/renders/components/render-panel"
-import { SurfaceCard } from "@/components/primitives/surface-card"
+import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import { getLatestExportByProjectIdForOwner } from "@/server/exports/export-repository"
+import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import {
   listAssetsByProjectIdForOwner,
   listConceptPreviewAssetsByProjectIdForOwner
 } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
-import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -88,6 +90,16 @@ export default async function ProjectDetailPage({
     selectedConceptTitle: selectedConcept?.title ?? null
   })
 
+  const selectedVariantKey = getLatestVariantKey(latestExport?.variant_key)
+  const scenePlan = selectedConcept
+    ? buildScenePlanPreview({
+        callToAction: projectInput?.call_to_action ?? null,
+        hook: selectedConcept.hook,
+        script: selectedConcept.script,
+        variantKey: selectedVariantKey
+      })
+    : []
+
   return (
     <div className="space-y-6">
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
@@ -99,9 +111,8 @@ export default async function ProjectDetailPage({
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now holds the persisted project inputs, storage-backed asset
-            intake flow, concept generation, preview generation, selected concept
-            state, and the final render scaffold.
+            This page now includes safety-reviewed concepts, structured scene
+            planning, render variants, and richer export metadata.
           </p>
         </SurfaceCard>
 
@@ -163,7 +174,9 @@ export default async function ProjectDetailPage({
         projectId={projectId}
         renderJobDescription={renderState.description}
         renderJobLabel={renderState.label}
+        scenePlan={scenePlan}
         selectedConceptTitle={selectedConcept?.title ?? null}
+        selectedVariantKey={selectedVariantKey}
       />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">

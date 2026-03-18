@@ -1,7 +1,7 @@
 import { Clapperboard, ImageIcon, LayoutTemplate, Sparkles } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
-const demoSteps = [
+const workflowSteps = [
   {
     icon: ImageIcon,
     title: "Upload product inputs",
@@ -28,12 +28,12 @@ const demoSteps = [
   }
 ]
 
-export function DemoStrip() {
+export function WorkflowStrip() {
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-        <div className="grid gap-4 lg:grid-cols-4">
-          {demoSteps.map((step) => {
+          <div className="grid gap-4 lg:grid-cols-4">
+            {workflowSteps.map((step) => {
             const Icon = step.icon
 
             return (

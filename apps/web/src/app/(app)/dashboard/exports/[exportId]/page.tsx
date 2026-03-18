@@ -19,6 +19,16 @@ function formatTimestamp(value: string) {
   }).format(new Date(value))
 }
 
+function renderMetadataValue(metadata: Record<string, unknown>, key: string) {
+  const value = metadata[key]
+
+  if (typeof value === "string" || typeof value === "number") {
+    return String(value)
+  }
+
+  return "n/a"
+}
+
 export default async function ExportDetailPage({
   params
 }: ExportDetailPageProps) {
@@ -83,19 +93,18 @@ export default async function ExportDetailPage({
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Variant</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {exportRecord.variant_key}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">Artifact mode</p>
           <p className="mt-2 text-sm font-medium text-white">
             {typeof exportAsset?.metadata.renderMode === "string"
               ? exportAsset.metadata.renderMode
               : "unknown"}
-          </p>
-        </div>
-
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Video specs</p>
-          <p className="mt-2 text-sm font-medium text-white">
-            {exportAsset?.width ?? 0} × {exportAsset?.height ?? 0} ·{" "}
-            {Math.round((exportAsset?.duration_ms ?? 0) / 1000)}s
           </p>
         </div>
 
@@ -108,6 +117,38 @@ export default async function ExportDetailPage({
           </p>
         </div>
       </div>
+
+      <div className="grid gap-4 md:grid-cols-3">
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Scene count</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {renderMetadataValue(exportRecord.render_metadata, "sceneCount")}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Caption cues</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {renderMetadataValue(exportRecord.render_metadata, "captionCueCount")}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Safety modified</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {concept?.was_safety_modified ? "yes" : "no"}
+          </p>
+        </div>
+      </div>
+
+      {concept ? (
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Safety notes</p>
+          <p className="mt-2 text-sm leading-7 text-white">
+            {concept.safety_notes ?? "No additional safety notes were recorded."}
+          </p>
+        </div>
+      ) : null}
     </div>
   )
 }

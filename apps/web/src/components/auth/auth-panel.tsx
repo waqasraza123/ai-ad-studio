@@ -19,8 +19,8 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
           Sign in to AI Ad Studio
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-7 text-slate-400">
-          Real auth is wired for the product shell, project flow, and protected
-          routes. This phase establishes the integration points and guardrails.
+          Authentication secures access to projects, concepts, exports, and
+          other protected routes in the studio.
         </p>
 
         <div className="mt-8 grid gap-4">
@@ -108,7 +108,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
               <div>
                 <p className="text-sm font-medium text-white">Create account</p>
                 <p className="text-sm text-slate-400">
-                  Boot the real auth path for local development.
+                  Set up a local account to use the studio.
                 </p>
               </div>
             </div>

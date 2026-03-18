@@ -41,9 +41,6 @@ export function AppShell({ children, userEmail }: AppShellProps) {
             <Link href="/" className="text-lg font-semibold tracking-tight text-white">
               AI Ad Studio
             </Link>
-            <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2.5 py-1 text-xs font-medium text-emerald-200">
-              Phase 3
-            </span>
           </div>
 
           <div className="mt-8 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
@@ -51,10 +48,10 @@ export function AppShell({ children, userEmail }: AppShellProps) {
               Workspace
             </p>
             <p className="mt-2 text-sm font-medium text-slate-100">
-              Portfolio mode
+              Studio mode
             </p>
             <p className="mt-1 text-sm text-slate-400">
-              Premium AI ad generation with a constrained workflow.
+              Structured AI ad generation with a focused workflow.
             </p>
           </div>
 
@@ -92,10 +89,10 @@ export function AppShell({ children, userEmail }: AppShellProps) {
           <header className="flex items-center justify-between border-b border-white/10 px-5 py-4 lg:px-8">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
-                Product shell
+                Studio
               </p>
               <h1 className="mt-2 text-xl font-semibold tracking-tight text-white">
-                Premium frontend foundation
+                Production workspace
               </h1>
             </div>
 

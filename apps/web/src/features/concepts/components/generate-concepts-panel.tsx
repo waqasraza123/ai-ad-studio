@@ -23,7 +23,7 @@ export function GenerateConceptsPanel({
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-          First async AI workflow
+          Concept generation workflow
         </h2>
         <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
           {label}

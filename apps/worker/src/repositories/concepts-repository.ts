@@ -19,6 +19,9 @@ export type WorkerConceptRecord = {
     | "rendered"
     | "failed"
   sort_order: number
+  risk_flags: string[]
+  safety_notes: string | null
+  was_safety_modified: boolean
   created_at: string
   updated_at: string
 }
@@ -34,10 +37,13 @@ export type ConceptInsertRecord = {
   status: "planned"
   title: string
   visual_direction: string
+  risk_flags: string[]
+  safety_notes: string
+  was_safety_modified: boolean
 }
 
 const conceptSelection =
-  "id, project_id, owner_id, title, angle, hook, script, caption_style, visual_direction, status, sort_order, created_at, updated_at"
+  "id, project_id, owner_id, title, angle, hook, script, caption_style, visual_direction, status, sort_order, risk_flags, safety_notes, was_safety_modified, created_at, updated_at"
 
 export async function listConceptsByProjectId(
   supabase: SupabaseClient,
@@ -53,7 +59,10 @@ export async function listConceptsByProjectId(
     throw new Error("Failed to load concepts")
   }
 
-  return (data ?? []) as WorkerConceptRecord[]
+  return ((data ?? []) as unknown as WorkerConceptRecord[]).map((concept) => ({
+    ...concept,
+    risk_flags: Array.isArray(concept.risk_flags) ? concept.risk_flags : []
+  }))
 }
 
 export async function deleteConceptsByProjectId(

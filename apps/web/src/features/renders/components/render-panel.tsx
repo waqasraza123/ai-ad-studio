@@ -1,14 +1,18 @@
 import Link from "next/link"
-import { renderProjectAction } from "@/features/renders/actions/render-project"
 import { Button } from "@/components/primitives/button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { renderProjectAction } from "@/features/renders/actions/render-project"
+import type { ScenePlanItem } from "@/features/renders/lib/scene-plan"
+import type { RenderVariantKey } from "@/server/database/types"
 
 type RenderPanelProps = {
   latestExportId: string | null
   projectId: string
-  renderJobLabel: string
   renderJobDescription: string
+  renderJobLabel: string
   selectedConceptTitle: string | null
+  selectedVariantKey: RenderVariantKey
+  scenePlan: ScenePlanItem[]
 }
 
 export function RenderPanel({
@@ -16,7 +20,9 @@ export function RenderPanel({
   projectId,
   renderJobDescription,
   renderJobLabel,
-  selectedConceptTitle
+  scenePlan,
+  selectedConceptTitle,
+  selectedVariantKey
 }: RenderPanelProps) {
   const action = renderProjectAction.bind(null, projectId)
   const isBlocked = renderJobLabel === "Queued" || renderJobLabel === "Running"
@@ -29,7 +35,7 @@ export function RenderPanel({
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-          Export pipeline scaffold
+          Variant-aware render pipeline
         </h2>
         <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
           {renderJobLabel}
@@ -47,7 +53,43 @@ export function RenderPanel({
         </p>
       </div>
 
-      <form action={action} className="mt-6">
+      <form action={action} className="mt-6 space-y-5">
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Render variant</span>
+          <select
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+            defaultValue={selectedVariantKey}
+            name="variantKey"
+          >
+            <option value="default">Default</option>
+            <option value="caption_heavy">Caption heavy</option>
+            <option value="cta_heavy">CTA heavy</option>
+          </select>
+        </label>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="text-sm font-medium text-white">Scene plan preview</p>
+          <div className="mt-4 space-y-3">
+            {scenePlan.map((scene) => (
+              <div
+                key={`${scene.purpose}-${scene.durationSeconds}`}
+                className="rounded-2xl border border-white/10 bg-black/10 p-3"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-medium text-white">{scene.purpose}</p>
+                  <span className="rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-xs text-slate-300">
+                    {scene.durationSeconds}s
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-slate-300">{scene.captionText}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                  {scene.motionStyle}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <Button disabled={!canRender || isBlocked}>
           {!canRender
             ? "Select a concept first"

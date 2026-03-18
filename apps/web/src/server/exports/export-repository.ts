@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { ExportRecord } from "@/server/database/types"
 
 const exportSelection =
-  "id, project_id, concept_id, owner_id, asset_id, status, version, created_at, updated_at"
+  "id, project_id, concept_id, owner_id, asset_id, status, version, variant_key, render_metadata, created_at, updated_at"
 
 export async function listExportsByProjectIdForOwner(
   projectId: string,

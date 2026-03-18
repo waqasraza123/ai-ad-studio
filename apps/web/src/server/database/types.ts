@@ -38,6 +38,8 @@ export type AssetKind =
   | "voiceover_audio"
   | "export_video"
 
+export type RenderVariantKey = "default" | "caption_heavy" | "cta_heavy"
+
 export type ProjectRecord = {
   id: string
   owner_id: string
@@ -90,6 +92,9 @@ export type ConceptRecord = {
   visual_direction: string | null
   status: ConceptStatus
   sort_order: number
+  risk_flags: string[]
+  safety_notes: string | null
+  was_safety_modified: boolean
   created_at: string
   updated_at: string
 }
@@ -123,6 +128,8 @@ export type ExportRecord = {
   asset_id: string | null
   status: "queued" | "rendering" | "ready" | "failed"
   version: number
+  variant_key: RenderVariantKey
+  render_metadata: Record<string, unknown>
   created_at: string
   updated_at: string
 }

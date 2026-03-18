@@ -3,13 +3,14 @@
 import { revalidatePath } from "next/cache"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
+import type { RenderVariantKey } from "@/server/database/types"
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import { listConceptPreviewAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
+import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import {
   getProjectByIdForOwner,
   updateProjectStatus
 } from "@/server/projects/project-repository"
-import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 
 function getPreviewAssetForConcept(
   conceptId: string,
@@ -17,19 +18,27 @@ function getPreviewAssetForConcept(
     metadata: Record<string, unknown>
   }[]
 ) {
-  return (
-    previewAssets.find(
-      (asset) => asset.metadata.conceptId === conceptId
-    ) ?? null
-  )
+  return previewAssets.find((asset) => asset.metadata.conceptId === conceptId) ?? null
 }
 
-export async function renderProjectAction(projectId: string) {
+function readVariantKey(formData: FormData): RenderVariantKey {
+  const value = String(formData.get("variantKey") ?? "default")
+
+  if (value === "caption_heavy" || value === "cta_heavy") {
+    return value
+  }
+
+  return "default"
+}
+
+export async function renderProjectAction(projectId: string, formData: FormData) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
     throw new Error("Authentication is required")
   }
+
+  const variantKey = readVariantKey(formData)
 
   const [project, jobs, projectInput, previewAssets] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
@@ -46,7 +55,10 @@ export async function renderProjectAction(projectId: string) {
     throw new Error("Select a concept before rendering")
   }
 
-  const selectedConcept = await getConceptByIdForOwner(project.selected_concept_id, user.id)
+  const selectedConcept = await getConceptByIdForOwner(
+    project.selected_concept_id,
+    user.id
+  )
 
   if (!selectedConcept) {
     throw new Error("Selected concept not found")
@@ -84,7 +96,8 @@ export async function renderProjectAction(projectId: string) {
       previewAsset: {
         previewDataUrl: selectedPreviewAsset.metadata.previewDataUrl
       },
-      stage: "final_render"
+      stage: "final_render",
+      variantKey
     },
     projectId,
     type: "render_final_ad"

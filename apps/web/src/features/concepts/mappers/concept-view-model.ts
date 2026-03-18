@@ -1,4 +1,9 @@
-import type { AssetRecord, ConceptRecord, JobRecord } from "@/server/database/types"
+import type {
+  AssetRecord,
+  ConceptRecord,
+  JobRecord,
+  RenderVariantKey
+} from "@/server/database/types"
 
 function readPreviewDataUrl(asset: AssetRecord) {
   const previewDataUrl = asset.metadata.previewDataUrl
@@ -23,9 +28,12 @@ export function toConceptCardViewModel(input: {
     id: input.concept.id,
     isSelected: input.selectedConceptId === input.concept.id,
     previewDataUrl: input.previewAsset ? readPreviewDataUrl(input.previewAsset) : null,
+    riskFlags: input.concept.risk_flags,
+    safetyNotes: input.concept.safety_notes,
     script: input.concept.script,
     status: input.concept.status,
-    title: input.concept.title
+    title: input.concept.title,
+    wasSafetyModified: input.concept.was_safety_modified
   }
 }
 
@@ -55,7 +63,7 @@ export function toConceptGenerationState(jobs: JobRecord[], conceptsCount: numbe
   if (latestGenerateConceptsJob?.status === "running") {
     return {
       description:
-        "The worker is currently drafting and persisting the concept set.",
+        "The worker is currently drafting, safety-reviewing, and persisting the concept set.",
       label: "Running"
     }
   }
@@ -71,7 +79,7 @@ export function toConceptGenerationState(jobs: JobRecord[], conceptsCount: numbe
   if (conceptsCount > 0) {
     return {
       description:
-        "The concept set is ready. Generate one preview image per concept next.",
+        "The concept set is ready and has passed the safety review layer.",
       label: "Ready"
     }
   }
@@ -122,7 +130,7 @@ export function toConceptPreviewState(input: {
   if (input.previewAssetsCount > 0) {
     return {
       description:
-        "Preview visuals are ready. Select the strongest concept to take forward.",
+        "Preview visuals are ready. Select the strongest concept to move into final rendering.",
       isBlocked: false,
       label: "Ready"
     }
@@ -139,7 +147,7 @@ export function toConceptPreviewState(input: {
 
   return {
     description:
-      "Generate one preview image per concept. This stays mocked for now, but the persistence and workflow are real.",
+      "Generate one preview image per concept. This flow persists the preview assets for later rendering.",
     isBlocked: false,
     label: "Idle"
   }
@@ -155,7 +163,7 @@ export function toRenderState(input: {
   if (latestRenderJob?.status === "queued") {
     return {
       description:
-        "A final render job is queued. Keep the worker running to scaffold the export flow.",
+        "A final render job is queued. Keep the worker running to process the selected render variant.",
       label: "Queued"
     }
   }
@@ -163,7 +171,7 @@ export function toRenderState(input: {
   if (latestRenderJob?.status === "running") {
     return {
       description:
-        "The worker is creating the scaffolded final export artifact and export record.",
+        "The worker is planning scenes, generating motion, and building the final export artifact.",
       label: "Running"
     }
   }
@@ -179,7 +187,7 @@ export function toRenderState(input: {
   if (input.hasLatestExport) {
     return {
       description:
-        "A scaffolded export exists. Open it to validate the end-to-end render lifecycle.",
+        "An export exists. Open it to validate variant behavior, scene planning, and safety-aware metadata.",
       label: "Ready"
     }
   }
@@ -187,14 +195,24 @@ export function toRenderState(input: {
   if (!input.selectedConceptTitle) {
     return {
       description:
-        "Select a concept before triggering the final render scaffold.",
+        "Select a concept before triggering the final render job.",
       label: "Waiting"
     }
   }
 
   return {
     description:
-      "Trigger a durable render job for the selected concept. This phase creates a mocked export artifact through the real job and export pipeline.",
+      "Trigger a durable render job for the selected concept and chosen variant to produce the final export.",
     label: "Idle"
   }
+}
+
+export function getLatestVariantKey(
+  variantKey: RenderVariantKey | null | undefined
+): RenderVariantKey {
+  if (variantKey === "caption_heavy" || variantKey === "cta_heavy") {
+    return variantKey
+  }
+
+  return "default"
 }

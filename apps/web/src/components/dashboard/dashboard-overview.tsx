@@ -66,14 +66,14 @@ export function DashboardOverview() {
                 Premium ad generation workflow
               </h2>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-                This shell is designed to become the main workspace for project
-                setup, concept review, rendering, and export management.
+                This workspace is designed for project setup, concept review,
+                rendering, and export management.
               </p>
             </div>
 
             <div className="hidden rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-sm text-slate-300 md:flex md:items-center md:gap-2">
               <ArrowUpRight className="h-4 w-4 text-indigo-200" />
-              Portfolio-ready UI
+              Studio dashboard
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export function DashboardOverview() {
 
         <SurfaceCard className="p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-            Showcase panel
+            Export panel
           </p>
           <div className="mt-5 grid gap-4 md:grid-cols-[1.15fr_0.85fr]">
             <div className="rounded-[1.5rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(129,140,248,0.18),transparent_16rem),linear-gradient(180deg,rgba(15,23,42,0.9),rgba(2,6,23,0.94))] p-4">

@@ -10,7 +10,7 @@ export function HeroSection() {
         <div className="mx-auto max-w-3xl text-center">
           <div className="inline-flex items-center gap-2 rounded-full border border-indigo-400/20 bg-indigo-400/10 px-4 py-2 text-sm text-indigo-100">
             <Sparkles className="h-4 w-4" />
-            <span>Portfolio-grade AI product ad workflow</span>
+            <span>AI product ad generation workflow</span>
           </div>
 
           <h1 className="mt-8 text-balance text-5xl font-semibold tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">

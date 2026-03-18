@@ -1,7 +1,8 @@
 import { ImageIcon } from "lucide-react"
-import { selectConceptAction } from "@/features/concepts/actions/select-concept"
 import { Button } from "@/components/primitives/button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { selectConceptAction } from "@/features/concepts/actions/select-concept"
+import { SafetySummary } from "@/features/safety/components/safety-summary"
 
 type ConceptPreviewCardProps = {
   angle: string
@@ -10,9 +11,12 @@ type ConceptPreviewCardProps = {
   isSelected: boolean
   previewDataUrl: string | null
   projectId: string
+  riskFlags: string[]
+  safetyNotes: string | null
   script: string
   status: string
   title: string
+  wasSafetyModified: boolean
 }
 
 export function ConceptPreviewCard({
@@ -22,9 +26,12 @@ export function ConceptPreviewCard({
   isSelected,
   previewDataUrl,
   projectId,
+  riskFlags,
+  safetyNotes,
   script,
   status,
-  title
+  title,
+  wasSafetyModified
 }: ConceptPreviewCardProps) {
   const action = selectConceptAction.bind(null, projectId, id)
 
@@ -59,9 +66,16 @@ export function ConceptPreviewCard({
           <h3 className="mt-3 text-xl font-medium text-white">{title}</h3>
         </div>
 
-        <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-          {status}
-        </span>
+        <div className="flex flex-col items-end gap-2">
+          <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
+            {status}
+          </span>
+          {wasSafetyModified ? (
+            <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
+              Safety reviewed
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-5">
@@ -72,6 +86,14 @@ export function ConceptPreviewCard({
       <div className="mt-5">
         <p className="text-sm font-medium text-white">Script</p>
         <p className="mt-2 line-clamp-4 text-sm leading-7 text-slate-400">{script}</p>
+      </div>
+
+      <div className="mt-5">
+        <SafetySummary
+          riskFlags={riskFlags}
+          safetyNotes={safetyNotes}
+          wasSafetyModified={wasSafetyModified}
+        />
       </div>
 
       <div className="mt-6">
