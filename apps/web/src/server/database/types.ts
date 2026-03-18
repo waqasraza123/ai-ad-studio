@@ -120,6 +120,9 @@ export type JobRecord = {
   attempts: number
   max_attempts: number
   scheduled_at: string
+  next_attempt_at: string
+  cancel_requested_at: string | null
+  cancel_reason: string | null
   started_at: string | null
   finished_at: string | null
   heartbeat_at: string | null

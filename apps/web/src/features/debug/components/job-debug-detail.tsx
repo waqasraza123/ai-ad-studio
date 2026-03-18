@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { JobRecord } from "@/server/database/types"
+import { cancelJobAction } from "@/features/debug/actions/cancel-job"
 import { retryJobAction } from "@/features/debug/actions/retry-job"
 import { Button } from "@/components/primitives/button"
 import { JobStatusBadge } from "./job-status-badge"
@@ -21,6 +22,11 @@ function formatTimestamp(value: string | null) {
 
 export function JobDebugDetail({ job }: JobDebugDetailProps) {
   const retryAction = retryJobAction.bind(null, job.id)
+  const cancelAction = cancelJobAction.bind(null, job.id)
+  const canCancel =
+    job.status === "queued" ||
+    job.status === "running" ||
+    job.status === "waiting_provider"
 
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
@@ -33,7 +39,7 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
             <JobStatusBadge status={job.status} />
           </div>
           <p className="mt-3 text-sm leading-7 text-slate-400">
-            Inspect payloads, provider metadata, errors, and retry the job safely if it failed.
+            Inspect payloads, provider metadata, queue timing, errors, and use safe controls for cancellation or retry.
           </p>
         </div>
 
@@ -45,15 +51,26 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
             Open project
           </Link>
 
-          {job.status === "failed" ? (
+          {canCancel ? (
+            <form action={cancelAction} className="flex items-center gap-2">
+              <input
+                name="reason"
+                defaultValue="Cancelled from debug UI"
+                className="hidden"
+              />
+              <Button variant="secondary">Cancel job</Button>
+            </form>
+          ) : null}
+
+          {job.status === "failed" || job.status === "cancelled" ? (
             <form action={retryAction}>
-              <Button>Retry failed job</Button>
+              <Button>Retry job</Button>
             </form>
           ) : null}
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-3">
+      <div className="mt-6 grid gap-4 md:grid-cols-4">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm text-slate-400">Attempts</p>
           <p className="mt-2 text-sm font-medium text-white">
@@ -72,6 +89,32 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
           <p className="text-sm text-slate-400">Finished</p>
           <p className="mt-2 text-sm font-medium text-white">
             {formatTimestamp(job.finished_at)}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="text-sm text-slate-400">Next attempt</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {formatTimestamp(job.next_attempt_at)}
+          </p>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="text-sm text-slate-400">Cancel requested</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {formatTimestamp(job.cancel_requested_at)}
+          </p>
+          <p className="mt-2 text-sm text-slate-400">
+            {job.cancel_reason ?? "n/a"}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+          <p className="text-sm text-slate-400">Provider job id</p>
+          <p className="mt-2 break-all text-sm font-medium text-white">
+            {job.provider_job_id ?? "n/a"}
           </p>
         </div>
       </div>
