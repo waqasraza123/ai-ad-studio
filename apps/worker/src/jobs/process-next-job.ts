@@ -1,9 +1,9 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { executeJob } from "./execute-job"
-import { claimNextQueuedJob } from "@/repositories/jobs-repository"
+import { claimNextJob } from "@/repositories/jobs-repository"
 
 export async function processNextJob(supabase: SupabaseClient) {
-  const job = await claimNextQueuedJob(supabase)
+  const job = await claimNextJob(supabase)
 
   if (!job) {
     return {
