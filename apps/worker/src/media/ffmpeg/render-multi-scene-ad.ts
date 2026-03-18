@@ -6,7 +6,7 @@ import type { CaptionCue } from "@/media/captions/build-caption-timeline"
 type RenderMultiSceneAdInput = {
   audioFilePath: string
   ctaText: string
-  imageFilePaths: string[]
+  sceneVideoFilePaths: string[]
   outputFilePath: string
   projectName: string
   workspacePath: string
@@ -83,32 +83,19 @@ function runCommand(command: string, args: string[]) {
   })
 }
 
-function buildSceneFilter(inputCount: number) {
-  const sceneDuration = 3
-  const sceneFilters = Array.from({ length: inputCount }, (_, index) => {
-    const fpsFrames = sceneDuration * 30
-
-    return `[${index}:v]scale=1080:1920:force_original_aspect_ratio=increase,crop=1080:1920,format=yuv420p,zoompan=z='min(zoom+0.0008,1.08)':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':d=${fpsFrames}:s=1080x1920:fps=30,setsar=1[v${index}]`
-  })
-
-  const concatInputs = Array.from({ length: inputCount }, (_, index) => `[v${index}]`).join("")
-  const ctaIndex = inputCount
-  const base = [
-    ...sceneFilters,
-    `[${ctaIndex}:v]scale=1080:1920,format=yuv420p,setsar=1[v${ctaIndex}]`,
-    `${concatInputs}[v${ctaIndex}]concat=n=${inputCount + 1}:v=1:a=0[base]`
-  ]
-
-  return base.join(";")
+function buildConcatFilter(sceneCount: number) {
+  const inputs = Array.from({ length: sceneCount }, (_, index) => `[${index}:v][${index}:a]`).join("")
+  const ctaIndex = sceneCount
+  return `${inputs}[${ctaIndex}:v][${ctaIndex}:a]concat=n=${sceneCount + 1}:v=1:a=1[basev][basea]`
 }
 
 function buildCaptionFilters(captionTimeline: CaptionCue[]) {
   if (captionTimeline.length === 0) {
-    return "[base]copy[vout]"
+    return ["[basev]copy[vout]"]
   }
 
   const filters: string[] = []
-  let currentLabel = "base"
+  let currentLabel = "basev"
 
   captionTimeline.forEach((cue, index) => {
     const nextLabel = index === captionTimeline.length - 1 ? "vout" : `cap${index + 1}`
@@ -124,41 +111,60 @@ function buildCaptionFilters(captionTimeline: CaptionCue[]) {
     currentLabel = nextLabel
   })
 
-  return filters.join(";")
+  return filters
 }
 
 export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
-  const ctaFilePath = join(input.workspacePath, "cta-card.svg")
+  const ctaSvgPath = join(input.workspacePath, "cta-card.svg")
+  const ctaVideoPath = join(input.workspacePath, "cta-card.mp4")
 
   await createCtaCardSvg({
     ctaText: input.ctaText,
-    filePath: ctaFilePath,
+    filePath: ctaSvgPath,
     projectName: input.projectName
   })
 
-  const loopInputs = input.imageFilePaths.flatMap((filePath) => [
+  await runCommand("ffmpeg", [
+    "-y",
     "-loop",
     "1",
-    "-t",
-    "3",
     "-i",
-    filePath
+    ctaSvgPath,
+    "-f",
+    "lavfi",
+    "-i",
+    "anullsrc=channel_layout=stereo:sample_rate=48000",
+    "-shortest",
+    "-t",
+    "1.5",
+    "-vf",
+    "scale=1080:1920,format=yuv420p",
+    "-c:v",
+    "libx264",
+    "-pix_fmt",
+    "yuv420p",
+    "-preset",
+    "medium",
+    "-r",
+    "30",
+    "-c:a",
+    "aac",
+    "-b:a",
+    "128k",
+    ctaVideoPath
   ])
 
+  const sceneInputs = input.sceneVideoFilePaths.flatMap((filePath) => ["-i", filePath])
   const filterComplex = [
-    buildSceneFilter(input.imageFilePaths.length),
-    buildCaptionFilters(input.captionTimeline)
+    buildConcatFilter(input.sceneVideoFilePaths.length),
+    ...buildCaptionFilters(input.captionTimeline)
   ].join(";")
 
   await runCommand("ffmpeg", [
     "-y",
-    ...loopInputs,
-    "-loop",
-    "1",
-    "-t",
-    "1.5",
+    ...sceneInputs,
     "-i",
-    ctaFilePath,
+    ctaVideoPath,
     "-i",
     input.audioFilePath,
     "-filter_complex",
@@ -166,7 +172,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "-map",
     "[vout]",
     "-map",
-    `${input.imageFilePaths.length + 1}:a`,
+    `${input.sceneVideoFilePaths.length + 1}:a`,
     "-c:v",
     "libx264",
     "-pix_fmt",

@@ -1,22 +1,32 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { randomUUID } from "node:crypto"
-import { writeFile } from "node:fs/promises"
+import { writeFile, readFile } from "node:fs/promises"
 import { join } from "node:path"
+import { getWorkerEnvironment } from "@/lib/env"
 import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
 import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
-import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
 import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
-import { createRenderWorkspace, cleanupRenderWorkspace } from "@/media/temp/temp-paths"
+import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
+import {
+  cleanupRenderWorkspace,
+  createRenderWorkspace
+} from "@/media/temp/temp-paths"
 import { OpenAiTtsProvider } from "@/providers/openai-tts-provider"
+import { RunwayVideoProvider } from "@/providers/runway-video-provider"
 import {
   createRenderAsset,
-  createVoiceoverAsset
+  createSceneVideoAssets,
+  createVoiceoverAsset,
+  deleteSceneVideoAssetsByProjectId
 } from "@/repositories/assets-repository"
 import { listConceptsByProjectId } from "@/repositories/concepts-repository"
 import { createExportRecord } from "@/repositories/exports-repository"
-import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
-import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
+import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
+import {
+  getProjectById,
+  updateProjectStatus
+} from "@/repositories/projects-repository"
 
 function decodeDataUri(input: string) {
   const [header, payload] = input.split(",", 2)
@@ -49,6 +59,13 @@ function extensionFromMimeType(mimeType: string) {
   if (mimeType.includes("jpeg") || mimeType.includes("jpg")) return "jpg"
   if (mimeType.includes("webp")) return "webp"
   return "img"
+}
+
+function mimeTypeFromExtension(extension: string) {
+  if (extension === "webp") return "image/webp"
+  if (extension === "jpg" || extension === "jpeg") return "image/jpeg"
+  if (extension === "svg") return "image/svg+xml"
+  return "image/png"
 }
 
 async function materializePreviewImage(input: {
@@ -85,8 +102,38 @@ async function materializePreviewImage(input: {
   return filePath
 }
 
+function buildScenePrompts(input: {
+  angle: string
+  hook: string
+  productName: string
+  visualDirection: string | null
+}) {
+  const visualDirection =
+    input.visualDirection?.trim() || "premium studio product visuals"
+
+  return [
+    `Create an opening hero shot for ${input.productName}. ${input.hook}. ${visualDirection}. Cinematic motion, premium lighting, vertical ad look.`,
+    `Create a second scene emphasizing product desirability and detail. Marketing angle: ${input.angle}. ${visualDirection}. Smooth realistic motion, premium ecommerce feel.`,
+    `Create a final scene that sets up a conversion-focused transition. ${input.hook}. ${visualDirection}. Keep the motion clean and ad-ready.`
+  ]
+}
+
 function uniqueNonEmpty(values: string[]) {
-  return [...new Set(values.filter(Boolean))]
+  return [...new Set(values.filter((value): value is string => Boolean(value)))]
+}
+
+async function downloadRemoteVideoToFile(input: {
+  filePath: string
+  videoUrl: string
+}) {
+  const response = await fetch(input.videoUrl)
+
+  if (!response.ok) {
+    throw new Error("Failed to download generated scene video")
+  }
+
+  const arrayBuffer = await response.arrayBuffer()
+  await writeFile(input.filePath, Buffer.from(arrayBuffer))
 }
 
 export async function handleRenderFinalAdJob(
@@ -109,25 +156,31 @@ export async function handleRenderFinalAdJob(
   ])
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ??
+    null
 
   if (!selectedConcept) {
     throw new Error("Selected concept record not found for final render")
   }
 
-  const previewAsset = (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
+  const previewAsset =
+    (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
   const previewDataUrl =
     previewAsset && typeof previewAsset.previewDataUrl === "string"
       ? previewAsset.previewDataUrl
       : null
 
   if (!previewDataUrl) {
-    throw new Error("Selected concept preview data was not included in the render job")
+    throw new Error(
+      "Selected concept preview data was not included in the render job"
+    )
   }
 
-  const workspacePath = await createRenderWorkspace(`ai-ad-studio-render-${project.id}`)
-  const outputFilePath = join(workspacePath, "final-export.mp4")
+  const workspacePath = await createRenderWorkspace(
+    `ai-ad-studio-render-${project.id}`
+  )
   const voiceoverFilePath = join(workspacePath, "voiceover.mp3")
+  const outputFilePath = join(workspacePath, "final-export.mp4")
 
   try {
     const previewImagePath = await materializePreviewImage({
@@ -155,24 +208,24 @@ export async function handleRenderFinalAdJob(
       })
     )
 
-    const sceneImagePaths = uniqueNonEmpty([
+    const sceneReferenceImagePaths = uniqueNonEmpty([
       previewImagePath,
       ...downloadedProductImagePaths
     ])
 
-    const primaryScenePath = sceneImagePaths[0]
+    const primarySceneImagePath = sceneReferenceImagePaths[0]
 
-    if (!primaryScenePath) {
-      throw new Error("No scene image was available for final render")
+    if (!primarySceneImagePath) {
+      throw new Error("No scene reference image was available for final render")
     }
 
-    const normalizedScenePaths: string[] =
-      sceneImagePaths.length >= 3
-        ? sceneImagePaths.slice(0, 3)
+    const normalizedSceneImagePaths: string[] =
+      sceneReferenceImagePaths.length >= 3
+        ? sceneReferenceImagePaths.slice(0, 3)
         : [
-            primaryScenePath,
-            sceneImagePaths[1] ?? primaryScenePath,
-            sceneImagePaths[2] ?? primaryScenePath
+            primarySceneImagePath,
+            sceneReferenceImagePaths[1] ?? primarySceneImagePath,
+            sceneReferenceImagePaths[2] ?? primarySceneImagePath
           ]
 
     const ttsProvider = new OpenAiTtsProvider()
@@ -181,22 +234,98 @@ export async function handleRenderFinalAdJob(
       script: selectedConcept.script
     })
 
-    const voiceoverDurationSeconds = await getMediaDurationSeconds(voiceoverFilePath)
+    const voiceoverDurationSeconds =
+      await getMediaDurationSeconds(voiceoverFilePath)
     const captionTimeline = buildCaptionTimeline({
       script: selectedConcept.script,
       totalDurationSeconds: Math.min(10, voiceoverDurationSeconds)
     })
 
+    const environment = getWorkerEnvironment()
+    const videoProvider = new RunwayVideoProvider(
+      environment.RUNWAYML_API_SECRET
+    )
+    const scenePrompts = buildScenePrompts({
+      angle: selectedConcept.angle,
+      hook: selectedConcept.hook,
+      productName: project.name,
+      visualDirection: selectedConcept.visual_direction
+    })
+    const primaryScenePrompt = scenePrompts[0]
+
+    if (!primaryScenePrompt) {
+      throw new Error("No scene prompt was available for final render")
+    }
+
+    await deleteSceneVideoAssetsByProjectId(supabase, project.id)
+
+    const sceneResults = await Promise.all(
+      normalizedSceneImagePaths.map(async (imagePath, index) => {
+        const imageBytes = await readFile(imagePath)
+        const imageExtension =
+          imagePath.split(".").pop()?.toLowerCase() ?? "png"
+        const promptImage = `data:${mimeTypeFromExtension(imageExtension)};base64,${imageBytes.toString("base64")}`
+        const promptText = scenePrompts[index] ?? primaryScenePrompt
+
+        const generated = await videoProvider.generateSceneVideo({
+          durationSeconds: index === 2 ? 2 : 3,
+          promptImage,
+          promptText
+        })
+
+        const localSceneFilePath = join(workspacePath, `scene-${index + 1}.mp4`)
+        await downloadRemoteVideoToFile({
+          filePath: localSceneFilePath,
+          videoUrl: generated.videoUrl
+        })
+
+        const sceneStorageKey = `projects/${project.id}/scenes/${randomUUID()}.mp4`
+        await uploadFileArtifactToR2({
+          contentType: "video/mp4",
+          filePath: localSceneFilePath,
+          storageKey: sceneStorageKey
+        })
+
+        return {
+          localSceneFilePath,
+          metadata: {
+            runwayTaskId: generated.taskId,
+            sceneIndex: index,
+            sourceConceptId: selectedConcept.id
+          },
+          storageKey: sceneStorageKey
+        }
+      })
+    )
+
+    await createSceneVideoAssets(
+      supabase,
+      sceneResults.map((scene) => ({
+        kind: "scene_video",
+        metadata: scene.metadata,
+        mime_type: "video/mp4",
+        owner_id: project.owner_id,
+        project_id: project.id,
+        storage_key: scene.storageKey,
+        duration_ms: 3000,
+        height: 1280,
+        width: 720
+      }))
+    )
+
     await renderMultiSceneAd({
       audioFilePath: voiceoverFilePath,
       captionTimeline,
       ctaText:
-        typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
+        typeof job.payload.callToAction === "string" &&
+        job.payload.callToAction.trim().length > 0
           ? job.payload.callToAction.trim()
           : "Shop now",
-      imageFilePaths: normalizedScenePaths,
       outputFilePath,
       projectName: project.name,
+      sceneVideoFilePaths: sceneResults.map(
+        (scene) => scene.localSceneFilePath
+      ),
       workspacePath
     })
 
@@ -233,7 +362,8 @@ export async function handleRenderFinalAdJob(
       metadata: {
         captionCueCount: captionTimeline.length,
         previewDataUrl,
-        renderMode: "ffmpeg_multi_scene_with_tts",
+        renderMode: "ffmpeg_runway_scene_video_composition",
+        sceneCount: sceneResults.length,
         selectedConceptId: selectedConcept.id,
         voiceoverProvider: "openai_tts"
       },
@@ -261,8 +391,8 @@ export async function handleRenderFinalAdJob(
     return {
       exportId: exportRecord.id,
       projectId: project.id,
-      storageKey,
-      voiceoverDurationSeconds
+      sceneCount: sceneResults.length,
+      storageKey
     }
   } finally {
     await cleanupRenderWorkspace(workspacePath)
