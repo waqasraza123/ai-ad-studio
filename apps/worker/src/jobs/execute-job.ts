@@ -7,12 +7,25 @@ import {
   markJobSucceeded,
   type WorkerJobRecord
 } from "@/repositories/jobs-repository"
+import { createJobTrace } from "@/repositories/job-traces-repository"
 import { updateProjectStatus } from "@/repositories/projects-repository"
 
 export async function executeJob(
   supabase: SupabaseClient,
   job: WorkerJobRecord
 ) {
+  await createJobTrace(supabase, {
+    job_id: job.id,
+    owner_id: job.owner_id,
+    payload: {
+      payload: job.payload,
+      type: job.type
+    },
+    project_id: job.project_id,
+    stage: "job_started",
+    trace_type: "lifecycle"
+  })
+
   try {
     if (job.type === "generate_concepts") {
       const result = await handleGenerateConceptsJob(supabase, job)
@@ -20,6 +33,15 @@ export async function executeJob(
       await markJobSucceeded(supabase, {
         jobId: job.id,
         result
+      })
+
+      await createJobTrace(supabase, {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: result,
+        project_id: job.project_id,
+        stage: "job_succeeded",
+        trace_type: "lifecycle"
       })
 
       return
@@ -33,6 +55,15 @@ export async function executeJob(
         result
       })
 
+      await createJobTrace(supabase, {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: result,
+        project_id: job.project_id,
+        stage: "job_succeeded",
+        trace_type: "lifecycle"
+      })
+
       return
     }
 
@@ -42,6 +73,15 @@ export async function executeJob(
       await markJobSucceeded(supabase, {
         jobId: job.id,
         result
+      })
+
+      await createJobTrace(supabase, {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: result,
+        project_id: job.project_id,
+        stage: "job_succeeded",
+        trace_type: "lifecycle"
       })
 
       return
@@ -54,11 +94,25 @@ export async function executeJob(
       status: "failed"
     })
 
+    const message =
+      error instanceof Error ? error.message : "Unknown worker error"
+
     await markJobFailed(supabase, {
       error: {
-        message: error instanceof Error ? error.message : "Unknown worker error"
+        message
       },
       jobId: job.id
+    })
+
+    await createJobTrace(supabase, {
+      job_id: job.id,
+      owner_id: job.owner_id,
+      payload: {
+        message
+      },
+      project_id: job.project_id,
+      stage: "job_failed",
+      trace_type: "error"
     })
 
     throw error

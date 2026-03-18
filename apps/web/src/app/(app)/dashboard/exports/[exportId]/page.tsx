@@ -1,13 +1,17 @@
 import { notFound } from "next/navigation"
-import { getPublicEnvironment } from "@/lib/env"
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
+import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import { getExportByIdForOwner } from "@/server/exports/export-repository"
-import { getShareLinkByExportIdForOwner } from "@/server/exports/share-link-repository"
+import {
+  getShareLinkByExportIdForOwner
+} from "@/server/exports/share-link-repository"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { getPublicEnvironment } from "@/lib/env"
 
 type ExportDetailPageProps = {
   params: Promise<{
@@ -32,6 +36,10 @@ function renderMetadataValue(metadata: Record<string, unknown>, key: string) {
   return "n/a"
 }
 
+function formatUsd(value: number) {
+  return `$${value.toFixed(4)}`
+}
+
 export default async function ExportDetailPage({
   params
 }: ExportDetailPageProps) {
@@ -48,13 +56,14 @@ export default async function ExportDetailPage({
     notFound()
   }
 
-  const [project, concept, assets, shareLink] = await Promise.all([
+  const [project, concept, assets, shareLink, usageEvents] = await Promise.all([
     getProjectByIdForOwner(exportRecord.project_id, user.id),
     exportRecord.concept_id
       ? getConceptByIdForOwner(exportRecord.concept_id, user.id)
       : Promise.resolve(null),
     listAssetsByProjectIdForOwner(exportRecord.project_id, user.id),
-    getShareLinkByExportIdForOwner(exportRecord.id, user.id)
+    getShareLinkByExportIdForOwner(exportRecord.id, user.id),
+    listUsageEventsByExportIdForOwner(exportRecord.id, user.id)
   ])
 
   if (!project) {
@@ -82,6 +91,11 @@ export default async function ExportDetailPage({
     ? `${environment.NEXT_PUBLIC_APP_URL}/share/${shareLink.token}`
     : null
 
+  const exportCost = usageEvents.reduce(
+    (total, event) => total + Number(event.estimated_cost_usd ?? 0),
+    0
+  )
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <ExportSummary
@@ -93,7 +107,7 @@ export default async function ExportDetailPage({
         videoSrc={videoSrc}
       />
 
-      <div className="grid gap-4 md:grid-cols-5">
+      <div className="grid gap-4 md:grid-cols-6">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">Selected concept</p>
           <p className="mt-2 text-sm font-medium text-white">
@@ -128,6 +142,13 @@ export default async function ExportDetailPage({
             {voiceoverAsset
               ? `${Math.round((voiceoverAsset.duration_ms ?? 0) / 1000)}s`
               : "Not found"}
+          </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <p className="text-sm text-slate-400">Estimated cost</p>
+          <p className="mt-2 text-sm font-medium text-white">
+            {formatUsd(exportCost)}
           </p>
         </div>
       </div>
@@ -175,6 +196,7 @@ export default async function ExportDetailPage({
       ) : null}
 
       <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
+      <UsageEventsTable usageEvents={usageEvents} />
     </div>
   )
 }

@@ -1,16 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { randomUUID } from "node:crypto"
-import { writeFile } from "node:fs/promises"
 import { join } from "node:path"
-import { getWorkerEnvironment } from "@/lib/env"
+import { writeFile } from "node:fs/promises"
 import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
 import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
 import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
 import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
-import {
-  cleanupRenderWorkspace,
-  createRenderWorkspace
-} from "@/media/temp/temp-paths"
+import { createRenderWorkspace, cleanupRenderWorkspace } from "@/media/temp/temp-paths"
 import { buildStructuredScenePlan } from "@/planning/scene-planner"
 import { OpenAiTtsProvider } from "@/providers/openai-tts-provider"
 import { RunwayVideoProvider } from "@/providers/runway-video-provider"
@@ -22,9 +18,12 @@ import {
 } from "@/repositories/assets-repository"
 import { listConceptsByProjectId } from "@/repositories/concepts-repository"
 import { createExportRecord } from "@/repositories/exports-repository"
-import type { WorkerJobRecord } from "@/repositories/jobs-repository"
+import { createJobTraces } from "@/repositories/job-traces-repository"
 import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
 import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
+import { createUsageEvents } from "@/repositories/usage-events-repository"
+import type { WorkerJobRecord } from "@/repositories/jobs-repository"
+import { getWorkerEnvironment } from "@/lib/env"
 
 type RenderVariantKey = "default" | "caption_heavy" | "cta_heavy"
 type ExportAspectRatio = "9:16" | "1:1" | "16:9"
@@ -102,6 +101,27 @@ function readAspectRatios(value: unknown): ExportAspectRatio[] {
   return normalized.length > 0 ? normalized : ["9:16"]
 }
 
+function getCanvasSize(aspectRatio: ExportAspectRatio) {
+  if (aspectRatio === "1:1") {
+    return {
+      height: 1080,
+      width: 1080
+    }
+  }
+
+  if (aspectRatio === "16:9") {
+    return {
+      height: 1080,
+      width: 1920
+    }
+  }
+
+  return {
+    height: 1920,
+    width: 1080
+  }
+}
+
 async function materializePreviewImage(input: {
   previewDataUrl: string
   workspacePath: string
@@ -136,7 +156,7 @@ async function materializePreviewImage(input: {
   return filePath
 }
 
-function uniqueNonEmpty(values: Array<string | null | undefined>) {
+function uniqueNonEmpty(values: string[]) {
   return [...new Set(values.filter((value): value is string => Boolean(value)))]
 }
 
@@ -152,27 +172,6 @@ async function downloadRemoteVideoToFile(input: {
 
   const arrayBuffer = await response.arrayBuffer()
   await writeFile(input.filePath, Buffer.from(arrayBuffer))
-}
-
-function getCanvasSize(aspectRatio: ExportAspectRatio) {
-  if (aspectRatio === "1:1") {
-    return {
-      height: 1080,
-      width: 1080
-    }
-  }
-
-  if (aspectRatio === "16:9") {
-    return {
-      height: 1080,
-      width: 1920
-    }
-  }
-
-  return {
-    height: 1920,
-    width: 1080
-  }
 }
 
 export async function handleRenderFinalAdJob(
@@ -201,28 +200,38 @@ export async function handleRenderFinalAdJob(
     throw new Error("Selected concept record not found for final render")
   }
 
-  const previewAsset =
-    (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
+  const previewAsset = (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
   const previewDataUrl =
     previewAsset && typeof previewAsset.previewDataUrl === "string"
       ? previewAsset.previewDataUrl
       : null
 
   if (!previewDataUrl) {
-    throw new Error(
-      "Selected concept preview data was not included in the render job"
-    )
+    throw new Error("Selected concept preview data was not included in the render job")
   }
 
-  const workspacePath = await createRenderWorkspace(
-    `ai-ad-studio-render-${project.id}`
-  )
+  const workspacePath = await createRenderWorkspace(`ai-ad-studio-render-${project.id}`)
   const voiceoverFilePath = join(workspacePath, "voiceover.mp3")
 
   try {
     const variantKey = readVariantKey(job.payload.variantKey)
     const platformPreset = readPlatformPreset(job.payload.platformPreset)
     const aspectRatios = readAspectRatios(job.payload.aspectRatios)
+
+    await createJobTraces(supabase, [
+      {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: {
+          aspectRatios,
+          platformPreset,
+          variantKey
+        },
+        project_id: job.project_id,
+        stage: "render_requested",
+        trace_type: "lifecycle"
+      }
+    ])
 
     const previewImagePath = await materializePreviewImage({
       previewDataUrl,
@@ -275,13 +284,25 @@ export async function handleRenderFinalAdJob(
       script: selectedConcept.script
     })
 
-    const voiceoverDurationSeconds = await getMediaDurationSeconds(
-      voiceoverFilePath
-    )
+    const voiceoverDurationSeconds = await getMediaDurationSeconds(voiceoverFilePath)
     const captionTimeline = buildCaptionTimeline({
       script: selectedConcept.script,
       totalDurationSeconds: Math.min(10, voiceoverDurationSeconds)
     })
+
+    await createJobTraces(supabase, [
+      {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: {
+          captionCueCount: captionTimeline.length,
+          voiceoverDurationSeconds
+        },
+        project_id: job.project_id,
+        stage: "voiceover_and_captions_ready",
+        trace_type: "provider_response"
+      }
+    ])
 
     const environment = getWorkerEnvironment()
     const videoProvider = new RunwayVideoProvider(environment.RUNWAYML_API_SECRET)
@@ -302,17 +323,11 @@ export async function handleRenderFinalAdJob(
       })
     }))
 
-    const primaryScenePlanGroup = scenePlansByAspectRatio[0]
+    const primaryScenePlan = scenePlansByAspectRatio[0]?.scenePlan
+    const primaryPlannedScene = primaryScenePlan?.[0]
 
-    if (!primaryScenePlanGroup) {
-      throw new Error("No scene plans were generated for export")
-    }
-
-    const primaryScenePlan = primaryScenePlanGroup.scenePlan
-    const primaryPlannedScene = primaryScenePlan[0]
-
-    if (!primaryPlannedScene) {
-      throw new Error("Primary planned scene was not generated")
+    if (!primaryScenePlan || !primaryPlannedScene) {
+      throw new Error("No scene plan was available for final render")
     }
 
     await deleteSceneVideoAssetsByProjectId(supabase, project.id)
@@ -355,7 +370,6 @@ export async function handleRenderFinalAdJob(
         })
 
         return {
-          durationMs: plannedScene.durationSeconds * 1000,
           localSceneFilePath,
           metadata: {
             motionStyle: plannedScene.motionStyle,
@@ -369,16 +383,31 @@ export async function handleRenderFinalAdJob(
       })
     )
 
+    await createJobTraces(supabase, [
+      {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: {
+          sceneCount: sceneResults.length
+        },
+        project_id: job.project_id,
+        stage: "scene_videos_generated",
+        trace_type: "provider_response"
+      }
+    ])
+
     await createSceneVideoAssets(
       supabase,
-      sceneResults.map((scene) => ({
+      sceneResults.map((scene, index) => ({
         kind: "scene_video",
         metadata: scene.metadata,
         mime_type: "video/mp4",
         owner_id: project.owner_id,
         project_id: project.id,
         storage_key: scene.storageKey,
-        duration_ms: scene.durationMs,
+        duration_ms: primaryScenePlan[index]?.durationSeconds
+          ? primaryScenePlan[index]!.durationSeconds * 1000
+          : primaryPlannedScene.durationSeconds * 1000,
         height: 1280,
         width: 720
       }))
@@ -404,6 +433,17 @@ export async function handleRenderFinalAdJob(
       duration_ms: Math.round(voiceoverDurationSeconds * 1000)
     })
 
+    const exportUsageEvents: {
+      estimated_cost_usd: number
+      event_type: string
+      export_id: string | null
+      metadata: Record<string, unknown>
+      owner_id: string
+      project_id: string
+      provider: string
+      units: number
+    }[] = []
+
     const exportsCreated = await Promise.all(
       scenePlansByAspectRatio.map(async ({ aspectRatio, scenePlan }) => {
         const outputFilePath = join(
@@ -416,8 +456,7 @@ export async function handleRenderFinalAdJob(
           audioFilePath: voiceoverFilePath,
           captionTimeline,
           ctaText:
-            typeof job.payload.callToAction === "string" &&
-            job.payload.callToAction.trim().length > 0
+            typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
               ? job.payload.callToAction.trim()
               : "Shop now",
           outputFilePath,
@@ -471,6 +510,47 @@ export async function handleRenderFinalAdJob(
           variantKey
         })
 
+        exportUsageEvents.push(
+          {
+            estimated_cost_usd: 0.15,
+            event_type: "scene_video_generation",
+            export_id: exportRecord.id,
+            metadata: {
+              sceneCount: sceneResults.length
+            },
+            owner_id: project.owner_id,
+            project_id: project.id,
+            provider: "runway",
+            units: sceneResults.length
+          },
+          {
+            estimated_cost_usd: 0.004,
+            event_type: "voiceover_generation",
+            export_id: exportRecord.id,
+            metadata: {
+              durationSeconds: voiceoverDurationSeconds
+            },
+            owner_id: project.owner_id,
+            project_id: project.id,
+            provider: "openai",
+            units: Math.round(voiceoverDurationSeconds)
+          },
+          {
+            estimated_cost_usd: 0.01,
+            event_type: "final_render_composition",
+            export_id: exportRecord.id,
+            metadata: {
+              aspectRatio,
+              platformPreset,
+              variantKey
+            },
+            owner_id: project.owner_id,
+            project_id: project.id,
+            provider: "ffmpeg",
+            units: 1
+          }
+        )
+
         return {
           aspectRatio,
           exportId: exportRecord.id,
@@ -478,6 +558,21 @@ export async function handleRenderFinalAdJob(
         }
       })
     )
+
+    await createUsageEvents(supabase, exportUsageEvents)
+
+    await createJobTraces(supabase, [
+      {
+        job_id: job.id,
+        owner_id: job.owner_id,
+        payload: {
+          exportsCreated
+        },
+        project_id: job.project_id,
+        stage: "exports_created",
+        trace_type: "provider_response"
+      }
+    ])
 
     await updateProjectStatus(supabase, {
       projectId: project.id,

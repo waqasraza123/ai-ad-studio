@@ -9,8 +9,10 @@ import {
   listConceptsByProjectId,
   updateConceptStatus
 } from "@/repositories/concepts-repository"
+import { createJobTraces } from "@/repositories/job-traces-repository"
 import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
 import { getProjectById } from "@/repositories/projects-repository"
+import { createUsageEvents } from "@/repositories/usage-events-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 
 function toTag(kind: string, index: number) {
@@ -54,6 +56,20 @@ export async function handleGenerateConceptPreviewJob(
     }))
   )
 
+  await createJobTraces(supabase, [
+    {
+      job_id: job.id,
+      owner_id: job.owner_id,
+      payload: {
+        conceptCount: concepts.length,
+        referenceImageCount: referenceImages.length
+      },
+      project_id: job.project_id,
+      stage: "preview_generation_requested",
+      trace_type: "provider_request"
+    }
+  ])
+
   const provider = new RunwayPreviewProvider()
 
   await deleteConceptPreviewAssetsByProjectId(supabase, job.project_id)
@@ -78,7 +94,7 @@ export async function handleGenerateConceptPreviewJob(
           runwayTaskId: preview.taskId,
           uploadStatus: "ready"
         },
-        mime_type: "image/webp" as const,
+        mime_type: "image/webp",
         owner_id: concept.owner_id,
         project_id: concept.project_id,
         storage_key: `runway-preview://${concept.project_id}/${concept.id}`
@@ -86,7 +102,36 @@ export async function handleGenerateConceptPreviewJob(
     })
   )
 
+  await createJobTraces(supabase, [
+    {
+      job_id: job.id,
+      owner_id: job.owner_id,
+      payload: {
+        previewCount: generatedAssets.length
+      },
+      project_id: job.project_id,
+      stage: "preview_generation_completed",
+      trace_type: "provider_response"
+    }
+  ])
+
   await createConceptPreviewAssets(supabase, generatedAssets)
+
+  await createUsageEvents(
+    supabase,
+    concepts.map((concept) => ({
+      estimated_cost_usd: 0.02,
+      event_type: "concept_preview_generation",
+      metadata: {
+        conceptId: concept.id,
+        provider: "runway_image"
+      },
+      owner_id: concept.owner_id,
+      project_id: concept.project_id,
+      provider: "runway",
+      units: 1
+    }))
+  )
 
   await Promise.all(
     concepts.map((concept) =>

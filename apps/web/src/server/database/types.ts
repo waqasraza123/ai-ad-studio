@@ -127,6 +127,17 @@ export type JobRecord = {
   updated_at: string
 }
 
+export type JobTraceRecord = {
+  id: string
+  job_id: string
+  project_id: string
+  owner_id: string
+  trace_type: string
+  stage: string
+  payload: Record<string, unknown>
+  created_at: string
+}
+
 export type ExportRecord = {
   id: string
   project_id: string
@@ -150,5 +161,18 @@ export type ShareLinkRecord = {
   owner_id: string
   token: string
   is_active: boolean
+  created_at: string
+}
+
+export type UsageEventRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  export_id: string | null
+  provider: string
+  event_type: string
+  units: number
+  estimated_cost_usd: number
+  metadata: Record<string, unknown>
   created_at: string
 }

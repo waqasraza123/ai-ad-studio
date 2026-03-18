@@ -1,5 +1,9 @@
 import { notFound } from "next/navigation"
+import { AnalyticsOverview } from "@/features/analytics/components/analytics-overview"
+import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { ConceptList } from "@/features/concepts/components/concept-list"
+import { ExportSummary } from "@/features/exports/components/export-summary"
+import { ProjectExportsPanel } from "@/features/exports/components/project-exports-panel"
 import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
 import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
 import {
@@ -11,8 +15,6 @@ import {
   getLatestPlatformPreset,
   getLatestVariantKey
 } from "@/features/concepts/mappers/concept-view-model"
-import { ExportSummary } from "@/features/exports/components/export-summary"
-import { ProjectExportsPanel } from "@/features/exports/components/project-exports-panel"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
@@ -20,6 +22,7 @@ import { RenderPanel } from "@/features/renders/components/render-panel"
 import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listUsageEventsByProjectIdForOwner } from "@/server/analytics/usage-event-repository"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import {
   getLatestExportByProjectIdForOwner,
@@ -64,7 +67,8 @@ export default async function ProjectDetailPage({
     jobs,
     previewAssets,
     latestExport,
-    exports
+    exports,
+    usageEvents
   ] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
@@ -73,7 +77,8 @@ export default async function ProjectDetailPage({
     listJobsByProjectIdForOwner(projectId, user.id),
     listConceptPreviewAssetsByProjectIdForOwner(projectId, user.id),
     getLatestExportByProjectIdForOwner(projectId, user.id),
-    listExportsByProjectIdForOwner(projectId, user.id)
+    listExportsByProjectIdForOwner(projectId, user.id),
+    listUsageEventsByProjectIdForOwner(projectId, user.id)
   ])
 
   if (!project) {
@@ -93,7 +98,8 @@ export default async function ProjectDetailPage({
     previewAssetsCount: previewAssets.length
   })
 
-  const previewAssetsByConceptId = mapConceptPreviewAssetsByConceptId(previewAssets)
+  const previewAssetsByConceptId =
+    mapConceptPreviewAssetsByConceptId(previewAssets)
 
   const conceptViewModels = concepts.map((concept) =>
     toConceptCardViewModel({
@@ -104,7 +110,8 @@ export default async function ProjectDetailPage({
   )
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ??
+    null
 
   const renderState = toRenderState({
     hasLatestExport: Boolean(latestExport),
@@ -127,11 +134,13 @@ export default async function ProjectDetailPage({
       })
     : []
 
-  const latestExportAsset =
-    latestExport ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null : null
+  const latestExportAsset = latestExport
+    ? (assets.find((asset) => asset.id === latestExport.asset_id) ?? null)
+    : null
 
   const latestPreviewDataUrl =
-    latestExportAsset && typeof latestExportAsset.metadata.previewDataUrl === "string"
+    latestExportAsset &&
+    typeof latestExportAsset.metadata.previewDataUrl === "string"
       ? latestExportAsset.metadata.previewDataUrl
       : null
 
@@ -152,8 +161,8 @@ export default async function ProjectDetailPage({
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             This page now includes safety-reviewed concepts, structured scene
-            planning, render variants, multi-format exports, and project export
-            management.
+            planning, export management, and project-level provider cost
+            tracking.
           </p>
         </SurfaceCard>
 
@@ -233,6 +242,8 @@ export default async function ProjectDetailPage({
       ) : null}
 
       <ProjectExportsPanel exports={exports} />
+      <AnalyticsOverview usageEvents={usageEvents} />
+      <UsageEventsTable usageEvents={usageEvents} />
 
       <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
         <ProjectBriefForm projectId={projectId} projectInput={projectInput} />
