@@ -1,48 +1,48 @@
 import "server-only"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type {
+  ExportAspectRatio,
   ExportRecord,
   PlatformPresetKey,
-  ShowcaseItemRecord,
-  ExportAspectRatio
+  ShowcaseItemRecord
 } from "@/server/database/types"
 
 const showcaseSelection =
   "id, owner_id, project_id, export_id, render_batch_id, title, summary, is_published, sort_order, created_at, updated_at"
 
-type ShowcaseBaseRecord = Omit<
-  ShowcaseItemRecord,
-  | "aspect_ratio"
-  | "platform_preset"
-  | "template_style_key"
-  | "template_name"
-  | "preview_data_url"
-> & {
-  aspect_ratio?: ExportAspectRatio | null
-  platform_preset?: PlatformPresetKey | null
-  template_style_key?: string | null
-  template_name?: string | null
-  preview_data_url?: string | null
+type EnrichedShowcaseItemRecord = ShowcaseItemRecord & {
+  aspect_ratio: ExportAspectRatio | null
+  platform_preset: PlatformPresetKey | null
+  template_style_key: string | null
+  template_name: string | null
+  preview_data_url: string | null
+}
+
+type ShowcaseBaseRecord = ShowcaseItemRecord
+
+type AssetPreviewRecord = {
+  id: string
+  metadata: Record<string, unknown>
 }
 
 function normalizeShowcaseItem(
   record: ShowcaseBaseRecord,
   exportRecord?: ExportRecord | null,
   previewDataUrl?: string | null
-): ShowcaseItemRecord {
+): EnrichedShowcaseItemRecord {
   return {
     ...record,
-    aspect_ratio: exportRecord?.aspect_ratio ?? record.aspect_ratio ?? null,
-    platform_preset: exportRecord?.platform_preset ?? record.platform_preset ?? null,
+    aspect_ratio: exportRecord?.aspect_ratio ?? null,
+    platform_preset: exportRecord?.platform_preset ?? null,
     template_style_key:
       typeof exportRecord?.render_metadata.templateStyleKey === "string"
         ? exportRecord.render_metadata.templateStyleKey
-        : record.template_style_key ?? null,
+        : null,
     template_name:
       typeof exportRecord?.render_metadata.templateName === "string"
         ? exportRecord.render_metadata.templateName
-        : record.template_name ?? null,
-    preview_data_url: previewDataUrl ?? record.preview_data_url ?? null
+        : null,
+    preview_data_url: previewDataUrl ?? null
   }
 }
 
@@ -51,7 +51,7 @@ async function enrichShowcaseItems(
   items: ShowcaseBaseRecord[]
 ) {
   if (items.length === 0) {
-    return [] as ShowcaseItemRecord[]
+    return [] as EnrichedShowcaseItemRecord[]
   }
 
   const exportIds = [...new Set(items.map((item) => item.export_id))]
@@ -66,33 +66,44 @@ async function enrichShowcaseItems(
     throw new Error("Failed to load showcase exports")
   }
 
+  const exportRecords = (exportRows ?? []) as ExportRecord[]
   const exportsById = new Map(
-    ((exportRows ?? []) as ExportRecord[]).map((exportRecord) => [exportRecord.id, exportRecord])
+    exportRecords.map((exportRecord) => [exportRecord.id, exportRecord])
   )
 
-  const assetIds = [...new Set((exportRows ?? []).map((row) => row.asset_id).filter(Boolean))]
-  const { data: assetRows, error: assetError } = assetIds.length
-    ? await supabase
-        .from("assets")
-        .select("id, metadata")
-        .in("id", assetIds)
-    : { data: [], error: null as { message?: string } | null }
+  const assetIds = [
+    ...new Set(
+      exportRecords
+        .map((exportRecord) => exportRecord.asset_id)
+        .filter((assetId): assetId is string => Boolean(assetId))
+    )
+  ]
 
-  if (assetError) {
+  const assetRowsResult = assetIds.length
+    ? await supabase.from("assets").select("id, metadata").in("id", assetIds)
+    : { data: [] as AssetPreviewRecord[], error: null }
+
+  if (assetRowsResult.error) {
     throw new Error("Failed to load showcase assets")
   }
 
   const previewByAssetId = new Map(
-    (assetRows ?? []).map((row: { id: string; metadata: Record<string, unknown> }) => [
-      row.id,
-      typeof row.metadata.previewDataUrl === "string" ? row.metadata.previewDataUrl : null
-    ])
+    ((assetRowsResult.data ?? []) as AssetPreviewRecord[]).map(
+      (assetRecord) => [
+        assetRecord.id,
+        typeof assetRecord.metadata.previewDataUrl === "string"
+          ? assetRecord.metadata.previewDataUrl
+          : null
+      ]
+    )
   )
 
   return items.map((item) => {
     const exportRecord = exportsById.get(item.export_id) ?? null
     const previewDataUrl =
-      exportRecord?.asset_id ? previewByAssetId.get(exportRecord.asset_id) ?? null : null
+      exportRecord?.asset_id != null
+        ? (previewByAssetId.get(exportRecord.asset_id) ?? null)
+        : null
 
     return normalizeShowcaseItem(item, exportRecord, previewDataUrl)
   })
@@ -153,7 +164,9 @@ export async function getShowcaseItemByExportIdForOwner(
     return null
   }
 
-  const [item] = await enrichShowcaseItems(supabase, [data as ShowcaseBaseRecord])
+  const [item] = await enrichShowcaseItems(supabase, [
+    data as ShowcaseBaseRecord
+  ])
 
   return item ?? null
 }
@@ -191,7 +204,9 @@ export async function upsertShowcaseItem(input: {
       throw new Error("Failed to update showcase item")
     }
 
-    const [item] = await enrichShowcaseItems(supabase, [data as ShowcaseBaseRecord])
+    const [item] = await enrichShowcaseItems(supabase, [
+      data as ShowcaseBaseRecord
+    ])
     return item
   }
 
@@ -212,7 +227,9 @@ export async function upsertShowcaseItem(input: {
     throw new Error("Failed to create showcase item")
   }
 
-  const [item] = await enrichShowcaseItems(supabase, [data as ShowcaseBaseRecord])
+  const [item] = await enrichShowcaseItems(supabase, [
+    data as ShowcaseBaseRecord
+  ])
   return item
 }
 
@@ -237,6 +254,8 @@ export async function unpublishShowcaseItem(input: {
     throw new Error("Failed to unpublish showcase item")
   }
 
-  const [item] = await enrichShowcaseItems(supabase, [data as ShowcaseBaseRecord])
+  const [item] = await enrichShowcaseItems(supabase, [
+    data as ShowcaseBaseRecord
+  ])
   return item
 }

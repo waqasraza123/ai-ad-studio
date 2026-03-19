@@ -1,3 +1,5 @@
+"use server"
+
 import { notFound } from "next/navigation"
 import {
   getActiveDeliveryWorkspaceByToken,
@@ -34,17 +36,20 @@ export default async function PublicDeliveryPage({
     notFound()
   }
 
-  const workspaceExports = await listPublicDeliveryWorkspaceExportsByWorkspaceId(workspace.id)
-  const exports = await listExportsForDeliveryWorkspace({
+  const workspaceExports =
+    await listPublicDeliveryWorkspaceExportsByWorkspaceId(workspace.id)
+  const exportRecords = await listExportsForDeliveryWorkspace({
     exportIds: workspaceExports.map((item) => item.export_id)
   })
   const assets = await listAssetsForDeliveryWorkspace({
-    assetIds: exports
+    assetIds: exportRecords
       .map((exportRecord) => exportRecord.asset_id)
       .filter((assetId): assetId is string => Boolean(assetId))
   })
 
-  const exportsById = new Map(exports.map((exportRecord) => [exportRecord.id, exportRecord]))
+  const exportsById = new Map(
+    exportRecords.map((exportRecord) => [exportRecord.id, exportRecord])
+  )
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]))
 
   return (
@@ -100,14 +105,16 @@ export default async function PublicDeliveryPage({
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
               <p className="text-sm text-slate-400">Review note</p>
               <p className="mt-2 text-sm leading-7 text-white">
-                {workspace.approval_summary.review_note ?? "No review note recorded."}
+                {workspace.approval_summary.review_note ??
+                  "No review note recorded."}
               </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
               <p className="text-sm text-slate-400">Final decision</p>
               <p className="mt-2 text-sm leading-7 text-white">
-                {workspace.approval_summary.finalization_note ?? "No final decision note recorded."}
+                {workspace.approval_summary.finalization_note ??
+                  "No final decision note recorded."}
               </p>
             </div>
           </div>
@@ -129,18 +136,21 @@ export default async function PublicDeliveryPage({
 
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
             {workspaceExports.map((workspaceExport) => {
-              const exportRecord = exportsById.get(workspaceExport.export_id) ?? null
-              const asset =
-                exportRecord?.asset_id
-                  ? assetsById.get(exportRecord.asset_id) ?? null
-                  : null
+              const exportRecord =
+                exportsById.get(workspaceExport.export_id) ?? null
+              const asset = exportRecord?.asset_id
+                ? (assetsById.get(exportRecord.asset_id) ?? null)
+                : null
               const previewDataUrl =
                 asset && typeof asset.metadata.previewDataUrl === "string"
                   ? asset.metadata.previewDataUrl
-                  : exportRecord && typeof exportRecord.render_metadata.previewDataUrl === "string"
+                  : exportRecord &&
+                      typeof exportRecord.render_metadata.previewDataUrl ===
+                        "string"
                     ? exportRecord.render_metadata.previewDataUrl
                     : null
-              const isCanonical = exportRecord?.id === workspace.canonical_export_id
+              const isCanonical =
+                exportRecord?.id === workspace.canonical_export_id
 
               return (
                 <article
@@ -152,7 +162,6 @@ export default async function PublicDeliveryPage({
                   }`}
                 >
                   {previewDataUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       alt={workspaceExport.label}
                       className="h-72 w-full rounded-[1.5rem] object-cover"
