@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { Button } from "@/components/primitives/button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { startRenderBatchAction } from "@/features/renders/actions/start-render-batch"
@@ -128,7 +129,7 @@ export function RenderBatchPanel({
               key={batch.id}
               className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4"
             >
-              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-white">
@@ -137,6 +138,11 @@ export function RenderBatchPanel({
                     <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(batch.status)}`}>
                       {batch.status}
                     </span>
+                    {batch.winner_export_id ? (
+                      <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
+                        winner selected
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-2 text-sm text-slate-300">
                     {batch.platform_preset} · exports {batch.export_count}
@@ -144,6 +150,11 @@ export function RenderBatchPanel({
                   <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
                     {formatTimestamp(batch.created_at)}
                   </p>
+                  {batch.review_note ? (
+                    <p className="mt-3 text-sm leading-7 text-slate-300">
+                      {batch.review_note}
+                    </p>
+                  ) : null}
                 </div>
 
                 <div className="flex flex-wrap gap-2">
@@ -155,6 +166,12 @@ export function RenderBatchPanel({
                       {variantKey}
                     </span>
                   ))}
+                  <Link
+                    href={`/dashboard/render-batches/${batch.id}`}
+                    className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
+                  >
+                    Open review
+                  </Link>
                 </div>
               </div>
             </div>

@@ -343,6 +343,9 @@ export type RenderBatchRecord = {
   aspect_ratios: ExportAspectRatio[]
   variant_keys: RenderVariantKey[]
   export_count: number
+  winner_export_id: string | null
+  review_note: string | null
+  decided_at: string | null
   created_at: string
   updated_at: string
 }

@@ -20,12 +20,15 @@ export type WorkerRenderBatchRecord = {
   aspect_ratios: ExportAspectRatio[]
   variant_keys: RenderVariantKey[]
   export_count: number
+  winner_export_id: string | null
+  review_note: string | null
+  decided_at: string | null
   created_at: string
   updated_at: string
 }
 
 const renderBatchSelection =
-  "id, owner_id, project_id, concept_id, job_id, status, platform_preset, aspect_ratios, variant_keys, export_count, created_at, updated_at"
+  "id, owner_id, project_id, concept_id, job_id, status, platform_preset, aspect_ratios, variant_keys, export_count, winner_export_id, review_note, decided_at, created_at, updated_at"
 
 function normalizeRenderBatch(
   record: Omit<WorkerRenderBatchRecord, "aspect_ratios" | "variant_keys"> & {
