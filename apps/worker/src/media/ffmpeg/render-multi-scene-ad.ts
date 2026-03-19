@@ -10,11 +10,26 @@ type RenderMultiSceneAdInput = {
   brandForeground: string
   brandPrimary: string
   brandSecondary: string
+  captionLayout: {
+    box_width: number
+    box_height: number
+    x: number
+    y: number
+    font_size: number
+  }
   ctaHeadlinePrefix: string
   ctaSubheadlineText: string
   ctaText: string
+  ctaStartSeconds: number
+  ctaCardSeconds: number
   emphasisStyle: "clean" | "bold" | "minimal"
   headingFontFamily: string
+  safeZone: {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
   sceneVideoFilePaths: string[]
   outputFilePath: string
   projectName: string
@@ -63,36 +78,6 @@ function getCanvasSize(aspectRatio: "9:16" | "1:1" | "16:9") {
   }
 }
 
-function getCaptionBox(aspectRatio: "9:16" | "1:1" | "16:9") {
-  if (aspectRatio === "16:9") {
-    return {
-      boxHeight: 170,
-      boxWidth: 1520,
-      fontSize: 40,
-      x: 200,
-      y: 780
-    }
-  }
-
-  if (aspectRatio === "1:1") {
-    return {
-      boxHeight: 170,
-      boxWidth: 860,
-      fontSize: 40,
-      x: 110,
-      y: 760
-    }
-  }
-
-  return {
-    boxHeight: 230,
-    boxWidth: 940,
-    fontSize: 46,
-    x: 70,
-    y: 1460
-  }
-}
-
 function getHeadlineFontSize(emphasisStyle: "clean" | "bold" | "minimal") {
   if (emphasisStyle === "bold") {
     return 108
@@ -118,13 +103,35 @@ async function createCtaCardSvg(input: {
   filePath: string
   headingFontFamily: string
   projectName: string
+  safeZone: {
+    top: number
+    right: number
+    bottom: number
+    left: number
+  }
 }) {
   const { height, width } = getCanvasSize(input.aspectRatio)
-  const projectY = input.aspectRatio === "16:9" ? 360 : input.aspectRatio === "1:1" ? 360 : 760
-  const ctaY = input.aspectRatio === "16:9" ? 530 : input.aspectRatio === "1:1" ? 530 : 920
-  const subY = input.aspectRatio === "16:9" ? 610 : input.aspectRatio === "1:1" ? 610 : 1000
+  const projectY =
+    input.aspectRatio === "16:9"
+      ? Math.max(180, 280 + input.safeZone.top)
+      : input.aspectRatio === "1:1"
+        ? Math.max(180, 280 + input.safeZone.top)
+        : Math.max(320, 620 + input.safeZone.top / 2)
+  const ctaY =
+    input.aspectRatio === "16:9"
+      ? Math.max(340, 450 + input.safeZone.top / 2)
+      : input.aspectRatio === "1:1"
+        ? Math.max(340, 450 + input.safeZone.top / 2)
+        : Math.max(540, 780 + input.safeZone.top / 2)
+  const subY =
+    input.aspectRatio === "16:9"
+      ? ctaY + 80
+      : input.aspectRatio === "1:1"
+        ? ctaY + 80
+        : ctaY + 90
   const headlineFontSize = getHeadlineFontSize(input.emphasisStyle)
   const headlineText = `${input.ctaHeadlinePrefix} ${input.ctaText}`.trim()
+  const leftPadding = 120 + input.safeZone.left / 2
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
@@ -136,10 +143,10 @@ async function createCtaCardSvg(input: {
         </linearGradient>
       </defs>
       <rect width="${width}" height="${height}" fill="url(#bg)"/>
-      <rect x="72" y="72" width="${width - 144}" height="${height - 144}" rx="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)"/>
-      <text x="120" y="${projectY}" fill="${escapeXml(input.brandSecondary)}" font-size="30" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
-      <text x="120" y="${ctaY}" fill="${escapeXml(input.brandForeground)}" font-size="${headlineFontSize}" font-weight="700" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif">${escapeXml(headlineText)}</text>
-      <text x="120" y="${subY}" fill="${escapeXml(input.brandForeground)}" font-size="36" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif">${escapeXml(input.ctaSubheadlineText)}</text>
+      <rect x="${72 + input.safeZone.left / 4}" y="${72 + input.safeZone.top / 4}" width="${width - 144 - input.safeZone.left / 4 - input.safeZone.right / 4}" height="${height - 144 - input.safeZone.top / 4 - input.safeZone.bottom / 4}" rx="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)"/>
+      <text x="${leftPadding}" y="${projectY}" fill="${escapeXml(input.brandSecondary)}" font-size="30" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
+      <text x="${leftPadding}" y="${ctaY}" fill="${escapeXml(input.brandForeground)}" font-size="${headlineFontSize}" font-weight="700" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif">${escapeXml(headlineText)}</text>
+      <text x="${leftPadding}" y="${subY}" fill="${escapeXml(input.brandForeground)}" font-size="36" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif">${escapeXml(input.ctaSubheadlineText)}</text>
     </svg>
   `.trim()
 
@@ -182,33 +189,38 @@ function buildSceneNormalizeFilters(
   })
 }
 
-function buildConcatFilter(sceneCount: number) {
-  const inputs = Array.from({ length: sceneCount }, (_, index) => `[v${index}][${index}:a]`).join("")
-  const ctaIndex = sceneCount
-  return `${inputs}[v${ctaIndex}][${ctaIndex}:a]concat=n=${sceneCount + 1}:v=1:a=1[basev][basea]`
+function buildSceneConcatFilter(sceneCount: number) {
+  const inputs = Array.from({ length: sceneCount }, (_, index) => `[v${index}]`).join("")
+  return `${inputs}concat=n=${sceneCount}:v=1:a=0[basev]`
 }
 
 function buildCaptionFilters(
-  aspectRatio: "9:16" | "1:1" | "16:9",
+  initialLabel: string,
+  captionLayout: {
+    box_width: number
+    box_height: number
+    x: number
+    y: number
+    font_size: number
+  },
   captionTimeline: CaptionCue[]
 ) {
   if (captionTimeline.length === 0) {
-    return ["[basev]copy[vout]"]
+    return [`[${initialLabel}]copy[vout]`]
   }
 
-  const box = getCaptionBox(aspectRatio)
   const filters: string[] = []
-  let currentLabel = "basev"
+  let currentLabel = initialLabel
 
   captionTimeline.forEach((cue, index) => {
     const nextLabel = index === captionTimeline.length - 1 ? "vout" : `cap${index + 1}`
     const escapedText = escapeDrawText(cue.text)
 
     filters.push(
-      `[${currentLabel}]drawbox=x=${box.x}:y=${box.y}:w=${box.boxWidth}:h=${box.boxHeight}:color=black@0.32:t=fill:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[box${index}]`
+      `[${currentLabel}]drawbox=x=${captionLayout.x}:y=${captionLayout.y}:w=${captionLayout.box_width}:h=${captionLayout.box_height}:color=black@0.32:t=fill:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[box${index}]`
     )
     filters.push(
-      `[box${index}]drawtext=text='${escapedText}':fontcolor=white:fontsize=${box.fontSize}:x=(w-text_w)/2:y=${box.y + 85}:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[${nextLabel}]`
+      `[box${index}]drawtext=text='${escapedText}':fontcolor=white:fontsize=${captionLayout.font_size}:x=(w-text_w)/2:y=${captionLayout.y + Math.floor(captionLayout.box_height / 2)}:enable='between(t,${cue.startSeconds},${cue.endSeconds})'[${nextLabel}]`
     )
 
     currentLabel = nextLabel
@@ -234,7 +246,8 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     emphasisStyle: input.emphasisStyle,
     filePath: ctaSvgPath,
     headingFontFamily: input.headingFontFamily,
-    projectName: input.projectName
+    projectName: input.projectName,
+    safeZone: input.safeZone
   })
 
   await runCommand("ffmpeg", [
@@ -249,7 +262,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "anullsrc=channel_layout=stereo:sample_rate=48000",
     "-shortest",
     "-t",
-    "1.5",
+    String(input.ctaCardSeconds),
     "-vf",
     `scale=${width}:${height},format=yuv420p`,
     "-c:v",
@@ -267,18 +280,16 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     ctaVideoPath
   ])
 
+  const sceneCount = input.sceneVideoFilePaths.length
   const sceneInputs = input.sceneVideoFilePaths.flatMap((filePath) => ["-i", filePath])
-  const sceneNormalizeFilters = buildSceneNormalizeFilters(
-    input.aspectRatio,
-    input.sceneVideoFilePaths.length
-  )
-  const ctaIndex = input.sceneVideoFilePaths.length
+  const ctaInputIndex = sceneCount
 
   const filterComplex = [
-    ...sceneNormalizeFilters,
-    `[${ctaIndex}:v]scale=${width}:${height},setsar=1[v${ctaIndex}]`,
-    buildConcatFilter(input.sceneVideoFilePaths.length),
-    ...buildCaptionFilters(input.aspectRatio, input.captionTimeline)
+    ...buildSceneNormalizeFilters(input.aspectRatio, sceneCount),
+    buildSceneConcatFilter(sceneCount),
+    `[${ctaInputIndex}:v]scale=${width}:${height},setsar=1[ctav]`,
+    `[basev][ctav]overlay=0:0:enable='between(t,${input.ctaStartSeconds},${input.ctaStartSeconds + input.ctaCardSeconds})'[compositev]`,
+    ...buildCaptionFilters("compositev", input.captionLayout, input.captionTimeline)
   ].join(";")
 
   await runCommand("ffmpeg", [
@@ -293,7 +304,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "-map",
     "[vout]",
     "-map",
-    `${input.sceneVideoFilePaths.length + 1}:a`,
+    `${sceneCount + 1}:a`,
     "-c:v",
     "libx264",
     "-pix_fmt",

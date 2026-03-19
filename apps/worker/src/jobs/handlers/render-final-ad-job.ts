@@ -8,14 +8,12 @@ import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
 import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
 import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
 import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
-import {
-  cleanupRenderWorkspace,
-  createRenderWorkspace
-} from "@/media/temp/temp-paths"
+import { cleanupRenderWorkspace, createRenderWorkspace } from "@/media/temp/temp-paths"
 import type { PlannedScene } from "@/planning/scene-planner"
 import { buildStructuredScenePlan } from "@/planning/scene-planner"
 import { OpenAiTtsProvider } from "@/providers/openai-tts-provider"
 import { RunwayVideoProvider } from "@/providers/runway-video-provider"
+import { getRenderPackForPlatform } from "@/render-packs/render-pack-service"
 import {
   createRenderAsset,
   createSceneVideoAssets,
@@ -27,10 +25,7 @@ import { createExportRecord } from "@/repositories/exports-repository"
 import { createJobTraces } from "@/repositories/job-traces-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
-import {
-  getProjectById,
-  updateProjectStatus
-} from "@/repositories/projects-repository"
+import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
 import { createUsageEvents } from "@/repositories/usage-events-repository"
 import { getProjectTemplate } from "@/templates/template-service"
 
@@ -176,7 +171,11 @@ function buildNormalizedSceneImagePaths(sceneReferenceImagePaths: string[]) {
     throw new Error("At least one scene reference image is required")
   }
 
-  return [first, second ?? first, third ?? first] as const
+  return [
+    first,
+    second ?? first,
+    third ?? first
+  ] as const
 }
 
 function getPlannedScene(scenePlan: PlannedScene[], index: number) {
@@ -231,29 +230,23 @@ export async function handleRenderFinalAdJob(
   ])
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ??
-    null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
 
   if (!selectedConcept) {
     throw new Error("Selected concept record not found for final render")
   }
 
-  const previewAsset =
-    (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
+  const previewAsset = (job.payload.previewAsset as Record<string, unknown> | undefined) ?? null
   const previewDataUrl =
     previewAsset && typeof previewAsset.previewDataUrl === "string"
       ? previewAsset.previewDataUrl
       : null
 
   if (!previewDataUrl) {
-    throw new Error(
-      "Selected concept preview data was not included in the render job"
-    )
+    throw new Error("Selected concept preview data was not included in the render job")
   }
 
-  const workspacePath = await createRenderWorkspace(
-    `ai-ad-studio-render-${project.id}`
-  )
+  const workspacePath = await createRenderWorkspace(`ai-ad-studio-render-${project.id}`)
   const voiceoverFilePath = join(workspacePath, "voiceover.mp3")
 
   try {
@@ -320,8 +313,7 @@ export async function handleRenderFinalAdJob(
       script: selectedConcept.script
     })
 
-    const voiceoverDurationSeconds =
-      await getMediaDurationSeconds(voiceoverFilePath)
+    const voiceoverDurationSeconds = await getMediaDurationSeconds(voiceoverFilePath)
     const captionTimeline = buildCaptionTimeline({
       script: selectedConcept.script,
       totalDurationSeconds: Math.min(10, voiceoverDurationSeconds)
@@ -342,45 +334,55 @@ export async function handleRenderFinalAdJob(
     ])
 
     const environment = getWorkerEnvironment()
-    const videoProvider = new RunwayVideoProvider(
-      environment.RUNWAYML_API_SECRET
+    const videoProvider = new RunwayVideoProvider(environment.RUNWAYML_API_SECRET)
+
+    const scenePlansByAspectRatio = await Promise.all(
+      aspectRatios.map(async (aspectRatio) => {
+        const renderPack = await getRenderPackForPlatform(supabase, {
+          ownerId: project.owner_id,
+          platformPreset,
+          aspectRatio
+        })
+
+        return {
+          aspectRatio,
+          renderPack,
+          scenePlan: buildStructuredScenePlan({
+            angle: selectedConcept.angle,
+            aspectRatio,
+            brandPalette: brandKit.palette,
+            brandTypography: brandKit.typography,
+            callToAction:
+              typeof job.payload.callToAction === "string" ? job.payload.callToAction : null,
+            hook: selectedConcept.hook,
+            platformPreset,
+            productName: project.name,
+            renderSafeZone: renderPack.safe_zone,
+            script: selectedConcept.script,
+            templateCtaPreset: template.cta_preset,
+            templateScenePack: template.scene_pack,
+            variantKey,
+            visualDirection: selectedConcept.visual_direction
+          })
+        }
+      })
     )
 
-    const scenePlansByAspectRatio = aspectRatios.map((aspectRatio) => ({
-      aspectRatio,
-      scenePlan: buildStructuredScenePlan({
-        angle: selectedConcept.angle,
-        aspectRatio,
-        brandPalette: brandKit.palette,
-        brandTypography: brandKit.typography,
-        callToAction:
-          typeof job.payload.callToAction === "string"
-            ? job.payload.callToAction
-            : null,
-        hook: selectedConcept.hook,
-        platformPreset,
-        productName: project.name,
-        script: selectedConcept.script,
-        templateCtaPreset: template.cta_preset,
-        templateScenePack: template.scene_pack,
-        variantKey,
-        visualDirection: selectedConcept.visual_direction
-      })
-    }))
+    const primaryEntry = scenePlansByAspectRatio[0]
 
-    const primaryScenePlan = scenePlansByAspectRatio[0]?.scenePlan
-
-    if (!primaryScenePlan || primaryScenePlan.length === 0) {
+    if (!primaryEntry || primaryEntry.scenePlan.length === 0) {
       throw new Error("Primary scene plan was not generated")
     }
+
+    const primaryScenePlan = primaryEntry.scenePlan
+    const primaryRenderPack = primaryEntry.renderPack
 
     await deleteSceneVideoAssetsByProjectId(supabase, project.id)
 
     const sceneResults = await Promise.all(
       normalizedSceneImagePaths.map(async (imagePath, index) => {
         const imageBytes = await readFile(imagePath)
-        const imageExtension =
-          imagePath.split(".").pop()?.toLowerCase() ?? "png"
+        const imageExtension = imagePath.split(".").pop()?.toLowerCase() ?? "png"
         const imageMimeType =
           imageExtension === "webp"
             ? "image/webp"
@@ -419,6 +421,8 @@ export async function handleRenderFinalAdJob(
             brandKitName: brandKit.name,
             motionStyle: plannedScene.motionStyle,
             purpose: plannedScene.purpose,
+            renderPackId: primaryRenderPack.id,
+            renderPackName: primaryRenderPack.name,
             runwayTaskId: generated.taskId,
             sceneIndex: index,
             sourceConceptId: selectedConcept.id,
@@ -437,6 +441,8 @@ export async function handleRenderFinalAdJob(
         payload: {
           brandKitId: brandKit.id,
           brandKitName: brandKit.name,
+          renderPackId: primaryRenderPack.id,
+          renderPackName: primaryRenderPack.name,
           sceneCount: sceneResults.length,
           templateId: template.id,
           templateStyleKey: template.style_key
@@ -498,7 +504,7 @@ export async function handleRenderFinalAdJob(
     }[] = []
 
     const exportsCreated = await Promise.all(
-      scenePlansByAspectRatio.map(async ({ aspectRatio, scenePlan }) => {
+      scenePlansByAspectRatio.map(async ({ aspectRatio, renderPack, scenePlan }) => {
         const outputFilePath = join(
           workspacePath,
           `final-export-${aspectRatio.replace(":", "x")}.mp4`
@@ -511,21 +517,22 @@ export async function handleRenderFinalAdJob(
           brandForeground: brandKit.palette.foreground,
           brandPrimary: brandKit.palette.primary,
           brandSecondary: brandKit.palette.secondary,
+          captionLayout: renderPack.caption_layout,
           captionTimeline,
           ctaHeadlinePrefix: template.cta_preset.headline_prefix,
           ctaSubheadlineText: template.cta_preset.subheadline_text,
           ctaText:
-            typeof job.payload.callToAction === "string" &&
-            job.payload.callToAction.trim().length > 0
+            typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
               ? job.payload.callToAction.trim()
               : "Shop now",
+          ctaCardSeconds: renderPack.cta_timing.cta_card_seconds,
+          ctaStartSeconds: renderPack.cta_timing.cta_start_seconds,
           emphasisStyle: template.cta_preset.emphasis_style,
           headingFontFamily: brandKit.typography.heading_family,
           outputFilePath,
           projectName: project.name,
-          sceneVideoFilePaths: sceneResults.map(
-            (scene) => scene.localSceneFilePath
-          ),
+          safeZone: renderPack.safe_zone,
+          sceneVideoFilePaths: sceneResults.map((scene) => scene.localSceneFilePath),
           workspacePath
         })
 
@@ -545,10 +552,15 @@ export async function handleRenderFinalAdJob(
           brandPalette: brandKit.palette,
           brandTypography: brandKit.typography,
           captionCueCount: captionTimeline.length,
+          captionLayout: renderPack.caption_layout,
           ctaPreset: template.cta_preset,
+          ctaTiming: renderPack.cta_timing,
           platformPreset,
           previewDataUrl,
           renderMode: "ffmpeg_runway_scene_video_composition",
+          renderPackId: renderPack.id,
+          renderPackName: renderPack.name,
+          safeZone: renderPack.safe_zone,
           sceneCount: sceneResults.length,
           scenePlan,
           selectedConceptId: selectedConcept.id,
@@ -589,6 +601,7 @@ export async function handleRenderFinalAdJob(
             export_id: exportRecord.id,
             metadata: {
               brandKitId: brandKit.id,
+              renderPackId: renderPack.id,
               sceneCount: sceneResults.length,
               templateId: template.id
             },
@@ -604,6 +617,7 @@ export async function handleRenderFinalAdJob(
             metadata: {
               brandKitId: brandKit.id,
               durationSeconds: voiceoverDurationSeconds,
+              renderPackId: renderPack.id,
               templateId: template.id
             },
             owner_id: project.owner_id,
@@ -619,6 +633,7 @@ export async function handleRenderFinalAdJob(
               aspectRatio,
               brandKitId: brandKit.id,
               platformPreset,
+              renderPackId: renderPack.id,
               templateId: template.id,
               variantKey
             },
@@ -632,6 +647,8 @@ export async function handleRenderFinalAdJob(
         return {
           aspectRatio,
           exportId: exportRecord.id,
+          renderPackId: renderPack.id,
+          renderPackName: renderPack.name,
           storageKey
         }
       })

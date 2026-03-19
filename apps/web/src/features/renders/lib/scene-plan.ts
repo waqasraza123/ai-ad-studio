@@ -2,6 +2,7 @@ import type {
   AdTemplateRecord,
   BrandKitRecord,
   PlatformPresetKey,
+  PlatformRenderPackRecord,
   RenderVariantKey
 } from "@/server/database/types"
 
@@ -22,6 +23,7 @@ export function buildScenePlanPreview(input: {
   callToAction: string | null
   hook: string
   platformPreset: PlatformPresetKey
+  renderPack: PlatformRenderPackRecord | null
   script: string
   template: AdTemplateRecord | null
   variantKey: RenderVariantKey
@@ -36,6 +38,10 @@ export function buildScenePlanPreview(input: {
 
   const templateScenes = input.template?.scene_pack ?? []
   const brandAccent = input.brandKit?.palette.accent ?? "#22D3EE"
+  const safeZone =
+    input.renderPack
+      ? `safe-zone T${input.renderPack.safe_zone.top} B${input.renderPack.safe_zone.bottom}`
+      : "default-safe-zone"
 
   const defaultMotion = [
     input.variantKey === "caption_heavy"
@@ -55,7 +61,7 @@ export function buildScenePlanPreview(input: {
     {
       captionText: shorten(input.hook, input.variantKey === "caption_heavy" ? 86 : 70),
       durationSeconds: 3,
-      motionStyle: `${templateScenes[0]?.motion_style ?? defaultMotion[0]} · accent ${brandAccent}`,
+      motionStyle: `${templateScenes[0]?.motion_style ?? defaultMotion[0]} · accent ${brandAccent} · ${safeZone}`,
       purpose: "opener" as const
     },
     {
@@ -64,7 +70,7 @@ export function buildScenePlanPreview(input: {
         input.variantKey === "caption_heavy" ? 98 : 76
       ),
       durationSeconds: 4,
-      motionStyle: `${templateScenes[1]?.motion_style ?? defaultMotion[1]} · accent ${brandAccent}`,
+      motionStyle: `${templateScenes[1]?.motion_style ?? defaultMotion[1]} · accent ${brandAccent} · ${safeZone}`,
       purpose: "product_emphasis" as const
     },
     {
@@ -73,7 +79,7 @@ export function buildScenePlanPreview(input: {
           ? `Strong CTA close: ${ctaText}`
           : `Close with CTA: ${ctaText}`,
       durationSeconds: 3,
-      motionStyle: `${templateScenes[2]?.motion_style ?? defaultMotion[2]} · accent ${brandAccent}`,
+      motionStyle: `${templateScenes[2]?.motion_style ?? defaultMotion[2]} · accent ${brandAccent} · ${safeZone}`,
       purpose: "cta_close" as const
     }
   ]

@@ -21,6 +21,7 @@ import { ProjectExportsPanel } from "@/features/exports/components/project-expor
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
+import { RenderPackSummaryPanel } from "@/features/render-packs/components/render-pack-summary-panel"
 import { RenderPanel } from "@/features/renders/components/render-panel"
 import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { TemplateSelectorPanel } from "@/features/templates/components/template-selector-panel"
@@ -40,6 +41,7 @@ import {
 } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { listRenderPacksByOwner } from "@/server/render-packs/render-pack-repository"
 import { listTemplatesByOwner } from "@/server/templates/template-repository"
 
 type ProjectDetailPageProps = {
@@ -77,7 +79,8 @@ export default async function ProjectDetailPage({
     usageEvents,
     latestApproval,
     templates,
-    brandKits
+    brandKits,
+    renderPacks
   ] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
@@ -90,7 +93,8 @@ export default async function ProjectDetailPage({
     listUsageEventsByProjectIdForOwner(projectId, user.id),
     getLatestApprovalByProjectIdForOwner(projectId, user.id),
     listTemplatesByOwner(user.id),
-    listBrandKitsByOwner(user.id)
+    listBrandKitsByOwner(user.id),
+    listRenderPacksByOwner(user.id)
   ])
 
   if (!project) {
@@ -137,6 +141,20 @@ export default async function ProjectDetailPage({
 
   const selectedVariantKey = getLatestVariantKey(latestExport?.variant_key)
   const selectedPlatformPreset = getLatestPlatformPreset(latestExport?.platform_preset)
+  const selectedAspectRatio = latestExport?.aspect_ratio ?? "9:16"
+
+  const activeRenderPack =
+    renderPacks.find(
+      (pack) =>
+        pack.platform_preset === selectedPlatformPreset &&
+        pack.aspect_ratio === selectedAspectRatio
+    ) ??
+    renderPacks.find(
+      (pack) =>
+        pack.platform_preset === "default" &&
+        pack.aspect_ratio === selectedAspectRatio
+    ) ??
+    null
 
   const scenePlan = selectedConcept
     ? buildScenePlanPreview({
@@ -144,6 +162,7 @@ export default async function ProjectDetailPage({
         callToAction: projectInput?.call_to_action ?? null,
         hook: selectedConcept.hook,
         platformPreset: selectedPlatformPreset,
+        renderPack: activeRenderPack,
         script: selectedConcept.script,
         template: currentTemplate,
         variantKey: selectedVariantKey
@@ -175,7 +194,7 @@ export default async function ProjectDetailPage({
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             This page now includes reusable branded templates, expanded brand kits,
-            CTA presets, approval gates, export management, and cost tracking.
+            approval gates, export management, and platform-specific render packs.
           </p>
         </SurfaceCard>
 
@@ -254,6 +273,12 @@ export default async function ProjectDetailPage({
         scenePlan={scenePlan}
         selectedConceptTitle={selectedConcept?.title ?? null}
         selectedVariantKey={selectedVariantKey}
+      />
+
+      <RenderPackSummaryPanel
+        aspectRatio={selectedAspectRatio}
+        platformPreset={selectedPlatformPreset}
+        renderPacks={renderPacks}
       />
 
       <ApprovalGatePanel approval={latestApproval} selectedConcept={selectedConcept} />

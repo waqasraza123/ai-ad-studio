@@ -44,6 +44,13 @@ export type BrandKitTypography = {
   letter_spacing: string
 }
 
+export type RenderSafeZone = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
 function shorten(value: string, limit: number) {
   const normalized = value.trim()
   return normalized.length > limit ? `${normalized.slice(0, limit - 3)}...` : normalized
@@ -81,6 +88,10 @@ function presetStyle(platformPreset: PlatformPresetKey) {
   return "general-purpose ad pacing"
 }
 
+function safeZoneText(safeZone: RenderSafeZone) {
+  return `safe zone top ${safeZone.top}, right ${safeZone.right}, bottom ${safeZone.bottom}, left ${safeZone.left}`
+}
+
 export function buildStructuredScenePlan(input: {
   angle: string
   aspectRatio: ExportAspectRatio
@@ -90,6 +101,7 @@ export function buildStructuredScenePlan(input: {
   hook: string
   platformPreset: PlatformPresetKey
   productName: string
+  renderSafeZone: RenderSafeZone
   script: string
   templateCtaPreset: TemplateCtaPreset
   templateScenePack: TemplateScenePackItem[]
@@ -101,6 +113,7 @@ export function buildStructuredScenePlan(input: {
     input.visualDirection?.trim() || "premium studio visuals with clean motion"
   const framing = aspectRatioFraming(input.aspectRatio)
   const preset = presetStyle(input.platformPreset)
+  const safeZone = safeZoneText(input.renderSafeZone)
 
   const openerScene = input.templateScenePack[0]
   const emphasisScene = input.templateScenePack[1]
@@ -125,22 +138,22 @@ export function buildStructuredScenePlan(input: {
     {
       captionText: openerCaption,
       durationSeconds: 3,
-      motionStyle: `${openerScene?.motion_style ?? `premium hero reveal with ${framing}`} · accent ${input.brandPalette.accent}`,
-      promptText: `Create an opener scene for ${input.productName}. Hook: ${input.hook}. ${visualDirection}. ${framing}. ${preset}. Visual style: ${openerScene?.visual_style ?? "premium product reveal"}. Caption tone: ${openerScene?.caption_tone ?? "clear"}. Primary color ${input.brandPalette.primary}. Typography ${input.brandTypography.heading_family}.`,
+      motionStyle: `${openerScene?.motion_style ?? `premium hero reveal with ${framing}`} · accent ${input.brandPalette.accent} · ${safeZone}`,
+      promptText: `Create an opener scene for ${input.productName}. Hook: ${input.hook}. ${visualDirection}. ${framing}. ${preset}. ${safeZone}. Visual style: ${openerScene?.visual_style ?? "premium product reveal"}. Caption tone: ${openerScene?.caption_tone ?? "clear"}. Primary color ${input.brandPalette.primary}. Typography ${input.brandTypography.heading_family}.`,
       purpose: "opener" as const
     },
     {
       captionText: productCaption,
       durationSeconds: 4,
-      motionStyle: `${emphasisScene?.motion_style ?? `product-detail emphasis with ${framing}`} · accent ${input.brandPalette.accent}`,
-      promptText: `Create a product emphasis scene for ${input.productName}. Angle: ${input.angle}. Script focus: ${input.script}. ${visualDirection}. ${framing}. ${preset}. Visual style: ${emphasisScene?.visual_style ?? "product emphasis frame"}. Caption tone: ${emphasisScene?.caption_tone ?? "direct"}. Secondary color ${input.brandPalette.secondary}. Typography ${input.brandTypography.body_family}.`,
+      motionStyle: `${emphasisScene?.motion_style ?? `product-detail emphasis with ${framing}`} · accent ${input.brandPalette.accent} · ${safeZone}`,
+      promptText: `Create a product emphasis scene for ${input.productName}. Angle: ${input.angle}. Script focus: ${input.script}. ${visualDirection}. ${framing}. ${preset}. ${safeZone}. Visual style: ${emphasisScene?.visual_style ?? "product emphasis frame"}. Caption tone: ${emphasisScene?.caption_tone ?? "direct"}. Secondary color ${input.brandPalette.secondary}. Typography ${input.brandTypography.body_family}.`,
       purpose: "product_emphasis" as const
     },
     {
       captionText: closeCaption,
       durationSeconds: 3,
-      motionStyle: `${closeScene?.motion_style ?? `clean CTA close with ${framing}`} · accent ${input.brandPalette.accent}`,
-      promptText: `Create a final conversion scene for ${input.productName}. CTA: ${ctaText}. ${visualDirection}. ${framing}. ${preset}. Visual style: ${closeScene?.visual_style ?? "conversion end-card frame"}. Caption tone: ${closeScene?.caption_tone ?? "strong"}. Accent color ${input.brandPalette.accent}. Headline typography ${input.brandTypography.heading_family}.`,
+      motionStyle: `${closeScene?.motion_style ?? `clean CTA close with ${framing}`} · accent ${input.brandPalette.accent} · ${safeZone}`,
+      promptText: `Create a final conversion scene for ${input.productName}. CTA: ${ctaText}. ${visualDirection}. ${framing}. ${preset}. ${safeZone}. Visual style: ${closeScene?.visual_style ?? "conversion end-card frame"}. Caption tone: ${closeScene?.caption_tone ?? "strong"}. Accent color ${input.brandPalette.accent}. Headline typography ${input.brandTypography.heading_family}.`,
       purpose: "cta_close" as const
     }
   ]

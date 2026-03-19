@@ -79,6 +79,26 @@ export type BrandKitTypography = {
   letter_spacing: string
 }
 
+export type RenderSafeZone = {
+  top: number
+  right: number
+  bottom: number
+  left: number
+}
+
+export type CaptionLayoutPreset = {
+  box_width: number
+  box_height: number
+  x: number
+  y: number
+  font_size: number
+}
+
+export type CtaTimingPreset = {
+  cta_card_seconds: number
+  cta_start_seconds: number
+}
+
 export type ProjectRecord = {
   id: string
   owner_id: string
@@ -293,6 +313,20 @@ export type BrandKitRecord = {
   logo_asset_id: string | null
   palette: BrandKitPalette
   typography: BrandKitTypography
+  is_default: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type PlatformRenderPackRecord = {
+  id: string
+  owner_id: string
+  name: string
+  platform_preset: PlatformPresetKey
+  aspect_ratio: ExportAspectRatio
+  safe_zone: RenderSafeZone
+  caption_layout: CaptionLayoutPreset
+  cta_timing: CtaTimingPreset
   is_default: boolean
   created_at: string
   updated_at: string
