@@ -1,20 +1,28 @@
 import { notFound } from "next/navigation"
-import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
 import { ShareCampaignPanel } from "@/features/renders/components/share-campaign-panel"
 import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
-import { getPublicEnvironment } from "@/lib/env"
-import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
+import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
+import { DeliveryWorkspacePanel } from "@/features/delivery/components/delivery-workspace-panel"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
-import { getExportByIdForOwner } from "@/server/exports/export-repository"
-import { getShareLinkByExportIdForOwner } from "@/server/exports/share-link-repository"
+import {
+  getDeliveryWorkspaceByCanonicalExportIdForOwner,
+  listDeliveryWorkspaceExportsByWorkspaceIdForOwner
+} from "@/server/delivery-workspaces/delivery-workspace-repository"
+import { getExportByIdForOwner, listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
+import {
+  getShareLinkByExportIdForOwner
+} from "@/server/exports/share-link-repository"
 import { getPromotionEligibilityForExport } from "@/server/promotion/promotion-eligibility"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { getRenderBatchByIdForOwner, listExportsForRenderBatch } from "@/server/render-batches/render-batch-repository"
 import { getShareCampaignByExportIdForOwner } from "@/server/share-campaigns/share-campaign-repository"
 import { getShowcaseItemByExportIdForOwner } from "@/server/showcase/showcase-repository"
+import { getPublicEnvironment } from "@/lib/env"
 
 type ExportDetailPageProps = {
   params: Promise<{
@@ -67,7 +75,9 @@ export default async function ExportDetailPage({
     usageEvents,
     showcaseItem,
     shareCampaign,
-    promotionEligibility
+    promotionEligibility,
+    deliveryWorkspace,
+    projectExports
   ] = await Promise.all([
     getProjectByIdForOwner(exportRecord.project_id, user.id),
     exportRecord.concept_id
@@ -81,7 +91,9 @@ export default async function ExportDetailPage({
     getPromotionEligibilityForExport({
       exportRecord,
       ownerId: user.id
-    })
+    }),
+    getDeliveryWorkspaceByCanonicalExportIdForOwner(exportRecord.id, user.id),
+    listExportsByProjectIdForOwner(exportRecord.project_id, user.id)
   ])
 
   if (!project) {
@@ -113,6 +125,27 @@ export default async function ExportDetailPage({
     (total, event) => total + Number(event.estimated_cost_usd ?? 0),
     0
   )
+
+  const eligibleBatch =
+    promotionEligibility.eligible
+      ? await getRenderBatchByIdForOwner(promotionEligibility.batchId, user.id)
+      : null
+
+  const eligibleBatchExports =
+    eligibleBatch
+      ? await listExportsForRenderBatch({
+          batchId: eligibleBatch.id,
+          exports: projectExports
+        })
+      : []
+
+  const workspaceExports =
+    deliveryWorkspace
+      ? await listDeliveryWorkspaceExportsByWorkspaceIdForOwner(
+          deliveryWorkspace.id,
+          user.id
+        )
+      : []
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -213,8 +246,19 @@ export default async function ExportDetailPage({
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
+        <DeliveryWorkspacePanel
+          canonicalExportId={exportRecord.id}
+          eligibleBatchExports={eligibleBatchExports}
+          eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
+          isEligible={promotionEligibility.eligible}
+          workspace={deliveryWorkspace}
+          workspaceExportIds={workspaceExports.map((item) => item.export_id)}
+        />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <ShowcasePublishPanel
           eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
           exportId={exportRecord.id}

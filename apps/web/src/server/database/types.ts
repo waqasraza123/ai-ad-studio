@@ -101,6 +101,17 @@ export type CtaTimingPreset = {
   cta_start_seconds: number
 }
 
+export type DeliveryApprovalSummary = {
+  approved_count: number
+  rejected_count: number
+  pending_count: number
+  responded_count: number
+  review_note: string | null
+  finalization_note: string | null
+  decided_at: string | null
+  finalized_at: string | null
+}
+
 export type ProjectRecord = {
   id: string
   owner_id: string
@@ -301,11 +312,6 @@ export type ShowcaseItemRecord = {
   summary: string
   is_published: boolean
   sort_order: number
-  aspect_ratio: ExportAspectRatio | null
-  platform_preset: PlatformPresetKey | null
-  template_style_key: string | null
-  template_name: string | null
-  preview_data_url: string | null
   created_at: string
   updated_at: string
 }
@@ -431,4 +437,31 @@ export type PublicBatchReviewExport = {
   preview_data_url: string
   created_at: string
   is_winner: boolean
+}
+
+export type DeliveryWorkspaceRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  render_batch_id: string
+  canonical_export_id: string
+  title: string
+  summary: string
+  handoff_notes: string
+  approval_summary: DeliveryApprovalSummary
+  token: string
+  status: "active" | "archived"
+  created_at: string
+  updated_at: string
+}
+
+export type DeliveryWorkspaceExportRecord = {
+  id: string
+  delivery_workspace_id: string
+  owner_id: string
+  project_id: string
+  export_id: string
+  label: string
+  sort_order: number
+  created_at: string
 }

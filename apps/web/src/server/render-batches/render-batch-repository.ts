@@ -369,6 +369,17 @@ export async function finalizeRenderBatchDecision(input: {
     .neq("export_id", batch.winner_export_id)
     .eq("status", "active")
 
+  await supabase
+    .from("delivery_workspaces")
+    .update({
+      status: "archived",
+      updated_at: finalizedAt
+    })
+    .eq("project_id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+    .neq("canonical_export_id", batch.winner_export_id)
+    .eq("status", "active")
+
   return normalizeRenderBatch(
     data as RenderBatchRecord & {
       aspect_ratios: unknown
