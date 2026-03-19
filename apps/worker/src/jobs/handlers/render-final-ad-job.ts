@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { randomUUID } from "node:crypto"
-import { writeFile } from "node:fs/promises"
+import { readFile, writeFile } from "node:fs/promises"
 import { join } from "node:path"
+import { getProjectBrandKit } from "@/brand-kits/brand-kit-service"
 import { getWorkerEnvironment } from "@/lib/env"
 import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
 import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
@@ -11,6 +12,7 @@ import {
   cleanupRenderWorkspace,
   createRenderWorkspace
 } from "@/media/temp/temp-paths"
+import type { PlannedScene } from "@/planning/scene-planner"
 import { buildStructuredScenePlan } from "@/planning/scene-planner"
 import { OpenAiTtsProvider } from "@/providers/openai-tts-provider"
 import { RunwayVideoProvider } from "@/providers/runway-video-provider"
@@ -167,6 +169,26 @@ function uniqueNonEmpty(values: Array<string | null | undefined>) {
   return [...new Set(values.filter((value): value is string => Boolean(value)))]
 }
 
+function buildNormalizedSceneImagePaths(sceneReferenceImagePaths: string[]) {
+  const [first, second, third] = sceneReferenceImagePaths
+
+  if (!first) {
+    throw new Error("At least one scene reference image is required")
+  }
+
+  return [first, second ?? first, third ?? first] as const
+}
+
+function getPlannedScene(scenePlan: PlannedScene[], index: number) {
+  const plannedScene = scenePlan[index] ?? scenePlan[0]
+
+  if (!plannedScene) {
+    throw new Error("Scene plan must contain at least one scene")
+  }
+
+  return plannedScene
+}
+
 async function downloadRemoteVideoToFile(input: {
   filePath: string
   videoUrl: string
@@ -195,12 +217,16 @@ export async function handleRenderFinalAdJob(
     throw new Error("No selected concept found for final render")
   }
 
-  const [concepts, projectAssets, template] = await Promise.all([
+  const [concepts, projectAssets, template, brandKit] = await Promise.all([
     listConceptsByProjectId(supabase, job.project_id),
     listProjectAssetsByProjectId(supabase, job.project_id),
     getProjectTemplate(supabase, {
       ownerId: project.owner_id,
       templateId: project.template_id
+    }),
+    getProjectBrandKit(supabase, {
+      brandKitId: project.brand_kit_id,
+      ownerId: project.owner_id
     })
   ])
 
@@ -241,6 +267,8 @@ export async function handleRenderFinalAdJob(
         owner_id: job.owner_id,
         payload: {
           aspectRatios,
+          brandKitId: brandKit.id,
+          brandKitName: brandKit.name,
           platformPreset,
           templateId: template.id,
           templateStyleKey: template.style_key,
@@ -282,24 +310,9 @@ export async function handleRenderFinalAdJob(
       ...downloadedProductImagePaths
     ])
 
-    if (sceneReferenceImagePaths.length === 0) {
-      throw new Error("No scene reference images were available for render")
-    }
-
-    const fallbackSceneImagePath = sceneReferenceImagePaths[0]
-
-    if (!fallbackSceneImagePath) {
-      throw new Error("No fallback scene reference image was available")
-    }
-
-    const normalizedSceneImagePaths =
-      sceneReferenceImagePaths.length >= 3
-        ? sceneReferenceImagePaths.slice(0, 3)
-        : [
-            sceneReferenceImagePaths[0] ?? fallbackSceneImagePath,
-            sceneReferenceImagePaths[1] ?? fallbackSceneImagePath,
-            sceneReferenceImagePaths[2] ?? fallbackSceneImagePath
-          ]
+    const normalizedSceneImagePaths = buildNormalizedSceneImagePaths(
+      sceneReferenceImagePaths
+    )
 
     const ttsProvider = new OpenAiTtsProvider()
     await ttsProvider.generateVoiceover({
@@ -338,6 +351,8 @@ export async function handleRenderFinalAdJob(
       scenePlan: buildStructuredScenePlan({
         angle: selectedConcept.angle,
         aspectRatio,
+        brandPalette: brandKit.palette,
+        brandTypography: brandKit.typography,
         callToAction:
           typeof job.payload.callToAction === "string"
             ? job.payload.callToAction
@@ -359,17 +374,10 @@ export async function handleRenderFinalAdJob(
       throw new Error("Primary scene plan was not generated")
     }
 
-    const fallbackPlannedScene = primaryScenePlan[0]
-
-    if (!fallbackPlannedScene) {
-      throw new Error("Fallback planned scene was not available")
-    }
-
     await deleteSceneVideoAssetsByProjectId(supabase, project.id)
 
     const sceneResults = await Promise.all(
       normalizedSceneImagePaths.map(async (imagePath, index) => {
-        const { readFile } = await import("node:fs/promises")
         const imageBytes = await readFile(imagePath)
         const imageExtension =
           imagePath.split(".").pop()?.toLowerCase() ?? "png"
@@ -383,7 +391,7 @@ export async function handleRenderFinalAdJob(
                 : "image/png"
 
         const promptImage = `data:${imageMimeType};base64,${imageBytes.toString("base64")}`
-        const plannedScene = primaryScenePlan[index] ?? fallbackPlannedScene
+        const plannedScene = getPlannedScene(primaryScenePlan, index)
 
         const generated = await videoProvider.generateSceneVideo({
           durationSeconds: plannedScene.durationSeconds,
@@ -407,6 +415,8 @@ export async function handleRenderFinalAdJob(
         return {
           localSceneFilePath,
           metadata: {
+            brandKitId: brandKit.id,
+            brandKitName: brandKit.name,
             motionStyle: plannedScene.motionStyle,
             purpose: plannedScene.purpose,
             runwayTaskId: generated.taskId,
@@ -425,6 +435,8 @@ export async function handleRenderFinalAdJob(
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
+          brandKitId: brandKit.id,
+          brandKitName: brandKit.name,
           sceneCount: sceneResults.length,
           templateId: template.id,
           templateStyleKey: template.style_key
@@ -437,19 +449,21 @@ export async function handleRenderFinalAdJob(
 
     await createSceneVideoAssets(
       supabase,
-      sceneResults.map((scene, index) => ({
-        kind: "scene_video",
-        metadata: scene.metadata,
-        mime_type: "video/mp4",
-        owner_id: project.owner_id,
-        project_id: project.id,
-        storage_key: scene.storageKey,
-        duration_ms: primaryScenePlan[index]?.durationSeconds
-          ? primaryScenePlan[index].durationSeconds * 1000
-          : fallbackPlannedScene.durationSeconds * 1000,
-        height: 1280,
-        width: 720
-      }))
+      sceneResults.map((scene, index) => {
+        const plannedScene = getPlannedScene(primaryScenePlan, index)
+
+        return {
+          kind: "scene_video",
+          metadata: scene.metadata,
+          mime_type: "video/mp4",
+          owner_id: project.owner_id,
+          project_id: project.id,
+          storage_key: scene.storageKey,
+          duration_ms: plannedScene.durationSeconds * 1000,
+          height: 1280,
+          width: 720
+        }
+      })
     )
 
     const voiceoverStorageKey = `projects/${project.id}/voiceover/${randomUUID()}.mp3`
@@ -472,7 +486,7 @@ export async function handleRenderFinalAdJob(
       duration_ms: Math.round(voiceoverDurationSeconds * 1000)
     })
 
-    const exportUsageEvents: Array<{
+    const exportUsageEvents: {
       estimated_cost_usd: number
       event_type: string
       export_id: string | null
@@ -481,7 +495,7 @@ export async function handleRenderFinalAdJob(
       project_id: string
       provider: string
       units: number
-    }> = []
+    }[] = []
 
     const exportsCreated = await Promise.all(
       scenePlansByAspectRatio.map(async ({ aspectRatio, scenePlan }) => {
@@ -493,6 +507,10 @@ export async function handleRenderFinalAdJob(
         await renderMultiSceneAd({
           aspectRatio,
           audioFilePath: voiceoverFilePath,
+          brandBackground: brandKit.palette.background,
+          brandForeground: brandKit.palette.foreground,
+          brandPrimary: brandKit.palette.primary,
+          brandSecondary: brandKit.palette.secondary,
           captionTimeline,
           ctaHeadlinePrefix: template.cta_preset.headline_prefix,
           ctaSubheadlineText: template.cta_preset.subheadline_text,
@@ -502,6 +520,7 @@ export async function handleRenderFinalAdJob(
               ? job.payload.callToAction.trim()
               : "Shop now",
           emphasisStyle: template.cta_preset.emphasis_style,
+          headingFontFamily: brandKit.typography.heading_family,
           outputFilePath,
           projectName: project.name,
           sceneVideoFilePaths: sceneResults.map(
@@ -521,6 +540,10 @@ export async function handleRenderFinalAdJob(
 
         const renderMetadata = {
           aspectRatio,
+          brandKitId: brandKit.id,
+          brandKitName: brandKit.name,
+          brandPalette: brandKit.palette,
+          brandTypography: brandKit.typography,
           captionCueCount: captionTimeline.length,
           ctaPreset: template.cta_preset,
           platformPreset,
@@ -565,6 +588,7 @@ export async function handleRenderFinalAdJob(
             event_type: "scene_video_generation",
             export_id: exportRecord.id,
             metadata: {
+              brandKitId: brandKit.id,
               sceneCount: sceneResults.length,
               templateId: template.id
             },
@@ -578,6 +602,7 @@ export async function handleRenderFinalAdJob(
             event_type: "voiceover_generation",
             export_id: exportRecord.id,
             metadata: {
+              brandKitId: brandKit.id,
               durationSeconds: voiceoverDurationSeconds,
               templateId: template.id
             },
@@ -592,6 +617,7 @@ export async function handleRenderFinalAdJob(
             export_id: exportRecord.id,
             metadata: {
               aspectRatio,
+              brandKitId: brandKit.id,
               platformPreset,
               templateId: template.id,
               variantKey
@@ -618,6 +644,8 @@ export async function handleRenderFinalAdJob(
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
+          brandKitId: brandKit.id,
+          brandKitName: brandKit.name,
           exportsCreated,
           templateId: template.id,
           templateStyleKey: template.style_key
@@ -634,6 +662,8 @@ export async function handleRenderFinalAdJob(
     })
 
     return {
+      brandKitId: brandKit.id,
+      brandKitName: brandKit.name,
       exportsCreated,
       projectId: project.id,
       sceneCount: sceneResults.length,

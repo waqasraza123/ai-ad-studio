@@ -6,10 +6,15 @@ import type { CaptionCue } from "@/media/captions/build-caption-timeline"
 type RenderMultiSceneAdInput = {
   aspectRatio: "9:16" | "1:1" | "16:9"
   audioFilePath: string
+  brandBackground: string
+  brandForeground: string
+  brandPrimary: string
+  brandSecondary: string
   ctaHeadlinePrefix: string
   ctaSubheadlineText: string
   ctaText: string
   emphasisStyle: "clean" | "bold" | "minimal"
+  headingFontFamily: string
   sceneVideoFilePaths: string[]
   outputFilePath: string
   projectName: string
@@ -102,11 +107,16 @@ function getHeadlineFontSize(emphasisStyle: "clean" | "bold" | "minimal") {
 
 async function createCtaCardSvg(input: {
   aspectRatio: "9:16" | "1:1" | "16:9"
+  brandBackground: string
+  brandForeground: string
+  brandPrimary: string
+  brandSecondary: string
   ctaHeadlinePrefix: string
   ctaSubheadlineText: string
   ctaText: string
   emphasisStyle: "clean" | "bold" | "minimal"
   filePath: string
+  headingFontFamily: string
   projectName: string
 }) {
   const { height, width } = getCanvasSize(input.aspectRatio)
@@ -120,16 +130,16 @@ async function createCtaCardSvg(input: {
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
       <defs>
         <linearGradient id="bg" x1="120" y1="80" x2="${width - 140}" y2="${height - 80}" gradientUnits="userSpaceOnUse">
-          <stop stop-color="#111827"/>
-          <stop offset="0.55" stop-color="#312E81"/>
-          <stop offset="1" stop-color="#020617"/>
+          <stop stop-color="${escapeXml(input.brandBackground)}"/>
+          <stop offset="0.55" stop-color="${escapeXml(input.brandPrimary)}"/>
+          <stop offset="1" stop-color="${escapeXml(input.brandSecondary)}"/>
         </linearGradient>
       </defs>
       <rect width="${width}" height="${height}" fill="url(#bg)"/>
       <rect x="72" y="72" width="${width - 144}" height="${height - 144}" rx="40" fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.10)"/>
-      <text x="120" y="${projectY}" fill="#A5B4FC" font-size="30" font-family="Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
-      <text x="120" y="${ctaY}" fill="#FFFFFF" font-size="${headlineFontSize}" font-weight="700" font-family="Arial, sans-serif">${escapeXml(headlineText)}</text>
-      <text x="120" y="${subY}" fill="#CBD5E1" font-size="36" font-family="Arial, sans-serif">${escapeXml(input.ctaSubheadlineText)}</text>
+      <text x="120" y="${projectY}" fill="${escapeXml(input.brandSecondary)}" font-size="30" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif" letter-spacing="5">${escapeXml(input.projectName.toUpperCase())}</text>
+      <text x="120" y="${ctaY}" fill="${escapeXml(input.brandForeground)}" font-size="${headlineFontSize}" font-weight="700" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif">${escapeXml(headlineText)}</text>
+      <text x="120" y="${subY}" fill="${escapeXml(input.brandForeground)}" font-size="36" font-family="${escapeXml(input.headingFontFamily)}, Arial, sans-serif">${escapeXml(input.ctaSubheadlineText)}</text>
     </svg>
   `.trim()
 
@@ -214,11 +224,16 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
 
   await createCtaCardSvg({
     aspectRatio: input.aspectRatio,
+    brandBackground: input.brandBackground,
+    brandForeground: input.brandForeground,
+    brandPrimary: input.brandPrimary,
+    brandSecondary: input.brandSecondary,
     ctaHeadlinePrefix: input.ctaHeadlinePrefix,
     ctaSubheadlineText: input.ctaSubheadlineText,
     ctaText: input.ctaText,
     emphasisStyle: input.emphasisStyle,
     filePath: ctaSvgPath,
+    headingFontFamily: input.headingFontFamily,
     projectName: input.projectName
   })
 

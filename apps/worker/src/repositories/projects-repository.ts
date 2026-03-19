@@ -7,6 +7,7 @@ export type WorkerProjectRecord = {
   status: "draft" | "generating_concepts" | "concepts_ready" | "rendering" | "export_ready" | "failed"
   selected_concept_id: string | null
   template_id: string | null
+  brand_kit_id: string | null
   created_at: string
   updated_at: string
 }
@@ -28,7 +29,7 @@ export type WorkerProjectInputRecord = {
 }
 
 const projectSelection =
-  "id, owner_id, name, status, selected_concept_id, template_id, created_at, updated_at"
+  "id, owner_id, name, status, selected_concept_id, template_id, brand_kit_id, created_at, updated_at"
 
 const projectInputSelection =
   "project_id, owner_id, product_name, product_description, offer_text, call_to_action, target_audience, brand_tone, visual_style, duration_seconds, aspect_ratio, created_at, updated_at"

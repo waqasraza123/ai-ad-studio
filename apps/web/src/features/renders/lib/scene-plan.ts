@@ -1,5 +1,6 @@
 import type {
   AdTemplateRecord,
+  BrandKitRecord,
   PlatformPresetKey,
   RenderVariantKey
 } from "@/server/database/types"
@@ -13,19 +14,18 @@ export type ScenePlanItem = {
 
 function shorten(value: string, limit: number) {
   const normalized = value.trim()
-  return normalized.length > limit
-    ? `${normalized.slice(0, limit - 3)}...`
-    : normalized
+  return normalized.length > limit ? `${normalized.slice(0, limit - 3)}...` : normalized
 }
 
 export function buildScenePlanPreview(input: {
+  brandKit: BrandKitRecord | null
   callToAction: string | null
   hook: string
   platformPreset: PlatformPresetKey
   script: string
   template: AdTemplateRecord | null
   variantKey: RenderVariantKey
-}): ScenePlanItem[] {
+}) {
   const ctaText = input.callToAction?.trim() || "Shop now"
   const presetMotion =
     input.platformPreset === "youtube_landscape"
@@ -35,6 +35,7 @@ export function buildScenePlanPreview(input: {
         : "vertical-first framing"
 
   const templateScenes = input.template?.scene_pack ?? []
+  const brandAccent = input.brandKit?.palette.accent ?? "#22D3EE"
 
   const defaultMotion = [
     input.variantKey === "caption_heavy"
@@ -48,28 +49,23 @@ export function buildScenePlanPreview(input: {
     input.variantKey === "cta_heavy"
       ? `aggressive CTA transition with ${presetMotion}`
       : `clean CTA close with ${presetMotion}`
-  ] as const
+  ]
 
   return [
     {
-      captionText: shorten(
-        input.hook,
-        input.variantKey === "caption_heavy" ? 86 : 70
-      ),
+      captionText: shorten(input.hook, input.variantKey === "caption_heavy" ? 86 : 70),
       durationSeconds: 3,
-      motionStyle: templateScenes[0]?.motion_style ?? defaultMotion[0],
-      purpose: "opener"
+      motionStyle: `${templateScenes[0]?.motion_style ?? defaultMotion[0]} · accent ${brandAccent}`,
+      purpose: "opener" as const
     },
     {
       captionText: shorten(
-        input.variantKey === "cta_heavy"
-          ? `${input.script} ${ctaText}`
-          : input.script,
+        input.variantKey === "cta_heavy" ? `${input.script} ${ctaText}` : input.script,
         input.variantKey === "caption_heavy" ? 98 : 76
       ),
       durationSeconds: 4,
-      motionStyle: templateScenes[1]?.motion_style ?? defaultMotion[1],
-      purpose: "product_emphasis"
+      motionStyle: `${templateScenes[1]?.motion_style ?? defaultMotion[1]} · accent ${brandAccent}`,
+      purpose: "product_emphasis" as const
     },
     {
       captionText:
@@ -77,8 +73,8 @@ export function buildScenePlanPreview(input: {
           ? `Strong CTA close: ${ctaText}`
           : `Close with CTA: ${ctaText}`,
       durationSeconds: 3,
-      motionStyle: templateScenes[2]?.motion_style ?? defaultMotion[2],
-      purpose: "cta_close"
+      motionStyle: `${templateScenes[2]?.motion_style ?? defaultMotion[2]} · accent ${brandAccent}`,
+      purpose: "cta_close" as const
     }
   ]
 }

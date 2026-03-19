@@ -63,6 +63,22 @@ export type TemplateCtaPreset = {
   emphasis_style: "clean" | "bold" | "minimal"
 }
 
+export type BrandKitPalette = {
+  primary: string
+  secondary: string
+  accent: string
+  background: string
+  foreground: string
+}
+
+export type BrandKitTypography = {
+  heading_family: string
+  body_family: string
+  headline_weight: string
+  body_weight: string
+  letter_spacing: string
+}
+
 export type ProjectRecord = {
   id: string
   owner_id: string
@@ -70,6 +86,7 @@ export type ProjectRecord = {
   status: ProjectStatus
   selected_concept_id: string | null
   template_id: string | null
+  brand_kit_id: string | null
   created_at: string
   updated_at: string
 }
@@ -258,13 +275,20 @@ export type ShowcaseItemRecord = {
   export_id: string
   title: string
   summary: string
-  preview_data_url: string | null
-  aspect_ratio: string
-  platform_preset: string
-  template_name: string | null
-  template_style_key: string | null
   is_published: boolean
   sort_order: number
+  created_at: string
+  updated_at: string
+}
+
+export type BrandKitRecord = {
+  id: string
+  owner_id: string
+  name: string
+  logo_asset_id: string | null
+  palette: BrandKitPalette
+  typography: BrandKitTypography
+  is_default: boolean
   created_at: string
   updated_at: string
 }
