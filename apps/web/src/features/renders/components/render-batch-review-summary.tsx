@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import type {
+  BatchReviewLinkRecord,
   ExportRecord,
   RenderBatchRecord
 } from "@/server/database/types"
@@ -9,6 +10,7 @@ type RenderBatchReviewSummaryProps = {
   batch: RenderBatchRecord
   exports: ExportRecord[]
   projectName: string
+  reviewLinks: BatchReviewLinkRecord[]
 }
 
 function formatTimestamp(value: string) {
@@ -21,10 +23,15 @@ function formatTimestamp(value: string) {
 export function RenderBatchReviewSummary({
   batch,
   exports,
-  projectName
+  projectName,
+  reviewLinks
 }: RenderBatchReviewSummaryProps) {
   const winner =
     exports.find((exportRecord) => exportRecord.id === batch.winner_export_id) ?? null
+
+  const approvedCount = reviewLinks.filter((link) => link.response_status === "approved").length
+  const rejectedCount = reviewLinks.filter((link) => link.response_status === "rejected").length
+  const pendingCount = reviewLinks.filter((link) => link.response_status === "pending" && link.status === "active").length
 
   return (
     <SurfaceCard className="p-6">
@@ -78,7 +85,7 @@ export function RenderBatchReviewSummary({
         </div>
       </div>
 
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="mt-4 grid gap-4 md:grid-cols-5">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm text-slate-400">Current winner</p>
           <p className="mt-2 text-sm font-medium text-white">
@@ -93,6 +100,21 @@ export function RenderBatchReviewSummary({
           <p className="mt-2 text-sm leading-7 text-white">
             {batch.review_note ?? "No decision note yet."}
           </p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4">
+          <p className="text-sm text-emerald-100">Approved</p>
+          <p className="mt-2 text-sm font-medium text-white">{approvedCount}</p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-rose-400/20 bg-rose-500/10 p-4">
+          <p className="text-sm text-rose-100">Rejected</p>
+          <p className="mt-2 text-sm font-medium text-white">{rejectedCount}</p>
+        </div>
+
+        <div className="rounded-[1.5rem] border border-amber-400/20 bg-amber-500/10 p-4">
+          <p className="text-sm text-amber-100">Pending links</p>
+          <p className="mt-2 text-sm font-medium text-white">{pendingCount}</p>
         </div>
       </div>
     </SurfaceCard>

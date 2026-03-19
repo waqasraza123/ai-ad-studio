@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation"
-import { RenderBatchReviewGrid } from "@/features/renders/components/render-batch-review-grid"
-import { RenderBatchReviewSummary } from "@/features/renders/components/render-batch-review-summary"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import {
+  listBatchReviewCommentsByBatchIdForOwner,
+  listBatchReviewLinksByBatchIdForOwner
+} from "@/server/batch-reviews/batch-review-repository"
 import { listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
@@ -9,6 +11,10 @@ import {
   getRenderBatchByIdForOwner,
   listExportsForRenderBatch
 } from "@/server/render-batches/render-batch-repository"
+import { BatchReviewCommentsPanel } from "@/features/renders/components/batch-review-comments-panel"
+import { BatchReviewLinksPanel } from "@/features/renders/components/batch-review-links-panel"
+import { RenderBatchReviewGrid } from "@/features/renders/components/render-batch-review-grid"
+import { RenderBatchReviewSummary } from "@/features/renders/components/render-batch-review-summary"
 
 type RenderBatchDetailPageProps = {
   params: Promise<{
@@ -32,10 +38,12 @@ export default async function RenderBatchDetailPage({
     notFound()
   }
 
-  const [project, projectExports, projectAssets] = await Promise.all([
+  const [project, projectExports, projectAssets, reviewLinks, reviewComments] = await Promise.all([
     getProjectByIdForOwner(batch.project_id, user.id),
     listExportsByProjectIdForOwner(batch.project_id, user.id),
-    listAssetsByProjectIdForOwner(batch.project_id, user.id)
+    listAssetsByProjectIdForOwner(batch.project_id, user.id),
+    listBatchReviewLinksByBatchIdForOwner(batch.id, user.id),
+    listBatchReviewCommentsByBatchIdForOwner(batch.id, user.id)
   ])
 
   if (!project) {
@@ -55,12 +63,15 @@ export default async function RenderBatchDetailPage({
         batch={batch}
         exports={batchExports}
         projectName={project.name}
+        reviewLinks={reviewLinks}
       />
+      <BatchReviewLinksPanel batch={batch} links={reviewLinks} />
       <RenderBatchReviewGrid
         assetsById={assetsById}
         batch={batch}
         exports={batchExports}
       />
+      <BatchReviewCommentsPanel comments={reviewComments} exports={batchExports} />
     </div>
   )
 }

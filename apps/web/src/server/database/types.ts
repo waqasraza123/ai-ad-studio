@@ -49,6 +49,8 @@ export type PlatformPresetKey =
 
 export type NotificationSeverity = "info" | "success" | "warning" | "error"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
+export type ReviewerRole = "client" | "stakeholder" | "internal_reviewer"
+export type ExternalReviewStatus = "pending" | "approved" | "rejected"
 
 export type TemplateScenePackItem = {
   purpose: "opener" | "product_emphasis" | "cta_close"
@@ -136,7 +138,7 @@ export type AssetRecord = {
   mime_type: string
   width: number | null
   height: number | null
-  duration_ms: number | null
+ duration_ms: number | null
   metadata: Record<string, unknown>
   created_at: string
 }
@@ -179,7 +181,7 @@ export type JobRecord = {
   cancel_reason: string | null
   started_at: string | null
   finished_at: string | null
-  heartbeat_at: string | null
+ heartbeat_at: string | null
   created_at: string
   updated_at: string
 }
@@ -363,4 +365,60 @@ export type ShareCampaignRecord = {
   status: "active" | "archived"
   created_at: string
   updated_at: string
+}
+
+export type BatchReviewLinkRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  render_batch_id: string
+  reviewer_name: string
+  reviewer_email: string | null
+  reviewer_role: ReviewerRole
+  message: string
+  token: string
+  status: "active" | "revoked"
+  response_status: ExternalReviewStatus
+  response_note: string | null
+  responded_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type BatchReviewCommentRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  render_batch_id: string
+  review_link_id: string | null
+  export_id: string | null
+  author_label: string
+  reviewer_role: ReviewerRole | null
+  body: string
+  created_at: string
+}
+
+export type PublicBatchReviewContext = {
+  review_link_id: string
+  render_batch_id: string
+  project_id: string
+  job_id: string
+  project_name: string
+  reviewer_name: string
+  reviewer_role: ReviewerRole
+  review_message: string
+  response_status: ExternalReviewStatus
+  response_note: string | null
+  responded_at: string | null
+}
+
+export type PublicBatchReviewExport = {
+  export_id: string
+  aspect_ratio: ExportAspectRatio
+  platform_preset: PlatformPresetKey
+  variant_key: RenderVariantKey
+  template_name: string
+  preview_data_url: string
+  created_at: string
+  is_winner: boolean
 }
