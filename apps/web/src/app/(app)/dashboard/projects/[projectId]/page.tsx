@@ -21,9 +21,10 @@ import { ProjectExportsPanel } from "@/features/exports/components/project-expor
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
-import { RenderPackSummaryPanel } from "@/features/render-packs/components/render-pack-summary-panel"
+import { RenderBatchPanel } from "@/features/renders/components/render-batch-panel"
 import { RenderPanel } from "@/features/renders/components/render-panel"
 import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
+import { RenderPackSummaryPanel } from "@/features/render-packs/components/render-pack-summary-panel"
 import { TemplateSelectorPanel } from "@/features/templates/components/template-selector-panel"
 import { listUsageEventsByProjectIdForOwner } from "@/server/analytics/usage-event-repository"
 import { getLatestApprovalByProjectIdForOwner } from "@/server/approvals/approval-repository"
@@ -41,6 +42,7 @@ import {
 } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { listRenderBatchesByProjectIdForOwner } from "@/server/render-batches/render-batch-repository"
 import { listRenderPacksByOwner } from "@/server/render-packs/render-pack-repository"
 import { listTemplatesByOwner } from "@/server/templates/template-repository"
 
@@ -80,7 +82,8 @@ export default async function ProjectDetailPage({
     latestApproval,
     templates,
     brandKits,
-    renderPacks
+    renderPacks,
+    renderBatches
   ] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
@@ -94,7 +97,8 @@ export default async function ProjectDetailPage({
     getLatestApprovalByProjectIdForOwner(projectId, user.id),
     listTemplatesByOwner(user.id),
     listBrandKitsByOwner(user.id),
-    listRenderPacksByOwner(user.id)
+    listRenderPacksByOwner(user.id),
+    listRenderBatchesByProjectIdForOwner(projectId, user.id)
   ])
 
   if (!project) {
@@ -194,7 +198,8 @@ export default async function ProjectDetailPage({
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
             This page now includes reusable branded templates, expanded brand kits,
-            approval gates, export management, and platform-specific render packs.
+            approval gates, export management, platform-specific render packs,
+            and controlled A/B variation batches.
           </p>
         </SurfaceCard>
 
@@ -273,6 +278,12 @@ export default async function ProjectDetailPage({
         scenePlan={scenePlan}
         selectedConceptTitle={selectedConcept?.title ?? null}
         selectedVariantKey={selectedVariantKey}
+      />
+
+      <RenderBatchPanel
+        projectId={projectId}
+        renderBatches={renderBatches}
+        selectedConceptTitle={selectedConcept?.title ?? null}
       />
 
       <RenderPackSummaryPanel

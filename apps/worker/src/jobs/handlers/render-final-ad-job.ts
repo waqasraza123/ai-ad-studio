@@ -5,7 +5,7 @@ import { join } from "node:path"
 import { getProjectBrandKit } from "@/brand-kits/brand-kit-service"
 import { getWorkerEnvironment } from "@/lib/env"
 import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
-import { buildCaptionTimeline } from "@/media/captions/build-caption-timeline"
+import { buildCaptionTimeline, type CaptionCue } from "@/media/captions/build-caption-timeline"
 import { renderMultiSceneAd } from "@/media/ffmpeg/render-multi-scene-ad"
 import { getMediaDurationSeconds } from "@/media/ffmpeg/media-metadata"
 import { cleanupRenderWorkspace, createRenderWorkspace } from "@/media/temp/temp-paths"
@@ -26,6 +26,12 @@ import { createJobTraces } from "@/repositories/job-traces-repository"
 import type { WorkerJobRecord } from "@/repositories/jobs-repository"
 import { listProjectAssetsByProjectId } from "@/repositories/projects-assets-repository"
 import { getProjectById, updateProjectStatus } from "@/repositories/projects-repository"
+import {
+  getRenderBatchByJobId,
+  markRenderBatchFailed,
+  markRenderBatchReady,
+  markRenderBatchRunning
+} from "@/repositories/render-batches-repository"
 import { createUsageEvents } from "@/repositories/usage-events-repository"
 import { getProjectTemplate } from "@/templates/template-service"
 
@@ -79,6 +85,21 @@ function readVariantKey(value: unknown): RenderVariantKey {
   return "default"
 }
 
+function readBatchVariantKeys(value: unknown, fallback: RenderVariantKey): RenderVariantKey[] {
+  if (!Array.isArray(value)) {
+    return [fallback]
+  }
+
+  const normalized = value.filter(
+    (variantKey): variantKey is RenderVariantKey =>
+      variantKey === "default" ||
+      variantKey === "caption_heavy" ||
+      variantKey === "cta_heavy"
+  )
+
+  return normalized.length > 0 ? [...new Set(normalized)] : [fallback]
+}
+
 function readPlatformPreset(value: unknown): PlatformPresetKey {
   if (
     value === "instagram_reels" ||
@@ -124,6 +145,103 @@ function getCanvasSize(aspectRatio: ExportAspectRatio) {
     height: 1920,
     width: 1080
   }
+}
+
+function splitIntoChunks(value: string, wordsPerChunk: number) {
+  const words = value.trim().split(/\s+/).filter(Boolean)
+  const chunks: string[] = []
+
+  for (let index = 0; index < words.length; index += wordsPerChunk) {
+    chunks.push(words.slice(index, index + wordsPerChunk).join(" "))
+  }
+
+  return chunks.length > 0 ? chunks : [value.trim()]
+}
+
+function buildVariantCaptionTimeline(input: {
+  script: string
+  totalDurationSeconds: number
+  variantKey: RenderVariantKey
+  ctaText: string
+}): CaptionCue[] {
+  if (input.variantKey === "default") {
+    return buildCaptionTimeline({
+      script: input.script,
+      totalDurationSeconds: input.totalDurationSeconds
+    })
+  }
+
+  if (input.variantKey === "caption_heavy") {
+    const segments = splitIntoChunks(input.script, 3)
+    const segmentDuration = input.totalDurationSeconds / segments.length
+
+    return segments.map((segment, index) => ({
+      endSeconds: Number(((index + 1) * segmentDuration).toFixed(3)),
+      startSeconds: Number((index * segmentDuration).toFixed(3)),
+      text: segment
+    }))
+  }
+
+  const baseTimeline = buildCaptionTimeline({
+    script: input.script,
+    totalDurationSeconds: Math.max(1, input.totalDurationSeconds - 0.8)
+  })
+
+  const trimmedBase = baseTimeline.slice(0, Math.max(1, baseTimeline.length - 1))
+  const finalStartSeconds = Math.max(
+    0,
+    Number((input.totalDurationSeconds - 0.9).toFixed(3))
+  )
+
+  return [
+    ...trimmedBase,
+    {
+      endSeconds: Number(input.totalDurationSeconds.toFixed(3)),
+      startSeconds: finalStartSeconds,
+      text: input.ctaText
+    }
+  ]
+}
+
+function resolveVariantCtaTiming(input: {
+  ctaCardSeconds: number
+  ctaStartSeconds: number
+  variantKey: RenderVariantKey
+}) {
+  if (input.variantKey === "cta_heavy") {
+    const ctaCardSeconds = Math.min(2.2, input.ctaCardSeconds + 0.4)
+    return {
+      ctaCardSeconds,
+      ctaStartSeconds: Number((10 - ctaCardSeconds).toFixed(3))
+    }
+  }
+
+  if (input.variantKey === "caption_heavy") {
+    return {
+      ctaCardSeconds: input.ctaCardSeconds,
+      ctaStartSeconds: Number((10 - input.ctaCardSeconds).toFixed(3))
+    }
+  }
+
+  return {
+    ctaCardSeconds: input.ctaCardSeconds,
+    ctaStartSeconds: input.ctaStartSeconds
+  }
+}
+
+function resolveVariantEmphasisStyle(
+  emphasisStyle: "clean" | "bold" | "minimal",
+  variantKey: RenderVariantKey
+) {
+  if (variantKey === "cta_heavy") {
+    return "bold" as const
+  }
+
+  if (variantKey === "caption_heavy") {
+    return "minimal" as const
+  }
+
+  return emphasisStyle
 }
 
 async function materializePreviewImage(input: {
@@ -206,6 +324,7 @@ export async function handleRenderFinalAdJob(
   supabase: SupabaseClient,
   job: WorkerJobRecord
 ) {
+  const renderBatch = await getRenderBatchByJobId(supabase, job.id)
   const project = await getProjectById(supabase, job.project_id)
 
   if (!project) {
@@ -250,9 +369,18 @@ export async function handleRenderFinalAdJob(
   const voiceoverFilePath = join(workspacePath, "voiceover.mp3")
 
   try {
-    const variantKey = readVariantKey(job.payload.variantKey)
+    const fallbackVariantKey = readVariantKey(job.payload.variantKey)
+    const batchVariantKeys =
+      renderBatch?.variant_keys ??
+      readBatchVariantKeys(job.payload.batchVariantKeys, fallbackVariantKey)
+    const primaryVariantKey =
+      batchVariantKeys.includes("default") ? "default" : batchVariantKeys[0]!
     const platformPreset = readPlatformPreset(job.payload.platformPreset)
-    const aspectRatios = readAspectRatios(job.payload.aspectRatios)
+    const aspectRatios = renderBatch?.aspect_ratios ?? readAspectRatios(job.payload.aspectRatios)
+
+    if (renderBatch) {
+      await markRenderBatchRunning(supabase, renderBatch.id)
+    }
 
     await createJobTraces(supabase, [
       {
@@ -260,12 +388,13 @@ export async function handleRenderFinalAdJob(
         owner_id: job.owner_id,
         payload: {
           aspectRatios,
+          batchId: renderBatch?.id ?? null,
+          batchVariantKeys,
           brandKitId: brandKit.id,
           brandKitName: brandKit.name,
           platformPreset,
           templateId: template.id,
-          templateStyleKey: template.style_key,
-          variantKey
+          templateStyleKey: template.style_key
         },
         project_id: job.project_id,
         stage: "render_requested",
@@ -314,68 +443,84 @@ export async function handleRenderFinalAdJob(
     })
 
     const voiceoverDurationSeconds = await getMediaDurationSeconds(voiceoverFilePath)
-    const captionTimeline = buildCaptionTimeline({
-      script: selectedConcept.script,
-      totalDurationSeconds: Math.min(10, voiceoverDurationSeconds)
-    })
+
+    const environment = getWorkerEnvironment()
+    const videoProvider = new RunwayVideoProvider(environment.RUNWAYML_API_SECRET)
+
+    const variantPlans = await Promise.all(
+      batchVariantKeys.map(async (variantKey) => {
+        const aspectPlans = await Promise.all(
+          aspectRatios.map(async (aspectRatio) => {
+            const renderPack = await getRenderPackForPlatform(supabase, {
+              ownerId: project.owner_id,
+              platformPreset,
+              aspectRatio
+            })
+
+            return {
+              aspectRatio,
+              renderPack,
+              scenePlan: buildStructuredScenePlan({
+                angle: selectedConcept.angle,
+                aspectRatio,
+                brandPalette: brandKit.palette,
+                brandTypography: brandKit.typography,
+                callToAction:
+                  typeof job.payload.callToAction === "string" ? job.payload.callToAction : null,
+                hook: selectedConcept.hook,
+                platformPreset,
+                productName: project.name,
+                renderSafeZone: renderPack.safe_zone,
+                script: selectedConcept.script,
+                templateCtaPreset: template.cta_preset,
+                templateScenePack: template.scene_pack,
+                variantKey,
+                visualDirection: selectedConcept.visual_direction
+              }),
+              variantKey
+            }
+          })
+        )
+
+        return {
+          aspectPlans,
+          variantKey
+        }
+      })
+    )
+
+    const primaryAspectPlan =
+      variantPlans.find((entry) => entry.variantKey === primaryVariantKey)?.aspectPlans[0] ??
+      variantPlans[0]?.aspectPlans[0] ??
+      null
+
+    if (!primaryAspectPlan || primaryAspectPlan.scenePlan.length === 0) {
+      throw new Error("Primary scene plan was not generated")
+    }
+
+    const primaryScenePlan = primaryAspectPlan.scenePlan
+    const primaryRenderPack = primaryAspectPlan.renderPack
+
+    const primaryCtaText =
+      typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
+        ? job.payload.callToAction.trim()
+        : "Shop now"
 
     await createJobTraces(supabase, [
       {
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
-          captionCueCount: captionTimeline.length,
-          voiceoverDurationSeconds
+          batchId: renderBatch?.id ?? null,
+          batchVariantKeys,
+          primaryRenderPackId: primaryRenderPack.id,
+          primaryVariantKey
         },
         project_id: job.project_id,
-        stage: "voiceover_and_captions_ready",
-        trace_type: "provider_response"
+        stage: "batch_variation_plan_ready",
+        trace_type: "batch"
       }
     ])
-
-    const environment = getWorkerEnvironment()
-    const videoProvider = new RunwayVideoProvider(environment.RUNWAYML_API_SECRET)
-
-    const scenePlansByAspectRatio = await Promise.all(
-      aspectRatios.map(async (aspectRatio) => {
-        const renderPack = await getRenderPackForPlatform(supabase, {
-          ownerId: project.owner_id,
-          platformPreset,
-          aspectRatio
-        })
-
-        return {
-          aspectRatio,
-          renderPack,
-          scenePlan: buildStructuredScenePlan({
-            angle: selectedConcept.angle,
-            aspectRatio,
-            brandPalette: brandKit.palette,
-            brandTypography: brandKit.typography,
-            callToAction:
-              typeof job.payload.callToAction === "string" ? job.payload.callToAction : null,
-            hook: selectedConcept.hook,
-            platformPreset,
-            productName: project.name,
-            renderSafeZone: renderPack.safe_zone,
-            script: selectedConcept.script,
-            templateCtaPreset: template.cta_preset,
-            templateScenePack: template.scene_pack,
-            variantKey,
-            visualDirection: selectedConcept.visual_direction
-          })
-        }
-      })
-    )
-
-    const primaryEntry = scenePlansByAspectRatio[0]
-
-    if (!primaryEntry || primaryEntry.scenePlan.length === 0) {
-      throw new Error("Primary scene plan was not generated")
-    }
-
-    const primaryScenePlan = primaryEntry.scenePlan
-    const primaryRenderPack = primaryEntry.renderPack
 
     await deleteSceneVideoAssetsByProjectId(supabase, project.id)
 
@@ -417,6 +562,8 @@ export async function handleRenderFinalAdJob(
         return {
           localSceneFilePath,
           metadata: {
+            batchId: renderBatch?.id ?? null,
+            batchVariantKeys,
             brandKitId: brandKit.id,
             brandKitName: brandKit.name,
             motionStyle: plannedScene.motionStyle,
@@ -439,6 +586,7 @@ export async function handleRenderFinalAdJob(
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
+          batchId: renderBatch?.id ?? null,
           brandKitId: brandKit.id,
           brandKitName: brandKit.name,
           renderPackId: primaryRenderPack.id,
@@ -504,163 +652,199 @@ export async function handleRenderFinalAdJob(
     }[] = []
 
     const exportsCreated = await Promise.all(
-      scenePlansByAspectRatio.map(async ({ aspectRatio, renderPack, scenePlan }) => {
-        const outputFilePath = join(
-          workspacePath,
-          `final-export-${aspectRatio.replace(":", "x")}.mp4`
-        )
+      variantPlans.flatMap(({ aspectPlans, variantKey }) =>
+        aspectPlans.map(async ({ aspectRatio, renderPack, scenePlan }) => {
+          const variantTiming = resolveVariantCtaTiming({
+            ctaCardSeconds: renderPack.cta_timing.cta_card_seconds,
+            ctaStartSeconds: renderPack.cta_timing.cta_start_seconds,
+            variantKey
+          })
 
-        await renderMultiSceneAd({
-          aspectRatio,
-          audioFilePath: voiceoverFilePath,
-          brandBackground: brandKit.palette.background,
-          brandForeground: brandKit.palette.foreground,
-          brandPrimary: brandKit.palette.primary,
-          brandSecondary: brandKit.palette.secondary,
-          captionLayout: renderPack.caption_layout,
-          captionTimeline,
-          ctaHeadlinePrefix: template.cta_preset.headline_prefix,
-          ctaSubheadlineText: template.cta_preset.subheadline_text,
-          ctaText:
-            typeof job.payload.callToAction === "string" && job.payload.callToAction.trim().length > 0
-              ? job.payload.callToAction.trim()
-              : "Shop now",
-          ctaCardSeconds: renderPack.cta_timing.cta_card_seconds,
-          ctaStartSeconds: renderPack.cta_timing.cta_start_seconds,
-          emphasisStyle: template.cta_preset.emphasis_style,
-          headingFontFamily: brandKit.typography.heading_family,
-          outputFilePath,
-          projectName: project.name,
-          safeZone: renderPack.safe_zone,
-          sceneVideoFilePaths: sceneResults.map((scene) => scene.localSceneFilePath),
-          workspacePath
-        })
+          const variantCaptionTimeline = buildVariantCaptionTimeline({
+            ctaText:
+              variantKey === "cta_heavy"
+                ? `${template.cta_preset.headline_prefix} ${primaryCtaText}`.trim()
+                : primaryCtaText,
+            script: selectedConcept.script,
+            totalDurationSeconds: variantTiming.ctaStartSeconds,
+            variantKey
+          })
 
-        const { height, width } = getCanvasSize(aspectRatio)
-        const storageKey = `projects/${project.id}/exports/${aspectRatio.replace(":", "x")}-${randomUUID()}.mp4`
+          const outputFilePath = join(
+            workspacePath,
+            `final-export-${variantKey}-${aspectRatio.replace(":", "x")}.mp4`
+          )
 
-        await uploadFileArtifactToR2({
-          contentType: "video/mp4",
-          filePath: outputFilePath,
-          storageKey
-        })
-
-        const renderMetadata = {
-          aspectRatio,
-          brandKitId: brandKit.id,
-          brandKitName: brandKit.name,
-          brandPalette: brandKit.palette,
-          brandTypography: brandKit.typography,
-          captionCueCount: captionTimeline.length,
-          captionLayout: renderPack.caption_layout,
-          ctaPreset: template.cta_preset,
-          ctaTiming: renderPack.cta_timing,
-          platformPreset,
-          previewDataUrl,
-          renderMode: "ffmpeg_runway_scene_video_composition",
-          renderPackId: renderPack.id,
-          renderPackName: renderPack.name,
-          safeZone: renderPack.safe_zone,
-          sceneCount: sceneResults.length,
-          scenePlan,
-          selectedConceptId: selectedConcept.id,
-          templateId: template.id,
-          templateName: template.name,
-          templateStyleKey: template.style_key,
-          variantKey,
-          voiceoverProvider: "openai_tts"
-        }
-
-        const renderAsset = await createRenderAsset(supabase, {
-          kind: "export_video",
-          metadata: renderMetadata,
-          mime_type: "video/mp4",
-          owner_id: project.owner_id,
-          project_id: project.id,
-          storage_key: storageKey,
-          duration_ms: 10000,
-          height,
-          width
-        })
-
-        const exportRecord = await createExportRecord(supabase, {
-          assetId: renderAsset.id,
-          aspectRatio,
-          conceptId: selectedConcept.id,
-          ownerId: project.owner_id,
-          platformPreset,
-          projectId: project.id,
-          renderMetadata,
-          variantKey
-        })
-
-        exportUsageEvents.push(
-          {
-            estimated_cost_usd: 0.15,
-            event_type: "scene_video_generation",
-            export_id: exportRecord.id,
-            metadata: {
-              brandKitId: brandKit.id,
-              renderPackId: renderPack.id,
-              sceneCount: sceneResults.length,
-              templateId: template.id
-            },
-            owner_id: project.owner_id,
-            project_id: project.id,
-            provider: "runway",
-            units: sceneResults.length
-          },
-          {
-            estimated_cost_usd: 0.004,
-            event_type: "voiceover_generation",
-            export_id: exportRecord.id,
-            metadata: {
-              brandKitId: brandKit.id,
-              durationSeconds: voiceoverDurationSeconds,
-              renderPackId: renderPack.id,
-              templateId: template.id
-            },
-            owner_id: project.owner_id,
-            project_id: project.id,
-            provider: "openai",
-            units: Math.round(voiceoverDurationSeconds)
-          },
-          {
-            estimated_cost_usd: 0.01,
-            event_type: "final_render_composition",
-            export_id: exportRecord.id,
-            metadata: {
-              aspectRatio,
-              brandKitId: brandKit.id,
-              platformPreset,
-              renderPackId: renderPack.id,
-              templateId: template.id,
+          await renderMultiSceneAd({
+            aspectRatio,
+            audioFilePath: voiceoverFilePath,
+            brandBackground: brandKit.palette.background,
+            brandForeground: brandKit.palette.foreground,
+            brandPrimary: brandKit.palette.primary,
+            brandSecondary: brandKit.palette.secondary,
+            captionLayout: renderPack.caption_layout,
+            captionTimeline: variantCaptionTimeline,
+            ctaHeadlinePrefix: template.cta_preset.headline_prefix,
+            ctaSubheadlineText: template.cta_preset.subheadline_text,
+            ctaText: primaryCtaText,
+            ctaCardSeconds: variantTiming.ctaCardSeconds,
+            ctaStartSeconds: variantTiming.ctaStartSeconds,
+            emphasisStyle: resolveVariantEmphasisStyle(
+              template.cta_preset.emphasis_style,
               variantKey
-            },
+            ),
+            headingFontFamily: brandKit.typography.heading_family,
+            outputFilePath,
+            projectName: project.name,
+            safeZone: renderPack.safe_zone,
+            sceneVideoFilePaths: sceneResults.map((scene) => scene.localSceneFilePath),
+            workspacePath
+          })
+
+          const { height, width } = getCanvasSize(aspectRatio)
+          const totalDurationSeconds = variantTiming.ctaStartSeconds + variantTiming.ctaCardSeconds
+          const storageKey = `projects/${project.id}/exports/${variantKey}-${aspectRatio.replace(":", "x")}-${randomUUID()}.mp4`
+
+          await uploadFileArtifactToR2({
+            contentType: "video/mp4",
+            filePath: outputFilePath,
+            storageKey
+          })
+
+          const renderMetadata = {
+            aspectRatio,
+            batchId: renderBatch?.id ?? null,
+            batchVariantKeys,
+            brandKitId: brandKit.id,
+            brandKitName: brandKit.name,
+            brandPalette: brandKit.palette,
+            brandTypography: brandKit.typography,
+            captionCueCount: variantCaptionTimeline.length,
+            captionLayout: renderPack.caption_layout,
+            ctaPreset: template.cta_preset,
+            ctaTiming: variantTiming,
+            platformPreset,
+            previewDataUrl,
+            renderMode: "ffmpeg_runway_scene_video_composition",
+            renderPackId: renderPack.id,
+            renderPackName: renderPack.name,
+            safeZone: renderPack.safe_zone,
+            sceneCount: sceneResults.length,
+            scenePlan,
+            selectedConceptId: selectedConcept.id,
+            templateId: template.id,
+            templateName: template.name,
+            templateStyleKey: template.style_key,
+            variantKey,
+            voiceoverProvider: "openai_tts"
+          }
+
+          const renderAsset = await createRenderAsset(supabase, {
+            kind: "export_video",
+            metadata: renderMetadata,
+            mime_type: "video/mp4",
             owner_id: project.owner_id,
             project_id: project.id,
-            provider: "ffmpeg",
-            units: 1
-          }
-        )
+            storage_key: storageKey,
+            duration_ms: Math.round(totalDurationSeconds * 1000),
+            height,
+            width
+          })
 
-        return {
-          aspectRatio,
-          exportId: exportRecord.id,
-          renderPackId: renderPack.id,
-          renderPackName: renderPack.name,
-          storageKey
-        }
-      })
+          const exportRecord = await createExportRecord(supabase, {
+            assetId: renderAsset.id,
+            aspectRatio,
+            conceptId: selectedConcept.id,
+            ownerId: project.owner_id,
+            platformPreset,
+            projectId: project.id,
+            renderMetadata,
+            variantKey
+          })
+
+          exportUsageEvents.push(
+            {
+              estimated_cost_usd: 0.15,
+              event_type: "scene_video_generation",
+              export_id: exportRecord.id,
+              metadata: {
+                batchId: renderBatch?.id ?? null,
+                batchVariantKey: variantKey,
+                brandKitId: brandKit.id,
+                renderPackId: renderPack.id,
+                sceneCount: sceneResults.length,
+                templateId: template.id
+              },
+              owner_id: project.owner_id,
+              project_id: project.id,
+              provider: "runway",
+              units: sceneResults.length
+            },
+            {
+              estimated_cost_usd: 0.004,
+              event_type: "voiceover_generation",
+              export_id: exportRecord.id,
+              metadata: {
+                batchId: renderBatch?.id ?? null,
+                batchVariantKey: variantKey,
+                brandKitId: brandKit.id,
+                durationSeconds: voiceoverDurationSeconds,
+                renderPackId: renderPack.id,
+                templateId: template.id
+              },
+              owner_id: project.owner_id,
+              project_id: project.id,
+              provider: "openai",
+              units: Math.round(voiceoverDurationSeconds)
+            },
+            {
+              estimated_cost_usd: 0.01,
+              event_type: "final_render_composition",
+              export_id: exportRecord.id,
+              metadata: {
+                aspectRatio,
+                batchId: renderBatch?.id ?? null,
+                batchVariantKey: variantKey,
+                brandKitId: brandKit.id,
+                platformPreset,
+                renderPackId: renderPack.id,
+                templateId: template.id,
+                variantKey
+              },
+              owner_id: project.owner_id,
+              project_id: project.id,
+              provider: "ffmpeg",
+              units: 1
+            }
+          )
+
+          return {
+            aspectRatio,
+            exportId: exportRecord.id,
+            renderPackId: renderPack.id,
+            renderPackName: renderPack.name,
+            variantKey
+          }
+        })
+      )
     )
 
     await createUsageEvents(supabase, exportUsageEvents)
+
+    if (renderBatch) {
+      await markRenderBatchReady(supabase, {
+        batchId: renderBatch.id,
+        exportCount: exportsCreated.length
+      })
+    }
 
     await createJobTraces(supabase, [
       {
         job_id: job.id,
         owner_id: job.owner_id,
         payload: {
+          batchId: renderBatch?.id ?? null,
+          batchVariantKeys,
           brandKitId: brandKit.id,
           brandKitName: brandKit.name,
           exportsCreated,
@@ -679,15 +863,22 @@ export async function handleRenderFinalAdJob(
     })
 
     return {
+      batchId: renderBatch?.id ?? null,
+      batchVariantKeys,
       brandKitId: brandKit.id,
       brandKitName: brandKit.name,
       exportsCreated,
       projectId: project.id,
       sceneCount: sceneResults.length,
       templateId: template.id,
-      templateStyleKey: template.style_key,
-      variantKey
+      templateStyleKey: template.style_key
     }
+  } catch (error) {
+    if (renderBatch) {
+      await markRenderBatchFailed(supabase, renderBatch.id)
+    }
+
+    throw error
   } finally {
     await cleanupRenderWorkspace(workspacePath)
   }

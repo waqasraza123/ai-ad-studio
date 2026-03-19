@@ -110,7 +110,7 @@ async function createCtaCardSvg(input: {
     left: number
   }
 }) {
-  const { height, width } = getCanvasSize(input.aspectRatio)
+  const { width } = getCanvasSize(input.aspectRatio)
   const projectY =
     input.aspectRatio === "16:9"
       ? Math.max(180, 280 + input.safeZone.top)
@@ -132,6 +132,7 @@ async function createCtaCardSvg(input: {
   const headlineFontSize = getHeadlineFontSize(input.emphasisStyle)
   const headlineText = `${input.ctaHeadlinePrefix} ${input.ctaText}`.trim()
   const leftPadding = 120 + input.safeZone.left / 2
+  const { height } = getCanvasSize(input.aspectRatio)
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" fill="none">
@@ -191,11 +192,10 @@ function buildSceneNormalizeFilters(
 
 function buildSceneConcatFilter(sceneCount: number) {
   const inputs = Array.from({ length: sceneCount }, (_, index) => `[v${index}]`).join("")
-  return `${inputs}concat=n=${sceneCount}:v=1:a=0[basev]`
+  return `${inputs}concat=n=${sceneCount}:v=1:a=0[scenev]`
 }
 
 function buildCaptionFilters(
-  initialLabel: string,
   captionLayout: {
     box_width: number
     box_height: number
@@ -206,11 +206,11 @@ function buildCaptionFilters(
   captionTimeline: CaptionCue[]
 ) {
   if (captionTimeline.length === 0) {
-    return [`[${initialLabel}]copy[vout]`]
+    return ["[finalbasev]copy[vout]"]
   }
 
   const filters: string[] = []
-  let currentLabel = initialLabel
+  let currentLabel = "finalbasev"
 
   captionTimeline.forEach((cue, index) => {
     const nextLabel = index === captionTimeline.length - 1 ? "vout" : `cap${index + 1}`
@@ -233,6 +233,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
   const { height, width } = getCanvasSize(input.aspectRatio)
   const ctaSvgPath = join(input.workspacePath, `cta-card-${input.aspectRatio.replace(":", "x")}.svg`)
   const ctaVideoPath = join(input.workspacePath, `cta-card-${input.aspectRatio.replace(":", "x")}.mp4`)
+  const totalDuration = input.ctaStartSeconds + input.ctaCardSeconds
 
   await createCtaCardSvg({
     aspectRatio: input.aspectRatio,
@@ -280,16 +281,17 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     ctaVideoPath
   ])
 
-  const sceneCount = input.sceneVideoFilePaths.length
   const sceneInputs = input.sceneVideoFilePaths.flatMap((filePath) => ["-i", filePath])
-  const ctaInputIndex = sceneCount
+  const ctaVideoInputIndex = input.sceneVideoFilePaths.length
+  const voiceoverAudioInputIndex = input.sceneVideoFilePaths.length + 1
 
   const filterComplex = [
-    ...buildSceneNormalizeFilters(input.aspectRatio, sceneCount),
-    buildSceneConcatFilter(sceneCount),
-    `[${ctaInputIndex}:v]scale=${width}:${height},setsar=1[ctav]`,
-    `[basev][ctav]overlay=0:0:enable='between(t,${input.ctaStartSeconds},${input.ctaStartSeconds + input.ctaCardSeconds})'[compositev]`,
-    ...buildCaptionFilters("compositev", input.captionLayout, input.captionTimeline)
+    ...buildSceneNormalizeFilters(input.aspectRatio, input.sceneVideoFilePaths.length),
+    buildSceneConcatFilter(input.sceneVideoFilePaths.length),
+    `[scenev]trim=duration=${input.ctaStartSeconds},setpts=PTS-STARTPTS[trimv]`,
+    `[${ctaVideoInputIndex}:v]scale=${width}:${height},setsar=1[ctav]`,
+    `[trimv][ctav]concat=n=2:v=1:a=0[finalbasev]`,
+    ...buildCaptionFilters(input.captionLayout, input.captionTimeline)
   ].join(";")
 
   await runCommand("ffmpeg", [
@@ -304,7 +306,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "-map",
     "[vout]",
     "-map",
-    `${sceneCount + 1}:a`,
+    `${voiceoverAudioInputIndex}:a`,
     "-c:v",
     "libx264",
     "-pix_fmt",
@@ -318,7 +320,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "-b:a",
     "128k",
     "-t",
-    "10",
+    String(totalDuration),
     input.outputFilePath
   ])
 }

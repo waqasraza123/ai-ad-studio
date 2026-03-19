@@ -1,0 +1,166 @@
+import { Button } from "@/components/primitives/button"
+import { SurfaceCard } from "@/components/primitives/surface-card"
+import { startRenderBatchAction } from "@/features/renders/actions/start-render-batch"
+import type { RenderBatchRecord } from "@/server/database/types"
+
+type RenderBatchPanelProps = {
+  projectId: string
+  renderBatches: RenderBatchRecord[]
+  selectedConceptTitle: string | null
+}
+
+function statusClasses(status: RenderBatchRecord["status"]) {
+  if (status === "ready") {
+    return "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
+  }
+
+  if (status === "failed") {
+    return "border-rose-400/20 bg-rose-500/10 text-rose-100"
+  }
+
+  if (status === "rendering") {
+    return "border-amber-400/20 bg-amber-500/10 text-amber-100"
+  }
+
+  return "border-white/10 bg-white/[0.05] text-slate-300"
+}
+
+function formatTimestamp(value: string) {
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  }).format(new Date(value))
+}
+
+export function RenderBatchPanel({
+  projectId,
+  renderBatches,
+  selectedConceptTitle
+}: RenderBatchPanelProps) {
+  const action = startRenderBatchAction.bind(null, projectId)
+  const isBlocked = !selectedConceptTitle
+
+  return (
+    <SurfaceCard className="p-6">
+      <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+        Variation batch
+      </p>
+      <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
+        Controlled A/B render run
+      </h2>
+      <p className="mt-3 text-sm leading-7 text-slate-400">
+        Generate multiple controlled variants from the selected concept in one approved render run.
+      </p>
+
+      <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+        <p className="text-sm text-slate-400">Selected concept</p>
+        <p className="mt-2 text-sm font-medium text-white">
+          {selectedConceptTitle ?? "Select a concept first"}
+        </p>
+      </div>
+
+      <form action={action} className="mt-6 space-y-6">
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Platform preset</span>
+          <select
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+            defaultValue="default"
+            disabled={isBlocked}
+            name="platform_preset"
+          >
+            <option value="default">Default</option>
+            <option value="instagram_reels">Instagram Reels</option>
+            <option value="instagram_feed">Instagram Feed</option>
+            <option value="youtube_shorts">YouTube Shorts</option>
+            <option value="youtube_landscape">YouTube Landscape</option>
+          </select>
+        </label>
+
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-sm font-medium text-white">Aspect ratios</p>
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center gap-3 text-sm text-slate-300">
+                <input defaultChecked disabled={isBlocked} name="aspect_ratios" type="checkbox" value="9:16" />
+                <span>9:16</span>
+              </label>
+              <label className="flex items-center gap-3 text-sm text-slate-300">
+                <input disabled={isBlocked} name="aspect_ratios" type="checkbox" value="1:1" />
+                <span>1:1</span>
+              </label>
+              <label className="flex items-center gap-3 text-sm text-slate-300">
+                <input disabled={isBlocked} name="aspect_ratios" type="checkbox" value="16:9" />
+                <span>16:9</span>
+              </label>
+            </div>
+          </div>
+
+          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+            <p className="text-sm font-medium text-white">Controlled variants</p>
+            <div className="mt-4 space-y-3">
+              <label className="flex items-center gap-3 text-sm text-slate-300">
+                <input defaultChecked disabled={isBlocked} name="variant_keys" type="checkbox" value="default" />
+                <span>Default</span>
+              </label>
+              <label className="flex items-center gap-3 text-sm text-slate-300">
+                <input defaultChecked disabled={isBlocked} name="variant_keys" type="checkbox" value="caption_heavy" />
+                <span>Caption heavy</span>
+              </label>
+              <label className="flex items-center gap-3 text-sm text-slate-300">
+                <input defaultChecked disabled={isBlocked} name="variant_keys" type="checkbox" value="cta_heavy" />
+                <span>CTA heavy</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <Button disabled={isBlocked}>Start variation batch</Button>
+      </form>
+
+      <div className="mt-8 space-y-3">
+        {renderBatches.length === 0 ? (
+          <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-slate-400">
+            No render batches yet.
+          </div>
+        ) : (
+          renderBatches.map((batch) => (
+            <div
+              key={batch.id}
+              className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4"
+            >
+              <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="text-sm font-medium text-white">
+                      {batch.variant_keys.length} variants · {batch.aspect_ratios.join(", ")}
+                    </p>
+                    <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(batch.status)}`}>
+                      {batch.status}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-slate-300">
+                    {batch.platform_preset} · exports {batch.export_count}
+                  </p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
+                    {formatTimestamp(batch.created_at)}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {batch.variant_keys.map((variantKey) => (
+                    <span
+                      key={variantKey}
+                      className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300"
+                    >
+                      {variantKey}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </SurfaceCard>
+  )
+}

@@ -331,3 +331,18 @@ export type PlatformRenderPackRecord = {
   created_at: string
   updated_at: string
 }
+
+export type RenderBatchRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  concept_id: string
+  job_id: string
+  status: "queued" | "rendering" | "ready" | "failed"
+  platform_preset: PlatformPresetKey
+  aspect_ratios: ExportAspectRatio[]
+  variant_keys: RenderVariantKey[]
+  export_count: number
+  created_at: string
+  updated_at: string
+}
