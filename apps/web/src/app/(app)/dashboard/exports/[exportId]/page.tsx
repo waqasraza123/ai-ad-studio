@@ -1,19 +1,20 @@
 import { notFound } from "next/navigation"
+import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
+import { ShareCampaignPanel } from "@/features/renders/components/share-campaign-panel"
 import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
-import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
-import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getPublicEnvironment } from "@/lib/env"
 import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
+import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import { getExportByIdForOwner } from "@/server/exports/export-repository"
-import {
-  getShareLinkByExportIdForOwner
-} from "@/server/exports/share-link-repository"
+import { getShareLinkByExportIdForOwner } from "@/server/exports/share-link-repository"
+import { getPromotionEligibilityForExport } from "@/server/promotion/promotion-eligibility"
 import { listAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
+import { getShareCampaignByExportIdForOwner } from "@/server/share-campaigns/share-campaign-repository"
 import { getShowcaseItemByExportIdForOwner } from "@/server/showcase/showcase-repository"
-import { getPublicEnvironment } from "@/lib/env"
 
 type ExportDetailPageProps = {
   params: Promise<{
@@ -58,17 +59,30 @@ export default async function ExportDetailPage({
     notFound()
   }
 
-  const [project, concept, assets, shareLink, usageEvents, showcaseItem] =
-    await Promise.all([
-      getProjectByIdForOwner(exportRecord.project_id, user.id),
-      exportRecord.concept_id
-        ? getConceptByIdForOwner(exportRecord.concept_id, user.id)
-        : Promise.resolve(null),
-      listAssetsByProjectIdForOwner(exportRecord.project_id, user.id),
-      getShareLinkByExportIdForOwner(exportRecord.id, user.id),
-      listUsageEventsByExportIdForOwner(exportRecord.id, user.id),
-      getShowcaseItemByExportIdForOwner(exportRecord.id, user.id)
-    ])
+  const [
+    project,
+    concept,
+    assets,
+    shareLink,
+    usageEvents,
+    showcaseItem,
+    shareCampaign,
+    promotionEligibility
+  ] = await Promise.all([
+    getProjectByIdForOwner(exportRecord.project_id, user.id),
+    exportRecord.concept_id
+      ? getConceptByIdForOwner(exportRecord.concept_id, user.id)
+      : Promise.resolve(null),
+    listAssetsByProjectIdForOwner(exportRecord.project_id, user.id),
+    getShareLinkByExportIdForOwner(exportRecord.id, user.id),
+    listUsageEventsByExportIdForOwner(exportRecord.id, user.id),
+    getShowcaseItemByExportIdForOwner(exportRecord.id, user.id),
+    getShareCampaignByExportIdForOwner(exportRecord.id, user.id),
+    getPromotionEligibilityForExport({
+      exportRecord,
+      ownerId: user.id
+    })
+  ])
 
   if (!project) {
     notFound()
@@ -199,11 +213,19 @@ export default async function ExportDetailPage({
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 lg:grid-cols-3">
         <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
         <ShowcasePublishPanel
+          eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
           exportId={exportRecord.id}
+          isEligible={promotionEligibility.eligible}
           showcaseItem={showcaseItem}
+        />
+        <ShareCampaignPanel
+          eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
+          exportId={exportRecord.id}
+          isEligible={promotionEligibility.eligible}
+          shareCampaign={shareCampaign}
         />
       </div>
 

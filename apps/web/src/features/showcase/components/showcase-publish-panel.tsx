@@ -1,18 +1,22 @@
-import type { ShowcaseItemRecord } from "@/server/database/types"
+import { Button } from "@/components/primitives/button"
+import { SurfaceCard } from "@/components/primitives/surface-card"
 import {
   publishShowcaseItemAction,
   unpublishShowcaseItemAction
 } from "@/features/showcase/actions/publish-showcase-item"
-import { Button } from "@/components/primitives/button"
-import { SurfaceCard } from "@/components/primitives/surface-card"
+import type { ShowcaseItemRecord } from "@/server/database/types"
 
 type ShowcasePublishPanelProps = {
+  eligibilityReason: string | null
   exportId: string
+  isEligible: boolean
   showcaseItem: ShowcaseItemRecord | null
 }
 
 export function ShowcasePublishPanel({
+  eligibilityReason,
   exportId,
+  isEligible,
   showcaseItem
 }: ShowcasePublishPanelProps) {
   const publishAction = publishShowcaseItemAction.bind(null, exportId)
@@ -21,21 +25,25 @@ export function ShowcasePublishPanel({
   return (
     <SurfaceCard className="p-5">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Showcase
+        Public showcase
       </p>
 
       <div className="mt-4 space-y-4">
-        {showcaseItem?.is_published ? (
+        {!isEligible ? (
+          <div className="rounded-[1.5rem] border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-100">
+            {eligibilityReason ?? "Only reviewed winners can be published publicly."}
+          </div>
+        ) : showcaseItem?.is_published ? (
           <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-            This export is published in the public showcase gallery.
+            This reviewed winner is published in the public showcase gallery.
           </div>
         ) : (
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
-            Publish this export to the public demo gallery.
+            Publish this reviewed winner to the public demo gallery.
           </div>
         )}
 
-        {!showcaseItem?.is_published ? (
+        {isEligible && !showcaseItem?.is_published ? (
           <form action={publishAction} className="space-y-4">
             <textarea
               className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
@@ -44,11 +52,13 @@ export function ShowcasePublishPanel({
             />
             <Button>Publish to showcase</Button>
           </form>
-        ) : (
+        ) : null}
+
+        {isEligible && showcaseItem?.is_published ? (
           <form action={unpublishAction}>
             <Button variant="secondary">Unpublish showcase item</Button>
           </form>
-        )}
+        ) : null}
       </div>
     </SurfaceCard>
   )

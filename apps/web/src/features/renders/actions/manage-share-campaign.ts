@@ -7,20 +7,17 @@ import { getExportByIdForOwner } from "@/server/exports/export-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { getPromotionEligibilityForExport } from "@/server/promotion/promotion-eligibility"
 import {
-  getShowcaseItemByExportIdForOwner,
-  upsertShowcaseItem
-} from "@/server/showcase/showcase-repository"
+  archiveShareCampaign,
+  getShareCampaignByExportIdForOwner,
+  upsertShareCampaign
+} from "@/server/share-campaigns/share-campaign-repository"
 
-function buildDefaultSummary(input: {
-  aspectRatio: string
-  platformPreset: string
-  templateName: string | null
-}) {
-  const templatePart = input.templateName ? ` using the ${input.templateName} template` : ""
-  return `Generated ${input.aspectRatio} export for ${input.platformPreset}${templatePart}.`
+function readValue(formData: FormData, key: string, fallback: string) {
+  const value = String(formData.get(key) ?? "").trim()
+  return value.length > 0 ? value : fallback
 }
 
-export async function publishShowcaseItemAction(exportId: string, formData: FormData) {
+export async function publishShareCampaignAction(exportId: string, formData: FormData) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -48,25 +45,13 @@ export async function publishShowcaseItemAction(exportId: string, formData: Form
     throw new Error("Project not found")
   }
 
-  const templateName =
-    typeof exportRecord.render_metadata.templateName === "string"
-      ? exportRecord.render_metadata.templateName
-      : null
-
-  const summaryValue = String(formData.get("summary") ?? "").trim()
-
-  await upsertShowcaseItem({
-    exportRecord,
+  const campaign = await upsertShareCampaign({
+    exportId,
+    message: readValue(formData, "message", "Reviewed winner selected from a controlled variation batch."),
     ownerId: user.id,
-    projectName: project.name,
+    projectId: project.id,
     renderBatchId: eligibility.batchId,
-    summary:
-      summaryValue ||
-      buildDefaultSummary({
-        aspectRatio: exportRecord.aspect_ratio,
-        platformPreset: exportRecord.platform_preset,
-        templateName
-      })
+    title: readValue(formData, "title", `${project.name} campaign`)
   })
 
   const supabase = await createSupabaseServerClient()
@@ -75,55 +60,55 @@ export async function publishShowcaseItemAction(exportId: string, formData: Form
     job_id: eligibility.jobId,
     owner_id: user.id,
     payload: {
+      campaignId: campaign.id,
       exportId,
       renderBatchId: eligibility.batchId
     },
     project_id: eligibility.projectId,
-    stage: "winner_promoted_to_showcase",
+    stage: "winner_promoted_to_share_campaign",
     trace_type: "promotion"
   })
 
   await supabase.from("notifications").insert({
-    action_url: `/dashboard/exports/${exportId}`,
-    body: "A reviewed winner has been published to the public showcase.",
+    action_url: `/dashboard/campaigns`,
+    body: "A reviewed winner has been promoted to a public share campaign.",
     export_id: exportId,
     job_id: eligibility.jobId,
-    kind: "winner_promoted_to_showcase",
+    kind: "winner_promoted_to_share_campaign",
     metadata: {
-      batchId: eligibility.batchId
+      batchId: eligibility.batchId,
+      campaignId: campaign.id
     },
     owner_id: user.id,
     project_id: eligibility.projectId,
     severity: "success",
-    title: "Winner published to showcase"
+    title: "Winner promoted to share campaign"
   })
 
-  revalidatePath("/dashboard/showcase")
+  revalidatePath("/dashboard/campaigns")
   revalidatePath(`/dashboard/exports/${exportId}`)
-  revalidatePath("/showcase")
+  revalidatePath(`/campaign/${campaign.token}`)
 }
 
-export async function unpublishShowcaseItemAction(exportId: string) {
+export async function archiveShareCampaignAction(exportId: string) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
     throw new Error("Authentication is required")
   }
 
-  const item = await getShowcaseItemByExportIdForOwner(exportId, user.id)
+  const campaign = await getShareCampaignByExportIdForOwner(exportId, user.id)
 
-  if (!item) {
-    throw new Error("Showcase item not found")
+  if (!campaign) {
+    throw new Error("Share campaign not found")
   }
 
-  const { unpublishShowcaseItem } = await import("@/server/showcase/showcase-repository")
-
-  await unpublishShowcaseItem({
-    ownerId: user.id,
-    showcaseItemId: item.id
+  await archiveShareCampaign({
+    campaignId: campaign.id,
+    ownerId: user.id
   })
 
-  revalidatePath("/dashboard/showcase")
+  revalidatePath("/dashboard/campaigns")
   revalidatePath(`/dashboard/exports/${exportId}`)
-  revalidatePath("/showcase")
+  revalidatePath(`/campaign/${campaign.token}`)
 }

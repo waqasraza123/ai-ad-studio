@@ -293,6 +293,7 @@ export type ShowcaseItemRecord = {
   owner_id: string
   project_id: string
   export_id: string
+  render_batch_id: string | null
   title: string
   summary: string
   is_published: boolean
@@ -346,6 +347,20 @@ export type RenderBatchRecord = {
   winner_export_id: string | null
   review_note: string | null
   decided_at: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type ShareCampaignRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  render_batch_id: string | null
+  export_id: string
+  title: string
+  message: string
+  token: string
+  status: "active" | "archived"
   created_at: string
   updated_at: string
 }

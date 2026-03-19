@@ -211,6 +211,24 @@ export async function selectRenderBatchWinner(input: {
     throw new Error("Failed to select render batch winner")
   }
 
+  await supabase
+    .from("showcase_items")
+    .update({
+      is_published: false,
+      updated_at: decidedAt
+    })
+    .eq("render_batch_id", input.batchId)
+    .neq("export_id", input.winnerExportId)
+
+  await supabase
+    .from("share_campaigns")
+    .update({
+      status: "archived",
+      updated_at: decidedAt
+    })
+    .eq("render_batch_id", input.batchId)
+    .neq("export_id", input.winnerExportId)
+
   const { error: traceError } = await supabase.from("job_traces").insert({
     job_id: existingBatch.job_id,
     owner_id: input.ownerId,
