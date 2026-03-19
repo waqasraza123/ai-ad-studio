@@ -9,14 +9,12 @@ import type {
 } from "@/server/database/types"
 
 const renderBatchSelection =
-  "id, owner_id, project_id, concept_id, job_id, status, platform_preset, aspect_ratios, variant_keys, export_count, winner_export_id, review_note, decided_at, created_at, updated_at"
+  "id, owner_id, project_id, concept_id, job_id, status, platform_preset, aspect_ratios, variant_keys, export_count, winner_export_id, review_note, decided_at, is_finalized, finalized_export_id, finalization_note, finalized_at, finalized_by_owner_id, created_at, updated_at"
 
-function normalizeRenderBatch(
-  record: Omit<RenderBatchRecord, "aspect_ratios" | "variant_keys"> & {
-    aspect_ratios: unknown
-    variant_keys: unknown
-  }
-) {
+function normalizeRenderBatch(record: Omit<RenderBatchRecord, "aspect_ratios" | "variant_keys"> & {
+  aspect_ratios: unknown
+  variant_keys: unknown
+}) {
   return {
     ...record,
     aspect_ratios: Array.isArray(record.aspect_ratios)
@@ -84,7 +82,7 @@ export async function getRenderBatchByIdForOwner(
   )
 }
 
-export function listExportsForRenderBatch(input: {
+export async function listExportsForRenderBatch(input: {
   batchId: string
   exports: ExportRecord[]
 }) {
@@ -192,6 +190,10 @@ export async function selectRenderBatchWinner(input: {
     throw new Error("Render batch not found")
   }
 
+  if (existingBatch.is_finalized) {
+    throw new Error("This batch has been finalized and the winner is locked")
+  }
+
   const decidedAt = new Date().toISOString()
 
   const { data, error } = await supabase
@@ -229,7 +231,7 @@ export async function selectRenderBatchWinner(input: {
     .eq("render_batch_id", input.batchId)
     .neq("export_id", input.winnerExportId)
 
-  const { error: traceError } = await supabase.from("job_traces").insert({
+  await supabase.from("job_traces").insert({
     job_id: existingBatch.job_id,
     owner_id: input.ownerId,
     payload: {
@@ -241,11 +243,7 @@ export async function selectRenderBatchWinner(input: {
     trace_type: "review"
   })
 
-  if (traceError) {
-    throw new Error("Failed to write render batch winner trace")
-  }
-
-  const { error: notificationError } = await supabase.from("notifications").insert({
+  await supabase.from("notifications").insert({
     action_url: `/dashboard/exports/${input.winnerExportId}`,
     body: "A winning export has been selected for a controlled render batch.",
     export_id: input.winnerExportId,
@@ -260,9 +258,116 @@ export async function selectRenderBatchWinner(input: {
     title: "Batch winner selected"
   })
 
-  if (notificationError) {
-    throw new Error("Failed to create render batch winner notification")
+  return normalizeRenderBatch(
+    data as RenderBatchRecord & {
+      aspect_ratios: unknown
+      variant_keys: unknown
+    }
+  )
+}
+
+export async function finalizeRenderBatchDecision(input: {
+  batchId: string
+  ownerId: string
+  finalizationNote: string | null
+}) {
+  const supabase = await createSupabaseServerClient()
+  const batch = await getRenderBatchByIdForOwner(input.batchId, input.ownerId)
+
+  if (!batch) {
+    throw new Error("Render batch not found")
   }
+
+  if (batch.is_finalized) {
+    throw new Error("This batch has already been finalized")
+  }
+
+  if (batch.status !== "ready") {
+    throw new Error("Only ready batches can be finalized")
+  }
+
+  if (!batch.winner_export_id) {
+    throw new Error("Select a batch winner before finalizing")
+  }
+
+  const { data: winningExport, error: winningExportError } = await supabase
+    .from("exports")
+    .select("id, project_id, owner_id, render_metadata")
+    .eq("id", batch.winner_export_id)
+    .eq("owner_id", input.ownerId)
+    .maybeSingle()
+
+  if (winningExportError || !winningExport) {
+    throw new Error("Winning export not found")
+  }
+
+  if (String((winningExport as { render_metadata: Record<string, unknown> }).render_metadata.batchId ?? "") !== batch.id) {
+    throw new Error("Winning export does not belong to this render batch")
+  }
+
+  const finalizedAt = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from("render_batches")
+    .update({
+      finalization_note: input.finalizationNote,
+      finalized_at: finalizedAt,
+      finalized_by_owner_id: input.ownerId,
+      finalized_export_id: batch.winner_export_id,
+      is_finalized: true,
+      updated_at: finalizedAt
+    })
+    .eq("id", batch.id)
+    .eq("owner_id", input.ownerId)
+    .select(renderBatchSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to finalize render batch")
+  }
+
+  const { error: projectError } = await supabase
+    .from("projects")
+    .update({
+      canonical_export_id: batch.winner_export_id
+    })
+    .eq("id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+
+  if (projectError) {
+    throw new Error("Failed to set canonical export on project")
+  }
+
+  await supabase
+    .from("batch_review_links")
+    .update({
+      status: "closed",
+      updated_at: finalizedAt
+    })
+    .eq("render_batch_id", batch.id)
+    .eq("owner_id", input.ownerId)
+    .eq("status", "active")
+
+  await supabase
+    .from("showcase_items")
+    .update({
+      is_published: false,
+      updated_at: finalizedAt
+    })
+    .eq("project_id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+    .neq("export_id", batch.winner_export_id)
+
+  await supabase
+    .from("share_campaigns")
+    .update({
+      status: "archived",
+      updated_at: finalizedAt
+    })
+    .eq("project_id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+    .neq("export_id", batch.winner_export_id)
+    .eq("status", "active")
 
   return normalizeRenderBatch(
     data as RenderBatchRecord & {

@@ -109,6 +109,7 @@ export type ProjectRecord = {
   selected_concept_id: string | null
   template_id: string | null
   brand_kit_id: string | null
+  canonical_export_id: string | null
   created_at: string
   updated_at: string
 }
@@ -138,7 +139,7 @@ export type AssetRecord = {
   mime_type: string
   width: number | null
   height: number | null
- duration_ms: number | null
+  duration_ms: number | null
   metadata: Record<string, unknown>
   created_at: string
 }
@@ -181,7 +182,7 @@ export type JobRecord = {
   cancel_reason: string | null
   started_at: string | null
   finished_at: string | null
- heartbeat_at: string | null
+  heartbeat_at: string | null
   created_at: string
   updated_at: string
 }
@@ -349,6 +350,11 @@ export type RenderBatchRecord = {
   winner_export_id: string | null
   review_note: string | null
   decided_at: string | null
+  is_finalized: boolean
+  finalized_export_id: string | null
+  finalization_note: string | null
+  finalized_at: string | null
+  finalized_by_owner_id: string | null
   created_at: string
   updated_at: string
 }
@@ -377,7 +383,7 @@ export type BatchReviewLinkRecord = {
   reviewer_role: ReviewerRole
   message: string
   token: string
-  status: "active" | "revoked"
+  status: "active" | "closed" | "revoked"
   response_status: ExternalReviewStatus
   response_note: string | null
   responded_at: string | null
@@ -407,9 +413,13 @@ export type PublicBatchReviewContext = {
   reviewer_name: string
   reviewer_role: ReviewerRole
   review_message: string
+  review_link_status: "active" | "closed"
   response_status: ExternalReviewStatus
   response_note: string | null
   responded_at: string | null
+  batch_is_finalized: boolean
+  finalized_at: string | null
+  finalization_note: string | null
 }
 
 export type PublicBatchReviewExport = {

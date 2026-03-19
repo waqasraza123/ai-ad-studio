@@ -31,13 +31,19 @@ export async function selectRenderBatchWinnerAction(
     throw new Error("Render batch not found")
   }
 
-  const projectExports = await listExportsByProjectIdForOwner(batch.project_id, user.id)
-  const batchExports = listExportsForRenderBatch({
+  const projectExports = await listExportsByProjectIdForOwner(
+    batch.project_id,
+    user.id
+  )
+
+  const batchExports = await listExportsForRenderBatch({
     batchId,
     exports: projectExports
   })
 
-  const winningExport = batchExports.find((exportRecord) => exportRecord.id === exportId)
+  const winningExport = batchExports.find(
+    (exportRecord) => exportRecord.id === exportId
+  )
 
   if (!winningExport) {
     throw new Error("Winning export does not belong to this render batch")

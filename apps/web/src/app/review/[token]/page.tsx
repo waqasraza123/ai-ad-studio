@@ -60,6 +60,8 @@ export default async function PublicBatchReviewPage({
       `${exportItem.variant_key} · ${exportItem.aspect_ratio}`
     ] as const)
   )
+  const reviewLocked =
+    context.review_link_status !== "active" || context.batch_is_finalized
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
@@ -107,36 +109,47 @@ export default async function PublicBatchReviewPage({
             </div>
           </div>
 
-          <form action={responseAction} className="mt-6 grid gap-4 md:grid-cols-[0.35fr_1fr_auto]">
-            <label className="grid gap-2">
-              <span className="text-sm text-slate-300">Decision</span>
-              <select
-                className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
-                defaultValue={context.response_status === "pending" ? "approved" : context.response_status}
-                name="response_status"
-              >
-                <option value="approved">Approve</option>
-                <option value="rejected">Reject</option>
-              </select>
-            </label>
-
-            <label className="grid gap-2">
-              <span className="text-sm text-slate-300">Decision note</span>
-              <textarea
-                className="min-h-28 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
-                defaultValue={context.response_note ?? ""}
-                name="response_note"
-                placeholder="Share why you approve or reject this batch"
-              />
-            </label>
-
-            <div className="flex items-end">
-              <Button>Submit decision</Button>
+          {reviewLocked ? (
+            <div className="mt-6 rounded-[1.5rem] border border-indigo-400/20 bg-indigo-500/10 p-4 text-sm text-indigo-100">
+              This review is closed. The owner finalized the batch and further public review is frozen.
+              {context.finalization_note ? ` ${context.finalization_note}` : ""}
             </div>
-          </form>
+          ) : (
+            <form action={responseAction} className="mt-6 grid gap-4 md:grid-cols-[0.35fr_1fr_auto]">
+              <label className="grid gap-2">
+                <span className="text-sm text-slate-300">Decision</span>
+                <select
+                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+                  defaultValue={context.response_status === "pending" ? "approved" : context.response_status}
+                  name="response_status"
+                >
+                  <option value="approved">Approve</option>
+                  <option value="rejected">Reject</option>
+                </select>
+              </label>
+
+              <label className="grid gap-2">
+                <span className="text-sm text-slate-300">Decision note</span>
+                <textarea
+                  className="min-h-28 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
+                  defaultValue={context.response_note ?? ""}
+                  name="response_note"
+                  placeholder="Share why you approve or reject this batch"
+                />
+              </label>
+
+              <div className="flex items-end">
+                <Button>Submit decision</Button>
+              </div>
+            </form>
+          )}
         </section>
 
-        <PublicBatchReviewGrid exports={exports} token={token} />
+        <PublicBatchReviewGrid
+          exports={exports}
+          isReadOnly={reviewLocked}
+          token={token}
+        />
         <PublicBatchReviewComments comments={comments} exportLabels={exportLabels} />
       </div>
     </main>

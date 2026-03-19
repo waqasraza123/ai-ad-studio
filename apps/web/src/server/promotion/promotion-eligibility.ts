@@ -26,7 +26,7 @@ export async function getPromotionEligibilityForExport(input: {
   if (!batchId) {
     return {
       eligible: false,
-      reason: "Only reviewed batch winners can be promoted publicly."
+      reason: "Only finalized canonical exports can be promoted publicly."
     }
   }
 
@@ -39,24 +39,17 @@ export async function getPromotionEligibilityForExport(input: {
     }
   }
 
-  if (batch.status !== "ready") {
+  if (!batch.is_finalized || !batch.finalized_at || !batch.finalized_export_id) {
     return {
       eligible: false,
-      reason: "The review batch is not ready for publishing."
+      reason: "Finalize the reviewed winner before promoting it publicly."
     }
   }
 
-  if (!batch.decided_at || !batch.winner_export_id) {
+  if (batch.finalized_export_id !== input.exportRecord.id) {
     return {
       eligible: false,
-      reason: "Choose a winner in batch review before publishing."
-    }
-  }
-
-  if (batch.winner_export_id !== input.exportRecord.id) {
-    return {
-      eligible: false,
-      reason: "Only the current winning export can be promoted publicly."
+      reason: "Only the finalized canonical export can be promoted publicly."
     }
   }
 

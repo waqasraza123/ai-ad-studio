@@ -143,16 +143,27 @@ export function RenderBatchPanel({
                         winner selected
                       </span>
                     ) : null}
+                    {batch.is_finalized ? (
+                      <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100">
+                        canonical locked
+                      </span>
+                    ) : null}
                   </div>
                   <p className="mt-2 text-sm text-slate-300">
                     {batch.platform_preset} · exports {batch.export_count}
                   </p>
                   <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
                     {formatTimestamp(batch.created_at)}
+                    {batch.finalized_at ? ` · finalized ${formatTimestamp(batch.finalized_at)}` : ""}
                   </p>
                   {batch.review_note ? (
                     <p className="mt-3 text-sm leading-7 text-slate-300">
                       {batch.review_note}
+                    </p>
+                  ) : null}
+                  {batch.finalization_note ? (
+                    <p className="mt-3 text-sm leading-7 text-white">
+                      {batch.finalization_note}
                     </p>
                   ) : null}
                 </div>

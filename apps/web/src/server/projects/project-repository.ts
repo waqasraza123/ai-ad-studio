@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { ProjectRecord, ProjectStatus } from "@/server/database/types"
 
 const projectSelection =
-  "id, owner_id, name, status, selected_concept_id, template_id, brand_kit_id, created_at, updated_at"
+  "id, owner_id, name, status, selected_concept_id, template_id, brand_kit_id, canonical_export_id, created_at, updated_at"
 
 export async function listProjectsByOwner(ownerId: string) {
   const supabase = await createSupabaseServerClient()
@@ -138,5 +138,25 @@ export async function updateProjectBrandKit(input: {
 
   if (error) {
     throw new Error("Failed to update project brand kit")
+  }
+}
+
+export async function updateProjectCanonicalExport(input: {
+  ownerId: string
+  projectId: string
+  exportId: string | null
+}) {
+  const supabase = await createSupabaseServerClient()
+
+  const { error } = await supabase
+    .from("projects")
+    .update({
+      canonical_export_id: input.exportId
+    })
+    .eq("id", input.projectId)
+    .eq("owner_id", input.ownerId)
+
+  if (error) {
+    throw new Error("Failed to update project canonical export")
   }
 }

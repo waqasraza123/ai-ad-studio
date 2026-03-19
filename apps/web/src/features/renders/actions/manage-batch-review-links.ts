@@ -43,6 +43,10 @@ export async function createBatchReviewLinkAction(
     throw new Error("Render batch not found")
   }
 
+  if (batch.is_finalized) {
+    throw new Error("This batch is finalized and no longer accepts new review links")
+  }
+
   const reviewerName = readValue(formData, "reviewer_name")
   const reviewerEmail = readValue(formData, "reviewer_email")
   const reviewerRole = readReviewerRole(readValue(formData, "reviewer_role", "client"))
@@ -117,6 +121,14 @@ export async function revokeBatchReviewLinkAction(
 
   if (!batch || !link) {
     throw new Error("Review link not found")
+  }
+
+  if (batch.is_finalized) {
+    throw new Error("This batch is finalized and review links can no longer be changed")
+  }
+
+  if (link.status !== "active") {
+    throw new Error("Only active review links can be revoked")
   }
 
   const revoked = await revokeBatchReviewLink({

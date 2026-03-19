@@ -61,6 +61,7 @@ export function RenderBatchReviewGrid({
             ? `/api/exports/${exportRecord.id}/download`
             : null
         const isWinner = batch.winner_export_id === exportRecord.id
+        const isCanonical = batch.finalized_export_id === exportRecord.id
         const action = selectRenderBatchWinnerAction.bind(
           null,
           batch.id,
@@ -71,9 +72,11 @@ export function RenderBatchReviewGrid({
           <article
             key={exportRecord.id}
             className={`overflow-hidden rounded-[2rem] border p-4 ${
-              isWinner
-                ? "border-indigo-400/30 bg-indigo-500/10"
-                : "border-white/10 bg-white/[0.04]"
+              isCanonical
+                ? "border-emerald-400/30 bg-emerald-500/10"
+                : isWinner
+                  ? "border-indigo-400/30 bg-indigo-500/10"
+                  : "border-white/10 bg-white/[0.04]"
             }`}
           >
             <div className="relative">
@@ -97,7 +100,11 @@ export function RenderBatchReviewGrid({
                 </div>
               )}
 
-              {isWinner ? (
+              {isCanonical ? (
+                <div className="absolute left-4 top-4 rounded-full border border-emerald-400/20 bg-emerald-500/90 px-3 py-1 text-xs font-medium text-white">
+                  Canonical export
+                </div>
+              ) : isWinner ? (
                 <div className="absolute left-4 top-4 rounded-full border border-indigo-400/20 bg-indigo-500/90 px-3 py-1 text-xs font-medium text-white">
                   Winner
                 </div>
@@ -120,15 +127,11 @@ export function RenderBatchReviewGrid({
               {formatTimestamp(exportRecord.created_at)}
             </p>
 
-            <form action={action} className="mt-4 space-y-4">
-              <textarea
-                className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
-                defaultValue={isWinner ? batch.review_note ?? "" : ""}
-                name="review_note"
-                placeholder="Decision note for this batch"
-              />
-              <div className="flex flex-wrap gap-2">
-                <Button>{isWinner ? "Save winner note" : "Select as winner"}</Button>
+            {batch.is_finalized ? (
+              <div className="mt-4 space-y-4">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+                  Winner selection is locked because this batch has been finalized.
+                </div>
                 <a
                   href={`/dashboard/exports/${exportRecord.id}`}
                   className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
@@ -136,7 +139,25 @@ export function RenderBatchReviewGrid({
                   Open export
                 </a>
               </div>
-            </form>
+            ) : (
+              <form action={action} className="mt-4 space-y-4">
+                <textarea
+                  className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
+                  defaultValue={isWinner ? batch.review_note ?? "" : ""}
+                  name="review_note"
+                  placeholder="Decision note for this batch"
+                />
+                <div className="flex flex-wrap gap-2">
+                  <Button>{isWinner ? "Save winner note" : "Select as winner"}</Button>
+                  <a
+                    href={`/dashboard/exports/${exportRecord.id}`}
+                    className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
+                  >
+                    Open export
+                  </a>
+                </div>
+              </form>
+            )}
           </article>
         )
       })}

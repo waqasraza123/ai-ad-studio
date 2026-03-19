@@ -12,12 +12,24 @@ type BatchReviewLinksPanelProps = {
   links: BatchReviewLinkRecord[]
 }
 
-function statusClasses(status: BatchReviewLinkRecord["response_status"]) {
+function responseClasses(status: BatchReviewLinkRecord["response_status"]) {
   if (status === "approved") {
     return "border-emerald-400/20 bg-emerald-500/10 text-emerald-100"
   }
 
   if (status === "rejected") {
+    return "border-rose-400/20 bg-rose-500/10 text-rose-100"
+  }
+
+  return "border-white/10 bg-white/[0.05] text-slate-300"
+}
+
+function linkStateClasses(status: BatchReviewLinkRecord["status"]) {
+  if (status === "closed") {
+    return "border-indigo-400/20 bg-indigo-500/10 text-indigo-100"
+  }
+
+  if (status === "revoked") {
     return "border-rose-400/20 bg-rose-500/10 text-rose-100"
   }
 
@@ -50,51 +62,57 @@ export function BatchReviewLinksPanel({
         Invite clients or stakeholders to review this batch through a public link with approve, reject, and comment actions.
       </p>
 
-      <form action={action} className="mt-6 grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Reviewer name</span>
-          <input
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
-            name="reviewer_name"
-            placeholder="Client name"
-          />
-        </label>
+      {!batch.is_finalized ? (
+        <form action={action} className="mt-6 grid gap-4 md:grid-cols-2">
+          <label className="grid gap-2">
+            <span className="text-sm text-slate-300">Reviewer name</span>
+            <input
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+              name="reviewer_name"
+              placeholder="Client name"
+            />
+          </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Reviewer email</span>
-          <input
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
-            name="reviewer_email"
-            placeholder="name@example.com"
-          />
-        </label>
+          <label className="grid gap-2">
+            <span className="text-sm text-slate-300">Reviewer email</span>
+            <input
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+              name="reviewer_email"
+              placeholder="name@example.com"
+            />
+          </label>
 
-        <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Reviewer role</span>
-          <select
-            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
-            defaultValue="client"
-            name="reviewer_role"
-          >
-            <option value="client">Client</option>
-            <option value="stakeholder">Stakeholder</option>
-            <option value="internal_reviewer">Internal reviewer</option>
-          </select>
-        </label>
+          <label className="grid gap-2">
+            <span className="text-sm text-slate-300">Reviewer role</span>
+            <select
+              className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+              defaultValue="client"
+              name="reviewer_role"
+            >
+              <option value="client">Client</option>
+              <option value="stakeholder">Stakeholder</option>
+              <option value="internal_reviewer">Internal reviewer</option>
+            </select>
+          </label>
 
-        <label className="grid gap-2 md:col-span-2">
-          <span className="text-sm text-slate-300">Message</span>
-          <textarea
-            className="min-h-28 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
-            defaultValue="Please review the batch outputs and leave your decision."
-            name="message"
-          />
-        </label>
+          <label className="grid gap-2 md:col-span-2">
+            <span className="text-sm text-slate-300">Message</span>
+            <textarea
+              className="min-h-28 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
+              defaultValue="Please review the batch outputs and leave your decision."
+              name="message"
+            />
+          </label>
 
-        <div className="md:col-span-2">
-          <Button>Create review link</Button>
+          <div className="md:col-span-2">
+            <Button>Create review link</Button>
+          </div>
+        </form>
+      ) : (
+        <div className="mt-6 rounded-[1.5rem] border border-indigo-400/20 bg-indigo-500/10 p-4 text-sm text-indigo-100">
+          This batch is finalized. External review is frozen and new review links can no longer be created.
         </div>
-      </form>
+      )}
 
       <div className="mt-8 space-y-3">
         {links.length === 0 ? (
@@ -118,14 +136,12 @@ export function BatchReviewLinksPanel({
                       <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
                         {link.reviewer_role}
                       </span>
-                      <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(link.response_status)}`}>
+                      <span className={`rounded-full border px-3 py-1 text-xs ${responseClasses(link.response_status)}`}>
                         {link.response_status}
                       </span>
-                      {link.status === "revoked" ? (
-                        <span className="rounded-full border border-rose-400/20 bg-rose-500/10 px-3 py-1 text-xs text-rose-100">
-                          revoked
-                        </span>
-                      ) : null}
+                      <span className={`rounded-full border px-3 py-1 text-xs ${linkStateClasses(link.status)}`}>
+                        {link.status}
+                      </span>
                     </div>
 
                     <p className="mt-2 text-sm text-slate-300">
@@ -144,7 +160,7 @@ export function BatchReviewLinksPanel({
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    {link.status === "active" ? (
+                    {link.status !== "revoked" ? (
                       <a
                         className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                         href={publicUrl}
@@ -153,7 +169,7 @@ export function BatchReviewLinksPanel({
                       </a>
                     ) : null}
 
-                    {link.status === "active" ? (
+                    {link.status === "active" && !batch.is_finalized ? (
                       <form action={revokeAction}>
                         <Button variant="secondary">Revoke</Button>
                       </form>

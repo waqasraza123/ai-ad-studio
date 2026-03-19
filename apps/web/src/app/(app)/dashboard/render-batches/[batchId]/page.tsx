@@ -13,6 +13,7 @@ import {
 } from "@/server/render-batches/render-batch-repository"
 import { BatchReviewCommentsPanel } from "@/features/renders/components/batch-review-comments-panel"
 import { BatchReviewLinksPanel } from "@/features/renders/components/batch-review-links-panel"
+import { FinalizeRenderBatchPanel } from "@/features/renders/components/finalize-render-batch-panel"
 import { RenderBatchReviewGrid } from "@/features/renders/components/render-batch-review-grid"
 import { RenderBatchReviewSummary } from "@/features/renders/components/render-batch-review-summary"
 
@@ -50,7 +51,7 @@ export default async function RenderBatchDetailPage({
     notFound()
   }
 
-  const batchExports = listExportsForRenderBatch({
+  const batchExports = await listExportsForRenderBatch({
     batchId,
     exports: projectExports
   })
@@ -65,6 +66,7 @@ export default async function RenderBatchDetailPage({
         projectName={project.name}
         reviewLinks={reviewLinks}
       />
+      <FinalizeRenderBatchPanel batch={batch} exports={batchExports} />
       <BatchReviewLinksPanel batch={batch} links={reviewLinks} />
       <RenderBatchReviewGrid
         assetsById={assetsById}

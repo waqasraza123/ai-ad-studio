@@ -4,6 +4,7 @@ import type { PublicBatchReviewExport } from "@/server/database/types"
 
 type PublicBatchReviewGridProps = {
   exports: PublicBatchReviewExport[]
+  isReadOnly: boolean
   token: string
 }
 
@@ -16,6 +17,7 @@ function formatTimestamp(value: string) {
 
 export function PublicBatchReviewGrid({
   exports,
+  isReadOnly,
   token
 }: PublicBatchReviewGridProps) {
   if (exports.length === 0) {
@@ -77,19 +79,25 @@ export function PublicBatchReviewGrid({
               {formatTimestamp(exportItem.created_at)}
             </p>
 
-            <form action={action} className="mt-4 space-y-4">
-              <input
-                className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-indigo-300/40"
-                name="author_label"
-                placeholder="Your name"
-              />
-              <textarea
-                className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
-                name="body"
-                placeholder="Comment on this export"
-              />
-              <Button>Comment on this output</Button>
-            </form>
+            {isReadOnly ? (
+              <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+                Comments are locked because this review is closed.
+              </div>
+            ) : (
+              <form action={action} className="mt-4 space-y-4">
+                <input
+                  className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-indigo-300/40"
+                  name="author_label"
+                  placeholder="Your name"
+                />
+                <textarea
+                  className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
+                  name="body"
+                  placeholder="Comment on this export"
+                />
+                <Button>Comment on this output</Button>
+              </form>
+            )}
           </article>
         )
       })}
