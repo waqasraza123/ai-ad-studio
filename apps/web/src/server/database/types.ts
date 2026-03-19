@@ -277,6 +277,11 @@ export type ShowcaseItemRecord = {
   summary: string
   is_published: boolean
   sort_order: number
+  aspect_ratio: ExportAspectRatio | null
+  platform_preset: PlatformPresetKey | null
+  template_style_key: string | null
+  template_name: string | null
+  preview_data_url: string | null
   created_at: string
   updated_at: string
 }

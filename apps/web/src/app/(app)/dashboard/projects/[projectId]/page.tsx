@@ -159,7 +159,7 @@ export default async function ProjectDetailPage({
       : null
 
   const latestVideoSrc =
-    latestExportAsset?.mime_type === "video/mp4"
+    latestExport && latestExportAsset?.mime_type === "video/mp4"
       ? `/api/exports/${latestExport.id}/download`
       : null
 
