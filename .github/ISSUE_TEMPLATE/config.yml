@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+
+name: Security report
+url: https://github.com/waqasraza123/ai-ad-studio/blob/main/SECURITY.md
+
+about: Please report vulnerabilities privately and do not open a public issue.
+
+name: Support
+url: https://github.com/waqasraza123/ai-ad-studio/blob/main/SUPPORT.md
+
+about: Read the support policy before opening a new issue.
+
