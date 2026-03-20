@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { hasR2StorageConfiguration } from "@/lib/env"
-import { getSharedExportBundleByToken } from "@/server/exports/share-link-repository"
+import { getPublicShareCampaignBundleByToken } from "@/server/share-campaigns/public-share-campaign"
 import {
   buildAssetDownloadFileName,
   createInlineAssetResponse
@@ -26,12 +26,12 @@ export async function GET(
   }
 
   const { token } = await context.params
-  const bundle = await getSharedExportBundleByToken(token)
+  const bundle = await getPublicShareCampaignBundleByToken(token)
 
   if (!bundle || !bundle.asset) {
     return NextResponse.json(
       {
-        error: "Shared export not found"
+        error: "Campaign export not found"
       },
       {
         status: 404

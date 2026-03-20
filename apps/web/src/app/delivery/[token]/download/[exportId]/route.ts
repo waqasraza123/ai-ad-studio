@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { hasR2StorageConfiguration } from "@/lib/env"
-import { getSharedExportBundleByToken } from "@/server/exports/share-link-repository"
+import { getPublicDeliveryWorkspaceExportBundle } from "@/server/delivery-workspaces/public-delivery-workspace"
 import {
   buildAssetDownloadFileName,
   createInlineAssetResponse
@@ -11,6 +11,7 @@ export async function GET(
   context: {
     params: Promise<{
       token: string
+      exportId: string
     }>
   }
 ) {
@@ -25,13 +26,16 @@ export async function GET(
     )
   }
 
-  const { token } = await context.params
-  const bundle = await getSharedExportBundleByToken(token)
+  const { exportId, token } = await context.params
+  const bundle = await getPublicDeliveryWorkspaceExportBundle({
+    exportId,
+    token
+  })
 
   if (!bundle || !bundle.asset) {
     return NextResponse.json(
       {
-        error: "Shared export not found"
+        error: "Delivery export not found"
       },
       {
         status: 404

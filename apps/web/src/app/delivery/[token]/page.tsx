@@ -1,5 +1,3 @@
-"use server"
-
 import { notFound } from "next/navigation"
 import {
   getActiveDeliveryWorkspaceByToken,
@@ -195,7 +193,7 @@ export default async function PublicDeliveryPage({
                     {exportRecord ? (
                       <a
                         className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
-                        href={`/api/exports/${exportRecord.id}/download`}
+                        href={`/delivery/${token}/download/${exportRecord.id}`}
                       >
                         Download asset
                       </a>

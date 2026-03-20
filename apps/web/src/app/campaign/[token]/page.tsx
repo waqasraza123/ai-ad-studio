@@ -1,10 +1,5 @@
 import { notFound } from "next/navigation"
-import { createSupabaseServerClient } from "@/lib/supabase/server"
-import type {
-  AssetRecord,
-  ExportRecord
-} from "@/server/database/types"
-import { getActiveShareCampaignByToken } from "@/server/share-campaigns/share-campaign-repository"
+import { getPublicShareCampaignBundleByToken } from "@/server/share-campaigns/public-share-campaign"
 
 type PublicCampaignPageProps = {
   params: Promise<{
@@ -12,67 +7,24 @@ type PublicCampaignPageProps = {
   }>
 }
 
-async function loadPromotedExport(exportId: string) {
-  const supabase = await createSupabaseServerClient()
-
-  const { data, error } = await supabase
-    .from("exports")
-    .select("id, project_id, concept_id, owner_id, asset_id, status, version, variant_key, aspect_ratio, platform_preset, render_metadata, created_at, updated_at")
-    .eq("id", exportId)
-    .maybeSingle()
-
-  if (error) {
-    throw new Error("Failed to load promoted export")
-  }
-
-  return (data ?? null) as ExportRecord | null
-}
-
-async function loadPromotedAsset(assetId: string | null) {
-  if (!assetId) {
-    return null
-  }
-
-  const supabase = await createSupabaseServerClient()
-
-  const { data, error } = await supabase
-    .from("assets")
-    .select("id, project_id, owner_id, kind, storage_key, mime_type, width, height, duration_ms, metadata, created_at")
-    .eq("id", assetId)
-    .maybeSingle()
-
-  if (error) {
-    throw new Error("Failed to load promoted asset")
-  }
-
-  return (data ?? null) as AssetRecord | null
-}
-
 export default async function PublicCampaignPage({
   params
 }: PublicCampaignPageProps) {
   const { token } = await params
+  const bundle = await getPublicShareCampaignBundleByToken(token)
 
-  const campaign = await getActiveShareCampaignByToken(token)
-
-  if (!campaign) {
+  if (!bundle) {
     notFound()
   }
 
-  const exportRecord = await loadPromotedExport(campaign.export_id)
-
-  if (!exportRecord) {
-    notFound()
-  }
-
-  const asset = await loadPromotedAsset(exportRecord.asset_id)
+  const { asset, campaign, exportRecord } = bundle
   const previewDataUrl =
     asset && typeof asset.metadata.previewDataUrl === "string"
       ? asset.metadata.previewDataUrl
       : null
   const videoSrc =
     asset?.mime_type === "video/mp4"
-      ? `/api/exports/${exportRecord.id}/download`
+      ? `/campaign/${token}/download`
       : null
 
   return (
