@@ -26,27 +26,32 @@ create index if not exists delivery_workspaces_token_idx
 
 alter table public.delivery_workspaces enable row level security;
 
+drop policy if exists "delivery_workspaces_select_own" on public.delivery_workspaces;
 create policy "delivery_workspaces_select_own"
 on public.delivery_workspaces
 for select
 using (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspaces_insert_own" on public.delivery_workspaces;
 create policy "delivery_workspaces_insert_own"
 on public.delivery_workspaces
 for insert
 with check (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspaces_update_own" on public.delivery_workspaces;
 create policy "delivery_workspaces_update_own"
 on public.delivery_workspaces
 for update
 using (auth.uid() = owner_id)
 with check (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspaces_delete_own" on public.delivery_workspaces;
 create policy "delivery_workspaces_delete_own"
 on public.delivery_workspaces
 for delete
 using (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspaces_select_active_public" on public.delivery_workspaces;
 create policy "delivery_workspaces_select_active_public"
 on public.delivery_workspaces
 for select
@@ -72,27 +77,32 @@ create index if not exists delivery_workspace_exports_export_idx
 
 alter table public.delivery_workspace_exports enable row level security;
 
+drop policy if exists "delivery_workspace_exports_select_own" on public.delivery_workspace_exports;
 create policy "delivery_workspace_exports_select_own"
 on public.delivery_workspace_exports
 for select
 using (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspace_exports_insert_own" on public.delivery_workspace_exports;
 create policy "delivery_workspace_exports_insert_own"
 on public.delivery_workspace_exports
 for insert
 with check (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspace_exports_update_own" on public.delivery_workspace_exports;
 create policy "delivery_workspace_exports_update_own"
 on public.delivery_workspace_exports
 for update
 using (auth.uid() = owner_id)
 with check (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspace_exports_delete_own" on public.delivery_workspace_exports;
 create policy "delivery_workspace_exports_delete_own"
 on public.delivery_workspace_exports
 for delete
 using (auth.uid() = owner_id);
 
+drop policy if exists "delivery_workspace_exports_select_active_public" on public.delivery_workspace_exports;
 create policy "delivery_workspace_exports_select_active_public"
 on public.delivery_workspace_exports
 for select
@@ -105,6 +115,7 @@ using (
   )
 );
 
+drop policy if exists "exports_select_delivery_workspace_public" on public.exports;
 create policy "exports_select_delivery_workspace_public"
 on public.exports
 for select
@@ -124,7 +135,7 @@ using (
       and dw.status = 'active'
   )
 );
-
+drop policy if exists "assets_select_delivery_workspace_public" on public.assets;
 create policy "assets_select_delivery_workspace_public"
 on public.assets
 for select

@@ -17,6 +17,12 @@ create index if not exists render_batches_finalized_export_idx
 create index if not exists render_batches_is_finalized_idx
   on public.render_batches (is_finalized, created_at desc);
 
+drop function if exists public.get_public_batch_review_context(text);
+drop function if exists public.list_public_batch_review_exports(text);
+drop function if exists public.list_public_batch_review_comments(text);
+drop function if exists public.submit_public_batch_review_response(text, text, text);
+drop function if exists public.submit_public_batch_review_comment(text, uuid, text, text);
+
 create or replace function public.get_public_batch_review_context(p_token text)
 returns table (
   review_link_id uuid,
