@@ -4,10 +4,11 @@ import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listBatchReviewLinksByBatchIdForOwner } from "@/server/batch-reviews/batch-review-repository"
 import {
-  listBatchReviewLinksByBatchIdForOwner
-} from "@/server/batch-reviews/batch-review-repository"
-import { getExportByIdForOwner, listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
+  getExportByIdForOwner,
+  listExportsByProjectIdForOwner
+} from "@/server/exports/export-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { getPromotionEligibilityForExport } from "@/server/promotion/promotion-eligibility"
 import {
@@ -20,46 +21,24 @@ import {
   replaceDeliveryWorkspaceExports,
   upsertDeliveryWorkspace
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
-import type {
-  DeliveryApprovalSummary,
-  ExportRecord
-} from "@/server/database/types"
+import {
+  buildDeliveryApprovalSummary,
+  resolveDeliveryWorkspaceExports
+} from "@/features/delivery/lib/delivery-workspace-rules"
 
 function readValue(formData: FormData, key: string, fallback = "") {
   return String(formData.get(key) ?? "").trim() || fallback
 }
 
 function readSelectedExportIds(formData: FormData) {
-  return [...new Set(formData.getAll("export_ids").map((value) => String(value).trim()).filter(Boolean))]
-}
-
-function buildApprovalSummary(input: {
-  batchFinalizationNote: string | null
-  batchReviewLinks: Array<{ response_status: string; status: string }>
-  batchReviewNote: string | null
-  decidedAt: string | null
-  finalizedAt: string | null
-}): DeliveryApprovalSummary {
-  const approvedCount = input.batchReviewLinks.filter(
-    (link) => link.response_status === "approved"
-  ).length
-  const rejectedCount = input.batchReviewLinks.filter(
-    (link) => link.response_status === "rejected"
-  ).length
-  const pendingCount = input.batchReviewLinks.filter(
-    (link) => link.response_status === "pending" && link.status === "active"
-  ).length
-
-  return {
-    approved_count: approvedCount,
-    decided_at: input.decidedAt,
-    finalization_note: input.batchFinalizationNote,
-    finalized_at: input.finalizedAt,
-    pending_count: pendingCount,
-    rejected_count: rejectedCount,
-    responded_count: approvedCount + rejectedCount,
-    review_note: input.batchReviewNote
-  }
+  return [
+    ...new Set(
+      formData
+        .getAll("export_ids")
+        .map((value) => String(value).trim())
+        .filter(Boolean)
+    )
+  ]
 }
 
 export async function upsertDeliveryWorkspaceAction(
@@ -104,21 +83,13 @@ export async function upsertDeliveryWorkspaceAction(
   })
 
   const selectedExportIds = readSelectedExportIds(formData)
-  const validBatchExportsById = new Map(batchExports.map((item) => [item.id, item]))
+  const resolvedWorkspaceExports = resolveDeliveryWorkspaceExports({
+    batchExports,
+    canonicalExport: exportRecord,
+    selectedExportIds
+  })
 
-  const selectedExports = selectedExportIds
-    .map((id) => validBatchExportsById.get(id) ?? null)
-    .filter((item): item is ExportRecord => Boolean(item))
-
-  const includedExportsById = new Map<string, ExportRecord>()
-
-  includedExportsById.set(exportRecord.id, exportRecord)
-
-  for (const selectedExport of selectedExports) {
-    includedExportsById.set(selectedExport.id, selectedExport)
-  }
-
-  const approvalSummary = buildApprovalSummary({
+  const approvalSummary = buildDeliveryApprovalSummary({
     batchFinalizationNote: batch.finalization_note,
     batchReviewLinks,
     batchReviewNote: batch.review_note,
@@ -150,7 +121,7 @@ export async function upsertDeliveryWorkspaceAction(
   })
 
   await replaceDeliveryWorkspaceExports({
-    exportRecords: [...includedExportsById.values()],
+    exportRecords: resolvedWorkspaceExports,
     ownerId: user.id,
     projectId: project.id,
     workspaceId: workspace.id
@@ -164,7 +135,9 @@ export async function upsertDeliveryWorkspaceAction(
     payload: {
       canonicalExportId: exportRecord.id,
       deliveryWorkspaceId: workspace.id,
-      includedExportIds: [...includedExportsById.keys()]
+      includedExportIds: resolvedWorkspaceExports.map(
+        (workspaceExport) => workspaceExport.id
+      )
     },
     project_id: project.id,
     stage: "delivery_workspace_published",
