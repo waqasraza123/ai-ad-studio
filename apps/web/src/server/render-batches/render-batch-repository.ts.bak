@@ -1,23 +1,21 @@
 import "server-only"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type {
+import { planRenderBatchFinalizationEffects } from "@/server/render-batches/finalization-rules"
   ExportAspectRatio,
   ExportRecord,
   PlatformPresetKey,
   RenderBatchRecord,
   RenderVariantKey
 } from "@/server/database/types"
-import { planRenderBatchFinalizationEffects } from "@/server/render-batches/finalization-rules"
 
 const renderBatchSelection =
   "id, owner_id, project_id, concept_id, job_id, status, platform_preset, aspect_ratios, variant_keys, export_count, winner_export_id, review_note, decided_at, is_finalized, finalized_export_id, finalization_note, finalized_at, finalized_by_owner_id, created_at, updated_at"
 
-function normalizeRenderBatch(
-  record: Omit<RenderBatchRecord, "aspect_ratios" | "variant_keys"> & {
-    aspect_ratios: unknown
-    variant_keys: unknown
-  }
-) {
+function normalizeRenderBatch(record: Omit<RenderBatchRecord, "aspect_ratios" | "variant_keys"> & {
+  aspect_ratios: unknown
+  variant_keys: unknown
+}) {
   return {
     ...record,
     aspect_ratios: Array.isArray(record.aspect_ratios)
@@ -90,17 +88,10 @@ export async function listExportsForRenderBatch(input: {
   exports: ExportRecord[]
 }) {
   return input.exports
-    .filter(
-      (exportRecord) =>
-        String(exportRecord.render_metadata.batchId ?? "") === input.batchId
-    )
+    .filter((exportRecord) => String(exportRecord.render_metadata.batchId ?? "") === input.batchId)
     .sort((left, right) => {
-      const leftVariant = String(
-        left.render_metadata.variantKey ?? left.variant_key
-      )
-      const rightVariant = String(
-        right.render_metadata.variantKey ?? right.variant_key
-      )
+      const leftVariant = String(left.render_metadata.variantKey ?? left.variant_key)
+      const rightVariant = String(right.render_metadata.variantKey ?? right.variant_key)
 
       if (leftVariant === rightVariant) {
         return left.aspect_ratio.localeCompare(right.aspect_ratio)
@@ -194,10 +185,7 @@ export async function selectRenderBatchWinner(input: {
 }) {
   const supabase = await createSupabaseServerClient()
 
-  const existingBatch = await getRenderBatchByIdForOwner(
-    input.batchId,
-    input.ownerId
-  )
+  const existingBatch = await getRenderBatchByIdForOwner(input.batchId, input.ownerId)
 
   if (!existingBatch) {
     throw new Error("Render batch not found")
@@ -316,8 +304,8 @@ export async function finalizeRenderBatchDecision(input: {
 
   if (
     String(
-      (winningExport as { render_metadata: Record<string, unknown> })
-        .render_metadata.batchId ?? ""
+      (winningExport as { render_metadata: Record<string, unknown> }).render_metadata
+        .batchId ?? ""
     ) !== batch.id
   ) {
     throw new Error("Winning export does not belong to this render batch")
@@ -396,6 +384,123 @@ export async function finalizeRenderBatchDecision(input: {
       effectsPlan.archiveDeliveryWorkspaces.excludeCanonicalExportId
     )
     .eq("status", effectsPlan.archiveDeliveryWorkspaces.match.status)
+
+  return normalizeRenderBatch(
+    data as RenderBatchRecord & {
+      aspect_ratios: unknown
+      variant_keys: unknown
+    }
+  )
+}
+) {
+  const supabase = await createSupabaseServerClient()
+  const batch = await getRenderBatchByIdForOwner(input.batchId, input.ownerId)
+
+  if (!batch) {
+    throw new Error("Render batch not found")
+  }
+
+  if (batch.is_finalized) {
+    throw new Error("This batch has already been finalized")
+  }
+
+  if (batch.status !== "ready") {
+    throw new Error("Only ready batches can be finalized")
+  }
+
+  if (!batch.winner_export_id) {
+    throw new Error("Select a batch winner before finalizing")
+  }
+
+  const { data: winningExport, error: winningExportError } = await supabase
+    .from("exports")
+    .select("id, project_id, owner_id, render_metadata")
+    .eq("id", batch.winner_export_id)
+    .eq("owner_id", input.ownerId)
+    .maybeSingle()
+
+  if (winningExportError || !winningExport) {
+    throw new Error("Winning export not found")
+  }
+
+  if (String((winningExport as { render_metadata: Record<string, unknown> }).render_metadata.batchId ?? "") !== batch.id) {
+    throw new Error("Winning export does not belong to this render batch")
+  }
+
+  const finalizedAt = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from("render_batches")
+    .update({
+      finalization_note: input.finalizationNote,
+      finalized_at: finalizedAt,
+      finalized_by_owner_id: input.ownerId,
+      finalized_export_id: batch.winner_export_id,
+      is_finalized: true,
+      updated_at: finalizedAt
+    })
+    .eq("id", batch.id)
+    .eq("owner_id", input.ownerId)
+    .select(renderBatchSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to finalize render batch")
+  }
+
+  const { error: projectError } = await supabase
+    .from("projects")
+    .update({
+      canonical_export_id: batch.winner_export_id
+    })
+    .eq("id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+
+  if (projectError) {
+    throw new Error("Failed to set canonical export on project")
+  }
+
+  await supabase
+    .from("batch_review_links")
+    .update({
+      status: "closed",
+      updated_at: finalizedAt
+    })
+    .eq("render_batch_id", batch.id)
+    .eq("owner_id", input.ownerId)
+    .eq("status", "active")
+
+  await supabase
+    .from("showcase_items")
+    .update({
+      is_published: false,
+      updated_at: finalizedAt
+    })
+    .eq("project_id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+    .neq("export_id", batch.winner_export_id)
+
+  await supabase
+    .from("share_campaigns")
+    .update({
+      status: "archived",
+      updated_at: finalizedAt
+    })
+    .eq("project_id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+    .neq("export_id", batch.winner_export_id)
+    .eq("status", "active")
+
+  await supabase
+    .from("delivery_workspaces")
+    .update({
+      status: "archived",
+      updated_at: finalizedAt
+    })
+    .eq("project_id", batch.project_id)
+    .eq("owner_id", input.ownerId)
+    .neq("canonical_export_id", batch.winner_export_id)
+    .eq("status", "active")
 
   return normalizeRenderBatch(
     data as RenderBatchRecord & {
