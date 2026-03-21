@@ -4,6 +4,10 @@ import { submitPublicBatchReviewResponseAction } from "@/features/renders/action
 import { PublicBatchReviewComments } from "@/features/renders/components/public-batch-review-comments"
 import { PublicBatchReviewGrid } from "@/features/renders/components/public-batch-review-grid"
 import {
+  getPublicBatchReviewLockMessage,
+  getPublicBatchReviewWriteState
+} from "@/features/renders/lib/public-batch-review-state"
+import {
   getPublicBatchReviewContext,
   listPublicBatchReviewComments,
   listPublicBatchReviewExports
@@ -60,8 +64,15 @@ export default async function PublicBatchReviewPage({
       `${exportItem.variant_key} · ${exportItem.aspect_ratio}`
     ] as const)
   )
-  const reviewLocked =
-    context.review_link_status !== "active" || context.batch_is_finalized
+
+  const writeState = getPublicBatchReviewWriteState({
+    batchIsFinalized: context.batch_is_finalized,
+    reviewLinkStatus: context.review_link_status
+  })
+  const lockMessage = getPublicBatchReviewLockMessage({
+    finalizationNote: context.finalization_note,
+    writeState
+  })
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
@@ -80,7 +91,9 @@ export default async function PublicBatchReviewPage({
               </p>
             </div>
 
-            <div className={`rounded-full border px-4 py-2 text-sm ${responseClasses(context.response_status)}`}>
+            <div
+              className={`rounded-full border px-4 py-2 text-sm ${responseClasses(context.response_status)}`}
+            >
               {context.response_status}
             </div>
           </div>
@@ -88,17 +101,23 @@ export default async function PublicBatchReviewPage({
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
               <p className="text-sm text-slate-400">Reviewer</p>
-              <p className="mt-2 text-sm font-medium text-white">{context.reviewer_name}</p>
+              <p className="mt-2 text-sm font-medium text-white">
+                {context.reviewer_name}
+              </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
               <p className="text-sm text-slate-400">Role</p>
-              <p className="mt-2 text-sm font-medium text-white">{context.reviewer_role}</p>
+              <p className="mt-2 text-sm font-medium text-white">
+                {context.reviewer_role}
+              </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
               <p className="text-sm text-slate-400">Outputs</p>
-              <p className="mt-2 text-sm font-medium text-white">{exports.length}</p>
+              <p className="mt-2 text-sm font-medium text-white">
+                {exports.length}
+              </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
@@ -109,18 +128,24 @@ export default async function PublicBatchReviewPage({
             </div>
           </div>
 
-          {reviewLocked ? (
+          {writeState.isLocked ? (
             <div className="mt-6 rounded-[1.5rem] border border-indigo-400/20 bg-indigo-500/10 p-4 text-sm text-indigo-100">
-              This review is closed. The owner finalized the batch and further public review is frozen.
-              {context.finalization_note ? ` ${context.finalization_note}` : ""}
+              {lockMessage}
             </div>
           ) : (
-            <form action={responseAction} className="mt-6 grid gap-4 md:grid-cols-[0.35fr_1fr_auto]">
+            <form
+              action={responseAction}
+              className="mt-6 grid gap-4 md:grid-cols-[0.35fr_1fr_auto]"
+            >
               <label className="grid gap-2">
                 <span className="text-sm text-slate-300">Decision</span>
                 <select
                   className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
-                  defaultValue={context.response_status === "pending" ? "approved" : context.response_status}
+                  defaultValue={
+                    context.response_status === "pending"
+                      ? "approved"
+                      : context.response_status
+                  }
                   name="response_status"
                 >
                   <option value="approved">Approve</option>
@@ -147,7 +172,7 @@ export default async function PublicBatchReviewPage({
 
         <PublicBatchReviewGrid
           exports={exports}
-          isReadOnly={reviewLocked}
+          isReadOnly={writeState.isLocked}
           token={token}
         />
         <PublicBatchReviewComments comments={comments} exportLabels={exportLabels} />
