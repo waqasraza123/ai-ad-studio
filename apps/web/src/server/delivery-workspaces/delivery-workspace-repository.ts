@@ -229,6 +229,31 @@ export async function listPublicDeliveryWorkspaceEventsByToken(token: string) {
   return (data ?? []) as DeliveryWorkspaceEventRecord[]
 }
 
+
+export async function listDeliveryWorkspaceEventsByWorkspaceIdsForOwner(
+  workspaceIds: string[],
+  ownerId: string
+) {
+  if (workspaceIds.length === 0) {
+    return [] as DeliveryWorkspaceEventRecord[]
+  }
+
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("delivery_workspace_events")
+    .select(deliveryWorkspaceEventSelection)
+    .in("delivery_workspace_id", workspaceIds)
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to load delivery workspace events")
+  }
+
+  return (data ?? []) as DeliveryWorkspaceEventRecord[]
+}
+
 export async function recordDeliveryWorkspaceEvent(input: {
   workspaceId: string
   ownerId: string

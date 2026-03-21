@@ -1,19 +1,59 @@
-import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
-import { listDeliveryWorkspacesByOwner } from "@/server/delivery-workspaces/delivery-workspace-repository"
-import { listProjectsByOwner } from "@/server/projects/project-repository"
 import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-workspace-list"
+import {
+  buildDeliveryWorkspaceOverviewRecords,
+  filterAndSortDeliveryWorkspaceOverviewRecords,
+  normalizeDeliveryWorkspaceSortKey,
+  normalizeDeliveryWorkspaceStatusFilter
+} from "@/features/delivery/lib/delivery-workspace-overview"
+import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import {
+  listDeliveryWorkspaceEventsByWorkspaceIdsForOwner,
+  listDeliveryWorkspacesByOwner
+} from "@/server/delivery-workspaces/delivery-workspace-repository"
+import { listProjectsByOwner } from "@/server/projects/project-repository"
 
-export default async function DeliveryPage() {
+type DeliveryPageProps = {
+  searchParams: Promise<{
+    sort?: string
+    status?: string
+  }>
+}
+
+export default async function DeliveryPage({
+  searchParams
+}: DeliveryPageProps) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
     return null
   }
 
+  const resolvedSearchParams = await searchParams
+  const selectedStatusFilter = normalizeDeliveryWorkspaceStatusFilter(
+    resolvedSearchParams.status
+  )
+  const selectedSortKey = normalizeDeliveryWorkspaceSortKey(
+    resolvedSearchParams.sort
+  )
+
   const [workspaces, projects] = await Promise.all([
     listDeliveryWorkspacesByOwner(user.id),
     listProjectsByOwner(user.id)
   ])
+
+  const workspaceEvents = await listDeliveryWorkspaceEventsByWorkspaceIdsForOwner(
+    workspaces.map((workspace) => workspace.id),
+    user.id
+  )
+
+  const workspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
+    overviewRecords: buildDeliveryWorkspaceOverviewRecords({
+      events: workspaceEvents,
+      workspaces
+    }),
+    sortKey: selectedSortKey,
+    statusFilter: selectedStatusFilter
+  })
 
   const projectsById = new Map(projects.map((project) => [project.id, project]))
 
@@ -31,7 +71,12 @@ export default async function DeliveryPage() {
         </p>
       </section>
 
-      <DeliveryWorkspaceList projectsById={projectsById} workspaces={workspaces} />
+      <DeliveryWorkspaceList
+        projectsById={projectsById}
+        selectedSortKey={selectedSortKey}
+        selectedStatusFilter={selectedStatusFilter}
+        workspaceOverviews={workspaceOverviews}
+      />
     </div>
   )
 }
