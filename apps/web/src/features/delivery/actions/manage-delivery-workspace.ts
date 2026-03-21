@@ -4,11 +4,10 @@ import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
-import { listBatchReviewLinksByBatchIdForOwner } from "@/server/batch-reviews/batch-review-repository"
 import {
-  getExportByIdForOwner,
-  listExportsByProjectIdForOwner
-} from "@/server/exports/export-repository"
+  listBatchReviewLinksByBatchIdForOwner
+} from "@/server/batch-reviews/batch-review-repository"
+import { getExportByIdForOwner, listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { getPromotionEligibilityForExport } from "@/server/promotion/promotion-eligibility"
 import {
@@ -18,6 +17,7 @@ import {
 import {
   archiveDeliveryWorkspace,
   getDeliveryWorkspaceByCanonicalExportIdForOwner,
+  recordDeliveryWorkspaceEvent,
   replaceDeliveryWorkspaceExports,
   upsertDeliveryWorkspace
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
@@ -31,14 +31,7 @@ function readValue(formData: FormData, key: string, fallback = "") {
 }
 
 function readSelectedExportIds(formData: FormData) {
-  return [
-    ...new Set(
-      formData
-        .getAll("export_ids")
-        .map((value) => String(value).trim())
-        .filter(Boolean)
-    )
-  ]
+  return [...new Set(formData.getAll("export_ids").map((value) => String(value).trim()).filter(Boolean))]
 }
 
 export async function upsertDeliveryWorkspaceAction(
@@ -122,6 +115,20 @@ export async function upsertDeliveryWorkspaceAction(
 
   await replaceDeliveryWorkspaceExports({
     exportRecords: resolvedWorkspaceExports,
+    ownerId: user.id,
+    projectId: project.id,
+    workspaceId: workspace.id
+  })
+
+  await recordDeliveryWorkspaceEvent({
+    actorLabel: null,
+    eventType: "delivered",
+    exportId: exportRecord.id,
+    metadata: {
+      includedExportIds: resolvedWorkspaceExports.map(
+        (workspaceExport) => workspaceExport.id
+      )
+    },
     ownerId: user.id,
     projectId: project.id,
     workspaceId: workspace.id

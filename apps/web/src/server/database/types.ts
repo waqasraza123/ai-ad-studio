@@ -465,3 +465,21 @@ export type DeliveryWorkspaceExportRecord = {
   sort_order: number
   created_at: string
 }
+
+export type DeliveryWorkspaceEventType =
+  | "delivered"
+  | "viewed"
+  | "downloaded"
+  | "acknowledged"
+
+export type DeliveryWorkspaceEventRecord = {
+  id: string
+  delivery_workspace_id: string
+  owner_id: string
+  project_id: string
+  export_id: string | null
+  event_type: DeliveryWorkspaceEventType
+  actor_label: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+}

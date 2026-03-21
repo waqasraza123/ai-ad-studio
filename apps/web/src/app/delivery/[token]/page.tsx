@@ -1,9 +1,13 @@
 import { notFound } from "next/navigation"
+import { acknowledgePublicDeliveryWorkspaceAction } from "@/features/delivery/actions/public-delivery"
+import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
 import {
   getActiveDeliveryWorkspaceByToken,
   listAssetsForDeliveryWorkspace,
   listExportsForDeliveryWorkspace,
-  listPublicDeliveryWorkspaceExportsByWorkspaceId
+  listPublicDeliveryWorkspaceEventsByToken,
+  listPublicDeliveryWorkspaceExportsByWorkspaceId,
+  recordPublicDeliveryWorkspaceEventByToken
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
 
 type PublicDeliveryPageProps = {
@@ -34,8 +38,20 @@ export default async function PublicDeliveryPage({
     notFound()
   }
 
-  const workspaceExports =
-    await listPublicDeliveryWorkspaceExportsByWorkspaceId(workspace.id)
+  try {
+    await recordPublicDeliveryWorkspaceEventByToken({
+      eventType: "viewed",
+      token
+    })
+  } catch (error) {
+    console.error(error)
+  }
+
+  const [workspaceExports, publicEvents] = await Promise.all([
+    listPublicDeliveryWorkspaceExportsByWorkspaceId(workspace.id),
+    listPublicDeliveryWorkspaceEventsByToken(token)
+  ])
+
   const exportRecords = await listExportsForDeliveryWorkspace({
     exportIds: workspaceExports.map((item) => item.export_id)
   })
@@ -49,6 +65,8 @@ export default async function PublicDeliveryPage({
     exportRecords.map((exportRecord) => [exportRecord.id, exportRecord])
   )
   const assetsById = new Map(assets.map((asset) => [asset.id, asset]))
+  const activitySummary = summarizeDeliveryWorkspaceActivity(publicEvents)
+  const acknowledgeAction = acknowledgePublicDeliveryWorkspaceAction.bind(null, token)
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
@@ -116,6 +134,50 @@ export default async function PublicDeliveryPage({
               </p>
             </div>
           </div>
+        </section>
+
+        <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
+          <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+            Receipt status
+          </p>
+
+          {activitySummary.acknowledgedAt ? (
+            <div className="mt-4 rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4 text-sm text-emerald-100">
+              Receipt acknowledged {formatTimestamp(activitySummary.acknowledgedAt)}
+              {activitySummary.acknowledgedBy
+                ? ` by ${activitySummary.acknowledgedBy}.`
+                : "."}
+              {activitySummary.acknowledgementNote
+                ? ` ${activitySummary.acknowledgementNote}`
+                : ""}
+            </div>
+          ) : (
+            <form action={acknowledgeAction} className="mt-4 grid gap-4 md:grid-cols-2">
+              <label className="grid gap-2">
+                <span className="text-sm text-slate-300">Recipient label</span>
+                <input
+                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+                  name="actor_label"
+                  placeholder="Client name or team"
+                />
+              </label>
+
+              <label className="grid gap-2 md:col-span-2">
+                <span className="text-sm text-slate-300">Acknowledgement note</span>
+                <textarea
+                  className="min-h-24 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
+                  name="note"
+                  placeholder="Optional acknowledgement or receipt note"
+                />
+              </label>
+
+              <div className="md:col-span-2">
+                <button className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]">
+                  Acknowledge receipt
+                </button>
+              </div>
+            </form>
+          )}
         </section>
 
         <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">

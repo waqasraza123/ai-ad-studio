@@ -5,11 +5,14 @@ import { ShareCampaignPanel } from "@/features/renders/components/share-campaign
 import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { DeliveryWorkspacePanel } from "@/features/delivery/components/delivery-workspace-panel"
+import { DeliveryActivityTimeline } from "@/features/delivery/components/delivery-activity-timeline"
+import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import {
   getDeliveryWorkspaceByCanonicalExportIdForOwner,
+  listDeliveryWorkspaceEventsByWorkspaceIdForOwner,
   listDeliveryWorkspaceExportsByWorkspaceIdForOwner
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
 import { getExportByIdForOwner, listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
@@ -147,6 +150,19 @@ export default async function ExportDetailPage({
         )
       : []
 
+  const workspaceEvents =
+    deliveryWorkspace
+      ? await listDeliveryWorkspaceEventsByWorkspaceIdForOwner(
+          deliveryWorkspace.id,
+          user.id
+        )
+      : []
+
+  const workspaceActivitySummary =
+    deliveryWorkspace && workspaceEvents.length > 0
+      ? summarizeDeliveryWorkspaceActivity(workspaceEvents)
+      : null
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <ExportSummary
@@ -257,6 +273,13 @@ export default async function ExportDetailPage({
           workspaceExportIds={workspaceExports.map((item) => item.export_id)}
         />
       </div>
+
+      {deliveryWorkspace && workspaceActivitySummary ? (
+        <DeliveryActivityTimeline
+          events={workspaceEvents}
+          summary={workspaceActivitySummary}
+        />
+      ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
         <ShowcasePublishPanel

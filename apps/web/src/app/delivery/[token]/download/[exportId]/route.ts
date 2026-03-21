@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { hasR2StorageConfiguration } from "@/lib/env"
 import { getPublicDeliveryWorkspaceExportBundle } from "@/server/delivery-workspaces/public-delivery-workspace"
+import { recordPublicDeliveryWorkspaceEventByToken } from "@/server/delivery-workspaces/delivery-workspace-repository"
 import {
   buildAssetDownloadFileName,
   createInlineAssetResponse
@@ -41,6 +42,16 @@ export async function GET(
         status: 404
       }
     )
+  }
+
+  try {
+    await recordPublicDeliveryWorkspaceEventByToken({
+      eventType: "downloaded",
+      exportId,
+      token
+    })
+  } catch (error) {
+    console.error(error)
   }
 
   return createInlineAssetResponse({

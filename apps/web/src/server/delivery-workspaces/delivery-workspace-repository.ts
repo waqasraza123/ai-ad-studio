@@ -1,9 +1,13 @@
 import "server-only"
 import { randomBytes } from "node:crypto"
+import { createClient } from "@supabase/supabase-js"
+import { getServerEnvironment } from "@/lib/env"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type {
   AssetRecord,
   DeliveryApprovalSummary,
+  DeliveryWorkspaceEventRecord,
+  DeliveryWorkspaceEventType,
   DeliveryWorkspaceExportRecord,
   DeliveryWorkspaceRecord,
   ExportRecord
@@ -14,6 +18,9 @@ const deliveryWorkspaceSelection =
 
 const deliveryWorkspaceExportSelection =
   "id, delivery_workspace_id, owner_id, project_id, export_id, label, sort_order, created_at"
+
+const deliveryWorkspaceEventSelection =
+  "id, delivery_workspace_id, owner_id, project_id, export_id, event_type, actor_label, metadata, created_at"
 
 function generateDeliveryToken() {
   return randomBytes(20).toString("hex")
@@ -37,6 +44,23 @@ function normalizeDeliveryWorkspace(
       finalized_at: null
     }) as DeliveryApprovalSummary
   } as DeliveryWorkspaceRecord
+}
+
+function createPrivilegedSupabaseClient() {
+  const environment = getServerEnvironment()
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const serviceRoleKey = environment.SUPABASE_SERVICE_ROLE_KEY
+
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("Privileged Supabase configuration is missing")
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  })
 }
 
 export async function listDeliveryWorkspacesByOwner(ownerId: string) {
@@ -152,6 +176,153 @@ export async function listPublicDeliveryWorkspaceExportsByWorkspaceId(
   }
 
   return (data ?? []) as DeliveryWorkspaceExportRecord[]
+}
+
+export async function listDeliveryWorkspaceEventsByWorkspaceIdForOwner(
+  workspaceId: string,
+  ownerId: string
+) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("delivery_workspace_events")
+    .select(deliveryWorkspaceEventSelection)
+    .eq("delivery_workspace_id", workspaceId)
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to load delivery workspace events")
+  }
+
+  return (data ?? []) as DeliveryWorkspaceEventRecord[]
+}
+
+export async function listPublicDeliveryWorkspaceEventsByToken(token: string) {
+  const supabase = createPrivilegedSupabaseClient()
+
+  const { data: workspace, error: workspaceError } = await supabase
+    .from("delivery_workspaces")
+    .select("id")
+    .eq("token", token)
+    .eq("status", "active")
+    .maybeSingle()
+
+  if (workspaceError) {
+    throw new Error("Failed to load public delivery workspace")
+  }
+
+  if (!workspace) {
+    return [] as DeliveryWorkspaceEventRecord[]
+  }
+
+  const { data, error } = await supabase
+    .from("delivery_workspace_events")
+    .select(deliveryWorkspaceEventSelection)
+    .eq("delivery_workspace_id", workspace.id)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to load public delivery workspace events")
+  }
+
+  return (data ?? []) as DeliveryWorkspaceEventRecord[]
+}
+
+export async function recordDeliveryWorkspaceEvent(input: {
+  workspaceId: string
+  ownerId: string
+  projectId: string
+  exportId: string | null
+  eventType: DeliveryWorkspaceEventType
+  actorLabel?: string | null
+  metadata?: Record<string, unknown>
+}) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("delivery_workspace_events")
+    .insert({
+      delivery_workspace_id: input.workspaceId,
+      owner_id: input.ownerId,
+      project_id: input.projectId,
+      export_id: input.exportId,
+      event_type: input.eventType,
+      actor_label: input.actorLabel ?? null,
+      metadata: input.metadata ?? {}
+    })
+    .select(deliveryWorkspaceEventSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to record delivery workspace event")
+  }
+
+  return data as DeliveryWorkspaceEventRecord
+}
+
+export async function recordPublicDeliveryWorkspaceEventByToken(input: {
+  token: string
+  eventType: DeliveryWorkspaceEventType
+  exportId?: string | null
+  actorLabel?: string | null
+  metadata?: Record<string, unknown>
+}) {
+  const supabase = createPrivilegedSupabaseClient()
+
+  const { data: workspace, error: workspaceError } = await supabase
+    .from("delivery_workspaces")
+    .select("id, owner_id, project_id, canonical_export_id")
+    .eq("token", input.token)
+    .eq("status", "active")
+    .maybeSingle()
+
+  if (workspaceError) {
+    throw new Error("Failed to load public delivery workspace")
+  }
+
+  if (!workspace) {
+    throw new Error("Delivery workspace not found")
+  }
+
+  const exportId = input.exportId ?? null
+
+  if (exportId) {
+    const { data: workspaceExport, error: workspaceExportError } = await supabase
+      .from("delivery_workspace_exports")
+      .select("id")
+      .eq("delivery_workspace_id", workspace.id)
+      .eq("export_id", exportId)
+      .maybeSingle()
+
+    if (workspaceExportError) {
+      throw new Error("Failed to validate delivery workspace export")
+    }
+
+    if (!workspaceExport) {
+      throw new Error("Export does not belong to this delivery workspace")
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("delivery_workspace_events")
+    .insert({
+      delivery_workspace_id: workspace.id,
+      owner_id: workspace.owner_id,
+      project_id: workspace.project_id,
+      export_id: exportId,
+      event_type: input.eventType,
+      actor_label: input.actorLabel ?? null,
+      metadata: input.metadata ?? {}
+    })
+    .select(deliveryWorkspaceEventSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to record public delivery workspace event")
+  }
+
+  return data as DeliveryWorkspaceEventRecord
 }
 
 export async function upsertDeliveryWorkspace(input: {
