@@ -20,18 +20,25 @@ export function ShareLinkPanel({
       </p>
 
       <div className="mt-4 space-y-4">
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
+          Share links are owner-controlled utility links for a single export.
+          They are separate from winner-only campaign pages and finalized delivery workspaces.
+        </div>
+
         {shareUrl ? (
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
             <p className="break-all text-sm text-slate-300">{shareUrl}</p>
           </div>
         ) : (
           <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-slate-400">
-            No share link yet. Create one to open this export publicly.
+            No share link yet. Create one to share this single export outside the main campaign and delivery flow.
           </div>
         )}
 
         <form action={action}>
-          <Button>{shareUrl ? "Reuse share link" : "Create share link"}</Button>
+          <Button>
+            {shareUrl ? "Reuse utility share link" : "Create utility share link"}
+          </Button>
         </form>
       </div>
     </SurfaceCard>

@@ -1,8 +1,8 @@
-import { hasWorkerEnvironmentConfiguration, getWorkerEnvironment } from "@/lib/env"
-import { createSupabaseAdminClient } from "@/lib/supabase-admin"
+import { getWorkerEnvironment, hasWorkerEnvironmentConfiguration } from "@/lib/env"
 import { executeJob } from "@/jobs/execute-job"
 import { createLongRunningQueueNotifications } from "@/notifications/notification-service"
 import { claimNextJob, refreshJobHeartbeat } from "@/repositories/jobs-repository"
+import { createSupabaseAdminClient } from "@/lib/supabase-admin"
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => {
@@ -10,16 +10,37 @@ function wait(milliseconds: number) {
   })
 }
 
-async function runWorkerLoop() {
-  if (!hasWorkerEnvironmentConfiguration()) {
-    console.log("[worker] Supabase worker environment is not configured. Waiting for credentials.")
-    return
+function getMissingConfigurationPollIntervalMilliseconds() {
+  const parsedValue = Number(process.env.WORKER_POLL_INTERVAL_MS ?? "3000")
+
+  if (Number.isInteger(parsedValue) && parsedValue > 0) {
+    return parsedValue
   }
 
-  const environment = getWorkerEnvironment()
-  const supabase = createSupabaseAdminClient()
+  return 3000
+}
+
+async function runWorkerLoop() {
+  let hasLoggedMissingConfiguration = false
 
   for (;;) {
+    if (!hasWorkerEnvironmentConfiguration()) {
+      if (!hasLoggedMissingConfiguration) {
+        console.log(
+          "[worker] Supabase worker environment is not configured. Waiting for credentials."
+        )
+        hasLoggedMissingConfiguration = true
+      }
+
+      await wait(getMissingConfigurationPollIntervalMilliseconds())
+      continue
+    }
+
+    hasLoggedMissingConfiguration = false
+
+    const environment = getWorkerEnvironment()
+    const supabase = createSupabaseAdminClient()
+
     try {
       await createLongRunningQueueNotifications(supabase)
 

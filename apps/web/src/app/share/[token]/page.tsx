@@ -48,7 +48,7 @@ export default async function PublicSharePage({
             {project.name}
           </h1>
           <p className="mt-3 text-sm leading-7 text-slate-400">
-            Public preview of a generated export from AI Ad Studio.
+            This is an owner-controlled single-export share link. It is separate from winner-only campaign pages and finalized delivery workspaces.
           </p>
         </section>
 
