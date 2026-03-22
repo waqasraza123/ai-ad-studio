@@ -6,6 +6,7 @@ import type {
 import {
   buildDeliveryWorkspaceOverviewRecords,
   filterAndSortDeliveryWorkspaceOverviewRecords,
+  normalizeDeliveryWorkspaceQuickFilter,
   normalizeDeliveryWorkspaceSortKey,
   normalizeDeliveryWorkspaceStatusFilter,
   summarizeDeliveryDashboardOverview
@@ -79,8 +80,27 @@ describe("normalizeDeliveryWorkspaceSortKey", () => {
   })
 })
 
+describe("normalizeDeliveryWorkspaceQuickFilter", () => {
+  it("defaults to all for unsupported values", () => {
+    expect(normalizeDeliveryWorkspaceQuickFilter(undefined)).toBe("all")
+    expect(normalizeDeliveryWorkspaceQuickFilter("unknown")).toBe("all")
+  })
+
+  it("accepts supported quick filter values", () => {
+    expect(normalizeDeliveryWorkspaceQuickFilter("acknowledged")).toBe(
+      "acknowledged"
+    )
+    expect(normalizeDeliveryWorkspaceQuickFilter("viewed_only")).toBe(
+      "viewed_only"
+    )
+    expect(normalizeDeliveryWorkspaceQuickFilter("downloaded")).toBe(
+      "downloaded"
+    )
+  })
+})
+
 describe("buildDeliveryWorkspaceOverviewRecords", () => {
-  it("builds summaries and latest activity timestamps per workspace", () => {
+  it("builds summaries, latest activity timestamps, and excerpts per workspace", () => {
     const workspaces = [
       createWorkspaceRecord({
         id: "workspace-a",
@@ -89,6 +109,10 @@ describe("buildDeliveryWorkspaceOverviewRecords", () => {
       createWorkspaceRecord({
         id: "workspace-b",
         created_at: "2026-03-21T08:00:00.000Z"
+      }),
+      createWorkspaceRecord({
+        id: "workspace-c",
+        created_at: "2026-03-21T07:00:00.000Z"
       })
     ]
 
@@ -104,12 +128,12 @@ describe("buildDeliveryWorkspaceOverviewRecords", () => {
         created_at: "2026-03-21T10:00:00.000Z"
       }),
       createEventRecord({
-        delivery_workspace_id: "workspace-a",
+        delivery_workspace_id: "workspace-b",
         event_type: "downloaded",
         created_at: "2026-03-21T11:00:00.000Z"
       }),
       createEventRecord({
-        delivery_workspace_id: "workspace-b",
+        delivery_workspace_id: "workspace-c",
         event_type: "acknowledged",
         actor_label: "Client Team",
         metadata: {
@@ -124,7 +148,7 @@ describe("buildDeliveryWorkspaceOverviewRecords", () => {
       workspaces
     })
 
-    expect(overviewRecords).toHaveLength(2)
+    expect(overviewRecords).toHaveLength(3)
 
     const workspaceAOverview = overviewRecords.find(
       (overviewRecord) => overviewRecord.workspace.id === "workspace-a"
@@ -132,17 +156,31 @@ describe("buildDeliveryWorkspaceOverviewRecords", () => {
     const workspaceBOverview = overviewRecords.find(
       (overviewRecord) => overviewRecord.workspace.id === "workspace-b"
     )
+    const workspaceCOverview = overviewRecords.find(
+      (overviewRecord) => overviewRecord.workspace.id === "workspace-c"
+    )
 
-    expect(workspaceAOverview?.activitySummary.downloadCount).toBe(1)
-    expect(workspaceAOverview?.latestActivityAt).toBe("2026-03-21T11:00:00.000Z")
-    expect(workspaceBOverview?.activitySummary.acknowledgedBy).toBe("Client Team")
-    expect(workspaceBOverview?.latestActivityAt).toBe("2026-03-21T12:00:00.000Z")
+    expect(workspaceAOverview?.latestActivityAt).toBe("2026-03-21T10:00:00.000Z")
+    expect(workspaceAOverview?.activityExcerpt).toBe(
+      "Viewed by recipient. Awaiting acknowledgement."
+    )
+
+    expect(workspaceBOverview?.activitySummary.downloadCount).toBe(1)
+    expect(workspaceBOverview?.activityExcerpt).toBe(
+      "Downloaded once. Awaiting acknowledgement."
+    )
+
+    expect(workspaceCOverview?.activitySummary.acknowledgedBy).toBe("Client Team")
+    expect(workspaceCOverview?.activityExcerpt).toBe(
+      "Acknowledged by Client Team."
+    )
   })
 })
 
 describe("filterAndSortDeliveryWorkspaceOverviewRecords", () => {
   const overviewRecords = [
     {
+      activityExcerpt: "Viewed by recipient. Awaiting acknowledgement.",
       activitySummary: {
         acknowledgedAt: null,
         acknowledgedBy: null,
@@ -150,33 +188,53 @@ describe("filterAndSortDeliveryWorkspaceOverviewRecords", () => {
         deliveredAt: "2026-03-21T09:00:00.000Z",
         downloadCount: 0,
         lastDownloadedAt: null,
-        lastViewedAt: null
+        lastViewedAt: "2026-03-21T10:00:00.000Z"
       },
-      latestActivityAt: "2026-03-21T09:00:00.000Z",
+      latestActivityAt: "2026-03-21T10:00:00.000Z",
       workspace: createWorkspaceRecord({
-        id: "workspace-active-old",
+        id: "workspace-viewed-only",
         status: "active",
         created_at: "2026-03-21T08:00:00.000Z"
       })
     },
     {
+      activityExcerpt: "Downloaded 2 times. Awaiting acknowledgement.",
       activitySummary: {
         acknowledgedAt: null,
         acknowledgedBy: null,
         acknowledgementNote: null,
-        deliveredAt: "2026-03-21T10:00:00.000Z",
-        downloadCount: 1,
+        deliveredAt: "2026-03-21T09:00:00.000Z",
+        downloadCount: 2,
         lastDownloadedAt: "2026-03-21T11:00:00.000Z",
-        lastViewedAt: null
+        lastViewedAt: "2026-03-21T10:30:00.000Z"
       },
       latestActivityAt: "2026-03-21T11:00:00.000Z",
       workspace: createWorkspaceRecord({
-        id: "workspace-active-new",
+        id: "workspace-downloaded",
         status: "active",
-        created_at: "2026-03-21T10:30:00.000Z"
+        created_at: "2026-03-21T09:00:00.000Z"
       })
     },
     {
+      activityExcerpt: "Acknowledged by Client Team.",
+      activitySummary: {
+        acknowledgedAt: "2026-03-21T12:00:00.000Z",
+        acknowledgedBy: "Client Team",
+        acknowledgementNote: "Received.",
+        deliveredAt: "2026-03-21T09:00:00.000Z",
+        downloadCount: 1,
+        lastDownloadedAt: "2026-03-21T11:30:00.000Z",
+        lastViewedAt: "2026-03-21T10:45:00.000Z"
+      },
+      latestActivityAt: "2026-03-21T12:00:00.000Z",
+      workspace: createWorkspaceRecord({
+        id: "workspace-acknowledged",
+        status: "active",
+        created_at: "2026-03-21T10:00:00.000Z"
+      })
+    },
+    {
+      activityExcerpt: "No recipient activity yet.",
       activitySummary: {
         acknowledgedAt: null,
         acknowledgedBy: null,
@@ -198,41 +256,72 @@ describe("filterAndSortDeliveryWorkspaceOverviewRecords", () => {
   it("filters by status", () => {
     const filtered = filterAndSortDeliveryWorkspaceOverviewRecords({
       overviewRecords,
+      quickFilter: "all",
       sortKey: "latest_activity",
       statusFilter: "active"
     })
 
     expect(filtered.map((record) => record.workspace.id)).toEqual([
-      "workspace-active-new",
-      "workspace-active-old"
+      "workspace-acknowledged",
+      "workspace-downloaded",
+      "workspace-viewed-only"
     ])
   })
 
-  it("sorts by latest activity first when requested", () => {
-    const sorted = filterAndSortDeliveryWorkspaceOverviewRecords({
+  it("filters by acknowledged quick filter", () => {
+    const filtered = filterAndSortDeliveryWorkspaceOverviewRecords({
       overviewRecords,
+      quickFilter: "acknowledged",
       sortKey: "latest_activity",
       statusFilter: "all"
     })
 
-    expect(sorted.map((record) => record.workspace.id)).toEqual([
-      "workspace-active-new",
-      "workspace-active-old",
-      "workspace-archived"
+    expect(filtered.map((record) => record.workspace.id)).toEqual([
+      "workspace-acknowledged"
+    ])
+  })
+
+  it("filters by viewed_only quick filter", () => {
+    const filtered = filterAndSortDeliveryWorkspaceOverviewRecords({
+      overviewRecords,
+      quickFilter: "viewed_only",
+      sortKey: "latest_activity",
+      statusFilter: "all"
+    })
+
+    expect(filtered.map((record) => record.workspace.id)).toEqual([
+      "workspace-downloaded",
+      "workspace-viewed-only"
+    ])
+  })
+
+  it("filters by downloaded quick filter", () => {
+    const filtered = filterAndSortDeliveryWorkspaceOverviewRecords({
+      overviewRecords,
+      quickFilter: "downloaded",
+      sortKey: "latest_activity",
+      statusFilter: "all"
+    })
+
+    expect(filtered.map((record) => record.workspace.id)).toEqual([
+      "workspace-acknowledged",
+      "workspace-downloaded"
     ])
   })
 
   it("sorts by newest created workspace when requested", () => {
     const sorted = filterAndSortDeliveryWorkspaceOverviewRecords({
       overviewRecords,
+      quickFilter: "all",
       sortKey: "newest",
       statusFilter: "all"
     })
 
     expect(sorted.map((record) => record.workspace.id)).toEqual([
       "workspace-archived",
-      "workspace-active-new",
-      "workspace-active-old"
+      "workspace-acknowledged",
+      "workspace-downloaded",
+      "workspace-viewed-only"
     ])
   })
 })
@@ -241,6 +330,7 @@ describe("summarizeDeliveryDashboardOverview", () => {
   it("builds dashboard KPI counts from overview records", () => {
     const overviewRecords = [
       {
+        activityExcerpt: "Viewed by recipient. Awaiting acknowledgement.",
         activitySummary: {
           acknowledgedAt: null,
           acknowledgedBy: null,
@@ -257,6 +347,7 @@ describe("summarizeDeliveryDashboardOverview", () => {
         })
       },
       {
+        activityExcerpt: "Acknowledged by Client Team.",
         activitySummary: {
           acknowledgedAt: "2026-03-21T12:00:00.000Z",
           acknowledgedBy: "Client Team",
@@ -273,6 +364,7 @@ describe("summarizeDeliveryDashboardOverview", () => {
         })
       },
       {
+        activityExcerpt: "No recipient activity yet.",
         activitySummary: {
           acknowledgedAt: null,
           acknowledgedBy: null,

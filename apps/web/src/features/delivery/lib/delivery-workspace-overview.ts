@@ -7,8 +7,14 @@ import { summarizeDeliveryWorkspaceActivity } from "./delivery-activity"
 
 export type DeliveryWorkspaceStatusFilter = "all" | "active" | "archived"
 export type DeliveryWorkspaceSortKey = "latest_activity" | "newest"
+export type DeliveryWorkspaceQuickFilter =
+  | "all"
+  | "acknowledged"
+  | "viewed_only"
+  | "downloaded"
 
 export type DeliveryWorkspaceOverviewRecord = {
+  activityExcerpt: string
   activitySummary: DeliveryWorkspaceActivitySummary
   latestActivityAt: string | null
   workspace: DeliveryWorkspaceRecord
@@ -54,6 +60,57 @@ function compareDescending(left: string | null, right: string | null) {
   return right.localeCompare(left)
 }
 
+function buildDeliveryWorkspaceActivityExcerpt(
+  activitySummary: DeliveryWorkspaceActivitySummary
+) {
+  if (activitySummary.acknowledgedAt) {
+    if (activitySummary.acknowledgedBy) {
+      return `Acknowledged by ${activitySummary.acknowledgedBy}.`
+    }
+
+    return "Acknowledged by recipient."
+  }
+
+  if (activitySummary.downloadCount > 0) {
+    if (activitySummary.downloadCount === 1) {
+      return "Downloaded once. Awaiting acknowledgement."
+    }
+
+    return `Downloaded ${activitySummary.downloadCount} times. Awaiting acknowledgement.`
+  }
+
+  if (activitySummary.lastViewedAt) {
+    return "Viewed by recipient. Awaiting acknowledgement."
+  }
+
+  if (activitySummary.deliveredAt) {
+    return "Delivered. Awaiting first recipient activity."
+  }
+
+  return "No recipient activity yet."
+}
+
+function matchesQuickFilter(input: {
+  activitySummary: DeliveryWorkspaceActivitySummary
+  quickFilter: DeliveryWorkspaceQuickFilter
+}) {
+  if (input.quickFilter === "all") {
+    return true
+  }
+
+  if (input.quickFilter === "acknowledged") {
+    return Boolean(input.activitySummary.acknowledgedAt)
+  }
+
+  if (input.quickFilter === "viewed_only") {
+    return Boolean(
+      input.activitySummary.lastViewedAt && !input.activitySummary.acknowledgedAt
+    )
+  }
+
+  return input.activitySummary.downloadCount > 0
+}
+
 export function normalizeDeliveryWorkspaceStatusFilter(
   value: string | null | undefined
 ): DeliveryWorkspaceStatusFilter {
@@ -72,6 +129,20 @@ export function normalizeDeliveryWorkspaceSortKey(
   }
 
   return "latest_activity"
+}
+
+export function normalizeDeliveryWorkspaceQuickFilter(
+  value: string | null | undefined
+): DeliveryWorkspaceQuickFilter {
+  if (
+    value === "acknowledged" ||
+    value === "viewed_only" ||
+    value === "downloaded"
+  ) {
+    return value
+  }
+
+  return "all"
 }
 
 export function buildDeliveryWorkspaceOverviewRecords(input: {
@@ -97,6 +168,7 @@ export function buildDeliveryWorkspaceOverviewRecords(input: {
     ])
 
     return {
+      activityExcerpt: buildDeliveryWorkspaceActivityExcerpt(activitySummary),
       activitySummary,
       latestActivityAt,
       workspace
@@ -106,15 +178,23 @@ export function buildDeliveryWorkspaceOverviewRecords(input: {
 
 export function filterAndSortDeliveryWorkspaceOverviewRecords(input: {
   overviewRecords: DeliveryWorkspaceOverviewRecord[]
+  quickFilter: DeliveryWorkspaceQuickFilter
   sortKey: DeliveryWorkspaceSortKey
   statusFilter: DeliveryWorkspaceStatusFilter
 }) {
   const filteredRecords = input.overviewRecords.filter((overviewRecord) => {
-    if (input.statusFilter === "all") {
-      return true
+    const matchesStatus =
+      input.statusFilter === "all" ||
+      overviewRecord.workspace.status === input.statusFilter
+
+    if (!matchesStatus) {
+      return false
     }
 
-    return overviewRecord.workspace.status === input.statusFilter
+    return matchesQuickFilter({
+      activitySummary: overviewRecord.activitySummary,
+      quickFilter: input.quickFilter
+    })
   })
 
   return [...filteredRecords].sort((left, right) => {

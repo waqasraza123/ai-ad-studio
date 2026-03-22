@@ -9,6 +9,7 @@ import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-w
 import {
   buildDeliveryWorkspaceOverviewRecords,
   filterAndSortDeliveryWorkspaceOverviewRecords,
+  normalizeDeliveryWorkspaceQuickFilter,
   normalizeDeliveryWorkspaceSortKey,
   normalizeDeliveryWorkspaceStatusFilter,
   summarizeDeliveryDashboardOverview
@@ -16,6 +17,7 @@ import {
 
 type DeliveryPageProps = {
   searchParams: Promise<{
+    activity?: string
     sort?: string
     status?: string
   }>
@@ -31,6 +33,9 @@ export default async function DeliveryPage({
   }
 
   const resolvedSearchParams = await searchParams
+  const selectedActivityFilter = normalizeDeliveryWorkspaceQuickFilter(
+    resolvedSearchParams.activity
+  )
   const selectedStatusFilter = normalizeDeliveryWorkspaceStatusFilter(
     resolvedSearchParams.status
   )
@@ -57,6 +62,7 @@ export default async function DeliveryPage({
 
   const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
+    quickFilter: selectedActivityFilter,
     sortKey: selectedSortKey,
     statusFilter: selectedStatusFilter
   })
@@ -81,6 +87,7 @@ export default async function DeliveryPage({
 
       <DeliveryWorkspaceList
         projectsById={projectsById}
+        selectedActivityFilter={selectedActivityFilter}
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
         workspaceOverviews={visibleWorkspaceOverviews}
