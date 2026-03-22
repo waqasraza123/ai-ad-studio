@@ -2,8 +2,8 @@ import type {
   DeliveryWorkspaceEventRecord,
   DeliveryWorkspaceRecord
 } from "@/server/database/types"
-import type { DeliveryWorkspaceActivitySummary } from "@/features/delivery/lib/delivery-activity"
-import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
+import type { DeliveryWorkspaceActivitySummary } from "./delivery-activity"
+import { summarizeDeliveryWorkspaceActivity } from "./delivery-activity"
 
 export type DeliveryWorkspaceStatusFilter = "all" | "active" | "archived"
 export type DeliveryWorkspaceSortKey = "latest_activity" | "newest"
@@ -12,6 +12,14 @@ export type DeliveryWorkspaceOverviewRecord = {
   activitySummary: DeliveryWorkspaceActivitySummary
   latestActivityAt: string | null
   workspace: DeliveryWorkspaceRecord
+}
+
+export type DeliveryDashboardSummary = {
+  acknowledgedWorkspaces: number
+  activeWorkspaces: number
+  totalDownloads: number
+  totalWorkspaces: number
+  viewedNotAcknowledgedWorkspaces: number
 }
 
 function getLatestIsoTimestamp(values: Array<string | null>) {
@@ -69,7 +77,7 @@ export function normalizeDeliveryWorkspaceSortKey(
 export function buildDeliveryWorkspaceOverviewRecords(input: {
   events: DeliveryWorkspaceEventRecord[]
   workspaces: DeliveryWorkspaceRecord[]
-}) {
+}): DeliveryWorkspaceOverviewRecord[] {
   const eventsByWorkspaceId = new Map<string, DeliveryWorkspaceEventRecord[]>()
 
   for (const event of input.events) {
@@ -92,7 +100,7 @@ export function buildDeliveryWorkspaceOverviewRecords(input: {
       activitySummary,
       latestActivityAt,
       workspace
-    } satisfies DeliveryWorkspaceOverviewRecord
+    }
   })
 }
 
@@ -125,4 +133,40 @@ export function filterAndSortDeliveryWorkspaceOverviewRecords(input: {
 
     return compareDescending(left.workspace.created_at, right.workspace.created_at)
   })
+}
+
+export function summarizeDeliveryDashboardOverview(
+  overviewRecords: DeliveryWorkspaceOverviewRecord[]
+): DeliveryDashboardSummary {
+  let activeWorkspaces = 0
+  let acknowledgedWorkspaces = 0
+  let viewedNotAcknowledgedWorkspaces = 0
+  let totalDownloads = 0
+
+  for (const overviewRecord of overviewRecords) {
+    if (overviewRecord.workspace.status === "active") {
+      activeWorkspaces += 1
+    }
+
+    if (overviewRecord.activitySummary.acknowledgedAt) {
+      acknowledgedWorkspaces += 1
+    }
+
+    if (
+      overviewRecord.activitySummary.lastViewedAt &&
+      !overviewRecord.activitySummary.acknowledgedAt
+    ) {
+      viewedNotAcknowledgedWorkspaces += 1
+    }
+
+    totalDownloads += overviewRecord.activitySummary.downloadCount
+  }
+
+  return {
+    acknowledgedWorkspaces,
+    activeWorkspaces,
+    totalDownloads,
+    totalWorkspaces: overviewRecords.length,
+    viewedNotAcknowledgedWorkspaces
+  }
 }

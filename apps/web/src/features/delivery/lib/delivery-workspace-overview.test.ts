@@ -7,7 +7,8 @@ import {
   buildDeliveryWorkspaceOverviewRecords,
   filterAndSortDeliveryWorkspaceOverviewRecords,
   normalizeDeliveryWorkspaceSortKey,
-  normalizeDeliveryWorkspaceStatusFilter
+  normalizeDeliveryWorkspaceStatusFilter,
+  summarizeDeliveryDashboardOverview
 } from "./delivery-workspace-overview"
 
 function createWorkspaceRecord(
@@ -233,5 +234,70 @@ describe("filterAndSortDeliveryWorkspaceOverviewRecords", () => {
       "workspace-active-new",
       "workspace-active-old"
     ])
+  })
+})
+
+describe("summarizeDeliveryDashboardOverview", () => {
+  it("builds dashboard KPI counts from overview records", () => {
+    const overviewRecords = [
+      {
+        activitySummary: {
+          acknowledgedAt: null,
+          acknowledgedBy: null,
+          acknowledgementNote: null,
+          deliveredAt: "2026-03-21T09:00:00.000Z",
+          downloadCount: 2,
+          lastDownloadedAt: "2026-03-21T11:00:00.000Z",
+          lastViewedAt: "2026-03-21T10:00:00.000Z"
+        },
+        latestActivityAt: "2026-03-21T11:00:00.000Z",
+        workspace: createWorkspaceRecord({
+          id: "workspace-active-awaiting-ack",
+          status: "active"
+        })
+      },
+      {
+        activitySummary: {
+          acknowledgedAt: "2026-03-21T12:00:00.000Z",
+          acknowledgedBy: "Client Team",
+          acknowledgementNote: "Received.",
+          deliveredAt: "2026-03-21T09:00:00.000Z",
+          downloadCount: 1,
+          lastDownloadedAt: "2026-03-21T11:30:00.000Z",
+          lastViewedAt: "2026-03-21T10:30:00.000Z"
+        },
+        latestActivityAt: "2026-03-21T12:00:00.000Z",
+        workspace: createWorkspaceRecord({
+          id: "workspace-active-acknowledged",
+          status: "active"
+        })
+      },
+      {
+        activitySummary: {
+          acknowledgedAt: null,
+          acknowledgedBy: null,
+          acknowledgementNote: null,
+          deliveredAt: null,
+          downloadCount: 0,
+          lastDownloadedAt: null,
+          lastViewedAt: null
+        },
+        latestActivityAt: null,
+        workspace: createWorkspaceRecord({
+          id: "workspace-archived",
+          status: "archived"
+        })
+      }
+    ]
+
+    const summary = summarizeDeliveryDashboardOverview(overviewRecords)
+
+    expect(summary).toEqual({
+      acknowledgedWorkspaces: 1,
+      activeWorkspaces: 2,
+      totalDownloads: 3,
+      totalWorkspaces: 3,
+      viewedNotAcknowledgedWorkspaces: 1
+    })
   })
 })

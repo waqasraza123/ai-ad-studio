@@ -1,16 +1,18 @@
-import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-workspace-list"
-import {
-  buildDeliveryWorkspaceOverviewRecords,
-  filterAndSortDeliveryWorkspaceOverviewRecords,
-  normalizeDeliveryWorkspaceSortKey,
-  normalizeDeliveryWorkspaceStatusFilter
-} from "@/features/delivery/lib/delivery-workspace-overview"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   listDeliveryWorkspaceEventsByWorkspaceIdsForOwner,
   listDeliveryWorkspacesByOwner
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
 import { listProjectsByOwner } from "@/server/projects/project-repository"
+import { DeliveryDashboardSummaryPanel } from "@/features/delivery/components/delivery-dashboard-summary-panel"
+import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-workspace-list"
+import {
+  buildDeliveryWorkspaceOverviewRecords,
+  filterAndSortDeliveryWorkspaceOverviewRecords,
+  normalizeDeliveryWorkspaceSortKey,
+  normalizeDeliveryWorkspaceStatusFilter,
+  summarizeDeliveryDashboardOverview
+} from "@/features/delivery/lib/delivery-workspace-overview"
 
 type DeliveryPageProps = {
   searchParams: Promise<{
@@ -46,11 +48,15 @@ export default async function DeliveryPage({
     user.id
   )
 
-  const workspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
-    overviewRecords: buildDeliveryWorkspaceOverviewRecords({
-      events: workspaceEvents,
-      workspaces
-    }),
+  const allWorkspaceOverviews = buildDeliveryWorkspaceOverviewRecords({
+    events: workspaceEvents,
+    workspaces
+  })
+
+  const dashboardSummary = summarizeDeliveryDashboardOverview(allWorkspaceOverviews)
+
+  const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
+    overviewRecords: allWorkspaceOverviews,
     sortKey: selectedSortKey,
     statusFilter: selectedStatusFilter
   })
@@ -71,11 +77,13 @@ export default async function DeliveryPage({
         </p>
       </section>
 
+      <DeliveryDashboardSummaryPanel summary={dashboardSummary} />
+
       <DeliveryWorkspaceList
         projectsById={projectsById}
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
-        workspaceOverviews={workspaceOverviews}
+        workspaceOverviews={visibleWorkspaceOverviews}
       />
     </div>
   )
