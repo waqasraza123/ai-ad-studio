@@ -139,6 +139,16 @@ export function DeliveryWorkspaceList({
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
+                  activity: "needs_follow_up",
+                  sort: selectedSortKey,
+                  status: selectedStatusFilter
+                })}
+                className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "needs_follow_up")}`}
+              >
+                Needs follow-up
+              </Link>
+              <Link
+                href={buildDeliveryDashboardHref({
                   activity: "acknowledged",
                   sort: selectedSortKey,
                   status: selectedStatusFilter

@@ -96,6 +96,9 @@ describe("normalizeDeliveryWorkspaceQuickFilter", () => {
     expect(normalizeDeliveryWorkspaceQuickFilter("downloaded")).toBe(
       "downloaded"
     )
+    expect(normalizeDeliveryWorkspaceQuickFilter("needs_follow_up")).toBe(
+      "needs_follow_up"
+    )
   })
 })
 
@@ -309,6 +312,20 @@ describe("filterAndSortDeliveryWorkspaceOverviewRecords", () => {
     ])
   })
 
+  it("filters by needs_follow_up quick filter", () => {
+    const filtered = filterAndSortDeliveryWorkspaceOverviewRecords({
+      overviewRecords,
+      quickFilter: "needs_follow_up",
+      sortKey: "latest_activity",
+      statusFilter: "all"
+    })
+
+    expect(filtered.map((record) => record.workspace.id)).toEqual([
+      "workspace-downloaded",
+      "workspace-viewed-only"
+    ])
+  })
+
   it("sorts by newest created workspace when requested", () => {
     const sorted = filterAndSortDeliveryWorkspaceOverviewRecords({
       overviewRecords,
@@ -387,9 +404,9 @@ describe("summarizeDeliveryDashboardOverview", () => {
     expect(summary).toEqual({
       acknowledgedWorkspaces: 1,
       activeWorkspaces: 2,
+      needsFollowUpWorkspaces: 1,
       totalDownloads: 3,
-      totalWorkspaces: 3,
-      viewedNotAcknowledgedWorkspaces: 1
+      totalWorkspaces: 3
     })
   })
 })

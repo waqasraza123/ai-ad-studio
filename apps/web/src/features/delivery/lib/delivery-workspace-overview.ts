@@ -12,6 +12,7 @@ export type DeliveryWorkspaceQuickFilter =
   | "acknowledged"
   | "viewed_only"
   | "downloaded"
+  | "needs_follow_up"
 
 export type DeliveryWorkspaceOverviewRecord = {
   activityExcerpt: string
@@ -23,9 +24,9 @@ export type DeliveryWorkspaceOverviewRecord = {
 export type DeliveryDashboardSummary = {
   acknowledgedWorkspaces: number
   activeWorkspaces: number
+  needsFollowUpWorkspaces: number
   totalDownloads: number
   totalWorkspaces: number
-  viewedNotAcknowledgedWorkspaces: number
 }
 
 function getLatestIsoTimestamp(values: Array<string | null>) {
@@ -58,6 +59,14 @@ function compareDescending(left: string | null, right: string | null) {
   }
 
   return right.localeCompare(left)
+}
+
+function hasRecipientActivity(activitySummary: DeliveryWorkspaceActivitySummary) {
+  return Boolean(activitySummary.lastViewedAt) || activitySummary.downloadCount > 0
+}
+
+function needsFollowUp(activitySummary: DeliveryWorkspaceActivitySummary) {
+  return hasRecipientActivity(activitySummary) && !activitySummary.acknowledgedAt
 }
 
 function buildDeliveryWorkspaceActivityExcerpt(
@@ -108,7 +117,11 @@ function matchesQuickFilter(input: {
     )
   }
 
-  return input.activitySummary.downloadCount > 0
+  if (input.quickFilter === "downloaded") {
+    return input.activitySummary.downloadCount > 0
+  }
+
+  return needsFollowUp(input.activitySummary)
 }
 
 export function normalizeDeliveryWorkspaceStatusFilter(
@@ -137,7 +150,8 @@ export function normalizeDeliveryWorkspaceQuickFilter(
   if (
     value === "acknowledged" ||
     value === "viewed_only" ||
-    value === "downloaded"
+    value === "downloaded" ||
+    value === "needs_follow_up"
   ) {
     return value
   }
@@ -220,7 +234,7 @@ export function summarizeDeliveryDashboardOverview(
 ): DeliveryDashboardSummary {
   let activeWorkspaces = 0
   let acknowledgedWorkspaces = 0
-  let viewedNotAcknowledgedWorkspaces = 0
+  let needsFollowUpWorkspaces = 0
   let totalDownloads = 0
 
   for (const overviewRecord of overviewRecords) {
@@ -232,11 +246,8 @@ export function summarizeDeliveryDashboardOverview(
       acknowledgedWorkspaces += 1
     }
 
-    if (
-      overviewRecord.activitySummary.lastViewedAt &&
-      !overviewRecord.activitySummary.acknowledgedAt
-    ) {
-      viewedNotAcknowledgedWorkspaces += 1
+    if (needsFollowUp(overviewRecord.activitySummary)) {
+      needsFollowUpWorkspaces += 1
     }
 
     totalDownloads += overviewRecord.activitySummary.downloadCount
@@ -245,8 +256,8 @@ export function summarizeDeliveryDashboardOverview(
   return {
     acknowledgedWorkspaces,
     activeWorkspaces,
+    needsFollowUpWorkspaces,
     totalDownloads,
-    totalWorkspaces: overviewRecords.length,
-    viewedNotAcknowledgedWorkspaces
+    totalWorkspaces: overviewRecords.length
   }
 }

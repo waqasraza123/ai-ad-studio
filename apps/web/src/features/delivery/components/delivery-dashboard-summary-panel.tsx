@@ -40,9 +40,9 @@ export function DeliveryDashboardSummaryPanel({
         </div>
 
         <div className="rounded-[1.5rem] border border-amber-400/20 bg-amber-500/10 p-4">
-          <p className="text-sm text-amber-100">Viewed awaiting acknowledgement</p>
+          <p className="text-sm text-amber-100">Needs follow-up</p>
           <p className="mt-2 text-2xl font-semibold text-white">
-            {summary.viewedNotAcknowledgedWorkspaces}
+            {summary.needsFollowUpWorkspaces}
           </p>
         </div>
 
