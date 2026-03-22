@@ -1,12 +1,21 @@
 import Link from "next/link"
-import type { ProjectRecord } from "@/server/database/types"
+import { Button } from "@/components/primitives/button"
 import { getPublicEnvironment } from "@/lib/env"
+import { updateDeliveryWorkspaceFollowUpAction } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
+import {
+  getDeliveryWorkspaceFollowUpClasses,
+  getDeliveryWorkspaceFollowUpLabel
+} from "@/features/delivery/lib/delivery-workspace-follow-up"
 import type {
   DeliveryWorkspaceOverviewRecord,
   DeliveryWorkspaceQuickFilter,
   DeliveryWorkspaceSortKey,
   DeliveryWorkspaceStatusFilter
 } from "@/features/delivery/lib/delivery-workspace-overview"
+import type {
+  DeliveryFollowUpStatus,
+  ProjectRecord
+} from "@/server/database/types"
 
 type DeliveryWorkspaceListProps = {
   projectsById: Map<string, ProjectRecord>
@@ -15,6 +24,14 @@ type DeliveryWorkspaceListProps = {
   selectedStatusFilter: DeliveryWorkspaceStatusFilter
   workspaceOverviews: DeliveryWorkspaceOverviewRecord[]
 }
+
+const followUpStatuses: DeliveryFollowUpStatus[] = [
+  "none",
+  "needs_follow_up",
+  "reminder_scheduled",
+  "waiting_on_client",
+  "resolved"
+]
 
 function statusClasses(status: DeliveryWorkspaceOverviewRecord["workspace"]["status"]) {
   if (status === "active") {
@@ -215,6 +232,16 @@ export function DeliveryWorkspaceList({
             overviewRecord
           const project = projectsById.get(workspace.project_id) ?? null
           const publicUrl = `${environment.NEXT_PUBLIC_APP_URL}/delivery/${workspace.token}`
+          const followUpAction = updateDeliveryWorkspaceFollowUpAction.bind(
+            null,
+            workspace.id
+          )
+          const hasRecipientActivity =
+            Boolean(activitySummary.lastViewedAt) || activitySummary.downloadCount > 0
+          const showFollowUpHint =
+            hasRecipientActivity &&
+            !activitySummary.acknowledgedAt &&
+            workspace.follow_up_status === "none"
 
           return (
             <div
@@ -228,6 +255,13 @@ export function DeliveryWorkspaceList({
                     <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(workspace.status)}`}>
                       {workspace.status}
                     </span>
+                    {workspace.follow_up_status !== "none" ? (
+                      <span
+                        className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceFollowUpClasses(workspace.follow_up_status)}`}
+                      >
+                        {getDeliveryWorkspaceFollowUpLabel(workspace.follow_up_status)}
+                      </span>
+                    ) : null}
                   </div>
 
                   <p className="mt-2 text-sm text-slate-300">
@@ -249,6 +283,61 @@ export function DeliveryWorkspaceList({
                         {activitySummary.acknowledgementNote}
                       </p>
                     ) : null}
+                  </div>
+
+                  {showFollowUpHint ? (
+                    <div className="mt-4 rounded-[1.25rem] border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-100">
+                      Recipient activity was detected but this workspace has not been
+                      acknowledged yet. Add a follow-up state or note to track the
+                      next owner action.
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
+                        Owner follow-up
+                      </p>
+                      <span
+                        className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceFollowUpClasses(workspace.follow_up_status)}`}
+                      >
+                        {getDeliveryWorkspaceFollowUpLabel(workspace.follow_up_status)}
+                      </span>
+                    </div>
+
+                    <form action={followUpAction} className="mt-4 space-y-4">
+                      <label className="grid gap-2">
+                        <span className="text-sm text-slate-300">Follow-up state</span>
+                        <select
+                          className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+                          defaultValue={workspace.follow_up_status}
+                          name="follow_up_status"
+                        >
+                          {followUpStatuses.map((status) => (
+                            <option key={status} value={status}>
+                              {getDeliveryWorkspaceFollowUpLabel(status)}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+
+                      <label className="grid gap-2">
+                        <span className="text-sm text-slate-300">Owner note</span>
+                        <textarea
+                          className="min-h-24 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
+                          defaultValue={workspace.follow_up_note ?? ""}
+                          name="follow_up_note"
+                          placeholder="Add the next owner action, outreach note, or reminder context"
+                        />
+                      </label>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <Button>Save follow-up</Button>
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                          updated {formatTimestamp(workspace.follow_up_updated_at)}
+                        </p>
+                      </div>
+                    </form>
                   </div>
 
                   <div className="mt-4 grid gap-3 md:grid-cols-4">

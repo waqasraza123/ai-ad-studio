@@ -36,6 +36,9 @@ function createWorkspaceRecord(
     },
     token: overrides.token ?? "token-1",
     status: overrides.status ?? "active",
+    follow_up_status: overrides.follow_up_status ?? "none",
+    follow_up_note: overrides.follow_up_note ?? null,
+    follow_up_updated_at: overrides.follow_up_updated_at ?? null,
     created_at: overrides.created_at ?? "2026-03-21T10:00:00.000Z",
     updated_at: overrides.updated_at ?? "2026-03-21T10:00:00.000Z"
   }

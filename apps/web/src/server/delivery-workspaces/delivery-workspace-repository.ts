@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type {
   AssetRecord,
   DeliveryApprovalSummary,
+  DeliveryFollowUpStatus,
   DeliveryWorkspaceEventRecord,
   DeliveryWorkspaceEventType,
   DeliveryWorkspaceExportRecord,
@@ -14,7 +15,7 @@ import type {
 } from "@/server/database/types"
 
 const deliveryWorkspaceSelection =
-  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, created_at, updated_at"
+  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_updated_at, created_at, updated_at"
 
 const deliveryWorkspaceExportSelection =
   "id, delivery_workspace_id, owner_id, project_id, export_id, label, sort_order, created_at"
@@ -26,9 +27,23 @@ function generateDeliveryToken() {
   return randomBytes(20).toString("hex")
 }
 
+function normalizeDeliveryFollowUpStatus(value: unknown): DeliveryFollowUpStatus {
+  if (
+    value === "needs_follow_up" ||
+    value === "reminder_scheduled" ||
+    value === "waiting_on_client" ||
+    value === "resolved"
+  ) {
+    return value
+  }
+
+  return "none"
+}
+
 function normalizeDeliveryWorkspace(
-  record: Omit<DeliveryWorkspaceRecord, "approval_summary"> & {
+  record: Omit<DeliveryWorkspaceRecord, "approval_summary" | "follow_up_status"> & {
     approval_summary: unknown
+    follow_up_status: unknown
   }
 ) {
   return {
@@ -42,7 +57,10 @@ function normalizeDeliveryWorkspace(
       finalization_note: null,
       decided_at: null,
       finalized_at: null
-    }) as DeliveryApprovalSummary
+    }) as DeliveryApprovalSummary,
+    follow_up_note: record.follow_up_note ?? null,
+    follow_up_status: normalizeDeliveryFollowUpStatus(record.follow_up_status),
+    follow_up_updated_at: record.follow_up_updated_at ?? null
   } as DeliveryWorkspaceRecord
 }
 
@@ -79,8 +97,9 @@ export async function listDeliveryWorkspacesByOwner(ownerId: string) {
   return (data ?? []).map((record) =>
     normalizeDeliveryWorkspace(
       record as DeliveryWorkspaceRecord & {
-        approval_summary: unknown
-      }
+      approval_summary: unknown
+      follow_up_status: unknown
+    }
     )
   )
 }
@@ -109,6 +128,7 @@ export async function getDeliveryWorkspaceByCanonicalExportIdForOwner(
   return normalizeDeliveryWorkspace(
     data as DeliveryWorkspaceRecord & {
       approval_summary: unknown
+      follow_up_status: unknown
     }
   )
 }
@@ -134,6 +154,7 @@ export async function getActiveDeliveryWorkspaceByToken(token: string) {
   return normalizeDeliveryWorkspace(
     data as DeliveryWorkspaceRecord & {
       approval_summary: unknown
+      follow_up_status: unknown
     }
   )
 }
@@ -350,6 +371,69 @@ export async function recordPublicDeliveryWorkspaceEventByToken(input: {
   return data as DeliveryWorkspaceEventRecord
 }
 
+export async function getDeliveryWorkspaceByIdForOwner(
+  workspaceId: string,
+  ownerId: string
+) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("delivery_workspaces")
+    .select(deliveryWorkspaceSelection)
+    .eq("id", workspaceId)
+    .eq("owner_id", ownerId)
+    .maybeSingle()
+
+  if (error) {
+    throw new Error("Failed to load delivery workspace")
+  }
+
+  if (!data) {
+    return null
+  }
+
+  return normalizeDeliveryWorkspace(
+    data as DeliveryWorkspaceRecord & {
+      approval_summary: unknown
+      follow_up_status: unknown
+    }
+  )
+}
+
+export async function updateDeliveryWorkspaceFollowUp(input: {
+  followUpNote: string | null
+  followUpStatus: DeliveryFollowUpStatus
+  ownerId: string
+  workspaceId: string
+}) {
+  const supabase = await createSupabaseServerClient()
+  const updatedAt = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from("delivery_workspaces")
+    .update({
+      follow_up_note: input.followUpNote,
+      follow_up_status: input.followUpStatus,
+      follow_up_updated_at: updatedAt,
+      updated_at: updatedAt
+    })
+    .eq("id", input.workspaceId)
+    .eq("owner_id", input.ownerId)
+    .select(deliveryWorkspaceSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to update delivery workspace follow-up")
+  }
+
+  return normalizeDeliveryWorkspace(
+    data as DeliveryWorkspaceRecord & {
+      approval_summary: unknown
+      follow_up_status: unknown
+    }
+  )
+}
+
 export async function upsertDeliveryWorkspace(input: {
   approvalSummary: DeliveryApprovalSummary
   canonicalExportId: string
@@ -389,8 +473,9 @@ export async function upsertDeliveryWorkspace(input: {
 
     return normalizeDeliveryWorkspace(
       data as DeliveryWorkspaceRecord & {
-        approval_summary: unknown
-      }
+      approval_summary: unknown
+      follow_up_status: unknown
+    }
     )
   }
 
@@ -417,6 +502,7 @@ export async function upsertDeliveryWorkspace(input: {
   return normalizeDeliveryWorkspace(
     data as DeliveryWorkspaceRecord & {
       approval_summary: unknown
+      follow_up_status: unknown
     }
   )
 }
@@ -485,6 +571,7 @@ export async function archiveDeliveryWorkspace(input: {
   return normalizeDeliveryWorkspace(
     data as DeliveryWorkspaceRecord & {
       approval_summary: unknown
+      follow_up_status: unknown
     }
   )
 }

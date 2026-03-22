@@ -112,6 +112,14 @@ export type DeliveryApprovalSummary = {
   finalized_at: string | null
 }
 
+export type DeliveryFollowUpStatus =
+  | "none"
+  | "needs_follow_up"
+  | "reminder_scheduled"
+  | "waiting_on_client"
+  | "resolved"
+
+
 export type ProjectRecord = {
   id: string
   owner_id: string
@@ -451,6 +459,9 @@ export type DeliveryWorkspaceRecord = {
   approval_summary: DeliveryApprovalSummary
   token: string
   status: "active" | "archived"
+  follow_up_status: DeliveryFollowUpStatus
+  follow_up_note: string | null
+  follow_up_updated_at: string | null
   created_at: string
   updated_at: string
 }
