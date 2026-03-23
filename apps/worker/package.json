@@ -9,7 +9,8 @@
     "lint": "eslint .",
     "start": "node dist/index.js",
     "test": "vitest run --passWithNoTests",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "delivery:reminders": "tsx src/reminders/run-delivery-follow-up-reminder-sweep.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1010.0",

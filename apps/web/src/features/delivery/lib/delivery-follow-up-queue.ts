@@ -171,3 +171,11 @@ export function summarizeDeliveryFollowUpQueue(
     upcomingCount
   }
 }
+
+export function listOverdueDeliveryFollowUpQueueRecords(
+  queueRecords: DeliveryFollowUpQueueRecord[]
+) {
+  return queueRecords.filter(
+    (queueRecord) => queueRecord.reminderBucket === "overdue"
+  )
+}

@@ -7,6 +7,7 @@ import type {
   AssetRecord,
   DeliveryApprovalSummary,
   DeliveryFollowUpStatus,
+  DeliveryReminderBucket,
   DeliveryWorkspaceEventRecord,
   DeliveryWorkspaceEventType,
   DeliveryWorkspaceExportRecord,
@@ -15,7 +16,7 @@ import type {
 } from "@/server/database/types"
 
 const deliveryWorkspaceSelection =
-  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_due_on, follow_up_updated_at, created_at, updated_at"
+  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_due_on, follow_up_updated_at, follow_up_last_notification_bucket, follow_up_last_notification_date, created_at, updated_at"
 
 const deliveryWorkspaceExportSelection =
   "id, delivery_workspace_id, owner_id, project_id, export_id, label, sort_order, created_at"
@@ -40,10 +41,29 @@ function normalizeDeliveryFollowUpStatus(value: unknown): DeliveryFollowUpStatus
   return "none"
 }
 
+function normalizeDeliveryReminderBucket(
+  value: unknown
+): DeliveryReminderBucket | null {
+  if (
+    value === "none" ||
+    value === "overdue" ||
+    value === "due_today" ||
+    value === "upcoming"
+  ) {
+    return value
+  }
+
+  return null
+}
+
 function normalizeDeliveryWorkspace(
-  record: Omit<DeliveryWorkspaceRecord, "approval_summary" | "follow_up_status"> & {
+  record: Omit<
+    DeliveryWorkspaceRecord,
+    "approval_summary" | "follow_up_status" | "follow_up_last_notification_bucket"
+  > & {
     approval_summary: unknown
     follow_up_status: unknown
+    follow_up_last_notification_bucket: unknown
   }
 ) {
   return {
@@ -61,7 +81,12 @@ function normalizeDeliveryWorkspace(
     follow_up_due_on: record.follow_up_due_on ?? null,
     follow_up_note: record.follow_up_note ?? null,
     follow_up_status: normalizeDeliveryFollowUpStatus(record.follow_up_status),
-    follow_up_updated_at: record.follow_up_updated_at ?? null
+    follow_up_updated_at: record.follow_up_updated_at ?? null,
+    follow_up_last_notification_bucket: normalizeDeliveryReminderBucket(
+      record.follow_up_last_notification_bucket
+    ),
+    follow_up_last_notification_date:
+      record.follow_up_last_notification_date ?? null
   } as DeliveryWorkspaceRecord
 }
 

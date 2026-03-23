@@ -7,6 +7,7 @@ import type {
 } from "@/server/database/types"
 import {
   buildDeliveryFollowUpQueueRecords,
+  listOverdueDeliveryFollowUpQueueRecords,
   summarizeDeliveryFollowUpQueue
 } from "./delivery-follow-up-queue"
 
@@ -42,6 +43,10 @@ function createWorkspaceRecord(
     follow_up_note: overrides.follow_up_note ?? null,
     follow_up_due_on: overrides.follow_up_due_on ?? null,
     follow_up_updated_at: overrides.follow_up_updated_at ?? null,
+    follow_up_last_notification_bucket:
+      overrides.follow_up_last_notification_bucket ?? null,
+    follow_up_last_notification_date:
+      overrides.follow_up_last_notification_date ?? null,
     created_at: overrides.created_at ?? "2026-03-21T10:00:00.000Z",
     updated_at: overrides.updated_at ?? "2026-03-21T10:00:00.000Z"
   }
@@ -170,6 +175,42 @@ describe("buildDeliveryFollowUpQueueRecords", () => {
     expect(queueRecords.map((record) => record.overviewRecord.workspace.id)).toEqual([
       "workspace-waiting"
     ])
+  })
+})
+
+describe("listOverdueDeliveryFollowUpQueueRecords", () => {
+  it("returns only overdue queue records", () => {
+    const queueRecords = buildDeliveryFollowUpQueueRecords({
+      overviewRecords: [
+        createOverviewRecord({
+          workspace: createWorkspaceRecord({
+            id: "workspace-overdue",
+            follow_up_due_on: "2026-03-22",
+            follow_up_status: "reminder_scheduled"
+          })
+        }),
+        createOverviewRecord({
+          workspace: createWorkspaceRecord({
+            id: "workspace-due-today",
+            follow_up_due_on: "2026-03-23",
+            follow_up_status: "reminder_scheduled"
+          })
+        }),
+        createOverviewRecord({
+          workspace: createWorkspaceRecord({
+            id: "workspace-derived",
+            follow_up_status: "none"
+          })
+        })
+      ],
+      todayDateKey: "2026-03-23"
+    })
+
+    expect(
+      listOverdueDeliveryFollowUpQueueRecords(queueRecords).map(
+        (record) => record.overviewRecord.workspace.id
+      )
+    ).toEqual(["workspace-overdue"])
   })
 })
 

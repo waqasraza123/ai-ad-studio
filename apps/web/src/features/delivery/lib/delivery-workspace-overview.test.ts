@@ -40,6 +40,10 @@ function createWorkspaceRecord(
     follow_up_note: overrides.follow_up_note ?? null,
     follow_up_due_on: overrides.follow_up_due_on ?? null,
     follow_up_updated_at: overrides.follow_up_updated_at ?? null,
+    follow_up_last_notification_bucket:
+      overrides.follow_up_last_notification_bucket ?? null,
+    follow_up_last_notification_date:
+      overrides.follow_up_last_notification_date ?? null,
     created_at: overrides.created_at ?? "2026-03-21T10:00:00.000Z",
     updated_at: overrides.updated_at ?? "2026-03-21T10:00:00.000Z"
   }

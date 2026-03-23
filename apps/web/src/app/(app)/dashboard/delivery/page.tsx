@@ -6,9 +6,11 @@ import {
 import { listProjectsByOwner } from "@/server/projects/project-repository"
 import { DeliveryDashboardSummaryPanel } from "@/features/delivery/components/delivery-dashboard-summary-panel"
 import { DeliveryFollowUpQueue } from "@/features/delivery/components/delivery-follow-up-queue"
+import { DeliveryOverdueRemindersPanel } from "@/features/delivery/components/delivery-overdue-reminders-panel"
 import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-workspace-list"
 import {
   buildDeliveryFollowUpQueueRecords,
+  listOverdueDeliveryFollowUpQueueRecords,
   summarizeDeliveryFollowUpQueue
 } from "@/features/delivery/lib/delivery-follow-up-queue"
 import {
@@ -69,6 +71,8 @@ export default async function DeliveryPage({
     overviewRecords: allWorkspaceOverviews,
     todayDateKey
   })
+  const overdueFollowUpQueueRecords =
+    listOverdueDeliveryFollowUpQueueRecords(followUpQueueRecords)
   const followUpQueueSummary = summarizeDeliveryFollowUpQueue(followUpQueueRecords)
 
   const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
@@ -95,6 +99,11 @@ export default async function DeliveryPage({
       </section>
 
       <DeliveryDashboardSummaryPanel summary={dashboardSummary} />
+
+      <DeliveryOverdueRemindersPanel
+        projectsById={projectsById}
+        queueRecords={overdueFollowUpQueueRecords}
+      />
 
       <DeliveryFollowUpQueue
         projectsById={projectsById}
