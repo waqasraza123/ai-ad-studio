@@ -119,6 +119,12 @@ export type DeliveryFollowUpStatus =
   | "waiting_on_client"
   | "resolved"
 
+export type DeliveryReminderBucket =
+  | "none"
+  | "overdue"
+  | "due_today"
+  | "upcoming"
+
 
 export type ProjectRecord = {
   id: string
@@ -461,6 +467,7 @@ export type DeliveryWorkspaceRecord = {
   status: "active" | "archived"
   follow_up_status: DeliveryFollowUpStatus
   follow_up_note: string | null
+  follow_up_due_on: string | null
   follow_up_updated_at: string | null
   created_at: string
   updated_at: string

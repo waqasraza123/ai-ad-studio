@@ -1,14 +1,19 @@
 import Link from "next/link"
 import { getPublicEnvironment } from "@/lib/env"
 import {
-  getDeliveryWorkspaceFollowUpClasses
+  getDeliveryWorkspaceFollowUpClasses,
+  getDeliveryWorkspaceReminderBucketClasses
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
-import type { DeliveryFollowUpQueueRecord } from "@/features/delivery/lib/delivery-follow-up-queue"
+import type {
+  DeliveryFollowUpQueueRecord,
+  DeliveryFollowUpQueueSummary
+} from "@/features/delivery/lib/delivery-follow-up-queue"
 import type { ProjectRecord } from "@/server/database/types"
 
 type DeliveryFollowUpQueueProps = {
   projectsById: Map<string, ProjectRecord>
   queueRecords: DeliveryFollowUpQueueRecord[]
+  queueSummary: DeliveryFollowUpQueueSummary
 }
 
 function formatTimestamp(value: string | null) {
@@ -22,15 +27,26 @@ function formatTimestamp(value: string | null) {
   }).format(new Date(value))
 }
 
+function formatDate(value: string | null) {
+  if (!value) {
+    return "Not set"
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium"
+  }).format(new Date(`${value}T00:00:00Z`))
+}
+
 export function DeliveryFollowUpQueue({
   projectsById,
-  queueRecords
+  queueRecords,
+  queueSummary
 }: DeliveryFollowUpQueueProps) {
   const environment = getPublicEnvironment()
 
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
             Follow-up queue
@@ -39,14 +55,26 @@ export function DeliveryFollowUpQueue({
             Unresolved delivery follow-up
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-            Active delivery workspaces that still need owner attention, sorted by
-            latest client activity.
+            Active delivery workspaces that still need owner attention, ordered by
+            reminder urgency and then latest client activity.
           </p>
         </div>
 
         <div className="rounded-full border border-white/10 bg-white/[0.05] px-4 py-2 text-sm text-slate-300">
-          {queueRecords.length} in queue
+          {queueSummary.totalCount} in queue
         </div>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-2">
+        <span className="rounded-full border border-rose-400/20 bg-rose-500/10 px-3 py-1 text-xs text-rose-100">
+          Overdue {queueSummary.overdueCount}
+        </span>
+        <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
+          Due today {queueSummary.dueTodayCount}
+        </span>
+        <span className="rounded-full border border-sky-400/20 bg-sky-500/10 px-3 py-1 text-xs text-sky-100">
+          Upcoming {queueSummary.upcomingCount}
+        </span>
       </div>
 
       {queueRecords.length === 0 ? (
@@ -75,6 +103,13 @@ export function DeliveryFollowUpQueue({
                       >
                         {queueRecord.effectiveFollowUpLabel}
                       </span>
+                      {queueRecord.reminderBucketLabel ? (
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceReminderBucketClasses(queueRecord.reminderBucket)}`}
+                        >
+                          {queueRecord.reminderBucketLabel}
+                        </span>
+                      ) : null}
                     </div>
 
                     <p className="mt-2 text-sm text-slate-300">
@@ -102,6 +137,9 @@ export function DeliveryFollowUpQueue({
                       </span>
                       <span>
                         follow-up updated {formatTimestamp(workspace.follow_up_updated_at)}
+                      </span>
+                      <span>
+                        reminder due {formatDate(workspace.follow_up_due_on)}
                       </span>
                     </div>
                   </div>

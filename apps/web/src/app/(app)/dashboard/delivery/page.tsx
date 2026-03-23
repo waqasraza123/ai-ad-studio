@@ -7,7 +7,10 @@ import { listProjectsByOwner } from "@/server/projects/project-repository"
 import { DeliveryDashboardSummaryPanel } from "@/features/delivery/components/delivery-dashboard-summary-panel"
 import { DeliveryFollowUpQueue } from "@/features/delivery/components/delivery-follow-up-queue"
 import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-workspace-list"
-import { buildDeliveryFollowUpQueueRecords } from "@/features/delivery/lib/delivery-follow-up-queue"
+import {
+  buildDeliveryFollowUpQueueRecords,
+  summarizeDeliveryFollowUpQueue
+} from "@/features/delivery/lib/delivery-follow-up-queue"
 import {
   buildDeliveryWorkspaceOverviewRecords,
   filterAndSortDeliveryWorkspaceOverviewRecords,
@@ -44,6 +47,7 @@ export default async function DeliveryPage({
   const selectedSortKey = normalizeDeliveryWorkspaceSortKey(
     resolvedSearchParams.sort
   )
+  const todayDateKey = new Date().toISOString().slice(0, 10)
 
   const [workspaces, projects] = await Promise.all([
     listDeliveryWorkspacesByOwner(user.id),
@@ -62,8 +66,10 @@ export default async function DeliveryPage({
 
   const dashboardSummary = summarizeDeliveryDashboardOverview(allWorkspaceOverviews)
   const followUpQueueRecords = buildDeliveryFollowUpQueueRecords({
-    overviewRecords: allWorkspaceOverviews
+    overviewRecords: allWorkspaceOverviews,
+    todayDateKey
   })
+  const followUpQueueSummary = summarizeDeliveryFollowUpQueue(followUpQueueRecords)
 
   const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
@@ -93,6 +99,7 @@ export default async function DeliveryPage({
       <DeliveryFollowUpQueue
         projectsById={projectsById}
         queueRecords={followUpQueueRecords}
+        queueSummary={followUpQueueSummary}
       />
 
       <DeliveryWorkspaceList
@@ -100,6 +107,7 @@ export default async function DeliveryPage({
         selectedActivityFilter={selectedActivityFilter}
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
+        todayDateKey={todayDateKey}
         workspaceOverviews={visibleWorkspaceOverviews}
       />
     </div>

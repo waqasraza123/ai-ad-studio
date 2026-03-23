@@ -2,9 +2,12 @@ import { describe, expect, it } from "vitest"
 import {
   getDeliveryWorkspaceFollowUpClasses,
   getDeliveryWorkspaceFollowUpLabel,
+  getDeliveryWorkspaceReminderBucketClasses,
+  getDeliveryWorkspaceReminderBucketLabel,
   hasDeliveryWorkspaceRecipientActivity,
   isDeliveryWorkspaceFollowUpUnresolved,
   normalizeDeliveryWorkspaceFollowUpStatus,
+  resolveDeliveryWorkspaceReminderBucket,
   resolveEffectiveDeliveryWorkspaceFollowUpStatus
 } from "./delivery-workspace-follow-up"
 
@@ -169,5 +172,71 @@ describe("isDeliveryWorkspaceFollowUpUnresolved", () => {
   it("excludes none and resolved", () => {
     expect(isDeliveryWorkspaceFollowUpUnresolved("none")).toBe(false)
     expect(isDeliveryWorkspaceFollowUpUnresolved("resolved")).toBe(false)
+  })
+})
+
+describe("resolveDeliveryWorkspaceReminderBucket", () => {
+  it("returns none when reminder scheduling is not active", () => {
+    expect(
+      resolveDeliveryWorkspaceReminderBucket({
+        followUpDueOn: "2026-03-24",
+        followUpStatus: "needs_follow_up",
+        todayDateKey: "2026-03-23"
+      })
+    ).toBe("none")
+  })
+
+  it("returns overdue when due date is before today", () => {
+    expect(
+      resolveDeliveryWorkspaceReminderBucket({
+        followUpDueOn: "2026-03-22",
+        followUpStatus: "reminder_scheduled",
+        todayDateKey: "2026-03-23"
+      })
+    ).toBe("overdue")
+  })
+
+  it("returns due_today when due date matches today", () => {
+    expect(
+      resolveDeliveryWorkspaceReminderBucket({
+        followUpDueOn: "2026-03-23",
+        followUpStatus: "reminder_scheduled",
+        todayDateKey: "2026-03-23"
+      })
+    ).toBe("due_today")
+  })
+
+  it("returns upcoming when due date is after today", () => {
+    expect(
+      resolveDeliveryWorkspaceReminderBucket({
+        followUpDueOn: "2026-03-24",
+        followUpStatus: "reminder_scheduled",
+        todayDateKey: "2026-03-23"
+      })
+    ).toBe("upcoming")
+  })
+})
+
+describe("reminder bucket labels and classes", () => {
+  it("returns readable reminder labels", () => {
+    expect(getDeliveryWorkspaceReminderBucketLabel("none")).toBe("No reminder date")
+    expect(getDeliveryWorkspaceReminderBucketLabel("overdue")).toBe("Overdue")
+    expect(getDeliveryWorkspaceReminderBucketLabel("due_today")).toBe("Due today")
+    expect(getDeliveryWorkspaceReminderBucketLabel("upcoming")).toBe("Upcoming")
+  })
+
+  it("returns stable reminder class strings", () => {
+    expect(getDeliveryWorkspaceReminderBucketClasses("none")).toContain(
+      "text-slate-300"
+    )
+    expect(getDeliveryWorkspaceReminderBucketClasses("overdue")).toContain(
+      "text-rose-100"
+    )
+    expect(getDeliveryWorkspaceReminderBucketClasses("due_today")).toContain(
+      "text-amber-100"
+    )
+    expect(getDeliveryWorkspaceReminderBucketClasses("upcoming")).toContain(
+      "text-sky-100"
+    )
   })
 })

@@ -4,7 +4,10 @@ import { getPublicEnvironment } from "@/lib/env"
 import { updateDeliveryWorkspaceFollowUpAction } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
 import {
   getDeliveryWorkspaceFollowUpClasses,
-  getDeliveryWorkspaceFollowUpLabel
+  getDeliveryWorkspaceFollowUpLabel,
+  getDeliveryWorkspaceReminderBucketClasses,
+  getDeliveryWorkspaceReminderBucketLabel,
+  resolveDeliveryWorkspaceReminderBucket
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
 import type {
   DeliveryWorkspaceOverviewRecord,
@@ -22,6 +25,7 @@ type DeliveryWorkspaceListProps = {
   selectedActivityFilter: DeliveryWorkspaceQuickFilter
   selectedSortKey: DeliveryWorkspaceSortKey
   selectedStatusFilter: DeliveryWorkspaceStatusFilter
+  todayDateKey: string
   workspaceOverviews: DeliveryWorkspaceOverviewRecord[]
 }
 
@@ -60,6 +64,16 @@ function formatTimestamp(value: string | null) {
   }).format(new Date(value))
 }
 
+function formatDate(value: string | null) {
+  if (!value) {
+    return "Not set"
+  }
+
+  return new Intl.DateTimeFormat("en", {
+    dateStyle: "medium"
+  }).format(new Date(`${value}T00:00:00Z`))
+}
+
 function buildDeliveryDashboardHref(input: {
   activity: DeliveryWorkspaceQuickFilter
   sort: DeliveryWorkspaceSortKey
@@ -91,6 +105,7 @@ export function DeliveryWorkspaceList({
   selectedActivityFilter,
   selectedSortKey,
   selectedStatusFilter,
+  todayDateKey,
   workspaceOverviews
 }: DeliveryWorkspaceListProps) {
   const environment = getPublicEnvironment()
@@ -243,6 +258,12 @@ export function DeliveryWorkspaceList({
             !activitySummary.acknowledgedAt &&
             workspace.follow_up_status === "none"
 
+          const reminderBucket = resolveDeliveryWorkspaceReminderBucket({
+            followUpDueOn: workspace.follow_up_due_on,
+            followUpStatus: workspace.follow_up_status,
+            todayDateKey
+          })
+
           return (
             <div
               key={workspace.id}
@@ -260,6 +281,13 @@ export function DeliveryWorkspaceList({
                         className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceFollowUpClasses(workspace.follow_up_status)}`}
                       >
                         {getDeliveryWorkspaceFollowUpLabel(workspace.follow_up_status)}
+                      </span>
+                    ) : null}
+                    {reminderBucket !== "none" ? (
+                      <span
+                        className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceReminderBucketClasses(reminderBucket)}`}
+                      >
+                        {getDeliveryWorkspaceReminderBucketLabel(reminderBucket)}
                       </span>
                     ) : null}
                   </div>
@@ -303,6 +331,13 @@ export function DeliveryWorkspaceList({
                       >
                         {getDeliveryWorkspaceFollowUpLabel(workspace.follow_up_status)}
                       </span>
+                      {reminderBucket !== "none" ? (
+                        <span
+                          className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceReminderBucketClasses(reminderBucket)}`}
+                        >
+                          {getDeliveryWorkspaceReminderBucketLabel(reminderBucket)}
+                        </span>
+                      ) : null}
                     </div>
 
                     <form action={followUpAction} className="mt-4 space-y-4">
@@ -322,6 +357,16 @@ export function DeliveryWorkspaceList({
                       </label>
 
                       <label className="grid gap-2">
+                        <span className="text-sm text-slate-300">Reminder date</span>
+                        <input
+                          className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
+                          defaultValue={workspace.follow_up_due_on ?? ""}
+                          name="follow_up_due_on"
+                          type="date"
+                        />
+                      </label>
+
+                      <label className="grid gap-2">
                         <span className="text-sm text-slate-300">Owner note</span>
                         <textarea
                           className="min-h-24 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
@@ -335,6 +380,9 @@ export function DeliveryWorkspaceList({
                         <Button>Save follow-up</Button>
                         <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
                           updated {formatTimestamp(workspace.follow_up_updated_at)}
+                        </p>
+                        <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
+                          due {formatDate(workspace.follow_up_due_on)}
                         </p>
                       </div>
                     </form>

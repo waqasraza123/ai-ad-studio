@@ -24,6 +24,11 @@ function readFollowUpStatus(formData: FormData) {
   )
 }
 
+function readFollowUpDueOn(formData: FormData) {
+  const value = String(formData.get("follow_up_due_on") ?? "").trim()
+  return value.length > 0 ? value : null
+}
+
 function resolveNotificationSeverity(followUpStatus: string) {
   if (followUpStatus === "needs_follow_up") {
     return "warning"
@@ -34,6 +39,19 @@ function resolveNotificationSeverity(followUpStatus: string) {
   }
 
   return "info"
+}
+
+function buildNotificationBody(input: {
+  followUpDueOn: string | null
+  followUpStatus: string
+}) {
+  if (input.followUpStatus === "reminder_scheduled" && input.followUpDueOn) {
+    return `Follow-up reminder scheduled for ${input.followUpDueOn}.`
+  }
+
+  return `Follow-up state is now ${getDeliveryWorkspaceFollowUpLabel(
+    normalizeDeliveryWorkspaceFollowUpStatus(input.followUpStatus)
+  ).toLowerCase()}.`
 }
 
 export async function updateDeliveryWorkspaceFollowUpAction(
@@ -58,16 +76,23 @@ export async function updateDeliveryWorkspaceFollowUpAction(
     throw new Error("Render batch not found")
   }
 
+  const followUpStatus = readFollowUpStatus(formData)
+  const rawFollowUpDueOn = readFollowUpDueOn(formData)
+
+  if (followUpStatus === "reminder_scheduled" && !rawFollowUpDueOn) {
+    throw new Error("Reminder date is required when reminder scheduling is active")
+  }
+
+  const followUpDueOn =
+    followUpStatus === "reminder_scheduled" ? rawFollowUpDueOn : null
+
   const updatedWorkspace = await updateDeliveryWorkspaceFollowUp({
+    followUpDueOn,
     followUpNote: readFollowUpNote(formData),
-    followUpStatus: readFollowUpStatus(formData),
+    followUpStatus,
     ownerId: user.id,
     workspaceId: workspace.id
   })
-
-  const followUpLabel = getDeliveryWorkspaceFollowUpLabel(
-    updatedWorkspace.follow_up_status
-  )
 
   const supabase = await createSupabaseServerClient()
 
@@ -76,6 +101,7 @@ export async function updateDeliveryWorkspaceFollowUpAction(
     owner_id: user.id,
     payload: {
       deliveryWorkspaceId: updatedWorkspace.id,
+      followUpDueOn: updatedWorkspace.follow_up_due_on,
       followUpNote: updatedWorkspace.follow_up_note,
       followUpStatus: updatedWorkspace.follow_up_status
     },
@@ -86,12 +112,16 @@ export async function updateDeliveryWorkspaceFollowUpAction(
 
   await supabase.from("notifications").insert({
     action_url: "/dashboard/delivery",
-    body: `Follow-up state is now ${followUpLabel.toLowerCase()}.`,
+    body: buildNotificationBody({
+      followUpDueOn: updatedWorkspace.follow_up_due_on,
+      followUpStatus: updatedWorkspace.follow_up_status
+    }),
     export_id: updatedWorkspace.canonical_export_id,
     job_id: batch.job_id,
     kind: "delivery_workspace_follow_up_updated",
     metadata: {
       deliveryWorkspaceId: updatedWorkspace.id,
+      followUpDueOn: updatedWorkspace.follow_up_due_on,
       followUpStatus: updatedWorkspace.follow_up_status
     },
     owner_id: user.id,

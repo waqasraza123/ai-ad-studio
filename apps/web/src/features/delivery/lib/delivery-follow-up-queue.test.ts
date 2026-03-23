@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest"
-import type { DeliveryWorkspaceOverviewRecord } from "@/features/delivery/lib/delivery-workspace-overview"
+import type { DeliveryWorkspaceActivitySummary } from "./delivery-activity"
+import type { DeliveryWorkspaceOverviewRecord } from "./delivery-workspace-overview"
 import type {
   DeliveryApprovalSummary,
   DeliveryWorkspaceRecord
 } from "@/server/database/types"
-import type { DeliveryWorkspaceActivitySummary } from "./delivery-activity"
-import { buildDeliveryFollowUpQueueRecords } from "./delivery-follow-up-queue"
+import {
+  buildDeliveryFollowUpQueueRecords,
+  summarizeDeliveryFollowUpQueue
+} from "./delivery-follow-up-queue"
 
 function createApprovalSummary(): DeliveryApprovalSummary {
   return {
@@ -37,6 +40,7 @@ function createWorkspaceRecord(
     status: overrides.status ?? "active",
     follow_up_status: overrides.follow_up_status ?? "none",
     follow_up_note: overrides.follow_up_note ?? null,
+    follow_up_due_on: overrides.follow_up_due_on ?? null,
     follow_up_updated_at: overrides.follow_up_updated_at ?? null,
     created_at: overrides.created_at ?? "2026-03-21T10:00:00.000Z",
     updated_at: overrides.updated_at ?? "2026-03-21T10:00:00.000Z"
@@ -77,88 +81,138 @@ function createOverviewRecord(
 }
 
 describe("buildDeliveryFollowUpQueueRecords", () => {
-  it("includes active unresolved workspaces and sorts by latest client activity", () => {
+  it("sorts scheduled reminders by urgency before latest client activity", () => {
     const queueRecords = buildDeliveryFollowUpQueueRecords({
       overviewRecords: [
         createOverviewRecord({
-          latestActivityAt: "2026-03-23T11:00:00.000Z",
-          workspace: createWorkspaceRecord({
-            id: "workspace-reminder",
-            follow_up_note: "Send reminder tomorrow morning.",
-            follow_up_status: "reminder_scheduled"
-          })
-        }),
-        createOverviewRecord({
-          latestActivityAt: "2026-03-23T12:00:00.000Z",
+          latestActivityAt: "2026-03-23T13:00:00.000Z",
           workspace: createWorkspaceRecord({
             id: "workspace-derived",
             follow_up_status: "none"
           })
         }),
         createOverviewRecord({
+          latestActivityAt: "2026-03-23T11:00:00.000Z",
+          workspace: createWorkspaceRecord({
+            id: "workspace-upcoming",
+            follow_up_due_on: "2026-03-24",
+            follow_up_note: "Check tomorrow morning.",
+            follow_up_status: "reminder_scheduled"
+          })
+        }),
+        createOverviewRecord({
+          latestActivityAt: "2026-03-23T10:00:00.000Z",
+          workspace: createWorkspaceRecord({
+            id: "workspace-overdue",
+            follow_up_due_on: "2026-03-22",
+            follow_up_note: "Client opened the delivery but did not reply.",
+            follow_up_status: "reminder_scheduled"
+          })
+        }),
+        createOverviewRecord({
+          latestActivityAt: "2026-03-23T12:00:00.000Z",
+          workspace: createWorkspaceRecord({
+            id: "workspace-due-today",
+            follow_up_due_on: "2026-03-23",
+            follow_up_status: "reminder_scheduled"
+          })
+        })
+      ],
+      todayDateKey: "2026-03-23"
+    })
+
+    expect(queueRecords.map((record) => record.overviewRecord.workspace.id)).toEqual([
+      "workspace-overdue",
+      "workspace-due-today",
+      "workspace-upcoming",
+      "workspace-derived"
+    ])
+
+    expect(queueRecords[0]?.reminderBucket).toBe("overdue")
+    expect(queueRecords[1]?.reminderBucket).toBe("due_today")
+    expect(queueRecords[2]?.reminderBucket).toBe("upcoming")
+    expect(queueRecords[3]?.reminderBucket).toBe("none")
+  })
+
+  it("excludes archived and resolved workspaces from the queue", () => {
+    const queueRecords = buildDeliveryFollowUpQueueRecords({
+      overviewRecords: [
+        createOverviewRecord({
+          workspace: createWorkspaceRecord({
+            id: "workspace-archived",
+            status: "archived",
+            follow_up_status: "needs_follow_up"
+          })
+        }),
+        createOverviewRecord({
           activitySummary: createActivitySummary({
-            acknowledgedAt: "2026-03-23T13:00:00.000Z",
+            acknowledgedAt: "2026-03-23T12:00:00.000Z",
             deliveredAt: "2026-03-23T09:00:00.000Z",
             downloadCount: 1,
-            lastDownloadedAt: "2026-03-23T12:30:00.000Z",
-            lastViewedAt: "2026-03-23T12:00:00.000Z"
+            lastDownloadedAt: "2026-03-23T11:30:00.000Z",
+            lastViewedAt: "2026-03-23T11:00:00.000Z"
           }),
-          latestActivityAt: "2026-03-23T13:00:00.000Z",
           workspace: createWorkspaceRecord({
             id: "workspace-resolved",
             follow_up_status: "resolved"
           })
         }),
         createOverviewRecord({
-          latestActivityAt: "2026-03-23T14:00:00.000Z",
           workspace: createWorkspaceRecord({
-            id: "workspace-archived",
-            status: "archived",
-            follow_up_status: "needs_follow_up"
+            id: "workspace-waiting",
+            follow_up_status: "waiting_on_client"
           })
         })
-      ]
+      ],
+      todayDateKey: "2026-03-23"
     })
 
     expect(queueRecords.map((record) => record.overviewRecord.workspace.id)).toEqual([
-      "workspace-derived",
-      "workspace-reminder"
+      "workspace-waiting"
     ])
-
-    expect(queueRecords[0]?.effectiveFollowUpStatus).toBe("needs_follow_up")
-    expect(queueRecords[0]?.primaryNote).toBe(
-      "Viewed by recipient. Awaiting acknowledgement."
-    )
-
-    expect(queueRecords[1]?.effectiveFollowUpStatus).toBe("reminder_scheduled")
-    expect(queueRecords[1]?.primaryNote).toBe("Send reminder tomorrow morning.")
   })
+})
 
-  it("uses follow_up_updated_at as a tie-breaker when latest activity matches", () => {
+describe("summarizeDeliveryFollowUpQueue", () => {
+  it("builds overdue, due today, and upcoming reminder counts", () => {
     const queueRecords = buildDeliveryFollowUpQueueRecords({
       overviewRecords: [
         createOverviewRecord({
-          latestActivityAt: "2026-03-23T12:00:00.000Z",
           workspace: createWorkspaceRecord({
-            id: "workspace-older-follow-up",
-            follow_up_status: "waiting_on_client",
-            follow_up_updated_at: "2026-03-23T10:00:00.000Z"
+            id: "workspace-overdue",
+            follow_up_due_on: "2026-03-22",
+            follow_up_status: "reminder_scheduled"
           })
         }),
         createOverviewRecord({
-          latestActivityAt: "2026-03-23T12:00:00.000Z",
           workspace: createWorkspaceRecord({
-            id: "workspace-newer-follow-up",
-            follow_up_status: "waiting_on_client",
-            follow_up_updated_at: "2026-03-23T11:00:00.000Z"
+            id: "workspace-due-today",
+            follow_up_due_on: "2026-03-23",
+            follow_up_status: "reminder_scheduled"
+          })
+        }),
+        createOverviewRecord({
+          workspace: createWorkspaceRecord({
+            id: "workspace-upcoming",
+            follow_up_due_on: "2026-03-24",
+            follow_up_status: "reminder_scheduled"
+          })
+        }),
+        createOverviewRecord({
+          workspace: createWorkspaceRecord({
+            id: "workspace-derived",
+            follow_up_status: "none"
           })
         })
-      ]
+      ],
+      todayDateKey: "2026-03-23"
     })
 
-    expect(queueRecords.map((record) => record.overviewRecord.workspace.id)).toEqual([
-      "workspace-newer-follow-up",
-      "workspace-older-follow-up"
-    ])
+    expect(summarizeDeliveryFollowUpQueue(queueRecords)).toEqual({
+      dueTodayCount: 1,
+      overdueCount: 1,
+      totalCount: 4,
+      upcomingCount: 1
+    })
   })
 })

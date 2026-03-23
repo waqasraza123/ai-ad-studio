@@ -15,7 +15,7 @@ import type {
 } from "@/server/database/types"
 
 const deliveryWorkspaceSelection =
-  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_updated_at, created_at, updated_at"
+  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_due_on, follow_up_updated_at, created_at, updated_at"
 
 const deliveryWorkspaceExportSelection =
   "id, delivery_workspace_id, owner_id, project_id, export_id, label, sort_order, created_at"
@@ -58,6 +58,7 @@ function normalizeDeliveryWorkspace(
       decided_at: null,
       finalized_at: null
     }) as DeliveryApprovalSummary,
+    follow_up_due_on: record.follow_up_due_on ?? null,
     follow_up_note: record.follow_up_note ?? null,
     follow_up_status: normalizeDeliveryFollowUpStatus(record.follow_up_status),
     follow_up_updated_at: record.follow_up_updated_at ?? null
@@ -401,6 +402,7 @@ export async function getDeliveryWorkspaceByIdForOwner(
 }
 
 export async function updateDeliveryWorkspaceFollowUp(input: {
+  followUpDueOn: string | null
   followUpNote: string | null
   followUpStatus: DeliveryFollowUpStatus
   ownerId: string
@@ -412,6 +414,7 @@ export async function updateDeliveryWorkspaceFollowUp(input: {
   const { data, error } = await supabase
     .from("delivery_workspaces")
     .update({
+      follow_up_due_on: input.followUpDueOn,
       follow_up_note: input.followUpNote,
       follow_up_status: input.followUpStatus,
       follow_up_updated_at: updatedAt,
