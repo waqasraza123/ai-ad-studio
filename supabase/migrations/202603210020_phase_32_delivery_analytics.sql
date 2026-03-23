@@ -6,7 +6,7 @@ create table if not exists public.delivery_workspace_events (
   export_id uuid references public.exports (id) on delete set null,
   event_type text not null,
   actor_label text,
-  metadata jsonb not null default {}::jsonb,
+  metadata jsonb not null default '{}'::jsonb,
   created_at timestamptz not null default now()
 );
 
