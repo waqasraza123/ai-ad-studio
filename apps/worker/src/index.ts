@@ -2,6 +2,11 @@ import { getWorkerEnvironment, hasWorkerEnvironmentConfiguration } from "@/lib/e
 import { executeJob } from "@/jobs/execute-job"
 import { createLongRunningQueueNotifications } from "@/notifications/notification-service"
 import { claimNextJob, refreshJobHeartbeat } from "@/repositories/jobs-repository"
+import {
+  getDeliveryFollowUpReminderSweepIntervalMilliseconds,
+  shouldRunDeliveryFollowUpReminderSweep
+} from "@/reminders/delivery-follow-up-reminder-cadence"
+import { runDeliveryFollowUpReminderSweep } from "@/reminders/run-delivery-follow-up-reminder-sweep"
 import { createSupabaseAdminClient } from "@/lib/supabase-admin"
 
 function wait(milliseconds: number) {
@@ -20,8 +25,43 @@ function getMissingConfigurationPollIntervalMilliseconds() {
   return 3000
 }
 
+async function maybeRunDeliveryFollowUpReminderSweep(input: {
+  lastSweepStartedAtMs: number | null
+  nowMs: number
+}) {
+  const reminderSweepIntervalMilliseconds =
+    getDeliveryFollowUpReminderSweepIntervalMilliseconds()
+
+  if (
+    !shouldRunDeliveryFollowUpReminderSweep({
+      intervalMilliseconds: reminderSweepIntervalMilliseconds,
+      lastSweepStartedAtMs: input.lastSweepStartedAtMs,
+      nowMs: input.nowMs
+    })
+  ) {
+    return input.lastSweepStartedAtMs
+  }
+
+  const startedAtMs = input.nowMs
+
+  try {
+    const result = await runDeliveryFollowUpReminderSweep()
+
+    if (result.notifiedCount > 0 || result.failureCount > 0) {
+      console.log(
+        `[worker] Delivery follow-up reminder sweep scanned=${result.scannedCount} notified=${result.notifiedCount} failures=${result.failureCount}`
+      )
+    }
+  } catch (error) {
+    console.error("[worker] Delivery follow-up reminder sweep failed", error)
+  }
+
+  return startedAtMs
+}
+
 async function runWorkerLoop() {
   let hasLoggedMissingConfiguration = false
+  let lastDeliveryFollowUpReminderSweepStartedAtMs: number | null = null
 
   for (;;) {
     if (!hasWorkerEnvironmentConfiguration()) {
@@ -39,6 +79,14 @@ async function runWorkerLoop() {
     hasLoggedMissingConfiguration = false
 
     const environment = getWorkerEnvironment()
+    const nowMs = Date.now()
+
+    lastDeliveryFollowUpReminderSweepStartedAtMs =
+      await maybeRunDeliveryFollowUpReminderSweep({
+        lastSweepStartedAtMs: lastDeliveryFollowUpReminderSweepStartedAtMs,
+        nowMs
+      })
+
     const supabase = createSupabaseAdminClient()
 
     try {
