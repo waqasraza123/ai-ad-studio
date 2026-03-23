@@ -5,7 +5,9 @@ import {
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
 import { listProjectsByOwner } from "@/server/projects/project-repository"
 import { DeliveryDashboardSummaryPanel } from "@/features/delivery/components/delivery-dashboard-summary-panel"
+import { DeliveryFollowUpQueue } from "@/features/delivery/components/delivery-follow-up-queue"
 import { DeliveryWorkspaceList } from "@/features/delivery/components/delivery-workspace-list"
+import { buildDeliveryFollowUpQueueRecords } from "@/features/delivery/lib/delivery-follow-up-queue"
 import {
   buildDeliveryWorkspaceOverviewRecords,
   filterAndSortDeliveryWorkspaceOverviewRecords,
@@ -59,6 +61,9 @@ export default async function DeliveryPage({
   })
 
   const dashboardSummary = summarizeDeliveryDashboardOverview(allWorkspaceOverviews)
+  const followUpQueueRecords = buildDeliveryFollowUpQueueRecords({
+    overviewRecords: allWorkspaceOverviews
+  })
 
   const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
@@ -84,6 +89,11 @@ export default async function DeliveryPage({
       </section>
 
       <DeliveryDashboardSummaryPanel summary={dashboardSummary} />
+
+      <DeliveryFollowUpQueue
+        projectsById={projectsById}
+        queueRecords={followUpQueueRecords}
+      />
 
       <DeliveryWorkspaceList
         projectsById={projectsById}

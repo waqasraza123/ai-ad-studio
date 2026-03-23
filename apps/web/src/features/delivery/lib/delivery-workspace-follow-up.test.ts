@@ -2,7 +2,10 @@ import { describe, expect, it } from "vitest"
 import {
   getDeliveryWorkspaceFollowUpClasses,
   getDeliveryWorkspaceFollowUpLabel,
-  normalizeDeliveryWorkspaceFollowUpStatus
+  hasDeliveryWorkspaceRecipientActivity,
+  isDeliveryWorkspaceFollowUpUnresolved,
+  normalizeDeliveryWorkspaceFollowUpStatus,
+  resolveEffectiveDeliveryWorkspaceFollowUpStatus
 } from "./delivery-workspace-follow-up"
 
 describe("normalizeDeliveryWorkspaceFollowUpStatus", () => {
@@ -58,5 +61,113 @@ describe("getDeliveryWorkspaceFollowUpClasses", () => {
     expect(getDeliveryWorkspaceFollowUpClasses("resolved")).toContain(
       "text-emerald-100"
     )
+  })
+})
+
+describe("hasDeliveryWorkspaceRecipientActivity", () => {
+  it("returns true for view or download activity", () => {
+    expect(
+      hasDeliveryWorkspaceRecipientActivity({
+        acknowledgedAt: null,
+        acknowledgedBy: null,
+        acknowledgementNote: null,
+        deliveredAt: null,
+        downloadCount: 0,
+        lastDownloadedAt: null,
+        lastViewedAt: "2026-03-23T10:00:00.000Z"
+      })
+    ).toBe(true)
+
+    expect(
+      hasDeliveryWorkspaceRecipientActivity({
+        acknowledgedAt: null,
+        acknowledgedBy: null,
+        acknowledgementNote: null,
+        deliveredAt: null,
+        downloadCount: 1,
+        lastDownloadedAt: "2026-03-23T11:00:00.000Z",
+        lastViewedAt: null
+      })
+    ).toBe(true)
+  })
+
+  it("returns false when there is no client activity", () => {
+    expect(
+      hasDeliveryWorkspaceRecipientActivity({
+        acknowledgedAt: null,
+        acknowledgedBy: null,
+        acknowledgementNote: null,
+        deliveredAt: "2026-03-23T09:00:00.000Z",
+        downloadCount: 0,
+        lastDownloadedAt: null,
+        lastViewedAt: null
+      })
+    ).toBe(false)
+  })
+})
+
+describe("resolveEffectiveDeliveryWorkspaceFollowUpStatus", () => {
+  it("keeps explicit owner follow-up states", () => {
+    expect(
+      resolveEffectiveDeliveryWorkspaceFollowUpStatus({
+        activitySummary: {
+          acknowledgedAt: null,
+          acknowledgedBy: null,
+          acknowledgementNote: null,
+          deliveredAt: "2026-03-23T09:00:00.000Z",
+          downloadCount: 1,
+          lastDownloadedAt: "2026-03-23T11:00:00.000Z",
+          lastViewedAt: "2026-03-23T10:00:00.000Z"
+        },
+        workspaceFollowUpStatus: "waiting_on_client"
+      })
+    ).toBe("waiting_on_client")
+  })
+
+  it("derives needs_follow_up when there is recipient activity without acknowledgement", () => {
+    expect(
+      resolveEffectiveDeliveryWorkspaceFollowUpStatus({
+        activitySummary: {
+          acknowledgedAt: null,
+          acknowledgedBy: null,
+          acknowledgementNote: null,
+          deliveredAt: "2026-03-23T09:00:00.000Z",
+          downloadCount: 1,
+          lastDownloadedAt: "2026-03-23T11:00:00.000Z",
+          lastViewedAt: "2026-03-23T10:00:00.000Z"
+        },
+        workspaceFollowUpStatus: "none"
+      })
+    ).toBe("needs_follow_up")
+  })
+
+  it("returns none when there is no unresolved activity and no explicit status", () => {
+    expect(
+      resolveEffectiveDeliveryWorkspaceFollowUpStatus({
+        activitySummary: {
+          acknowledgedAt: "2026-03-23T12:00:00.000Z",
+          acknowledgedBy: "Client Team",
+          acknowledgementNote: "Approved.",
+          deliveredAt: "2026-03-23T09:00:00.000Z",
+          downloadCount: 1,
+          lastDownloadedAt: "2026-03-23T11:00:00.000Z",
+          lastViewedAt: "2026-03-23T10:00:00.000Z"
+        },
+        workspaceFollowUpStatus: "none"
+      })
+    ).toBe("none")
+  })
+})
+
+describe("isDeliveryWorkspaceFollowUpUnresolved", () => {
+  it("identifies unresolved statuses", () => {
+    expect(isDeliveryWorkspaceFollowUpUnresolved("needs_follow_up")).toBe(true)
+    expect(isDeliveryWorkspaceFollowUpUnresolved("reminder_scheduled")).toBe(true)
+    expect(isDeliveryWorkspaceFollowUpUnresolved("waiting_on_client")).toBe(true)
+  })
+
+  it("excludes none and resolved", () => {
+    expect(isDeliveryWorkspaceFollowUpUnresolved("none")).toBe(false)
+    expect(isDeliveryWorkspaceFollowUpUnresolved("resolved")).toBe(false)
   })
 })

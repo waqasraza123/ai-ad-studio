@@ -1,3 +1,4 @@
+import type { DeliveryWorkspaceActivitySummary } from "@/features/delivery/lib/delivery-activity"
 import type { DeliveryFollowUpStatus } from "@/server/database/types"
 
 export function normalizeDeliveryWorkspaceFollowUpStatus(
@@ -57,4 +58,38 @@ export function getDeliveryWorkspaceFollowUpClasses(
   }
 
   return "border-white/10 bg-white/[0.05] text-slate-300"
+}
+
+export function hasDeliveryWorkspaceRecipientActivity(
+  activitySummary: DeliveryWorkspaceActivitySummary
+) {
+  return Boolean(activitySummary.lastViewedAt) || activitySummary.downloadCount > 0
+}
+
+export function resolveEffectiveDeliveryWorkspaceFollowUpStatus(input: {
+  activitySummary: DeliveryWorkspaceActivitySummary
+  workspaceFollowUpStatus: DeliveryFollowUpStatus
+}): DeliveryFollowUpStatus {
+  if (input.workspaceFollowUpStatus !== "none") {
+    return input.workspaceFollowUpStatus
+  }
+
+  if (
+    hasDeliveryWorkspaceRecipientActivity(input.activitySummary) &&
+    !input.activitySummary.acknowledgedAt
+  ) {
+    return "needs_follow_up"
+  }
+
+  return "none"
+}
+
+export function isDeliveryWorkspaceFollowUpUnresolved(
+  status: DeliveryFollowUpStatus
+) {
+  return (
+    status === "needs_follow_up" ||
+    status === "reminder_scheduled" ||
+    status === "waiting_on_client"
+  )
 }
