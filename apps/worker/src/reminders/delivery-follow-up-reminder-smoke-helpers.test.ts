@@ -14,19 +14,18 @@ function createWorkspaceRecord(
   overrides: Partial<SmokeWorkspaceRecord> = {}
 ): SmokeWorkspaceRecord {
   return {
-    canonical_export_id: overrides.canonical_export_id ?? "export-1",
-    follow_up_due_on: overrides.follow_up_due_on ?? null,
-    follow_up_last_notification_bucket:
-      overrides.follow_up_last_notification_bucket ?? null,
-    follow_up_last_notification_date:
-      overrides.follow_up_last_notification_date ?? null,
-    follow_up_note: overrides.follow_up_note ?? null,
-    follow_up_status: overrides.follow_up_status ?? null,
-    id: overrides.id ?? "workspace-1",
-    owner_id: overrides.owner_id ?? "owner-1",
-    project_id: overrides.project_id ?? "project-1",
-    status: overrides.status ?? "active",
-    title: overrides.title ?? "Delivery workspace"
+    canonical_export_id: "export-1",
+    follow_up_due_on: null,
+    follow_up_last_notification_bucket: null,
+    follow_up_last_notification_date: null,
+    follow_up_note: null,
+    follow_up_status: null,
+    id: "workspace-1",
+    owner_id: "owner-1",
+    project_id: "project-1",
+    status: "active",
+    title: "Delivery workspace",
+    ...overrides
   }
 }
 
@@ -34,11 +33,12 @@ function createNotificationRecord(
   overrides: Partial<SmokeNotificationRecord> = {}
 ): SmokeNotificationRecord {
   return {
-    body: overrides.body ?? "body",
-    id: overrides.id ?? "notification-1",
-    kind: overrides.kind ?? "delivery_follow_up_due_today",
-    metadata: overrides.metadata ?? null,
-    title: overrides.title ?? "title"
+    body: "body",
+    id: "notification-1",
+    kind: "delivery_follow_up_due_today",
+    metadata: null,
+    title: "title",
+    ...overrides
   }
 }
 
