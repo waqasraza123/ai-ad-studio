@@ -10,7 +10,7 @@ function createWorkspaceReminderRow(
 ): DeliveryWorkspaceReminderRow {
   return {
     canonical_export_id: overrides.canonical_export_id ?? "export-1",
-    follow_up_due_on: overrides.follow_up_due_on ?? "2026-03-23",
+    follow_up_due_on: overrides.follow_up_due_on ?? "2026-03-24",
     follow_up_last_notification_bucket:
       overrides.follow_up_last_notification_bucket ?? null,
     follow_up_last_notification_date:
@@ -90,6 +90,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       workspaces: [
         createWorkspaceReminderRow({
+          follow_up_due_on: "2026-03-24",
           follow_up_note: "  Send a quick WhatsApp follow-up.  ",
           id: "workspace-due-today",
           title: "Spring launch delivery"
@@ -201,6 +202,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       workspaces: [
         createWorkspaceReminderRow({
+          follow_up_due_on: "2026-03-24",
           follow_up_last_notification_bucket: "due_today",
           follow_up_last_notification_date: "2026-03-24",
           id: "workspace-already-notified"
@@ -249,6 +251,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       },
       workspaces: [
         createWorkspaceReminderRow({
+          follow_up_due_on: "2026-03-24",
           id: "workspace-raced"
         })
       ]
@@ -292,6 +295,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       },
       workspaces: [
         createWorkspaceReminderRow({
+          follow_up_due_on: "2026-03-24",
           id: "workspace-failed",
           title: "Failed delivery"
         }),
