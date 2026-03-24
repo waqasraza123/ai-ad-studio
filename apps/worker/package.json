@@ -10,7 +10,8 @@
     "start": "node dist/index.js",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "delivery:reminders": "tsx src/reminders/run-delivery-follow-up-reminder-sweep.ts"
+    "delivery:reminders": "tsx src/reminders/run-delivery-follow-up-reminder-sweep.ts",
+    "delivery:reminders:smoke": "tsx src/reminders/delivery-follow-up-reminder-smoke.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1010.0",
