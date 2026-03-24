@@ -2,8 +2,6 @@ import { describe, expect, it } from "vitest"
 import {
   runDeliveryFollowUpReminderSweep,
   type DeliveryFollowUpReminderSweepStore,
-  type DeliveryReminderNotificationInsertRecord,
-  type DeliveryWorkspaceReminderCheckpoint,
   type DeliveryWorkspaceReminderRow
 } from "./run-delivery-follow-up-reminder-sweep"
 
@@ -26,13 +24,26 @@ function createWorkspaceReminderRow(
 }
 
 function createReminderSweepStoreDouble(input?: {
-  checkpointFailuresByWorkspaceId?: Record<string, unknown>
+  atomicWriteResultsByWorkspaceId?: Record<
+    string,
+    { created: boolean; reminder_bucket: string | null }
+  >
+  atomicWriteErrorsByWorkspaceId?: Record<string, unknown>
   loadError?: unknown
-  notificationFailuresByWorkspaceId?: Record<string, unknown>
   workspaces?: DeliveryWorkspaceReminderRow[]
 }) {
-  const notificationAttempts: DeliveryReminderNotificationInsertRecord[] = []
-  const checkpointAttempts: DeliveryWorkspaceReminderCheckpoint[] = []
+  const atomicWriteAttempts: {
+    exportId: string
+    notificationBody: string
+    notificationKind: string
+    notificationSeverity: "info" | "warning"
+    notificationTitle: string
+    ownerId: string
+    projectId: string
+    todayDateKey: string
+    updatedAtIsoString: string
+    workspaceId: string
+  }[] = []
 
   const store: DeliveryFollowUpReminderSweepStore = {
     async loadReminderScheduledWorkspaces() {
@@ -49,46 +60,42 @@ function createReminderSweepStoreDouble(input?: {
       }
     },
 
-    async createReminderNotification(notification) {
-      notificationAttempts.push(notification)
+    async createReminderNotificationAtomically(payload) {
+      atomicWriteAttempts.push(payload)
 
       return {
+        data: [
+          input?.atomicWriteResultsByWorkspaceId?.[payload.workspaceId] ?? {
+            created: true,
+            reminder_bucket:
+              payload.notificationKind === "delivery_follow_up_overdue"
+                ? "overdue"
+                : "due_today"
+          }
+        ],
         error:
-          input?.notificationFailuresByWorkspaceId?.[
-            notification.metadata.deliveryWorkspaceId
-          ] ?? null
-      }
-    },
-
-    async persistReminderNotificationCheckpoint(checkpoint) {
-      checkpointAttempts.push(checkpoint)
-
-      return {
-        error:
-          input?.checkpointFailuresByWorkspaceId?.[checkpoint.workspaceId] ?? null
+          input?.atomicWriteErrorsByWorkspaceId?.[payload.workspaceId] ?? null
       }
     }
   }
 
   return {
-    checkpointAttempts,
-    notificationAttempts,
+    atomicWriteAttempts,
     store
   }
 }
 
 describe("runDeliveryFollowUpReminderSweep", () => {
-  it("creates a due-today reminder notification and checkpoint", async () => {
-    const { checkpointAttempts, notificationAttempts, store } =
-      createReminderSweepStoreDouble({
-        workspaces: [
-          createWorkspaceReminderRow({
-            follow_up_note: "  Send a quick WhatsApp follow-up.  ",
-            id: "workspace-due-today",
-            title: "Spring launch delivery"
-          })
-        ]
-      })
+  it("creates a due-today atomic reminder notification", async () => {
+    const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
+      workspaces: [
+        createWorkspaceReminderRow({
+          follow_up_note: "  Send a quick WhatsApp follow-up.  ",
+          id: "workspace-due-today",
+          title: "Spring launch delivery"
+        })
+      ]
+    })
 
     const result = await runDeliveryFollowUpReminderSweep({
       now: new Date("2026-03-23T10:15:00.000Z"),
@@ -103,29 +110,16 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       todayDateKey: "2026-03-23"
     })
 
-    expect(notificationAttempts).toEqual([
+    expect(atomicWriteAttempts).toEqual([
       {
-        action_url:
-          "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity",
-        body: "Delivery follow-up is due today for Spring launch delivery. Scheduled date: 2026-03-23. Send a quick WhatsApp follow-up.",
-        export_id: "export-1",
-        job_id: null,
-        kind: "delivery_follow_up_due_today",
-        metadata: {
-          deliveryWorkspaceId: "workspace-due-today",
-          followUpDueOn: "2026-03-23",
-          reminderBucket: "due_today"
-        },
-        owner_id: "owner-1",
-        project_id: "project-1",
-        severity: "info",
-        title: "Delivery follow-up due today"
-      }
-    ])
-
-    expect(checkpointAttempts).toEqual([
-      {
-        reminderBucket: "due_today",
+        exportId: "export-1",
+        notificationBody:
+          "Delivery follow-up is due today for Spring launch delivery. Scheduled date: 2026-03-23. Send a quick WhatsApp follow-up.",
+        notificationKind: "delivery_follow_up_due_today",
+        notificationSeverity: "info",
+        notificationTitle: "Delivery follow-up due today",
+        ownerId: "owner-1",
+        projectId: "project-1",
         todayDateKey: "2026-03-23",
         updatedAtIsoString: "2026-03-23T10:15:00.000Z",
         workspaceId: "workspace-due-today"
@@ -133,16 +127,15 @@ describe("runDeliveryFollowUpReminderSweep", () => {
     ])
   })
 
-  it("creates an overdue reminder notification with warning severity", async () => {
-    const { checkpointAttempts, notificationAttempts, store } =
-      createReminderSweepStoreDouble({
-        workspaces: [
-          createWorkspaceReminderRow({
-            follow_up_due_on: "2026-03-22",
-            id: "workspace-overdue"
-          })
-        ]
-      })
+  it("creates an overdue atomic reminder notification", async () => {
+    const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
+      workspaces: [
+        createWorkspaceReminderRow({
+          follow_up_due_on: "2026-03-22",
+          id: "workspace-overdue"
+        })
+      ]
+    })
 
     const result = await runDeliveryFollowUpReminderSweep({
       now: new Date("2026-03-23T10:15:00.000Z"),
@@ -157,29 +150,16 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       todayDateKey: "2026-03-23"
     })
 
-    expect(notificationAttempts).toEqual([
+    expect(atomicWriteAttempts).toEqual([
       {
-        action_url:
-          "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity",
-        body: "Delivery follow-up is overdue for Launch delivery. Scheduled date: 2026-03-22.",
-        export_id: "export-1",
-        job_id: null,
-        kind: "delivery_follow_up_overdue",
-        metadata: {
-          deliveryWorkspaceId: "workspace-overdue",
-          followUpDueOn: "2026-03-22",
-          reminderBucket: "overdue"
-        },
-        owner_id: "owner-1",
-        project_id: "project-1",
-        severity: "warning",
-        title: "Delivery follow-up overdue"
-      }
-    ])
-
-    expect(checkpointAttempts).toEqual([
-      {
-        reminderBucket: "overdue",
+        exportId: "export-1",
+        notificationBody:
+          "Delivery follow-up is overdue for Launch delivery. Scheduled date: 2026-03-22.",
+        notificationKind: "delivery_follow_up_overdue",
+        notificationSeverity: "warning",
+        notificationTitle: "Delivery follow-up overdue",
+        ownerId: "owner-1",
+        projectId: "project-1",
         todayDateKey: "2026-03-23",
         updatedAtIsoString: "2026-03-23T10:15:00.000Z",
         workspaceId: "workspace-overdue"
@@ -188,16 +168,15 @@ describe("runDeliveryFollowUpReminderSweep", () => {
   })
 
   it("skips a workspace that was already notified in the same bucket today", async () => {
-    const { checkpointAttempts, notificationAttempts, store } =
-      createReminderSweepStoreDouble({
-        workspaces: [
-          createWorkspaceReminderRow({
-            follow_up_last_notification_bucket: "due_today",
-            follow_up_last_notification_date: "2026-03-23",
-            id: "workspace-already-notified"
-          })
-        ]
-      })
+    const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
+      workspaces: [
+        createWorkspaceReminderRow({
+          follow_up_last_notification_bucket: "due_today",
+          follow_up_last_notification_date: "2026-03-23",
+          id: "workspace-already-notified"
+        })
+      ]
+    })
 
     const result = await runDeliveryFollowUpReminderSweep({
       now: new Date("2026-03-23T10:15:00.000Z"),
@@ -212,27 +191,23 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       todayDateKey: "2026-03-23"
     })
 
-    expect(notificationAttempts).toEqual([])
-    expect(checkpointAttempts).toEqual([])
+    expect(atomicWriteAttempts).toEqual([])
   })
 
-  it("collects notification failures and continues processing later workspaces", async () => {
-    const { checkpointAttempts, notificationAttempts, store } =
-      createReminderSweepStoreDouble({
-        notificationFailuresByWorkspaceId: {
-          "workspace-failed": new Error("insert failed")
-        },
-        workspaces: [
-          createWorkspaceReminderRow({
-            id: "workspace-failed",
-            title: "Failed delivery"
-          }),
-          createWorkspaceReminderRow({
-            follow_up_due_on: "2026-03-22",
-            id: "workspace-overdue"
-          })
-        ]
-      })
+  it("does not increment notified count when the atomic write returns created false", async () => {
+    const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
+      atomicWriteResultsByWorkspaceId: {
+        "workspace-raced": {
+          created: false,
+          reminder_bucket: "due_today"
+        }
+      },
+      workspaces: [
+        createWorkspaceReminderRow({
+          id: "workspace-raced"
+        })
+      ]
+    })
 
     const result = await runDeliveryFollowUpReminderSweep({
       now: new Date("2026-03-23T10:15:00.000Z"),
@@ -240,65 +215,49 @@ describe("runDeliveryFollowUpReminderSweep", () => {
     })
 
     expect(result).toEqual({
-      failureCount: 1,
-      failures: ["workspace-failed: Failed to create reminder notification"],
-      notifiedCount: 1,
-      scannedCount: 2,
-      todayDateKey: "2026-03-23"
-    })
-
-    expect(
-      notificationAttempts.map(
-        (notification) => notification.metadata.deliveryWorkspaceId
-      )
-    ).toEqual(["workspace-failed", "workspace-overdue"])
-
-    expect(checkpointAttempts).toEqual([
-      {
-        reminderBucket: "overdue",
-        todayDateKey: "2026-03-23",
-        updatedAtIsoString: "2026-03-23T10:15:00.000Z",
-        workspaceId: "workspace-overdue"
-      }
-    ])
-  })
-
-  it("collects checkpoint persistence failures", async () => {
-    const { checkpointAttempts, notificationAttempts, store } =
-      createReminderSweepStoreDouble({
-        checkpointFailuresByWorkspaceId: {
-          "workspace-checkpoint-failed": new Error("update failed")
-        },
-        workspaces: [
-          createWorkspaceReminderRow({
-            id: "workspace-checkpoint-failed"
-          })
-        ]
-      })
-
-    const result = await runDeliveryFollowUpReminderSweep({
-      now: new Date("2026-03-23T10:15:00.000Z"),
-      store
-    })
-
-    expect(result).toEqual({
-      failureCount: 1,
-      failures: [
-        "workspace-checkpoint-failed: Failed to persist reminder notification checkpoint"
-      ],
+      failureCount: 0,
+      failures: [],
       notifiedCount: 0,
       scannedCount: 1,
       todayDateKey: "2026-03-23"
     })
 
-    expect(notificationAttempts).toHaveLength(1)
-    expect(checkpointAttempts).toEqual([
-      {
-        reminderBucket: "due_today",
-        todayDateKey: "2026-03-23",
-        updatedAtIsoString: "2026-03-23T10:15:00.000Z",
-        workspaceId: "workspace-checkpoint-failed"
-      }
+    expect(atomicWriteAttempts).toHaveLength(1)
+  })
+
+  it("collects atomic write failures and continues processing later workspaces", async () => {
+    const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
+      atomicWriteErrorsByWorkspaceId: {
+        "workspace-failed": new Error("rpc failed")
+      },
+      workspaces: [
+        createWorkspaceReminderRow({
+          id: "workspace-failed",
+          title: "Failed delivery"
+        }),
+        createWorkspaceReminderRow({
+          follow_up_due_on: "2026-03-22",
+          id: "workspace-overdue"
+        })
+      ]
+    })
+
+    const result = await runDeliveryFollowUpReminderSweep({
+      now: new Date("2026-03-23T10:15:00.000Z"),
+      store
+    })
+
+    expect(result).toEqual({
+      failureCount: 1,
+      failures: ["workspace-failed: Failed to create atomic reminder notification"],
+      notifiedCount: 1,
+      scannedCount: 2,
+      todayDateKey: "2026-03-23"
+    })
+
+    expect(atomicWriteAttempts.map((attempt) => attempt.workspaceId)).toEqual([
+      "workspace-failed",
+      "workspace-overdue"
     ])
   })
 

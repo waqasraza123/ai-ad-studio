@@ -20,36 +20,13 @@ export type DeliveryWorkspaceReminderRow = {
   title: string
 }
 
-export type DeliveryReminderNotificationInsertRecord = {
-  action_url: string
-  body: string
-  export_id: string
-  job_id: null
-  kind: string
-  metadata: {
-    deliveryWorkspaceId: string
-    followUpDueOn: string
-    reminderBucket: DeliveryReminderNotificationBucket
-  }
-  owner_id: string
-  project_id: string
-  severity: "info" | "warning"
-  title: string
-}
-
-export type DeliveryWorkspaceReminderCheckpoint = {
-  reminderBucket: DeliveryReminderNotificationBucket
-  todayDateKey: string
-  updatedAtIsoString: string
-  workspaceId: string
-}
-
 type DeliveryFollowUpReminderSweepLoadResult = {
   data: DeliveryWorkspaceReminderRow[] | null
   error: unknown | null
 }
 
-type DeliveryFollowUpReminderSweepMutationResult = {
+type DeliveryFollowUpReminderAtomicWriteResult = {
+  data: { created: boolean; reminder_bucket: string | null }[] | null
   error: unknown | null
 }
 
@@ -62,15 +39,21 @@ export type DeliveryFollowUpReminderSweepResult = {
 }
 
 export type DeliveryFollowUpReminderSweepStore = {
-  createReminderNotification(
-    notification: DeliveryReminderNotificationInsertRecord
-  ): Promise<DeliveryFollowUpReminderSweepMutationResult>
+  createReminderNotificationAtomically(input: {
+    notificationBody: string
+    notificationKind: string
+    notificationSeverity: "info" | "warning"
+    notificationTitle: string
+    ownerId: string
+    projectId: string
+    todayDateKey: string
+    updatedAtIsoString: string
+    workspaceId: string
+    exportId: string
+  }): Promise<DeliveryFollowUpReminderAtomicWriteResult>
   loadReminderScheduledWorkspaces(input: {
     todayDateKey: string
   }): Promise<DeliveryFollowUpReminderSweepLoadResult>
-  persistReminderNotificationCheckpoint(
-    checkpoint: DeliveryWorkspaceReminderCheckpoint
-  ): Promise<DeliveryFollowUpReminderSweepMutationResult>
 }
 
 function getRequiredEnvironmentValue(name: string) {
@@ -117,23 +100,27 @@ function createDeliveryFollowUpReminderSweepStore(): DeliveryFollowUpReminderSwe
       }
     },
 
-    async createReminderNotification(notification) {
-      const { error } = await supabase.from("notifications").insert(notification)
+    async createReminderNotificationAtomically(input) {
+      const { data, error } = await supabase.rpc(
+        "create_delivery_follow_up_reminder_notification",
+        {
+          p_delivery_workspace_id: input.workspaceId,
+          p_export_id: input.exportId,
+          p_notification_body: input.notificationBody,
+          p_notification_kind: input.notificationKind,
+          p_notification_severity: input.notificationSeverity,
+          p_notification_title: input.notificationTitle,
+          p_owner_id: input.ownerId,
+          p_project_id: input.projectId,
+          p_today_date: input.todayDateKey,
+          p_updated_at: input.updatedAtIsoString
+        }
+      )
 
-      return { error }
-    },
-
-    async persistReminderNotificationCheckpoint(checkpoint) {
-      const { error } = await supabase
-        .from("delivery_workspaces")
-        .update({
-          follow_up_last_notification_bucket: checkpoint.reminderBucket,
-          follow_up_last_notification_date: checkpoint.todayDateKey,
-          updated_at: checkpoint.updatedAtIsoString
-        })
-        .eq("id", checkpoint.workspaceId)
-
-      return { error }
+      return {
+        data: (data ?? null) as { created: boolean; reminder_bucket: string | null }[] | null,
+        error
+      }
     }
   }
 }
@@ -151,48 +138,6 @@ function resolveReminderBucket(input: {
   }
 
   return null
-}
-
-function buildReminderNotificationRecord(input: {
-  reminderBucket: DeliveryReminderNotificationBucket
-  workspace: DeliveryWorkspaceReminderRow
-}): DeliveryReminderNotificationInsertRecord {
-  return {
-    action_url:
-      "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity",
-    body: buildDeliveryReminderNotificationBody({
-      followUpDueOn: input.workspace.follow_up_due_on,
-      followUpNote: input.workspace.follow_up_note,
-      reminderBucket: input.reminderBucket,
-      workspaceTitle: input.workspace.title
-    }),
-    export_id: input.workspace.canonical_export_id,
-    job_id: null,
-    kind: buildDeliveryReminderNotificationKind(input.reminderBucket),
-    metadata: {
-      deliveryWorkspaceId: input.workspace.id,
-      followUpDueOn: input.workspace.follow_up_due_on,
-      reminderBucket: input.reminderBucket
-    },
-    owner_id: input.workspace.owner_id,
-    project_id: input.workspace.project_id,
-    severity: input.reminderBucket === "overdue" ? "warning" : "info",
-    title: buildDeliveryReminderNotificationTitle(input.reminderBucket)
-  }
-}
-
-function buildReminderCheckpoint(input: {
-  reminderBucket: DeliveryReminderNotificationBucket
-  todayDateKey: string
-  updatedAtIsoString: string
-  workspaceId: string
-}): DeliveryWorkspaceReminderCheckpoint {
-  return {
-    reminderBucket: input.reminderBucket,
-    todayDateKey: input.todayDateKey,
-    updatedAtIsoString: input.updatedAtIsoString,
-    workspaceId: input.workspaceId
-  }
 }
 
 async function runDeliveryFollowUpReminderSweepWithStore(input: {
@@ -234,31 +179,34 @@ async function runDeliveryFollowUpReminderSweepWithStore(input: {
         continue
       }
 
-      const notification = buildReminderNotificationRecord({
-        reminderBucket,
-        workspace
-      })
-      const { error: notificationError } =
-        await input.store.createReminderNotification(notification)
+      const { data: atomicWriteResult, error: atomicWriteError } =
+        await input.store.createReminderNotificationAtomically({
+          exportId: workspace.canonical_export_id,
+          notificationBody: buildDeliveryReminderNotificationBody({
+            followUpDueOn: workspace.follow_up_due_on,
+            followUpNote: workspace.follow_up_note,
+            reminderBucket,
+            workspaceTitle: workspace.title
+          }),
+          notificationKind: buildDeliveryReminderNotificationKind(reminderBucket),
+          notificationSeverity: reminderBucket === "overdue" ? "warning" : "info",
+          notificationTitle: buildDeliveryReminderNotificationTitle(reminderBucket),
+          ownerId: workspace.owner_id,
+          projectId: workspace.project_id,
+          todayDateKey: input.todayDateKey,
+          updatedAtIsoString: input.updatedAtIsoString,
+          workspaceId: workspace.id
+        })
 
-      if (notificationError) {
-        throw new Error("Failed to create reminder notification")
+      if (atomicWriteError) {
+        throw new Error("Failed to create atomic reminder notification")
       }
 
-      const checkpoint = buildReminderCheckpoint({
-        reminderBucket,
-        todayDateKey: input.todayDateKey,
-        updatedAtIsoString: input.updatedAtIsoString,
-        workspaceId: workspace.id
-      })
-      const { error: checkpointError } =
-        await input.store.persistReminderNotificationCheckpoint(checkpoint)
+      const mutationRecord = atomicWriteResult?.[0]
 
-      if (checkpointError) {
-        throw new Error("Failed to persist reminder notification checkpoint")
+      if (mutationRecord?.created) {
+        notifiedCount += 1
       }
-
-      notifiedCount += 1
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown reminder sweep error"
