@@ -24,11 +24,11 @@ function createWorkspaceReminderRow(
 }
 
 function createReminderSweepStoreDouble(input?: {
+  atomicWriteErrorsByWorkspaceId?: Record<string, unknown>
   atomicWriteResultsByWorkspaceId?: Record<
     string,
     { created: boolean; reminder_bucket: string | null }
   >
-  atomicWriteErrorsByWorkspaceId?: Record<string, unknown>
   loadError?: unknown
   workspaces?: DeliveryWorkspaceReminderRow[]
 }) {
@@ -86,7 +86,7 @@ function createReminderSweepStoreDouble(input?: {
 }
 
 describe("runDeliveryFollowUpReminderSweep", () => {
-  it("creates a due-today atomic reminder notification", async () => {
+  it("tracks due-today notification counts and bucket totals", async () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       workspaces: [
         createWorkspaceReminderRow({
@@ -98,7 +98,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
     })
 
     const result = await runDeliveryFollowUpReminderSweep({
-      now: new Date("2026-03-23T10:15:00.000Z"),
+      now: new Date("2026-03-24T10:15:00.000Z"),
       store
     })
 
@@ -106,39 +106,54 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       failureCount: 0,
       failures: [],
       notifiedCount: 1,
+      reminderBucketTotals: {
+        due_today: {
+          failedCount: 0,
+          notifiedCount: 1,
+          scannedCount: 1,
+          skippedCount: 0
+        },
+        overdue: {
+          failedCount: 0,
+          notifiedCount: 0,
+          scannedCount: 0,
+          skippedCount: 0
+        }
+      },
       scannedCount: 1,
-      todayDateKey: "2026-03-23"
+      skippedCount: 0,
+      todayDateKey: "2026-03-24"
     })
 
     expect(atomicWriteAttempts).toEqual([
       {
         exportId: "export-1",
         notificationBody:
-          "Delivery follow-up is due today for Spring launch delivery. Scheduled date: 2026-03-23. Send a quick WhatsApp follow-up.",
+          "Delivery follow-up is due today for Spring launch delivery. Scheduled date: 2026-03-24. Send a quick WhatsApp follow-up.",
         notificationKind: "delivery_follow_up_due_today",
         notificationSeverity: "info",
         notificationTitle: "Delivery follow-up due today",
         ownerId: "owner-1",
         projectId: "project-1",
-        todayDateKey: "2026-03-23",
-        updatedAtIsoString: "2026-03-23T10:15:00.000Z",
+        todayDateKey: "2026-03-24",
+        updatedAtIsoString: "2026-03-24T10:15:00.000Z",
         workspaceId: "workspace-due-today"
       }
     ])
   })
 
-  it("creates an overdue atomic reminder notification", async () => {
+  it("tracks overdue notification counts and bucket totals", async () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       workspaces: [
         createWorkspaceReminderRow({
-          follow_up_due_on: "2026-03-22",
+          follow_up_due_on: "2026-03-23",
           id: "workspace-overdue"
         })
       ]
     })
 
     const result = await runDeliveryFollowUpReminderSweep({
-      now: new Date("2026-03-23T10:15:00.000Z"),
+      now: new Date("2026-03-24T10:15:00.000Z"),
       store
     })
 
@@ -146,40 +161,55 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       failureCount: 0,
       failures: [],
       notifiedCount: 1,
+      reminderBucketTotals: {
+        due_today: {
+          failedCount: 0,
+          notifiedCount: 0,
+          scannedCount: 0,
+          skippedCount: 0
+        },
+        overdue: {
+          failedCount: 0,
+          notifiedCount: 1,
+          scannedCount: 1,
+          skippedCount: 0
+        }
+      },
       scannedCount: 1,
-      todayDateKey: "2026-03-23"
+      skippedCount: 0,
+      todayDateKey: "2026-03-24"
     })
 
     expect(atomicWriteAttempts).toEqual([
       {
         exportId: "export-1",
         notificationBody:
-          "Delivery follow-up is overdue for Launch delivery. Scheduled date: 2026-03-22.",
+          "Delivery follow-up is overdue for Launch delivery. Scheduled date: 2026-03-23.",
         notificationKind: "delivery_follow_up_overdue",
         notificationSeverity: "warning",
         notificationTitle: "Delivery follow-up overdue",
         ownerId: "owner-1",
         projectId: "project-1",
-        todayDateKey: "2026-03-23",
-        updatedAtIsoString: "2026-03-23T10:15:00.000Z",
+        todayDateKey: "2026-03-24",
+        updatedAtIsoString: "2026-03-24T10:15:00.000Z",
         workspaceId: "workspace-overdue"
       }
     ])
   })
 
-  it("skips a workspace that was already notified in the same bucket today", async () => {
+  it("counts deduped same-day reminders as skipped", async () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       workspaces: [
         createWorkspaceReminderRow({
           follow_up_last_notification_bucket: "due_today",
-          follow_up_last_notification_date: "2026-03-23",
+          follow_up_last_notification_date: "2026-03-24",
           id: "workspace-already-notified"
         })
       ]
     })
 
     const result = await runDeliveryFollowUpReminderSweep({
-      now: new Date("2026-03-23T10:15:00.000Z"),
+      now: new Date("2026-03-24T10:15:00.000Z"),
       store
     })
 
@@ -187,14 +217,29 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       failureCount: 0,
       failures: [],
       notifiedCount: 0,
+      reminderBucketTotals: {
+        due_today: {
+          failedCount: 0,
+          notifiedCount: 0,
+          scannedCount: 1,
+          skippedCount: 1
+        },
+        overdue: {
+          failedCount: 0,
+          notifiedCount: 0,
+          scannedCount: 0,
+          skippedCount: 0
+        }
+      },
       scannedCount: 1,
-      todayDateKey: "2026-03-23"
+      skippedCount: 1,
+      todayDateKey: "2026-03-24"
     })
 
     expect(atomicWriteAttempts).toEqual([])
   })
 
-  it("does not increment notified count when the atomic write returns created false", async () => {
+  it("counts database-side created false results as skipped", async () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       atomicWriteResultsByWorkspaceId: {
         "workspace-raced": {
@@ -210,7 +255,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
     })
 
     const result = await runDeliveryFollowUpReminderSweep({
-      now: new Date("2026-03-23T10:15:00.000Z"),
+      now: new Date("2026-03-24T10:15:00.000Z"),
       store
     })
 
@@ -218,14 +263,29 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       failureCount: 0,
       failures: [],
       notifiedCount: 0,
+      reminderBucketTotals: {
+        due_today: {
+          failedCount: 0,
+          notifiedCount: 0,
+          scannedCount: 1,
+          skippedCount: 1
+        },
+        overdue: {
+          failedCount: 0,
+          notifiedCount: 0,
+          scannedCount: 0,
+          skippedCount: 0
+        }
+      },
       scannedCount: 1,
-      todayDateKey: "2026-03-23"
+      skippedCount: 1,
+      todayDateKey: "2026-03-24"
     })
 
     expect(atomicWriteAttempts).toHaveLength(1)
   })
 
-  it("collects atomic write failures and continues processing later workspaces", async () => {
+  it("tracks failed and successful buckets independently", async () => {
     const { atomicWriteAttempts, store } = createReminderSweepStoreDouble({
       atomicWriteErrorsByWorkspaceId: {
         "workspace-failed": new Error("rpc failed")
@@ -236,14 +296,14 @@ describe("runDeliveryFollowUpReminderSweep", () => {
           title: "Failed delivery"
         }),
         createWorkspaceReminderRow({
-          follow_up_due_on: "2026-03-22",
+          follow_up_due_on: "2026-03-23",
           id: "workspace-overdue"
         })
       ]
     })
 
     const result = await runDeliveryFollowUpReminderSweep({
-      now: new Date("2026-03-23T10:15:00.000Z"),
+      now: new Date("2026-03-24T10:15:00.000Z"),
       store
     })
 
@@ -251,8 +311,23 @@ describe("runDeliveryFollowUpReminderSweep", () => {
       failureCount: 1,
       failures: ["workspace-failed: Failed to create atomic reminder notification"],
       notifiedCount: 1,
+      reminderBucketTotals: {
+        due_today: {
+          failedCount: 1,
+          notifiedCount: 0,
+          scannedCount: 1,
+          skippedCount: 0
+        },
+        overdue: {
+          failedCount: 0,
+          notifiedCount: 1,
+          scannedCount: 1,
+          skippedCount: 0
+        }
+      },
       scannedCount: 2,
-      todayDateKey: "2026-03-23"
+      skippedCount: 0,
+      todayDateKey: "2026-03-24"
     })
 
     expect(atomicWriteAttempts.map((attempt) => attempt.workspaceId)).toEqual([
@@ -268,7 +343,7 @@ describe("runDeliveryFollowUpReminderSweep", () => {
 
     await expect(
       runDeliveryFollowUpReminderSweep({
-        now: new Date("2026-03-23T10:15:00.000Z"),
+        now: new Date("2026-03-24T10:15:00.000Z"),
         store
       })
     ).rejects.toThrow("Failed to load reminder-scheduled delivery workspaces")

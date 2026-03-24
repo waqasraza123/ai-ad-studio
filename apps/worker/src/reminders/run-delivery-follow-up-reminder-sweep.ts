@@ -7,6 +7,11 @@ import {
   shouldGenerateDeliveryReminderNotification,
   type DeliveryReminderNotificationBucket
 } from "./delivery-follow-up-reminder-notification"
+import {
+  createEmptyDeliveryFollowUpReminderBucketTotals,
+  incrementDeliveryFollowUpReminderBucketTotals,
+  type DeliveryFollowUpReminderBucketTotals
+} from "./delivery-follow-up-reminder-observability"
 
 export type DeliveryWorkspaceReminderRow = {
   canonical_export_id: string
@@ -34,12 +39,15 @@ export type DeliveryFollowUpReminderSweepResult = {
   failureCount: number
   failures: string[]
   notifiedCount: number
+  reminderBucketTotals: DeliveryFollowUpReminderBucketTotals
   scannedCount: number
+  skippedCount: number
   todayDateKey: string
 }
 
 export type DeliveryFollowUpReminderSweepStore = {
   createReminderNotificationAtomically(input: {
+    exportId: string
     notificationBody: string
     notificationKind: string
     notificationSeverity: "info" | "warning"
@@ -49,7 +57,6 @@ export type DeliveryFollowUpReminderSweepStore = {
     todayDateKey: string
     updatedAtIsoString: string
     workspaceId: string
-    exportId: string
   }): Promise<DeliveryFollowUpReminderAtomicWriteResult>
   loadReminderScheduledWorkspaces(input: {
     todayDateKey: string
@@ -118,7 +125,9 @@ function createDeliveryFollowUpReminderSweepStore(): DeliveryFollowUpReminderSwe
       )
 
       return {
-        data: (data ?? null) as { created: boolean; reminder_bucket: string | null }[] | null,
+        data: (data ?? null) as
+          | { created: boolean; reminder_bucket: string | null }[]
+          | null,
         error
       }
     }
@@ -155,18 +164,30 @@ async function runDeliveryFollowUpReminderSweepWithStore(input: {
 
   const workspaces = data ?? []
   const failures: string[] = []
+  const reminderBucketTotals =
+    createEmptyDeliveryFollowUpReminderBucketTotals()
   let notifiedCount = 0
+  let skippedCount = 0
 
   for (const workspace of workspaces) {
+    let reminderBucket: DeliveryReminderNotificationBucket | null = null
+
     try {
-      const reminderBucket = resolveReminderBucket({
+      reminderBucket = resolveReminderBucket({
         followUpDueOn: workspace.follow_up_due_on,
         todayDateKey: input.todayDateKey
       })
 
       if (!reminderBucket) {
+        skippedCount += 1
         continue
       }
+
+      incrementDeliveryFollowUpReminderBucketTotals({
+        field: "scannedCount",
+        reminderBucket,
+        reminderBucketTotals
+      })
 
       const shouldNotify = shouldGenerateDeliveryReminderNotification({
         followUpLastNotificationBucket: workspace.follow_up_last_notification_bucket,
@@ -176,6 +197,14 @@ async function runDeliveryFollowUpReminderSweepWithStore(input: {
       })
 
       if (!shouldNotify) {
+        skippedCount += 1
+
+        incrementDeliveryFollowUpReminderBucketTotals({
+          field: "skippedCount",
+          reminderBucket,
+          reminderBucketTotals
+        })
+
         continue
       }
 
@@ -206,11 +235,36 @@ async function runDeliveryFollowUpReminderSweepWithStore(input: {
 
       if (mutationRecord?.created) {
         notifiedCount += 1
+
+        incrementDeliveryFollowUpReminderBucketTotals({
+          field: "notifiedCount",
+          reminderBucket,
+          reminderBucketTotals
+        })
+
+        continue
       }
+
+      skippedCount += 1
+
+      incrementDeliveryFollowUpReminderBucketTotals({
+        field: "skippedCount",
+        reminderBucket,
+        reminderBucketTotals
+      })
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Unknown reminder sweep error"
+
       failures.push(`${workspace.id}: ${message}`)
+
+      if (reminderBucket) {
+        incrementDeliveryFollowUpReminderBucketTotals({
+          field: "failedCount",
+          reminderBucket,
+          reminderBucketTotals
+        })
+      }
     }
   }
 
@@ -218,7 +272,9 @@ async function runDeliveryFollowUpReminderSweepWithStore(input: {
     failureCount: failures.length,
     failures,
     notifiedCount,
+    reminderBucketTotals,
     scannedCount: workspaces.length,
+    skippedCount,
     todayDateKey: input.todayDateKey
   }
 }

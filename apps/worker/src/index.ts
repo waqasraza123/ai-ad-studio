@@ -2,12 +2,13 @@ import { getWorkerEnvironment, hasWorkerEnvironmentConfiguration } from "@/lib/e
 import { executeJob } from "@/jobs/execute-job"
 import { createLongRunningQueueNotifications } from "@/notifications/notification-service"
 import { claimNextJob, refreshJobHeartbeat } from "@/repositories/jobs-repository"
+import { createSupabaseAdminClient } from "@/lib/supabase-admin"
+import { buildDeliveryFollowUpReminderSweepLogPayload } from "@/reminders/delivery-follow-up-reminder-observability"
 import {
   getDeliveryFollowUpReminderSweepIntervalMilliseconds,
   shouldRunDeliveryFollowUpReminderSweep
 } from "@/reminders/delivery-follow-up-reminder-cadence"
 import { runDeliveryFollowUpReminderSweep } from "@/reminders/run-delivery-follow-up-reminder-sweep"
-import { createSupabaseAdminClient } from "@/lib/supabase-admin"
 
 function wait(milliseconds: number) {
   return new Promise((resolve) => {
@@ -47,13 +48,23 @@ async function maybeRunDeliveryFollowUpReminderSweep(input: {
   try {
     const result = await runDeliveryFollowUpReminderSweep()
 
-    if (result.notifiedCount > 0 || result.failureCount > 0) {
-      console.log(
-        `[worker] Delivery follow-up reminder sweep scanned=${result.scannedCount} notified=${result.notifiedCount} failures=${result.failureCount}`
+    console.log(
+      JSON.stringify(
+        buildDeliveryFollowUpReminderSweepLogPayload({
+          durationMs: Math.max(0, Date.now() - startedAtMs),
+          result
+        })
       )
-    }
+    )
   } catch (error) {
-    console.error("[worker] Delivery follow-up reminder sweep failed", error)
+    console.error(
+      JSON.stringify(
+        buildDeliveryFollowUpReminderSweepLogPayload({
+          durationMs: Math.max(0, Date.now() - startedAtMs),
+          error
+        })
+      )
+    )
   }
 
   return startedAtMs
