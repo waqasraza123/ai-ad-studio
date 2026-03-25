@@ -1,3 +1,10 @@
+import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
+import {
+  buildDeliveryReminderSupportRecords,
+  summarizeDeliveryReminderSupportRecords
+} from "@/features/delivery/lib/delivery-reminder-support"
+import { listRecentDeliveryReminderNotificationsByOwner } from "@/server/notifications/delivery-reminder-notification-repository"
+
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   listDeliveryWorkspaceEventsByWorkspaceIdsForOwner,
@@ -75,6 +82,17 @@ export default async function DeliveryPage({
     listOverdueDeliveryFollowUpQueueRecords(followUpQueueRecords)
   const followUpQueueSummary = summarizeDeliveryFollowUpQueue(followUpQueueRecords)
 
+const recentReminderNotifications =
+  await listRecentDeliveryReminderNotificationsByOwner(user.id, 8)
+
+const reminderSupportRecords = buildDeliveryReminderSupportRecords({
+  notifications: recentReminderNotifications,
+  workspaces: workspaces
+})
+
+const reminderSupportSummary =
+  summarizeDeliveryReminderSupportRecords(reminderSupportRecords)
+
   const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
     quickFilter: selectedActivityFilter,
@@ -103,6 +121,11 @@ export default async function DeliveryPage({
       <DeliveryOverdueRemindersPanel
         projectsById={projectsById}
         queueRecords={overdueFollowUpQueueRecords}
+      />
+
+      <DeliveryReminderSupportPanel
+        records={reminderSupportRecords}
+        summary={reminderSupportSummary}
       />
 
       <DeliveryFollowUpQueue
