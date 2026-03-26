@@ -29,9 +29,11 @@ import {
   summarizeDeliveryDashboardOverview
 } from "@/features/delivery/lib/delivery-workspace-overview"
 
+import { normalizeFocusedWorkspaceId } from "@/features/delivery/lib/delivery-reminder-support-links"
 type DeliveryPageProps = {
   searchParams: Promise<{
     activity?: string
+    focus_workspace_id?: string
     sort?: string
     status?: string
   }>
@@ -93,14 +95,26 @@ const reminderSupportRecords = buildDeliveryReminderSupportRecords({
 const reminderSupportSummary =
   summarizeDeliveryReminderSupportRecords(reminderSupportRecords)
 
-  const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
+  const focusWorkspaceId = normalizeFocusedWorkspaceId(
+  typeof resolvedSearchParams.focus_workspace_id === "string"
+    ? resolvedSearchParams.focus_workspace_id
+    : null
+)
+
+const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
     quickFilter: selectedActivityFilter,
     sortKey: selectedSortKey,
     statusFilter: selectedStatusFilter
   })
 
-  const projectsById = new Map(projects.map((project) => [project.id, project]))
+  const focusedWorkspaceIsVisible = focusWorkspaceId
+  ? visibleWorkspaceOverviews.some(
+      (record) => record.workspace.id === focusWorkspaceId
+    )
+  : false
+
+const projectsById = new Map(projects.map((project) => [project.id, project]))
 
   return (
     <div className="space-y-6">
@@ -134,7 +148,22 @@ const reminderSupportSummary =
         queueSummary={followUpQueueSummary}
       />
 
+      {focusWorkspaceId ? (
+        <div
+          className={`rounded-[1.25rem] border px-4 py-3 text-sm ${
+            focusedWorkspaceIsVisible
+              ? "border-cyan-400/30 bg-cyan-500/10 text-cyan-100"
+              : "border-amber-400/30 bg-amber-500/10 text-amber-100"
+          }`}
+        >
+          {focusedWorkspaceIsVisible
+            ? "The workspace opened from reminder support is highlighted in the delivery workspace list below."
+            : "The workspace opened from reminder support is not visible under the current delivery filters."}
+        </div>
+      ) : null}
+
       <DeliveryWorkspaceList
+        focusWorkspaceId={focusWorkspaceId}
         projectsById={projectsById}
         selectedActivityFilter={selectedActivityFilter}
         selectedSortKey={selectedSortKey}

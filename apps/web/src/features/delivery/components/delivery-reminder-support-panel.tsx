@@ -1,3 +1,5 @@
+import { buildDeliveryReminderDashboardHref } from "@/features/delivery/lib/delivery-reminder-support-links"
+import Link from "next/link"
 import {
   getDeliveryWorkspaceFollowUpClasses,
   getDeliveryWorkspaceFollowUpLabel,
@@ -158,6 +160,17 @@ export function DeliveryReminderSupportPanel({
                       </dd>
                     </div>
                   </dl>
+
+                  {record.workspaceId ? (
+                    <div className="mt-4">
+                      <Link
+                        className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
+                        href={buildDeliveryReminderDashboardHref(record.workspaceId)}
+                      >
+                        Open workspace in delivery dashboard
+                      </Link>
+                    </div>
+                  ) : null}
                 </div>
 
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">

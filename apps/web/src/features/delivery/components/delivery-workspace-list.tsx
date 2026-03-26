@@ -20,7 +20,9 @@ import type {
   ProjectRecord
 } from "@/server/database/types"
 
+import { buildDeliveryWorkspaceFocusAnchorId } from "@/features/delivery/lib/delivery-reminder-support-links"
 type DeliveryWorkspaceListProps = {
+  focusWorkspaceId?: string | null
   projectsById: Map<string, ProjectRecord>
   selectedActivityFilter: DeliveryWorkspaceQuickFilter
   selectedSortKey: DeliveryWorkspaceSortKey
@@ -101,6 +103,7 @@ function buildDeliveryDashboardHref(input: {
 }
 
 export function DeliveryWorkspaceList({
+  focusWorkspaceId = null,
   projectsById,
   selectedActivityFilter,
   selectedSortKey,
@@ -266,13 +269,23 @@ export function DeliveryWorkspaceList({
 
           return (
             <div
+              id={buildDeliveryWorkspaceFocusAnchorId(workspace.id)}
               key={workspace.id}
-              className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5"
+              className={`scroll-mt-24 rounded-[2rem] border p-5 transition ${
+                workspace.id === focusWorkspaceId
+                  ? "border-cyan-400/40 bg-cyan-500/[0.08] ring-1 ring-cyan-300/30"
+                  : "border-white/10 bg-white/[0.04]"
+              }`}
             >
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-white">{workspace.title}</p>
+                    {workspace.id === focusWorkspaceId ? (
+                      <span className="inline-flex rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-200">
+                        Focused from reminder support
+                      </span>
+                    ) : null}
                     <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(workspace.status)}`}>
                       {workspace.status}
                     </span>
