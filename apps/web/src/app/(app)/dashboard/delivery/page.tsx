@@ -29,7 +29,15 @@ import {
   summarizeDeliveryDashboardOverview
 } from "@/features/delivery/lib/delivery-workspace-overview"
 
-import { normalizeFocusedWorkspaceId } from "@/features/delivery/lib/delivery-reminder-support-links"
+import {
+  findFocusedDeliveryReminderSupportRecord,
+  resolveFocusedFollowUpFormWorkspaceId
+} from "@/features/delivery/lib/delivery-reminder-follow-up-focus"
+import {
+  normalizeFocusedReminderNotificationId,
+  normalizeFocusedWorkspaceId,
+  normalizeFollowUpFormFocus
+} from "@/features/delivery/lib/delivery-reminder-support-links"
 import {
   filterDeliveryReminderSupportRecords,
   normalizeDeliveryReminderSupportFilter
@@ -38,6 +46,8 @@ import {
 type DeliveryPageProps = {
   searchParams: Promise<{
     activity?: string
+    focus_follow_up_form?: string
+    focus_reminder_notification_id?: string
     focus_workspace_id?: string
     reminder_support_filter?: string
     sort?: string
@@ -65,9 +75,13 @@ export default async function DeliveryPage({
     resolvedSearchParams.sort
   )
   const focusWorkspaceId = normalizeFocusedWorkspaceId(
-    typeof resolvedSearchParams.focus_workspace_id === "string"
-      ? resolvedSearchParams.focus_workspace_id
-      : null
+    resolvedSearchParams.focus_workspace_id
+  )
+  const focusReminderNotificationId = normalizeFocusedReminderNotificationId(
+    resolvedSearchParams.focus_reminder_notification_id
+  )
+  const shouldFocusFollowUpForm = normalizeFollowUpFormFocus(
+    resolvedSearchParams.focus_follow_up_form
   )
   const activeReminderSupportFilter = normalizeDeliveryReminderSupportFilter(
     resolvedSearchParams.reminder_support_filter
@@ -106,6 +120,11 @@ export default async function DeliveryPage({
     workspaces
   })
 
+  const focusedReminderSupportRecord = findFocusedDeliveryReminderSupportRecord(
+    reminderSupportRecords,
+    focusReminderNotificationId
+  )
+
   const overallReminderSupportSummary =
     summarizeDeliveryReminderSupportRecords(reminderSupportRecords)
 
@@ -123,6 +142,17 @@ export default async function DeliveryPage({
     sortKey: selectedSortKey,
     statusFilter: selectedStatusFilter
   })
+
+  const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
+    record: focusedReminderSupportRecord,
+    shouldFocusFollowUpForm
+  })
+
+  const focusedFollowUpFormIsVisible = focusFollowUpFormWorkspaceId
+    ? visibleWorkspaceOverviews.some(
+        (record) => record.workspace.id === focusFollowUpFormWorkspaceId
+      )
+    : false
 
   const focusedWorkspaceIsVisible = focusWorkspaceId
     ? visibleWorkspaceOverviews.some(
@@ -172,7 +202,19 @@ export default async function DeliveryPage({
         queueSummary={followUpQueueSummary}
       />
 
-      {focusWorkspaceId ? (
+      {focusFollowUpFormWorkspaceId ? (
+        <div
+          className={`rounded-[1.25rem] border px-4 py-3 text-sm ${
+            focusedFollowUpFormIsVisible
+              ? "border-amber-400/30 bg-amber-500/10 text-amber-100"
+              : "border-rose-400/30 bg-rose-500/10 text-rose-100"
+          }`}
+        >
+          {focusedFollowUpFormIsVisible
+            ? "Reminder mismatch context is highlighted inside the workspace follow-up form below."
+            : "The reminder mismatch workspace is not visible under the current delivery filters."}
+        </div>
+      ) : focusWorkspaceId ? (
         <div
           className={`rounded-[1.25rem] border px-4 py-3 text-sm ${
             focusedWorkspaceIsVisible
@@ -187,7 +229,9 @@ export default async function DeliveryPage({
       ) : null}
 
       <DeliveryWorkspaceList
+        focusFollowUpFormWorkspaceId={focusFollowUpFormWorkspaceId}
         focusWorkspaceId={focusWorkspaceId}
+        focusedReminderSupportRecord={focusedReminderSupportRecord}
         projectsById={projectsById}
         selectedActivityFilter={selectedActivityFilter}
         selectedSortKey={selectedSortKey}

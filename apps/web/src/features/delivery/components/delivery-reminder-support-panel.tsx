@@ -15,6 +15,7 @@ import {
 } from "@/features/delivery/lib/delivery-reminder-support-filter"
 import {
   buildDeliveryReminderDashboardHref,
+  buildDeliveryReminderFollowUpFormHref,
   buildDeliveryReminderSupportFilterHref
 } from "@/features/delivery/lib/delivery-reminder-support-links"
 
@@ -234,8 +235,8 @@ export function DeliveryReminderSupportPanel({
                     </div>
                   </dl>
 
-                  {record.workspaceId ? (
-                    <div className="mt-4">
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {record.workspaceId ? (
                       <Link
                         className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
                         href={buildDeliveryReminderDashboardHref(record.workspaceId, {
@@ -244,8 +245,21 @@ export function DeliveryReminderSupportPanel({
                       >
                         Open workspace in delivery dashboard
                       </Link>
-                    </div>
-                  ) : null}
+                    ) : null}
+
+                    {record.workspaceId && record.checkpointState === "checkpoint_mismatch" ? (
+                      <Link
+                        className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-500/15"
+                        href={buildDeliveryReminderFollowUpFormHref({
+                          notificationId: record.notificationId,
+                          reminderSupportFilter: activeFilter,
+                          workspaceId: record.workspaceId
+                        })}
+                      >
+                        Open follow-up form with reminder context
+                      </Link>
+                    ) : null}
+                  </div>
                 </div>
 
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">

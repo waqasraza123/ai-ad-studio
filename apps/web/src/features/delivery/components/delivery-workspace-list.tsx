@@ -20,9 +20,17 @@ import type {
   ProjectRecord
 } from "@/server/database/types"
 
-import { buildDeliveryWorkspaceFocusAnchorId } from "@/features/delivery/lib/delivery-reminder-support-links"
+import { DeliveryReminderFollowUpContextCallout } from "@/features/delivery/components/delivery-reminder-follow-up-context-callout"
+import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
+import {
+  buildDeliveryWorkspaceFocusAnchorId,
+  buildDeliveryWorkspaceFollowUpAnchorId
+} from "@/features/delivery/lib/delivery-reminder-support-links"
+
 type DeliveryWorkspaceListProps = {
+  focusFollowUpFormWorkspaceId?: string | null
   focusWorkspaceId?: string | null
+  focusedReminderSupportRecord?: DeliveryReminderSupportRecord | null
   projectsById: Map<string, ProjectRecord>
   selectedActivityFilter: DeliveryWorkspaceQuickFilter
   selectedSortKey: DeliveryWorkspaceSortKey
@@ -103,7 +111,9 @@ function buildDeliveryDashboardHref(input: {
 }
 
 export function DeliveryWorkspaceList({
+  focusFollowUpFormWorkspaceId = null,
   focusWorkspaceId = null,
+  focusedReminderSupportRecord = null,
   projectsById,
   selectedActivityFilter,
   selectedSortKey,
@@ -266,13 +276,23 @@ export function DeliveryWorkspaceList({
             followUpStatus: workspace.follow_up_status,
             todayDateKey
           })
+          const isFocused = workspace.id === focusWorkspaceId
+          const isFollowUpFormFocused =
+            workspace.id === focusFollowUpFormWorkspaceId
+          const focusAnchorId = buildDeliveryWorkspaceFocusAnchorId(workspace.id)
+          const followUpAnchorId = buildDeliveryWorkspaceFollowUpAnchorId(workspace.id)
+          const focusedReminderContext =
+            isFollowUpFormFocused &&
+            focusedReminderSupportRecord?.workspaceId === workspace.id
+              ? focusedReminderSupportRecord
+              : null
 
           return (
             <div
-              id={buildDeliveryWorkspaceFocusAnchorId(workspace.id)}
+              id={focusAnchorId}
               key={workspace.id}
               className={`scroll-mt-24 rounded-[2rem] border p-5 transition ${
-                workspace.id === focusWorkspaceId
+                isFocused
                   ? "border-cyan-400/40 bg-cyan-500/[0.08] ring-1 ring-cyan-300/30"
                   : "border-white/10 bg-white/[0.04]"
               }`}
@@ -334,7 +354,28 @@ export function DeliveryWorkspaceList({
                     </div>
                   ) : null}
 
-                  <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-4">
+                  <section
+                    id={followUpAnchorId}
+                    className={`mt-4 rounded-[1.25rem] border p-4 ${
+                      isFollowUpFormFocused
+                        ? "border-amber-400/30 bg-amber-500/[0.08] ring-1 ring-amber-300/30"
+                        : "border-white/10 bg-white/[0.03]"
+                    }`}
+                  >
+                    {focusedReminderContext ? (
+                      <div className="mb-4">
+                        <DeliveryReminderFollowUpContextCallout record={focusedReminderContext} />
+                      </div>
+                    ) : null}
+
+                    {isFollowUpFormFocused ? (
+                      <div className="mb-4">
+                        <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">
+                          Follow-up form focused from reminder mismatch
+                        </span>
+                      </div>
+                    ) : null}
+
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
                         Owner follow-up
@@ -399,7 +440,7 @@ export function DeliveryWorkspaceList({
                         </p>
                       </div>
                     </form>
-                  </div>
+                  </section>
 
                   <div className="mt-4 grid gap-3 md:grid-cols-4">
                     <div className="rounded-[1.25rem] border border-emerald-400/20 bg-emerald-500/10 p-3">
