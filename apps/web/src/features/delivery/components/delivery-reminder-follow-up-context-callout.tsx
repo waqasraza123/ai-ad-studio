@@ -1,10 +1,22 @@
 import {
+  repairDeliveryWorkspaceReminderFromSupport
+} from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
+import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
+import {
+  buildDeliveryReminderFollowUpFormHref
+} from "@/features/delivery/lib/delivery-reminder-support-links"
+import {
+  deliveryReminderRepairActionFieldName
+} from "@/features/delivery/lib/delivery-reminder-repair"
+import {
   getDeliveryWorkspaceReminderBucketClasses,
   getDeliveryWorkspaceReminderBucketLabel
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
-import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
 
 type DeliveryReminderFollowUpContextCalloutProps = {
+  activeReminderSupportFilter: DeliveryReminderSupportFilter
+  currentFollowUpNote: string | null
   record: DeliveryReminderSupportRecord
 }
 
@@ -17,8 +29,20 @@ function formatDateTime(value: string) {
 }
 
 export function DeliveryReminderFollowUpContextCallout({
+  activeReminderSupportFilter,
+  currentFollowUpNote,
   record
 }: DeliveryReminderFollowUpContextCalloutProps) {
+  if (!record.workspaceId) {
+    return null
+  }
+
+  const returnToHref = buildDeliveryReminderFollowUpFormHref({
+    notificationId: record.notificationId,
+    reminderSupportFilter: activeReminderSupportFilter,
+    workspaceId: record.workspaceId
+  })
+
   return (
     <div className="rounded-[1.25rem] border border-amber-400/30 bg-amber-500/10 p-4 text-amber-50">
       <div className="flex flex-wrap items-center gap-2">
@@ -57,9 +81,40 @@ export function DeliveryReminderFollowUpContextCallout({
 
       <p className="mt-4 text-sm text-amber-50/90">
         This follow-up form is focused from a reminder checkpoint mismatch row.
-        Use the current reminder context above to reconcile the workspace
-        follow-up state below.
+        You can repair reminder scheduling here without leaving the current
+        workspace view.
       </p>
+
+      <form
+        action={repairDeliveryWorkspaceReminderFromSupport}
+        className="mt-4 flex flex-wrap gap-2"
+      >
+        <input name="workspaceId" type="hidden" value={record.workspaceId} />
+        <input name="returnToHref" type="hidden" value={returnToHref} />
+        <input
+          name="currentFollowUpNote"
+          type="hidden"
+          value={currentFollowUpNote ?? ""}
+        />
+
+        <button
+          className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
+          name={deliveryReminderRepairActionFieldName}
+          type="submit"
+          value="reschedule_tomorrow"
+        >
+          Reschedule for tomorrow
+        </button>
+
+        <button
+          className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:border-rose-300/40 hover:bg-rose-500/15"
+          name={deliveryReminderRepairActionFieldName}
+          type="submit"
+          value="clear_reminder_scheduling"
+        >
+          Clear reminder scheduling
+        </button>
+      </form>
     </div>
   )
 }

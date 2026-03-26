@@ -22,12 +22,14 @@ import type {
 
 import { DeliveryReminderFollowUpContextCallout } from "@/features/delivery/components/delivery-reminder-follow-up-context-callout"
 import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
+import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
 import {
   buildDeliveryWorkspaceFocusAnchorId,
   buildDeliveryWorkspaceFollowUpAnchorId
 } from "@/features/delivery/lib/delivery-reminder-support-links"
 
 type DeliveryWorkspaceListProps = {
+  activeReminderSupportFilter?: DeliveryReminderSupportFilter
   focusFollowUpFormWorkspaceId?: string | null
   focusWorkspaceId?: string | null
   focusedReminderSupportRecord?: DeliveryReminderSupportRecord | null
@@ -111,6 +113,7 @@ function buildDeliveryDashboardHref(input: {
 }
 
 export function DeliveryWorkspaceList({
+  activeReminderSupportFilter = "all",
   focusFollowUpFormWorkspaceId = null,
   focusWorkspaceId = null,
   focusedReminderSupportRecord = null,
@@ -364,7 +367,11 @@ export function DeliveryWorkspaceList({
                   >
                     {focusedReminderContext ? (
                       <div className="mb-4">
-                        <DeliveryReminderFollowUpContextCallout record={focusedReminderContext} />
+                        <DeliveryReminderFollowUpContextCallout
+                          activeReminderSupportFilter={activeReminderSupportFilter}
+                          currentFollowUpNote={workspace.follow_up_note ?? null}
+                          record={focusedReminderContext}
+                        />
                       </div>
                     ) : null}
 

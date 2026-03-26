@@ -229,6 +229,7 @@ export default async function DeliveryPage({
       ) : null}
 
       <DeliveryWorkspaceList
+        activeReminderSupportFilter={activeReminderSupportFilter}
         focusFollowUpFormWorkspaceId={focusFollowUpFormWorkspaceId}
         focusWorkspaceId={focusWorkspaceId}
         focusedReminderSupportRecord={focusedReminderSupportRecord}

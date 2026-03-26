@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
@@ -12,6 +13,23 @@ import {
   getDeliveryWorkspaceFollowUpLabel,
   normalizeDeliveryWorkspaceFollowUpStatus
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
+import {
+  buildDeliveryReminderRepairValues,
+  deliveryReminderRepairActionFieldName,
+  normalizeDeliveryReminderRepairAction
+} from "@/features/delivery/lib/delivery-reminder-repair"
+
+function getOptionalTrimmedFormValue(formData: FormData, fieldName: string) {
+  const rawValue = formData.get(fieldName)
+
+  if (typeof rawValue !== "string") {
+    return null
+  }
+
+  const normalizedValue = rawValue.trim()
+
+  return normalizedValue.length > 0 ? normalizedValue : null
+}
 
 function readFollowUpNote(formData: FormData) {
   const value = String(formData.get("follow_up_note") ?? "").trim()
@@ -131,4 +149,55 @@ export async function updateDeliveryWorkspaceFollowUpAction(
   })
 
   revalidatePath("/dashboard/delivery")
+}
+
+export async function repairDeliveryWorkspaceReminderFromSupport(
+  formData: FormData
+) {
+  const user = await getAuthenticatedUser()
+
+  if (!user) {
+    throw new Error("Authentication is required")
+  }
+
+  const workspaceId = getOptionalTrimmedFormValue(formData, "workspaceId")
+  const returnToHref =
+    getOptionalTrimmedFormValue(formData, "returnToHref") ??
+    "/dashboard/delivery"
+  const currentFollowUpNote = getOptionalTrimmedFormValue(
+    formData,
+    "currentFollowUpNote"
+  )
+  const reminderRepairAction = normalizeDeliveryReminderRepairAction(
+    formData.get(deliveryReminderRepairActionFieldName)
+  )
+
+  if (!workspaceId) {
+    throw new Error("workspaceId is required")
+  }
+
+  if (!reminderRepairAction) {
+    throw new Error("A valid reminder repair action is required")
+  }
+
+  const workspace = await getDeliveryWorkspaceByIdForOwner(workspaceId, user.id)
+
+  if (!workspace) {
+    throw new Error("Delivery workspace not found")
+  }
+
+  const repairValues = buildDeliveryReminderRepairValues({
+    action: reminderRepairAction
+  })
+
+  await updateDeliveryWorkspaceFollowUp({
+    followUpDueOn: repairValues.followUpDueOn,
+    followUpNote: currentFollowUpNote,
+    followUpStatus: repairValues.followUpStatus,
+    ownerId: user.id,
+    workspaceId: workspace.id
+  })
+
+  revalidatePath("/dashboard/delivery")
+  redirect(returnToHref)
 }
