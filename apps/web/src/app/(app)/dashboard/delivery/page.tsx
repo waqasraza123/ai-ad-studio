@@ -30,10 +30,16 @@ import {
 } from "@/features/delivery/lib/delivery-workspace-overview"
 
 import { normalizeFocusedWorkspaceId } from "@/features/delivery/lib/delivery-reminder-support-links"
+import {
+  filterDeliveryReminderSupportRecords,
+  normalizeDeliveryReminderSupportFilter
+} from "@/features/delivery/lib/delivery-reminder-support-filter"
+
 type DeliveryPageProps = {
   searchParams: Promise<{
     activity?: string
     focus_workspace_id?: string
+    reminder_support_filter?: string
     sort?: string
     status?: string
   }>
@@ -57,6 +63,14 @@ export default async function DeliveryPage({
   )
   const selectedSortKey = normalizeDeliveryWorkspaceSortKey(
     resolvedSearchParams.sort
+  )
+  const focusWorkspaceId = normalizeFocusedWorkspaceId(
+    typeof resolvedSearchParams.focus_workspace_id === "string"
+      ? resolvedSearchParams.focus_workspace_id
+      : null
+  )
+  const activeReminderSupportFilter = normalizeDeliveryReminderSupportFilter(
+    resolvedSearchParams.reminder_support_filter
   )
   const todayDateKey = new Date().toISOString().slice(0, 10)
 
@@ -84,24 +98,26 @@ export default async function DeliveryPage({
     listOverdueDeliveryFollowUpQueueRecords(followUpQueueRecords)
   const followUpQueueSummary = summarizeDeliveryFollowUpQueue(followUpQueueRecords)
 
-const recentReminderNotifications =
-  await listRecentDeliveryReminderNotificationsByOwner(user.id, 8)
+  const recentReminderNotifications =
+    await listRecentDeliveryReminderNotificationsByOwner(user.id, 8)
 
-const reminderSupportRecords = buildDeliveryReminderSupportRecords({
-  notifications: recentReminderNotifications,
-  workspaces: workspaces
-})
+  const reminderSupportRecords = buildDeliveryReminderSupportRecords({
+    notifications: recentReminderNotifications,
+    workspaces
+  })
 
-const reminderSupportSummary =
-  summarizeDeliveryReminderSupportRecords(reminderSupportRecords)
+  const overallReminderSupportSummary =
+    summarizeDeliveryReminderSupportRecords(reminderSupportRecords)
 
-  const focusWorkspaceId = normalizeFocusedWorkspaceId(
-  typeof resolvedSearchParams.focus_workspace_id === "string"
-    ? resolvedSearchParams.focus_workspace_id
-    : null
-)
+  const filteredReminderSupportRecords = filterDeliveryReminderSupportRecords(
+    reminderSupportRecords,
+    activeReminderSupportFilter
+  )
 
-const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
+  const filteredReminderSupportSummary =
+    summarizeDeliveryReminderSupportRecords(filteredReminderSupportRecords)
+
+  const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
     quickFilter: selectedActivityFilter,
     sortKey: selectedSortKey,
@@ -109,12 +125,12 @@ const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords(
   })
 
   const focusedWorkspaceIsVisible = focusWorkspaceId
-  ? visibleWorkspaceOverviews.some(
-      (record) => record.workspace.id === focusWorkspaceId
-    )
-  : false
+    ? visibleWorkspaceOverviews.some(
+        (record) => record.workspace.id === focusWorkspaceId
+      )
+    : false
 
-const projectsById = new Map(projects.map((project) => [project.id, project]))
+  const projectsById = new Map(projects.map((project) => [project.id, project]))
 
   return (
     <div className="space-y-6">
@@ -138,8 +154,16 @@ const projectsById = new Map(projects.map((project) => [project.id, project]))
       />
 
       <DeliveryReminderSupportPanel
-        records={reminderSupportRecords}
-        summary={reminderSupportSummary}
+        activeFilter={activeReminderSupportFilter}
+        currentDashboardSearchParams={{
+          activity: resolvedSearchParams.activity ?? null,
+          focusWorkspaceId: focusWorkspaceId ?? null,
+          sort: resolvedSearchParams.sort ?? null,
+          status: resolvedSearchParams.status ?? null
+        }}
+        overallSummary={overallReminderSupportSummary}
+        records={filteredReminderSupportRecords}
+        summary={filteredReminderSupportSummary}
       />
 
       <DeliveryFollowUpQueue

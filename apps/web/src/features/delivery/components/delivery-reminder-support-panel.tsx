@@ -1,4 +1,3 @@
-import { buildDeliveryReminderDashboardHref } from "@/features/delivery/lib/delivery-reminder-support-links"
 import Link from "next/link"
 import {
   getDeliveryWorkspaceFollowUpClasses,
@@ -10,8 +9,24 @@ import type {
   DeliveryReminderSupportRecord,
   DeliveryReminderSupportSummary
 } from "@/features/delivery/lib/delivery-reminder-support"
+import {
+  getDeliveryReminderSupportFilterLabel,
+  type DeliveryReminderSupportFilter
+} from "@/features/delivery/lib/delivery-reminder-support-filter"
+import {
+  buildDeliveryReminderDashboardHref,
+  buildDeliveryReminderSupportFilterHref
+} from "@/features/delivery/lib/delivery-reminder-support-links"
 
 type DeliveryReminderSupportPanelProps = {
+  activeFilter: DeliveryReminderSupportFilter
+  currentDashboardSearchParams: {
+    activity?: string | null
+    focusWorkspaceId?: string | null
+    sort?: string | null
+    status?: string | null
+  }
+  overallSummary: DeliveryReminderSupportSummary
   records: DeliveryReminderSupportRecord[]
   summary: DeliveryReminderSupportSummary
 }
@@ -52,7 +67,30 @@ function getCheckpointStateLabel(
   return "Workspace missing"
 }
 
+function getFilterClasses(isActive: boolean) {
+  return isActive
+    ? "border-cyan-400/30 bg-cyan-500/10 text-cyan-200"
+    : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:bg-white/[0.05]"
+}
+
+const reminderSupportFilters: {
+  countKey:
+    | "totalCount"
+    | "checkpointMismatchCount"
+    | "workspaceMissingCount"
+    | "overdueCount"
+  value: DeliveryReminderSupportFilter
+}[] = [
+  { countKey: "totalCount", value: "all" },
+  { countKey: "checkpointMismatchCount", value: "checkpoint_mismatch" },
+  { countKey: "workspaceMissingCount", value: "workspace_missing" },
+  { countKey: "overdueCount", value: "overdue" }
+]
+
 export function DeliveryReminderSupportPanel({
+  activeFilter,
+  currentDashboardSearchParams,
+  overallSummary,
   records,
   summary
 }: DeliveryReminderSupportPanelProps) {
@@ -76,7 +114,10 @@ export function DeliveryReminderSupportPanel({
 
         <div className="flex flex-wrap gap-2 text-xs text-slate-200">
           <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-            {summary.totalCount} recent
+            {summary.totalCount} shown
+          </span>
+          <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
+            {overallSummary.totalCount} total recent
           </span>
           <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-200">
             {summary.inSyncCount} in sync
@@ -90,18 +131,50 @@ export function DeliveryReminderSupportPanel({
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap gap-2 text-xs text-slate-300">
-        <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-          {summary.dueTodayCount} due today
-        </span>
-        <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-          {summary.overdueCount} overdue
-        </span>
+      <div className="mt-6 flex flex-wrap gap-2">
+        {reminderSupportFilters.map((filterOption) => {
+          const isActive = filterOption.value === activeFilter
+          const count = overallSummary[filterOption.countKey]
+
+          return (
+            <Link
+              key={filterOption.value}
+              className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition ${getFilterClasses(
+                isActive
+              )}`}
+              href={buildDeliveryReminderSupportFilterHref({
+                activity: currentDashboardSearchParams.activity ?? null,
+                focusWorkspaceId:
+                  currentDashboardSearchParams.focusWorkspaceId ?? null,
+                reminderSupportFilter: filterOption.value,
+                sort: currentDashboardSearchParams.sort ?? null,
+                status: currentDashboardSearchParams.status ?? null
+              })}
+            >
+              <span>{getDeliveryReminderSupportFilterLabel(filterOption.value)}</span>
+              <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5">
+                {count}
+              </span>
+            </Link>
+          )
+        })}
+      </div>
+
+      <div className="mt-4 text-sm text-slate-400">
+        {activeFilter === "all"
+          ? "Showing all recent reminder notifications."
+          : `Showing only ${getDeliveryReminderSupportFilterLabel(
+              activeFilter
+            ).toLowerCase()}.`}
       </div>
 
       {records.length === 0 ? (
         <div className="mt-6 rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm text-slate-400">
-          No recent delivery reminder notifications yet.
+          {activeFilter === "all"
+            ? "No recent delivery reminder notifications yet."
+            : `No reminder notifications match the current filter: ${getDeliveryReminderSupportFilterLabel(
+                activeFilter
+              ).toLowerCase()}.`}
         </div>
       ) : (
         <div className="mt-6 space-y-4">
@@ -165,7 +238,9 @@ export function DeliveryReminderSupportPanel({
                     <div className="mt-4">
                       <Link
                         className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
-                        href={buildDeliveryReminderDashboardHref(record.workspaceId)}
+                        href={buildDeliveryReminderDashboardHref(record.workspaceId, {
+                          reminderSupportFilter: activeFilter
+                        })}
                       >
                         Open workspace in delivery dashboard
                       </Link>
