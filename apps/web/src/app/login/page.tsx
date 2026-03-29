@@ -43,11 +43,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const errorMessage = readSearchParam(params, "error")
   const infoMessage = readSearchParam(params, "message")
+  const defaultEmail = readSearchParam(params, "email")
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <AuthPanel errorMessage={errorMessage} infoMessage={infoMessage} />
+        <AuthPanel
+          errorMessage={errorMessage}
+          infoMessage={infoMessage}
+          defaultSignInEmail={defaultEmail}
+        />
       </div>
     </main>
   )

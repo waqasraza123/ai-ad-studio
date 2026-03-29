@@ -6,9 +6,14 @@ import { SurfaceCard } from "@/components/primitives/surface-card"
 type AuthPanelProps = {
   errorMessage?: string
   infoMessage?: string
+  defaultSignInEmail?: string
 }
 
-export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
+export function AuthPanel({
+  errorMessage,
+  infoMessage,
+  defaultSignInEmail,
+}: AuthPanelProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       <SurfaceCard className="p-8">
@@ -78,6 +83,7 @@ export function AuthPanel({ errorMessage, infoMessage }: AuthPanelProps) {
                   name="email"
                   type="email"
                   autoComplete="email"
+                  defaultValue={defaultSignInEmail ?? undefined}
                   className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
                   placeholder="waqas@example.com"
                 />
