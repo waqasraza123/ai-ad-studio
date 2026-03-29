@@ -31,6 +31,9 @@ export function CreateProjectForm({ errorMessage }: CreateProjectFormProps) {
           <span className="text-sm text-slate-300">Project name</span>
           <input
             name="name"
+            required
+            minLength={2}
+            maxLength={100}
             className="h-12 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
             placeholder="Luxe serum launch"
           />

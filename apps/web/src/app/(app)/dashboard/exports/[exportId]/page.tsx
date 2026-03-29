@@ -28,11 +28,26 @@ import { getRenderBatchByIdForOwner, listExportsForRenderBatch } from "@/server/
 import { getShareCampaignByExportIdForOwner } from "@/server/share-campaigns/share-campaign-repository"
 import { getShowcaseItemByExportIdForOwner } from "@/server/showcase/showcase-repository"
 import { getPublicEnvironment } from "@/lib/env"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 
 type ExportDetailPageProps = {
   params: Promise<{
     exportId: string
   }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function readSearchParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string
+) {
+  const value = params[key]
+
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
 }
 
 function formatTimestamp(value: string) {
@@ -57,9 +72,12 @@ function formatUsd(value: number) {
 }
 
 export default async function ExportDetailPage({
-  params
+  params,
+  searchParams
 }: ExportDetailPageProps) {
   const { exportId } = await params
+  const sp = await searchParams
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -168,6 +186,12 @@ export default async function ExportDetailPage({
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       <StaleWorkspaceRefresh active={exportStatusIsInProgress(exportRecord.status)} />
+
+      {formErrorMessage ? (
+        <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {formErrorMessage}
+        </div>
+      ) : null}
 
       <ExportSummary
         createdAtLabel={formatTimestamp(exportRecord.created_at)}

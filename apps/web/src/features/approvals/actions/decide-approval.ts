@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   getApprovalByJobIdForOwner,
@@ -11,6 +12,10 @@ import {
 function readDecisionNote(formData: FormData) {
   const value = String(formData.get("decision_note") ?? "").trim()
   return value.length > 0 ? value : null
+}
+
+function projectPath(projectId: string) {
+  return `/dashboard/projects/${projectId}`
 }
 
 async function createApprovalNotification(input: {
@@ -38,7 +43,7 @@ async function createApprovalNotification(input: {
   })
 
   if (error) {
-    throw new Error("Failed to create approval notification")
+    throw new Error("notification_insert_failed")
   }
 }
 
@@ -62,7 +67,7 @@ async function requeueBlockedJob(jobId: string, ownerId: string) {
     .eq("status", "blocked")
 
   if (error) {
-    throw new Error("Failed to requeue blocked job after approval")
+    throw new Error("requeue_failed")
   }
 }
 
@@ -70,78 +75,88 @@ export async function approveRenderAction(jobId: string, formData: FormData) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const approval = await getApprovalByJobIdForOwner(jobId, user.id)
 
   if (!approval) {
-    throw new Error("Approval record not found")
+    redirectWithFormError("/dashboard", "approval_not_found")
   }
 
+  const path = projectPath(approval.project_id)
   const decisionNote = readDecisionNote(formData)
 
-  const updated = await updateApprovalDecision({
-    approvalId: approval.id,
-    decisionNote,
-    ownerId: user.id,
-    status: "approved"
-  })
+  try {
+    const updated = await updateApprovalDecision({
+      approvalId: approval.id,
+      decisionNote,
+      ownerId: user.id,
+      status: "approved"
+    })
 
-  await requeueBlockedJob(jobId, user.id)
+    await requeueBlockedJob(jobId, user.id)
 
-  await createApprovalNotification({
-    actionUrl: `/dashboard/debug/jobs/${jobId}`,
-    body: "The final render approval was accepted and the blocked render job has been queued again.",
-    jobId,
-    kind: "approval_approved",
-    ownerId: user.id,
-    projectId: updated.project_id,
-    severity: "success",
-    title: "Final render approved"
-  })
+    await createApprovalNotification({
+      actionUrl: `/dashboard/debug/jobs/${jobId}`,
+      body: "The final render approval was accepted and the blocked render job has been queued again.",
+      jobId,
+      kind: "approval_approved",
+      ownerId: user.id,
+      projectId: updated.project_id,
+      severity: "success",
+      title: "Final render approved"
+    })
 
-  revalidatePath(`/dashboard/projects/${updated.project_id}`)
-  revalidatePath(`/dashboard/debug/jobs/${jobId}`)
-  revalidatePath("/dashboard/notifications")
+    revalidatePath(path)
+    revalidatePath(`/dashboard/debug/jobs/${jobId}`)
+    revalidatePath("/dashboard/notifications")
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 }
 
 export async function rejectRenderAction(jobId: string, formData: FormData) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const approval = await getApprovalByJobIdForOwner(jobId, user.id)
 
   if (!approval) {
-    throw new Error("Approval record not found")
+    redirectWithFormError("/dashboard", "approval_not_found")
   }
 
+  const path = projectPath(approval.project_id)
   const decisionNote = readDecisionNote(formData)
 
-  const updated = await updateApprovalDecision({
-    approvalId: approval.id,
-    decisionNote,
-    ownerId: user.id,
-    status: "rejected"
-  })
+  try {
+    const updated = await updateApprovalDecision({
+      approvalId: approval.id,
+      decisionNote,
+      ownerId: user.id,
+      status: "rejected"
+    })
 
-  await createApprovalNotification({
-    actionUrl: `/dashboard/projects/${updated.project_id}`,
-    body: decisionNote
-      ? `The final render approval was rejected. Note: ${decisionNote}`
-      : "The final render approval was rejected.",
-    jobId,
-    kind: "approval_rejected",
-    ownerId: user.id,
-    projectId: updated.project_id,
-    severity: "warning",
-    title: "Final render rejected"
-  })
+    await createApprovalNotification({
+      actionUrl: path,
+      body: decisionNote
+        ? `The final render approval was rejected. Note: ${decisionNote}`
+        : "The final render approval was rejected.",
+      jobId,
+      kind: "approval_rejected",
+      ownerId: user.id,
+      projectId: updated.project_id,
+      severity: "warning",
+      title: "Final render rejected"
+    })
 
-  revalidatePath(`/dashboard/projects/${updated.project_id}`)
-  revalidatePath(`/dashboard/debug/jobs/${jobId}`)
-  revalidatePath("/dashboard/notifications")
+    revalidatePath(path)
+    revalidatePath(`/dashboard/debug/jobs/${jobId}`)
+    revalidatePath("/dashboard/notifications")
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 }

@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
@@ -9,11 +10,16 @@ import {
   updateProjectStatus
 } from "@/server/projects/project-repository"
 
+function projectPath(projectId: string) {
+  return `/dashboard/projects/${projectId}`
+}
+
 export async function generateConceptsAction(projectId: string) {
+  const path = projectPath(projectId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const [project, projectInput, jobs] = await Promise.all([
@@ -23,11 +29,11 @@ export async function generateConceptsAction(projectId: string) {
   ])
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(path, "project_not_found")
   }
 
   if (!projectInput) {
-    throw new Error("Save the project brief before generating concepts")
+    redirectWithFormError(path, "save_brief_first")
   }
 
   const activeJob = jobs.find(
@@ -37,26 +43,30 @@ export async function generateConceptsAction(projectId: string) {
   )
 
   if (activeJob) {
-    revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath(path)
     return
   }
 
-  await createJob({
-    ownerId: user.id,
-    payload: {
-      initiatedBy: "web",
-      stage: "concept_generation"
-    },
-    projectId,
-    type: "generate_concepts"
-  })
+  try {
+    await createJob({
+      ownerId: user.id,
+      payload: {
+        initiatedBy: "web",
+        stage: "concept_generation"
+      },
+      projectId,
+      type: "generate_concepts"
+    })
 
-  await updateProjectStatus({
-    ownerId: user.id,
-    projectId,
-    status: "generating_concepts"
-  })
+    await updateProjectStatus({
+      ownerId: user.id,
+      projectId,
+      status: "generating_concepts"
+    })
+  } catch {
+    redirectWithFormError(path, "job_failed")
+  }
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+  revalidatePath(path)
   revalidatePath("/dashboard")
 }

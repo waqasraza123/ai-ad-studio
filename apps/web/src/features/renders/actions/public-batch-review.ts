@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import {
   submitPublicBatchReviewComment,
   submitPublicBatchReviewResponse
@@ -13,7 +14,7 @@ function readResponseStatus(value: FormDataEntryValue | null) {
     return normalized
   }
 
-  throw new Error("Response status is required")
+  return null
 }
 
 function readNullableValue(formData: FormData, key: string) {
@@ -21,17 +22,32 @@ function readNullableValue(formData: FormData, key: string) {
   return value.length > 0 ? value : null
 }
 
+function reviewPath(token: string) {
+  return `/review/${token}`
+}
+
 export async function submitPublicBatchReviewResponseAction(
   token: string,
   formData: FormData
 ) {
-  await submitPublicBatchReviewResponse({
-    responseNote: readNullableValue(formData, "response_note"),
-    responseStatus: readResponseStatus(formData.get("response_status")),
-    token
-  })
+  const path = reviewPath(token)
+  const responseStatus = readResponseStatus(formData.get("response_status"))
 
-  revalidatePath(`/review/${token}`)
+  if (!responseStatus) {
+    redirect(`${path}?error=${encodeURIComponent("review_response_invalid")}`)
+  }
+
+  try {
+    await submitPublicBatchReviewResponse({
+      responseNote: readNullableValue(formData, "response_note"),
+      responseStatus,
+      token
+    })
+  } catch {
+    redirect(`${path}?error=${encodeURIComponent("server_error")}`)
+  }
+
+  revalidatePath(path)
 }
 
 export async function submitPublicBatchReviewCommentAction(
@@ -39,18 +55,23 @@ export async function submitPublicBatchReviewCommentAction(
   exportId: string | null,
   formData: FormData
 ) {
+  const path = reviewPath(token)
   const body = String(formData.get("body") ?? "").trim()
 
   if (!body) {
-    throw new Error("Comment body is required")
+    redirect(`${path}?error=${encodeURIComponent("comment_required")}`)
   }
 
-  await submitPublicBatchReviewComment({
-    authorLabel: readNullableValue(formData, "author_label"),
-    body,
-    exportId,
-    token
-  })
+  try {
+    await submitPublicBatchReviewComment({
+      authorLabel: readNullableValue(formData, "author_label"),
+      body,
+      exportId,
+      token
+    })
+  } catch {
+    redirect(`${path}?error=${encodeURIComponent("server_error")}`)
+  }
 
-  revalidatePath(`/review/${token}`)
+  revalidatePath(path)
 }

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation"
 import { AuthPanel } from "@/components/auth/auth-panel"
 import { ConfigurationRequired } from "@/components/auth/configuration-required"
 import { LandingTopBar } from "@/components/marketing/landing-top-bar"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { hasSupabaseAuthConfiguration } from "@/lib/env"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 
@@ -45,7 +46,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect("/dashboard")
   }
 
-  const errorMessage = readSearchParam(params, "error")
+  const errorMessage = getFormErrorMessage(readSearchParam(params, "error"))
   const infoMessage = readSearchParam(params, "message")
   const defaultEmail = readSearchParam(params, "email")
 
@@ -55,7 +56,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       <div className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">
           <AuthPanel
-            errorMessage={errorMessage}
+            errorMessage={errorMessage ?? undefined}
             infoMessage={infoMessage}
             defaultSignInEmail={defaultEmail}
           />

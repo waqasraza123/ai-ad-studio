@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { submitPublicBatchReviewResponseAction } from "@/features/renders/actions/public-batch-review"
 import { PublicBatchReviewComments } from "@/features/renders/components/public-batch-review-comments"
 import { PublicBatchReviewGrid } from "@/features/renders/components/public-batch-review-grid"
@@ -17,6 +18,20 @@ type PublicBatchReviewPageProps = {
   params: Promise<{
     token: string
   }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function readSearchParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string
+) {
+  const value = params[key]
+
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
 }
 
 function responseClasses(status: string) {
@@ -43,9 +58,12 @@ function formatTimestamp(value: string | null) {
 }
 
 export default async function PublicBatchReviewPage({
-  params
+  params,
+  searchParams
 }: PublicBatchReviewPageProps) {
   const { token } = await params
+  const sp = await searchParams
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
 
   const [context, exports, comments] = await Promise.all([
     getPublicBatchReviewContext(token),
@@ -80,6 +98,11 @@ export default async function PublicBatchReviewPage({
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        {formErrorMessage ? (
+          <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {formErrorMessage}
+          </div>
+        ) : null}
         <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>

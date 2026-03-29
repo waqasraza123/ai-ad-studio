@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   listConceptsByProjectIdForOwner,
@@ -9,11 +10,16 @@ import {
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 
+function projectPath(projectId: string) {
+  return `/dashboard/projects/${projectId}`
+}
+
 export async function generateConceptPreviewsAction(projectId: string) {
+  const path = projectPath(projectId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const [project, concepts, jobs] = await Promise.all([
@@ -23,11 +29,11 @@ export async function generateConceptPreviewsAction(projectId: string) {
   ])
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(path, "project_not_found")
   }
 
   if (concepts.length === 0) {
-    throw new Error("Generate concepts before creating previews")
+    redirectWithFormError(path, "concepts_first")
   }
 
   const activePreviewJob = jobs.find(
@@ -37,25 +43,29 @@ export async function generateConceptPreviewsAction(projectId: string) {
   )
 
   if (activePreviewJob) {
-    revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath(path)
     return
   }
 
-  await updateConceptStatusForProject({
-    ownerId: user.id,
-    projectId,
-    status: "preview_generating"
-  })
+  try {
+    await updateConceptStatusForProject({
+      ownerId: user.id,
+      projectId,
+      status: "preview_generating"
+    })
 
-  await createJob({
-    ownerId: user.id,
-    payload: {
-      initiatedBy: "web",
-      stage: "concept_preview_generation"
-    },
-    projectId,
-    type: "generate_concept_preview"
-  })
+    await createJob({
+      ownerId: user.id,
+      payload: {
+        initiatedBy: "web",
+        stage: "concept_preview_generation"
+      },
+      projectId,
+      type: "generate_concept_preview"
+    })
+  } catch {
+    redirectWithFormError(path, "job_failed")
+  }
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+  revalidatePath(path)
 }

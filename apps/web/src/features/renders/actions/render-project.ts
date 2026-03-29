@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import type { PlatformPresetKey, RenderVariantKey } from "@/server/database/types"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
@@ -47,11 +48,16 @@ function readPlatformPresetKey(formData: FormData): PlatformPresetKey {
   return "default"
 }
 
+function projectPath(projectId: string) {
+  return `/dashboard/projects/${projectId}`
+}
+
 export async function renderProjectAction(projectId: string, formData: FormData) {
+  const path = projectPath(projectId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const platformPreset = readPlatformPresetKey(formData)
@@ -66,11 +72,11 @@ export async function renderProjectAction(projectId: string, formData: FormData)
   ])
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(path, "project_not_found")
   }
 
   if (!project.selected_concept_id) {
-    throw new Error("Select a concept before rendering")
+    redirectWithFormError(path, "select_concept_first")
   }
 
   const selectedConcept = await getConceptByIdForOwner(
@@ -79,7 +85,7 @@ export async function renderProjectAction(projectId: string, formData: FormData)
   )
 
   if (!selectedConcept) {
-    throw new Error("Selected concept not found")
+    redirectWithFormError(path, "concept_not_found")
   }
 
   const selectedPreviewAsset = getPreviewAssetForConcept(
@@ -91,7 +97,7 @@ export async function renderProjectAction(projectId: string, formData: FormData)
     !selectedPreviewAsset ||
     typeof selectedPreviewAsset.metadata.previewDataUrl !== "string"
   ) {
-    throw new Error("Generate previews before rendering the project")
+    redirectWithFormError(path, "previews_required")
   }
 
   const activeRenderJob = jobs.find(
@@ -101,34 +107,38 @@ export async function renderProjectAction(projectId: string, formData: FormData)
   )
 
   if (activeRenderJob) {
-    revalidatePath(`/dashboard/projects/${projectId}`)
+    revalidatePath(path)
     return
   }
 
-  await createJob({
-    ownerId: user.id,
-    payload: {
-      aspectRatios: presetDefinition.aspectRatios,
-      callToAction: projectInput?.call_to_action ?? null,
-      conceptId: selectedConcept.id,
-      initiatedBy: "web",
-      platformPreset,
-      previewAsset: {
-        previewDataUrl: selectedPreviewAsset.metadata.previewDataUrl
+  try {
+    await createJob({
+      ownerId: user.id,
+      payload: {
+        aspectRatios: presetDefinition.aspectRatios,
+        callToAction: projectInput?.call_to_action ?? null,
+        conceptId: selectedConcept.id,
+        initiatedBy: "web",
+        platformPreset,
+        previewAsset: {
+          previewDataUrl: selectedPreviewAsset.metadata.previewDataUrl
+        },
+        stage: "final_render",
+        variantKey
       },
-      stage: "final_render",
-      variantKey
-    },
-    projectId,
-    type: "render_final_ad"
-  })
+      projectId,
+      type: "render_final_ad"
+    })
 
-  await updateProjectStatus({
-    ownerId: user.id,
-    projectId,
-    status: "rendering"
-  })
+    await updateProjectStatus({
+      ownerId: user.id,
+      projectId,
+      status: "rendering"
+    })
+  } catch {
+    redirectWithFormError(path, "job_failed")
+  }
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+  revalidatePath(path)
   revalidatePath("/dashboard")
 }

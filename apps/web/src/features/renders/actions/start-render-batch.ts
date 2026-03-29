@@ -6,6 +6,7 @@ import type {
   PlatformPresetKey,
   RenderVariantKey
 } from "@/server/database/types"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import { listConceptPreviewAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
@@ -55,11 +56,16 @@ function readVariantKeys(formData: FormData): RenderVariantKey[] {
   return normalized.length > 0 ? [...new Set(normalized)] : ["default", "caption_heavy", "cta_heavy"]
 }
 
+function projectPath(projectId: string) {
+  return `/dashboard/projects/${projectId}`
+}
+
 export async function startRenderBatchAction(projectId: string, formData: FormData) {
+  const path = projectPath(projectId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const [project, projectInput, concepts, previewAssets] = await Promise.all([
@@ -70,18 +76,18 @@ export async function startRenderBatchAction(projectId: string, formData: FormDa
   ])
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(path, "project_not_found")
   }
 
   if (!project.selected_concept_id) {
-    throw new Error("Select a concept before starting a variation batch")
+    redirectWithFormError(path, "select_concept_batch")
   }
 
   const selectedConcept =
     concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
 
   if (!selectedConcept) {
-    throw new Error("Selected concept not found")
+    redirectWithFormError(path, "concept_not_found")
   }
 
   const previewAsset =
@@ -90,30 +96,34 @@ export async function startRenderBatchAction(projectId: string, formData: FormDa
     ) ?? null
 
   if (!previewAsset) {
-    throw new Error("Generate concept previews before starting a variation batch")
+    redirectWithFormError(path, "previews_batch")
   }
 
   const platformPreset = readPlatformPreset(formData.get("platform_preset"))
   const aspectRatios = readAspectRatios(formData)
   const variantKeys = readVariantKeys(formData)
 
-  await createRenderBatchJob({
-    aspectRatios,
-    callToAction: projectInput?.call_to_action ?? null,
-    conceptId: selectedConcept.id,
-    ownerId: user.id,
-    platformPreset,
-    previewAsset: previewAsset.metadata,
-    projectId,
-    variantKeys
-  })
+  try {
+    await createRenderBatchJob({
+      aspectRatios,
+      callToAction: projectInput?.call_to_action ?? null,
+      conceptId: selectedConcept.id,
+      ownerId: user.id,
+      platformPreset,
+      previewAsset: previewAsset.metadata,
+      projectId,
+      variantKeys
+    })
 
-  await updateProjectStatus({
-    ownerId: user.id,
-    projectId,
-    status: "rendering"
-  })
+    await updateProjectStatus({
+      ownerId: user.id,
+      projectId,
+      status: "rendering"
+    })
+  } catch {
+    redirectWithFormError(path, "job_failed")
+  }
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+  revalidatePath(path)
   revalidatePath("/dashboard/debug/jobs")
 }

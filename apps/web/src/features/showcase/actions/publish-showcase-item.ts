@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getExportByIdForOwner } from "@/server/exports/export-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
@@ -20,17 +21,22 @@ function buildDefaultSummary(input: {
   return `Generated ${input.aspectRatio} export for ${input.platformPreset}${templatePart}.`
 }
 
+function exportPath(exportId: string) {
+  return `/dashboard/exports/${exportId}`
+}
+
 export async function publishShowcaseItemAction(exportId: string, formData: FormData) {
+  const path = exportPath(exportId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const exportRecord = await getExportByIdForOwner(exportId, user.id)
 
   if (!exportRecord) {
-    throw new Error("Export not found")
+    redirectWithFormError(path, "export_not_found")
   }
 
   const eligibility = await getPromotionEligibilityForExport({
@@ -39,13 +45,13 @@ export async function publishShowcaseItemAction(exportId: string, formData: Form
   })
 
   if (!eligibility.eligible) {
-    throw new Error(eligibility.reason)
+    redirectWithFormError(path, "promotion_ineligible")
   }
 
   const project = await getProjectByIdForOwner(exportRecord.project_id, user.id)
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(path, "project_not_found")
   }
 
   const templateName =
@@ -55,75 +61,84 @@ export async function publishShowcaseItemAction(exportId: string, formData: Form
 
   const summaryValue = String(formData.get("summary") ?? "").trim()
 
-  await upsertShowcaseItem({
-    exportRecord,
-    ownerId: user.id,
-    projectName: project.name,
-    renderBatchId: eligibility.batchId,
-    summary:
-      summaryValue ||
-      buildDefaultSummary({
-        aspectRatio: exportRecord.aspect_ratio,
-        platformPreset: exportRecord.platform_preset,
-        templateName
-      })
-  })
+  try {
+    await upsertShowcaseItem({
+      exportRecord,
+      ownerId: user.id,
+      projectName: project.name,
+      renderBatchId: eligibility.batchId,
+      summary:
+        summaryValue ||
+        buildDefaultSummary({
+          aspectRatio: exportRecord.aspect_ratio,
+          platformPreset: exportRecord.platform_preset,
+          templateName
+        })
+    })
 
-  const supabase = await createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
 
-  await supabase.from("job_traces").insert({
-    job_id: eligibility.jobId,
-    owner_id: user.id,
-    payload: {
-      exportId,
-      renderBatchId: eligibility.batchId
-    },
-    project_id: eligibility.projectId,
-    stage: "winner_promoted_to_showcase",
-    trace_type: "promotion"
-  })
+    await supabase.from("job_traces").insert({
+      job_id: eligibility.jobId,
+      owner_id: user.id,
+      payload: {
+        exportId,
+        renderBatchId: eligibility.batchId
+      },
+      project_id: eligibility.projectId,
+      stage: "winner_promoted_to_showcase",
+      trace_type: "promotion"
+    })
 
-  await supabase.from("notifications").insert({
-    action_url: `/dashboard/exports/${exportId}`,
-    body: "A reviewed winner has been published to the public showcase.",
-    export_id: exportId,
-    job_id: eligibility.jobId,
-    kind: "winner_promoted_to_showcase",
-    metadata: {
-      batchId: eligibility.batchId
-    },
-    owner_id: user.id,
-    project_id: eligibility.projectId,
-    severity: "success",
-    title: "Winner published to showcase"
-  })
+    await supabase.from("notifications").insert({
+      action_url: `/dashboard/exports/${exportId}`,
+      body: "A reviewed winner has been published to the public showcase.",
+      export_id: exportId,
+      job_id: eligibility.jobId,
+      kind: "winner_promoted_to_showcase",
+      metadata: {
+        batchId: eligibility.batchId
+      },
+      owner_id: user.id,
+      project_id: eligibility.projectId,
+      severity: "success",
+      title: "Winner published to showcase"
+    })
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 
   revalidatePath("/dashboard/showcase")
-  revalidatePath(`/dashboard/exports/${exportId}`)
+  revalidatePath(path)
   revalidatePath("/showcase")
 }
 
 export async function unpublishShowcaseItemAction(exportId: string) {
+  const path = exportPath(exportId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const item = await getShowcaseItemByExportIdForOwner(exportId, user.id)
 
   if (!item) {
-    throw new Error("Showcase item not found")
+    redirectWithFormError(path, "showcase_not_found")
   }
 
-  const { unpublishShowcaseItem } = await import("@/server/showcase/showcase-repository")
+  try {
+    const { unpublishShowcaseItem } = await import("@/server/showcase/showcase-repository")
 
-  await unpublishShowcaseItem({
-    ownerId: user.id,
-    showcaseItemId: item.id
-  })
+    await unpublishShowcaseItem({
+      ownerId: user.id,
+      showcaseItemId: item.id
+    })
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 
   revalidatePath("/dashboard/showcase")
-  revalidatePath(`/dashboard/exports/${exportId}`)
+  revalidatePath(path)
   revalidatePath("/showcase")
 }

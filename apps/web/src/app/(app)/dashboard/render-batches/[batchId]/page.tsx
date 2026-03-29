@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   listBatchReviewCommentsByBatchIdForOwner,
@@ -21,12 +22,29 @@ type RenderBatchDetailPageProps = {
   params: Promise<{
     batchId: string
   }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function readSearchParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string
+) {
+  const value = params[key]
+
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
 }
 
 export default async function RenderBatchDetailPage({
-  params
+  params,
+  searchParams
 }: RenderBatchDetailPageProps) {
   const { batchId } = await params
+  const sp = await searchParams
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -60,6 +78,11 @@ export default async function RenderBatchDetailPage({
 
   return (
     <div className="space-y-6">
+      {formErrorMessage ? (
+        <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {formErrorMessage}
+        </div>
+      ) : null}
       <RenderBatchReviewSummary
         batch={batch}
         exports={batchExports}

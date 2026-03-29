@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
 import {
@@ -14,21 +15,26 @@ function readReviewNote(formData: FormData) {
   return value.length > 0 ? value : null
 }
 
+function batchPath(batchId: string) {
+  return `/dashboard/render-batches/${batchId}`
+}
+
 export async function selectRenderBatchWinnerAction(
   batchId: string,
   exportId: string,
   formData: FormData
 ) {
+  const path = batchPath(batchId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const batch = await getRenderBatchByIdForOwner(batchId, user.id)
 
   if (!batch) {
-    throw new Error("Render batch not found")
+    redirectWithFormError(path, "batch_not_found")
   }
 
   const projectExports = await listExportsByProjectIdForOwner(
@@ -46,17 +52,21 @@ export async function selectRenderBatchWinnerAction(
   )
 
   if (!winningExport) {
-    throw new Error("Winning export does not belong to this render batch")
+    redirectWithFormError(path, "winner_export_invalid")
   }
 
-  await selectRenderBatchWinner({
-    batchId,
-    ownerId: user.id,
-    reviewNote: readReviewNote(formData),
-    winnerExportId: exportId
-  })
+  try {
+    await selectRenderBatchWinner({
+      batchId,
+      ownerId: user.id,
+      reviewNote: readReviewNote(formData),
+      winnerExportId: exportId
+    })
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 
-  revalidatePath(`/dashboard/render-batches/${batchId}`)
+  revalidatePath(path)
   revalidatePath(`/dashboard/projects/${batch.project_id}`)
   revalidatePath(`/dashboard/exports/${exportId}`)
   revalidatePath("/dashboard/notifications")

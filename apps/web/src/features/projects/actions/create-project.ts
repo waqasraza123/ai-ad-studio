@@ -3,14 +3,17 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createProjectSchema } from "@/features/projects/schemas/project-schema"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { createProjectForOwner } from "@/server/projects/project-repository"
+
+const NEW_PROJECT_PATH = "/dashboard/projects/new"
 
 export async function createProjectAction(formData: FormData): Promise<void> {
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const parsed = createProjectSchema.safeParse({
@@ -18,16 +21,22 @@ export async function createProjectAction(formData: FormData): Promise<void> {
   })
 
   if (!parsed.success) {
-    throw new Error("A valid project name is required")
+    redirectWithFormError(NEW_PROJECT_PATH, "name_invalid")
   }
 
-  const project = await createProjectForOwner({
-    name: parsed.data.name,
-    ownerId: user.id
-  })
+  const { name } = parsed.data
 
-  revalidatePath("/dashboard")
-  revalidatePath("/dashboard/projects")
+  try {
+    const project = await createProjectForOwner({
+      name,
+      ownerId: user.id
+    })
 
-  redirect(`/dashboard/projects/${project.id}`)
+    revalidatePath("/dashboard")
+    revalidatePath("/dashboard/projects")
+
+    redirect(`/dashboard/projects/${project.id}`)
+  } catch {
+    redirectWithFormError(NEW_PROJECT_PATH, "server_error")
+  }
 }

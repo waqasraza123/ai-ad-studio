@@ -48,11 +48,26 @@ import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { listRenderBatchesByProjectIdForOwner } from "@/server/render-batches/render-batch-repository"
 import { listRenderPacksByOwner } from "@/server/render-packs/render-pack-repository"
 import { listTemplatesByOwner } from "@/server/templates/template-repository"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 
 type ProjectDetailPageProps = {
   params: Promise<{
     projectId: string
   }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function readSearchParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string
+) {
+  const value = params[key]
+
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
 }
 
 function formatTimestamp(value: string) {
@@ -63,9 +78,14 @@ function formatTimestamp(value: string) {
 }
 
 export default async function ProjectDetailPage({
-  params
+  params,
+  searchParams
 }: ProjectDetailPageProps) {
   const { projectId } = await params
+  const resolvedSearchParams = await searchParams
+  const errorCode = readSearchParam(resolvedSearchParams, "error")
+  const formErrorMessage = getFormErrorMessage(errorCode)
+
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -209,6 +229,11 @@ export default async function ProjectDetailPage({
       <Suspense fallback={null}>
         <DismissibleFlashBanner />
       </Suspense>
+      {formErrorMessage ? (
+        <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {formErrorMessage}
+        </div>
+      ) : null}
       <StaleWorkspaceRefresh active={workspaceHasActiveAsyncWork} />
 
       {workspaceHasActiveAsyncWork ? (

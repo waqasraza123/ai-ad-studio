@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   createBatchReviewLink,
@@ -27,24 +28,29 @@ function readReviewerRole(value: string) {
   return "client"
 }
 
+function batchPath(batchId: string) {
+  return `/dashboard/render-batches/${batchId}`
+}
+
 export async function createBatchReviewLinkAction(
   batchId: string,
   formData: FormData
 ) {
+  const path = batchPath(batchId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const batch = await getRenderBatchByIdForOwner(batchId, user.id)
 
   if (!batch) {
-    throw new Error("Render batch not found")
+    redirectWithFormError(path, "batch_not_found")
   }
 
   if (batch.is_finalized) {
-    throw new Error("This batch is finalized and no longer accepts new review links")
+    redirectWithFormError(path, "batch_finalized")
   }
 
   const reviewerName = readValue(formData, "reviewer_name")
@@ -57,61 +63,66 @@ export async function createBatchReviewLinkAction(
   )
 
   if (!reviewerName) {
-    throw new Error("Reviewer name is required")
+    redirectWithFormError(path, "reviewer_name_required")
   }
 
-  const link = await createBatchReviewLink({
-    message,
-    ownerId: user.id,
-    projectId: batch.project_id,
-    renderBatchId: batch.id,
-    reviewerEmail: reviewerEmail || null,
-    reviewerName,
-    reviewerRole
-  })
+  try {
+    const link = await createBatchReviewLink({
+      message,
+      ownerId: user.id,
+      projectId: batch.project_id,
+      renderBatchId: batch.id,
+      reviewerEmail: reviewerEmail || null,
+      reviewerName,
+      reviewerRole
+    })
 
-  const supabase = await createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
 
-  await supabase.from("job_traces").insert({
-    job_id: batch.job_id,
-    owner_id: user.id,
-    payload: {
-      reviewLinkId: link.id,
-      reviewerName: link.reviewer_name,
-      reviewerRole: link.reviewer_role
-    },
-    project_id: batch.project_id,
-    stage: "batch_review_link_created",
-    trace_type: "external_review"
-  })
+    await supabase.from("job_traces").insert({
+      job_id: batch.job_id,
+      owner_id: user.id,
+      payload: {
+        reviewLinkId: link.id,
+        reviewerName: link.reviewer_name,
+        reviewerRole: link.reviewer_role
+      },
+      project_id: batch.project_id,
+      stage: "batch_review_link_created",
+      trace_type: "external_review"
+    })
 
-  await supabase.from("notifications").insert({
-    action_url: `/dashboard/render-batches/${batch.id}`,
-    body: `${link.reviewer_name} can now review this batch through an external review link.`,
-    export_id: null,
-    job_id: batch.job_id,
-    kind: "batch_review_link_created",
-    metadata: {
-      reviewLinkId: link.id,
-      reviewerRole: link.reviewer_role
-    },
-    owner_id: user.id,
-    project_id: batch.project_id,
-    severity: "info",
-    title: "External review link created"
-  })
+    await supabase.from("notifications").insert({
+      action_url: `/dashboard/render-batches/${batch.id}`,
+      body: `${link.reviewer_name} can now review this batch through an external review link.`,
+      export_id: null,
+      job_id: batch.job_id,
+      kind: "batch_review_link_created",
+      metadata: {
+        reviewLinkId: link.id,
+        reviewerRole: link.reviewer_role
+      },
+      owner_id: user.id,
+      project_id: batch.project_id,
+      severity: "info",
+      title: "External review link created"
+    })
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 
-  revalidatePath(`/dashboard/render-batches/${batch.id}`)
+  revalidatePath(path)
 }
 
 export async function revokeBatchReviewLinkAction(
   batchId: string,
   linkId: string
 ) {
+  const path = batchPath(batchId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const [batch, link] = await Promise.all([
@@ -120,52 +131,56 @@ export async function revokeBatchReviewLinkAction(
   ])
 
   if (!batch || !link) {
-    throw new Error("Review link not found")
+    redirectWithFormError(path, "review_link_not_found")
   }
 
   if (batch.is_finalized) {
-    throw new Error("This batch is finalized and review links can no longer be changed")
+    redirectWithFormError(path, "batch_finalized")
   }
 
   if (link.status !== "active") {
-    throw new Error("Only active review links can be revoked")
+    redirectWithFormError(path, "review_link_inactive")
   }
 
-  const revoked = await revokeBatchReviewLink({
-    linkId,
-    ownerId: user.id
-  })
+  try {
+    const revoked = await revokeBatchReviewLink({
+      linkId,
+      ownerId: user.id
+    })
 
-  const supabase = await createSupabaseServerClient()
+    const supabase = await createSupabaseServerClient()
 
-  await supabase.from("job_traces").insert({
-    job_id: batch.job_id,
-    owner_id: user.id,
-    payload: {
-      reviewLinkId: revoked.id,
-      reviewerName: revoked.reviewer_name
-    },
-    project_id: batch.project_id,
-    stage: "batch_review_link_revoked",
-    trace_type: "external_review"
-  })
+    await supabase.from("job_traces").insert({
+      job_id: batch.job_id,
+      owner_id: user.id,
+      payload: {
+        reviewLinkId: revoked.id,
+        reviewerName: revoked.reviewer_name
+      },
+      project_id: batch.project_id,
+      stage: "batch_review_link_revoked",
+      trace_type: "external_review"
+    })
 
-  await supabase.from("notifications").insert({
-    action_url: `/dashboard/render-batches/${batch.id}`,
-    body: `${revoked.reviewer_name}'s external review link was revoked.`,
-    export_id: null,
-    job_id: batch.job_id,
-    kind: "batch_review_link_revoked",
-    metadata: {
-      reviewLinkId: revoked.id
-    },
-    owner_id: user.id,
-    project_id: batch.project_id,
-    severity: "warning",
-    title: "External review link revoked"
-  })
+    await supabase.from("notifications").insert({
+      action_url: `/dashboard/render-batches/${batch.id}`,
+      body: `${revoked.reviewer_name}'s external review link was revoked.`,
+      export_id: null,
+      job_id: batch.job_id,
+      kind: "batch_review_link_revoked",
+      metadata: {
+        reviewLinkId: revoked.id
+      },
+      owner_id: user.id,
+      project_id: batch.project_id,
+      severity: "warning",
+      title: "External review link revoked"
+    })
+  } catch {
+    redirectWithFormError(path, "server_error")
+  }
 
-  revalidatePath(`/dashboard/render-batches/${batch.id}`)
+  revalidatePath(path)
 }
 
 export async function getBatchReviewPublicUrl(token: string) {

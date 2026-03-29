@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { projectBriefSchema } from "@/features/projects/schemas/project-schema"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { upsertProjectInput } from "@/server/projects/project-input-repository"
@@ -11,13 +12,15 @@ export async function saveProjectBriefAction(projectId: string, formData: FormDa
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
+
+  const projectPath = `/dashboard/projects/${projectId}`
 
   const project = await getProjectByIdForOwner(projectId, user.id)
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(projectPath, "project_not_found")
   }
 
   const parsed = projectBriefSchema.safeParse({
@@ -31,16 +34,22 @@ export async function saveProjectBriefAction(projectId: string, formData: FormDa
   })
 
   if (!parsed.success) {
-    throw new Error("Invalid brief input")
+    redirectWithFormError(projectPath, "brief_invalid")
   }
 
-  await upsertProjectInput({
-    brief: parsed.data,
-    ownerId: user.id,
-    projectId
-  })
+  const brief = parsed.data
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+  try {
+    await upsertProjectInput({
+      brief,
+      ownerId: user.id,
+      projectId
+    })
+  } catch {
+    redirectWithFormError(projectPath, "server_error")
+  }
+
+  revalidatePath(projectPath)
   revalidatePath("/dashboard")
-  redirect(`/dashboard/projects/${projectId}?flash=brief_saved`)
+  redirect(`${projectPath}?flash=brief_saved`)
 }

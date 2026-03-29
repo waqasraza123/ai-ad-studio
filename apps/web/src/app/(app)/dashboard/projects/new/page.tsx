@@ -1,4 +1,5 @@
 import { CreateProjectForm } from "@/features/projects/components/create-project-form"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 
 type NewProjectPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
@@ -21,11 +22,11 @@ export default async function NewProjectPage({
   searchParams
 }: NewProjectPageProps) {
   const params = await searchParams
-  const errorMessage = readSearchParam(params, "error")
+  const errorMessage = getFormErrorMessage(readSearchParam(params, "error"))
 
   return (
     <div className="mx-auto max-w-4xl">
-      <CreateProjectForm errorMessage={errorMessage} />
+      <CreateProjectForm errorMessage={errorMessage ?? undefined} />
     </div>
   )
 }

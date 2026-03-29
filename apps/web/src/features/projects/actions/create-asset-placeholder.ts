@@ -2,6 +2,10 @@
 
 import { revalidatePath } from "next/cache"
 import { hasR2StorageConfiguration } from "@/lib/env"
+import {
+  redirectToLoginWithFormError,
+  redirectWithFormError
+} from "@/lib/server-action-redirect"
 import { uploadProjectAssetToR2 } from "@/server/storage/upload-service"
 import { createAssetPlaceholderSchema } from "@/features/projects/schemas/project-schema"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
@@ -12,27 +16,28 @@ export async function createAssetPlaceholderAction(
   projectId: string,
   formData: FormData
 ) {
+  const projectPath = `/dashboard/projects/${projectId}`
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   if (!hasR2StorageConfiguration()) {
-    throw new Error("R2 storage is not configured")
+    redirectWithFormError(projectPath, "r2_unconfigured")
   }
 
   const project = await getProjectByIdForOwner(projectId, user.id)
 
   if (!project) {
-    throw new Error("Project not found")
+    redirectWithFormError(projectPath, "project_not_found")
   }
 
   const file = formData.get("file")
   const kindValue = String(formData.get("kind") ?? "product_image")
 
   if (!(file instanceof File) || file.size === 0) {
-    throw new Error("Select a file before uploading an asset")
+    redirectWithFormError(projectPath, "asset_no_file")
   }
 
   const parsed = createAssetPlaceholderSchema.safeParse({
@@ -44,21 +49,27 @@ export async function createAssetPlaceholderAction(
   })
 
   if (!parsed.success) {
-    throw new Error("Invalid asset input")
+    redirectWithFormError(projectPath, "asset_invalid")
   }
 
-  const uploadedAsset = await uploadProjectAssetToR2({
-    file,
-    ownerId: user.id,
-    projectId
-  })
+  const assetPayload = parsed.data
 
-  await createUploadedAssetRecord({
-    kind: parsed.data.kind,
-    metadata: parsed.data,
-    ownerId: user.id,
-    storageKey: uploadedAsset.storageKey
-  })
+  try {
+    const uploadedAsset = await uploadProjectAssetToR2({
+      file,
+      ownerId: user.id,
+      projectId
+    })
 
-  revalidatePath(`/dashboard/projects/${projectId}`)
+    await createUploadedAssetRecord({
+      kind: assetPayload.kind,
+      metadata: assetPayload,
+      ownerId: user.id,
+      storageKey: uploadedAsset.storageKey
+    })
+  } catch {
+    redirectWithFormError(projectPath, "r2_upload_failed")
+  }
+
+  revalidatePath(projectPath)
 }

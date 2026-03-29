@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   finalizeRenderBatchDecision,
@@ -13,27 +14,42 @@ function readFinalizationNote(formData: FormData) {
   return value.length > 0 ? value : null
 }
 
+function batchPath(batchId: string) {
+  return `/dashboard/render-batches/${batchId}`
+}
+
 export async function finalizeRenderBatchAction(
   batchId: string,
   formData: FormData
 ) {
+  const path = batchPath(batchId)
   const user = await getAuthenticatedUser()
 
   if (!user) {
-    throw new Error("Authentication is required")
+    redirectToLoginWithFormError("auth_required")
   }
 
   const existingBatch = await getRenderBatchByIdForOwner(batchId, user.id)
 
   if (!existingBatch) {
-    throw new Error("Render batch not found")
+    redirectWithFormError(path, "batch_not_found")
   }
 
-  const finalizedBatch = await finalizeRenderBatchDecision({
-    batchId,
-    finalizationNote: readFinalizationNote(formData),
-    ownerId: user.id
-  })
+  let finalizedBatch
+
+  try {
+    finalizedBatch = await finalizeRenderBatchDecision({
+      batchId,
+      finalizationNote: readFinalizationNote(formData),
+      ownerId: user.id
+    })
+  } catch {
+    redirectWithFormError(path, "finalize_failed")
+  }
+
+  if (!finalizedBatch) {
+    redirectWithFormError(path, "finalize_failed")
+  }
 
   const supabase = await createSupabaseServerClient()
 
@@ -64,7 +80,7 @@ export async function finalizeRenderBatchAction(
     title: "Batch final decision locked"
   })
 
-  revalidatePath(`/dashboard/render-batches/${batchId}`)
+  revalidatePath(path)
   revalidatePath(`/dashboard/projects/${finalizedBatch.project_id}`)
   if (finalizedBatch.finalized_export_id) {
     revalidatePath(`/dashboard/exports/${finalizedBatch.finalized_export_id}`)
