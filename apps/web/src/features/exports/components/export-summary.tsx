@@ -1,11 +1,17 @@
+import { ExportMediaFrame } from "@/components/media/export-media-frame"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import {
+  exportStatusIsInProgress,
+  formatExportStatusLabel,
+  type ExportWorkflowStatus
+} from "@/features/exports/lib/export-status-ui"
 
 type ExportSummaryProps = {
   createdAtLabel: string
   downloadHref: string | null
   projectName: string
   previewDataUrl: string | null
-  status: string
+  status: ExportWorkflowStatus
   videoSrc: string | null
 }
 
@@ -17,6 +23,8 @@ export function ExportSummary({
   status,
   videoSrc
 }: ExportSummaryProps) {
+  const inProgress = exportStatusIsInProgress(status)
+
   return (
     <SurfaceCard className="p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
@@ -26,32 +34,37 @@ export function ExportSummary({
         {projectName}
       </h2>
 
-      <div className="mt-6 overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/[0.04]">
-        {videoSrc ? (
-          <video
-            className="aspect-video w-full bg-slate-950"
-            controls
-            playsInline
-            preload="metadata"
-            src={videoSrc}
-          />
-        ) : previewDataUrl ? (
-          <img
-            alt={`${projectName} export preview`}
-            className="aspect-video w-full object-cover"
-            src={previewDataUrl}
-          />
-        ) : (
-          <div className="grid aspect-video place-items-center text-sm text-slate-400">
-            Export preview not available yet
-          </div>
-        )}
+      <div
+        className={`mt-6 overflow-hidden rounded-[1.5rem] border bg-white/[0.04] ${
+          inProgress
+            ? "border-amber-400/35 shadow-[0_0_28px_rgba(251,146,60,0.1)]"
+            : "border-white/10"
+        }`}
+      >
+        <ExportMediaFrame
+          previewDataUrl={previewDataUrl}
+          projectName={projectName}
+          videoSrc={videoSrc}
+        />
       </div>
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+        <div
+          className={`rounded-[1.5rem] border p-4 ${
+            inProgress
+              ? "border-amber-400/30 bg-amber-500/[0.07]"
+              : "border-white/10 bg-white/[0.04]"
+          }`}
+        >
           <p className="text-sm text-slate-400">Status</p>
-          <p className="mt-2 text-sm font-medium text-white">{status}</p>
+          <p className="mt-2 flex flex-wrap items-center gap-2 text-sm font-medium text-white">
+            <span>{formatExportStatusLabel(status)}</span>
+            {inProgress ? (
+              <span className="rounded-full border border-amber-400/35 bg-amber-500/15 px-2.5 py-0.5 text-xs font-medium text-amber-100">
+                Checking for updates…
+              </span>
+            ) : null}
+          </p>
         </div>
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm text-slate-400">Created</p>

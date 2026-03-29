@@ -1,4 +1,7 @@
 import { notFound } from "next/navigation"
+import { Suspense } from "react"
+import { DismissibleFlashBanner } from "@/components/system/dismissible-flash-banner"
+import { StaleWorkspaceRefresh } from "@/components/system/stale-workspace-refresh"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { AnalyticsOverview } from "@/features/analytics/components/analytics-overview"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
@@ -186,8 +189,35 @@ export default async function ProjectDetailPage({
       ? `/api/exports/${latestExport.id}/download`
       : null
 
+  const jobPipelineIsBusy = (label: string) =>
+    label === "Queued" || label === "Running"
+
+  const renderBatchInFlight = renderBatches.some(
+    (batch) => batch.status === "queued" || batch.status === "rendering"
+  )
+
+  const workspaceHasActiveAsyncWork =
+    jobPipelineIsBusy(conceptGenerationState.label) ||
+    jobPipelineIsBusy(conceptPreviewState.label) ||
+    jobPipelineIsBusy(renderState.label) ||
+    renderBatchInFlight ||
+    latestExport?.status === "queued" ||
+    latestExport?.status === "rendering"
+
   return (
     <div className="space-y-6">
+      <Suspense fallback={null}>
+        <DismissibleFlashBanner />
+      </Suspense>
+      <StaleWorkspaceRefresh active={workspaceHasActiveAsyncWork} />
+
+      {workspaceHasActiveAsyncWork ? (
+        <p className="rounded-[1.25rem] border border-amber-400/15 bg-amber-500/[0.06] px-4 py-3 text-xs leading-relaxed text-amber-100/85">
+          Background work is running or your latest export is still processing. This page
+          refreshes every few seconds until things settle — no need to hammer refresh.
+        </p>
+      ) : null}
+
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <SurfaceCard className="p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { acknowledgePublicDeliveryWorkspaceAction } from "@/features/delivery/actions/public-delivery"
 import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
 import {
@@ -172,9 +173,13 @@ export default async function PublicDeliveryPage({
               </label>
 
               <div className="md:col-span-2">
-                <button className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]">
+                <FormSubmitButton
+                  variant="secondary"
+                  pendingLabel="Submitting…"
+                  className="border-white/10 bg-white/[0.05] hover:bg-white/[0.08]"
+                >
                   Acknowledge receipt
-                </button>
+                </FormSubmitButton>
               </div>
             </form>
           )}

@@ -9,7 +9,7 @@ import type {
   RenderVariantKey
 } from "@/server/database/types"
 import type { ScenePlanItem } from "@/features/renders/lib/scene-plan"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type RenderPanelProps = {
@@ -130,13 +130,16 @@ export function RenderPanel({
           </div>
         </div>
 
-        <Button disabled={!canRender || isBlocked}>
+        <FormSubmitButton
+          disabled={!canRender || isBlocked}
+          pendingLabel="Starting render…"
+        >
           {!canRender
             ? "Select a concept first"
             : isBlocked
               ? "Render in progress"
               : "Render project"}
-        </Button>
+        </FormSubmitButton>
       </form>
 
       {latestExportId ? (

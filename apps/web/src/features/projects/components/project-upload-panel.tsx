@@ -1,5 +1,5 @@
 import { createAssetPlaceholderAction } from "@/features/projects/actions/create-asset-placeholder"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import type { AssetRecord } from "@/server/database/types"
 
@@ -62,7 +62,9 @@ export function ProjectUploadPanel({
         </label>
 
         <div className="flex items-end">
-          <Button className="w-full">Register asset</Button>
+          <FormSubmitButton className="w-full" pendingLabel="Uploading…">
+            Register asset
+          </FormSubmitButton>
         </div>
       </form>
 

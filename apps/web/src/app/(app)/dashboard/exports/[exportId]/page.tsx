@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
+import { StaleWorkspaceRefresh } from "@/components/system/stale-workspace-refresh"
 import { ExportSummary } from "@/features/exports/components/export-summary"
+import { exportStatusIsInProgress } from "@/features/exports/lib/export-status-ui"
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
 import { ShareCampaignPanel } from "@/features/renders/components/share-campaign-panel"
 import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
@@ -165,6 +167,8 @@ export default async function ExportDetailPage({
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
+      <StaleWorkspaceRefresh active={exportStatusIsInProgress(exportRecord.status)} />
+
       <ExportSummary
         createdAtLabel={formatTimestamp(exportRecord.created_at)}
         downloadHref={videoSrc}

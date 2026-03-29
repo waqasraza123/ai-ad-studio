@@ -1,5 +1,5 @@
 import { createProjectAction } from "@/features/projects/actions/create-project"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type CreateProjectFormProps = {
@@ -37,7 +37,9 @@ export function CreateProjectForm({ errorMessage }: CreateProjectFormProps) {
         </label>
 
         <div className="flex items-center gap-3">
-          <Button size="lg">Create project</Button>
+          <FormSubmitButton size="lg" pendingLabel="Creating project…">
+            Create project
+          </FormSubmitButton>
           <p className="text-sm text-slate-400">
             You will be redirected to the project detail workspace.
           </p>

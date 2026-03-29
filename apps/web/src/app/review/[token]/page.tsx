@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { submitPublicBatchReviewResponseAction } from "@/features/renders/actions/public-batch-review"
 import { PublicBatchReviewComments } from "@/features/renders/components/public-batch-review-comments"
 import { PublicBatchReviewGrid } from "@/features/renders/components/public-batch-review-grid"
@@ -74,6 +74,9 @@ export default async function PublicBatchReviewPage({
     writeState
   })
 
+  const decisionRecorded =
+    context.response_status === "approved" || context.response_status === "rejected"
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
@@ -128,11 +131,26 @@ export default async function PublicBatchReviewPage({
             </div>
           </div>
 
+          {decisionRecorded ? (
+            <div className="mt-6 rounded-[1.5rem] border border-emerald-400/25 bg-emerald-500/10 p-4 text-sm text-emerald-50">
+              <p className="font-medium text-white">Thank you — your decision is recorded.</p>
+              <p className="mt-2 text-emerald-100/90">
+                Outcome:{" "}
+                <span className="font-semibold text-white">{context.response_status}</span>.
+                {context.response_note ? (
+                  <span className="mt-2 block text-emerald-100/85">
+                    Note: {context.response_note}
+                  </span>
+                ) : null}
+              </p>
+            </div>
+          ) : null}
+
           {writeState.isLocked ? (
             <div className="mt-6 rounded-[1.5rem] border border-indigo-400/20 bg-indigo-500/10 p-4 text-sm text-indigo-100">
               {lockMessage}
             </div>
-          ) : (
+          ) : decisionRecorded ? null : (
             <form
               action={responseAction}
               className="mt-6 grid gap-4 md:grid-cols-[0.35fr_1fr_auto]"
@@ -164,7 +182,7 @@ export default async function PublicBatchReviewPage({
               </label>
 
               <div className="flex items-end">
-                <Button>Submit decision</Button>
+                <FormSubmitButton pendingLabel="Submitting…">Submit decision</FormSubmitButton>
               </div>
             </form>
           )}

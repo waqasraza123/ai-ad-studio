@@ -1,6 +1,6 @@
 import { LockKeyhole, UserRoundPlus } from "lucide-react"
 import { signInWithPassword, signUpWithPassword } from "@/app/login/actions"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type AuthPanelProps = {
@@ -102,7 +102,9 @@ export function AuthPanel({
             </div>
 
             <div className="mt-5">
-              <Button className="w-full">Sign in</Button>
+              <FormSubmitButton className="w-full" pendingLabel="Signing in…">
+                Sign in
+              </FormSubmitButton>
             </div>
           </form>
 
@@ -144,9 +146,13 @@ export function AuthPanel({
             </div>
 
             <div className="mt-5">
-              <Button className="w-full" variant="secondary">
+              <FormSubmitButton
+                className="w-full"
+                variant="secondary"
+                pendingLabel="Creating account…"
+              >
                 Create account
-              </Button>
+              </FormSubmitButton>
             </div>
           </form>
         </div>

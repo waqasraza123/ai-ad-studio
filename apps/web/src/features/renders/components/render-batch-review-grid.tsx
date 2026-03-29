@@ -1,4 +1,4 @@
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { selectRenderBatchWinnerAction } from "@/features/renders/actions/select-render-batch-winner"
 import type {
   AssetRecord,
@@ -148,7 +148,9 @@ export function RenderBatchReviewGrid({
                   placeholder="Decision note for this batch"
                 />
                 <div className="flex flex-wrap gap-2">
-                  <Button>{isWinner ? "Save winner note" : "Select as winner"}</Button>
+                  <FormSubmitButton pendingLabel="Saving…">
+                    {isWinner ? "Save winner note" : "Select as winner"}
+                  </FormSubmitButton>
                   <a
                     href={`/dashboard/exports/${exportRecord.id}`}
                     className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"

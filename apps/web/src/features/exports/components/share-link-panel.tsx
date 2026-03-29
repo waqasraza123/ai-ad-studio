@@ -1,5 +1,5 @@
 import { createShareLinkAction } from "@/features/exports/actions/create-share-link"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type ShareLinkPanelProps = {
@@ -36,9 +36,9 @@ export function ShareLinkPanel({
         )}
 
         <form action={action}>
-          <Button>
+          <FormSubmitButton pendingLabel="Updating link…">
             {shareUrl ? "Reuse utility share link" : "Create utility share link"}
-          </Button>
+          </FormSubmitButton>
         </form>
       </div>
     </SurfaceCard>

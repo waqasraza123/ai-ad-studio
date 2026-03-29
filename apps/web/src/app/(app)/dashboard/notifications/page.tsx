@@ -3,7 +3,7 @@ import { NotificationList } from "@/features/notifications/components/notificati
 import { NotificationsOverview } from "@/features/notifications/components/notifications-overview"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listNotificationsByOwner } from "@/server/notifications/notification-repository"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 
 export default async function NotificationsPage() {
   const user = await getAuthenticatedUser()
@@ -33,7 +33,9 @@ export default async function NotificationsPage() {
 
           {unreadCount > 0 ? (
             <form action={markAllNotificationsReadAction}>
-              <Button variant="secondary">Mark all as read</Button>
+              <FormSubmitButton variant="secondary" pendingLabel="Updating…">
+                Mark all as read
+              </FormSubmitButton>
             </form>
           ) : null}
         </div>

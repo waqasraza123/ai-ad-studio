@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { projectBriefSchema } from "@/features/projects/schemas/project-schema"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
@@ -41,4 +42,5 @@ export async function saveProjectBriefAction(projectId: string, formData: FormDa
 
   revalidatePath(`/dashboard/projects/${projectId}`)
   revalidatePath("/dashboard")
+  redirect(`/dashboard/projects/${projectId}?flash=brief_saved`)
 }

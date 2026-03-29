@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { startRenderBatchAction } from "@/features/renders/actions/start-render-batch"
 import type { RenderBatchRecord } from "@/server/database/types"
@@ -115,7 +115,9 @@ export function RenderBatchPanel({
           </div>
         </div>
 
-        <Button disabled={isBlocked}>Start variation batch</Button>
+        <FormSubmitButton disabled={isBlocked} pendingLabel="Starting batch…">
+          Start variation batch
+        </FormSubmitButton>
       </form>
 
       <div className="mt-8 space-y-3">

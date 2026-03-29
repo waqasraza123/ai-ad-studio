@@ -1,4 +1,4 @@
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { updateBrandKitAction } from "@/features/brand-kits/actions/update-brand-kit"
 import type { BrandKitRecord } from "@/server/database/types"
@@ -72,7 +72,7 @@ export function BrandKitSettingsForm({ brandKit }: BrandKitSettingsFormProps) {
         </label>
 
         <div className="md:col-span-2">
-          <Button>Save brand kit tokens</Button>
+          <FormSubmitButton pendingLabel="Saving…">Save brand kit tokens</FormSubmitButton>
         </div>
       </form>
     </SurfaceCard>

@@ -1,3 +1,4 @@
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import {
   repairDeliveryWorkspaceReminderFromSupport
 } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
@@ -85,36 +86,46 @@ export function DeliveryReminderFollowUpContextCallout({
         workspace view.
       </p>
 
-      <form
-        action={repairDeliveryWorkspaceReminderFromSupport}
-        className="mt-4 flex flex-wrap gap-2"
-      >
-        <input name="workspaceId" type="hidden" value={record.workspaceId} />
-        <input name="returnToHref" type="hidden" value={returnToHref} />
-        <input
-          name="currentFollowUpNote"
-          type="hidden"
-          value={currentFollowUpNote ?? ""}
-        />
-
-        <button
-          className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
-          name={deliveryReminderRepairActionFieldName}
-          type="submit"
-          value="reschedule_tomorrow"
-        >
-          Reschedule for tomorrow
-        </button>
-
-        <button
-          className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:border-rose-300/40 hover:bg-rose-500/15"
-          name={deliveryReminderRepairActionFieldName}
-          type="submit"
-          value="clear_reminder_scheduling"
-        >
-          Clear reminder scheduling
-        </button>
-      </form>
+      <div className="mt-4 flex flex-wrap gap-2">
+        <form action={repairDeliveryWorkspaceReminderFromSupport} className="contents">
+          <input name="workspaceId" type="hidden" value={record.workspaceId} />
+          <input name="returnToHref" type="hidden" value={returnToHref} />
+          <input
+            name="currentFollowUpNote"
+            type="hidden"
+            value={currentFollowUpNote ?? ""}
+          />
+          <FormSubmitButton
+            name={deliveryReminderRepairActionFieldName}
+            value="reschedule_tomorrow"
+            variant="secondary"
+            size="sm"
+            pendingLabel="Scheduling…"
+            className="border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:border-cyan-300/40 hover:bg-cyan-500/15"
+          >
+            Reschedule for tomorrow
+          </FormSubmitButton>
+        </form>
+        <form action={repairDeliveryWorkspaceReminderFromSupport} className="contents">
+          <input name="workspaceId" type="hidden" value={record.workspaceId} />
+          <input name="returnToHref" type="hidden" value={returnToHref} />
+          <input
+            name="currentFollowUpNote"
+            type="hidden"
+            value={currentFollowUpNote ?? ""}
+          />
+          <FormSubmitButton
+            name={deliveryReminderRepairActionFieldName}
+            value="clear_reminder_scheduling"
+            variant="secondary"
+            size="sm"
+            pendingLabel="Clearing…"
+            className="border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 hover:border-rose-300/40 hover:bg-rose-500/15"
+          >
+            Clear reminder scheduling
+          </FormSubmitButton>
+        </form>
+      </div>
     </div>
   )
 }

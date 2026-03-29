@@ -2,7 +2,7 @@ import Link from "next/link"
 import type { JobRecord } from "@/server/database/types"
 import { cancelJobAction } from "@/features/debug/actions/cancel-job"
 import { retryJobAction } from "@/features/debug/actions/retry-job"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { JobStatusBadge } from "./job-status-badge"
 
 type JobDebugDetailProps = {
@@ -58,13 +58,15 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
                 defaultValue="Cancelled from debug UI"
                 className="hidden"
               />
-              <Button variant="secondary">Cancel job</Button>
+              <FormSubmitButton variant="secondary" pendingLabel="Cancelling…">
+                Cancel job
+              </FormSubmitButton>
             </form>
           ) : null}
 
           {job.status === "failed" || job.status === "cancelled" ? (
             <form action={retryAction}>
-              <Button>Retry job</Button>
+              <FormSubmitButton pendingLabel="Retrying…">Retry job</FormSubmitButton>
             </form>
           ) : null}
         </div>

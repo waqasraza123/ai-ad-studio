@@ -1,4 +1,4 @@
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { selectProjectBrandKitAction } from "@/features/brand-kits/actions/select-brand-kit"
 import type { BrandKitRecord } from "@/server/database/types"
@@ -89,7 +89,7 @@ export function BrandKitSelectorPanel({
           </div>
         ) : null}
 
-        <Button>Save brand kit</Button>
+        <FormSubmitButton pendingLabel="Saving…">Save brand kit</FormSubmitButton>
       </form>
     </SurfaceCard>
   )

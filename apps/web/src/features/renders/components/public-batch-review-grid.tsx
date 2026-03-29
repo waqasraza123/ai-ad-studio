@@ -1,4 +1,4 @@
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { submitPublicBatchReviewCommentAction } from "@/features/renders/actions/public-batch-review"
 import type { PublicBatchReviewExport } from "@/server/database/types"
 
@@ -95,7 +95,9 @@ export function PublicBatchReviewGrid({
                   name="body"
                   placeholder="Comment on this export"
                 />
-                <Button>Comment on this output</Button>
+                <FormSubmitButton pendingLabel="Posting comment…">
+                  Comment on this output
+                </FormSubmitButton>
               </form>
             )}
           </article>

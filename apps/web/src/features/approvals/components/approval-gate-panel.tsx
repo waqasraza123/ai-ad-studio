@@ -3,7 +3,7 @@ import {
   approveRenderAction,
   rejectRenderAction
 } from "@/features/approvals/actions/decide-approval"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type ApprovalGatePanelProps = {
@@ -83,7 +83,7 @@ export function ApprovalGatePanel({
               name="decision_note"
               placeholder="Optional approval note"
             />
-            <Button>Approve render</Button>
+            <FormSubmitButton pendingLabel="Approving…">Approve render</FormSubmitButton>
           </form>
 
           <form action={rejectAction} className="space-y-4">
@@ -92,7 +92,9 @@ export function ApprovalGatePanel({
               name="decision_note"
               placeholder="Reason for rejection"
             />
-            <Button variant="secondary">Reject render</Button>
+            <FormSubmitButton variant="secondary" pendingLabel="Rejecting…">
+              Reject render
+            </FormSubmitButton>
           </form>
         </div>
       ) : null}

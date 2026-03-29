@@ -1,6 +1,6 @@
 import type { AdTemplateRecord } from "@/server/database/types"
 import { selectProjectTemplateAction } from "@/features/templates/actions/select-template"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type TemplateSelectorPanelProps = {
@@ -70,7 +70,7 @@ export function TemplateSelectorPanel({
           </div>
         ) : null}
 
-        <Button>Save template</Button>
+        <FormSubmitButton pendingLabel="Saving…">Save template</FormSubmitButton>
       </form>
     </SurfaceCard>
   )

@@ -1,4 +1,4 @@
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import {
   publishShowcaseItemAction,
@@ -50,13 +50,15 @@ export function ShowcasePublishPanel({
               name="summary"
               placeholder="Optional gallery summary"
             />
-            <Button>Publish to showcase</Button>
+            <FormSubmitButton pendingLabel="Publishing…">Publish to showcase</FormSubmitButton>
           </form>
         ) : null}
 
         {isEligible && showcaseItem?.is_published ? (
           <form action={unpublishAction}>
-            <Button variant="secondary">Unpublish showcase item</Button>
+            <FormSubmitButton variant="secondary" pendingLabel="Unpublishing…">
+              Unpublish showcase item
+            </FormSubmitButton>
           </form>
         ) : null}
       </div>

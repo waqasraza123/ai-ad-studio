@@ -1,5 +1,5 @@
 import { saveProjectBriefAction } from "@/features/projects/actions/save-project-brief"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import type { ProjectInputRecord } from "@/server/database/types"
 
@@ -99,7 +99,7 @@ export function ProjectBriefForm({
         </label>
 
         <div className="pt-2">
-          <Button>Save brief</Button>
+          <FormSubmitButton pendingLabel="Saving brief…">Save brief</FormSubmitButton>
         </div>
       </form>
     </SurfaceCard>

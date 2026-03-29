@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { getPublicEnvironment } from "@/lib/env"
 import { updateDeliveryWorkspaceFollowUpAction } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
 import {
@@ -438,7 +438,7 @@ export function DeliveryWorkspaceList({
                       </label>
 
                       <div className="flex flex-wrap items-center gap-3">
-                        <Button>Save follow-up</Button>
+                        <FormSubmitButton pendingLabel="Saving…">Save follow-up</FormSubmitButton>
                         <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
                           updated {formatTimestamp(workspace.follow_up_updated_at)}
                         </p>

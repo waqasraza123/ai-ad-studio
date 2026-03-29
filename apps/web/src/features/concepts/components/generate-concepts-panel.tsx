@@ -1,5 +1,5 @@
 import { generateConceptsAction } from "@/features/concepts/actions/generate-concepts"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type GenerateConceptsPanelProps = {
@@ -32,9 +32,12 @@ export function GenerateConceptsPanel({
       <p className="mt-3 text-sm leading-7 text-slate-400">{description}</p>
 
       <form action={action} className="mt-6">
-        <Button disabled={isBlocked}>
+        <FormSubmitButton
+          disabled={isBlocked}
+          pendingLabel="Generating concepts…"
+        >
           {isBlocked ? "Concept generation in progress" : "Generate concepts"}
-        </Button>
+        </FormSubmitButton>
       </form>
     </SurfaceCard>
   )

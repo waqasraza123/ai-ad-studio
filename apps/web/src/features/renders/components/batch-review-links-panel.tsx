@@ -1,5 +1,5 @@
 import { getPublicEnvironment } from "@/lib/env"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import {
   createBatchReviewLinkAction,
@@ -105,7 +105,7 @@ export function BatchReviewLinksPanel({
           </label>
 
           <div className="md:col-span-2">
-            <Button>Create review link</Button>
+            <FormSubmitButton pendingLabel="Creating link…">Create review link</FormSubmitButton>
           </div>
         </form>
       ) : (
@@ -171,7 +171,9 @@ export function BatchReviewLinksPanel({
 
                     {link.status === "active" && !batch.is_finalized ? (
                       <form action={revokeAction}>
-                        <Button variant="secondary">Revoke</Button>
+                        <FormSubmitButton variant="secondary" pendingLabel="Revoking…">
+                          Revoke
+                        </FormSubmitButton>
                       </form>
                     ) : null}
                   </div>

@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { AuthPanel } from "@/components/auth/auth-panel"
 import { ConfigurationRequired } from "@/components/auth/configuration-required"
+import { LandingTopBar } from "@/components/marketing/landing-top-bar"
 import { hasSupabaseAuthConfiguration } from "@/lib/env"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 
@@ -26,11 +27,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   if (!hasSupabaseAuthConfiguration()) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
-        <ConfigurationRequired
-          title="Connect Supabase to prove auth end to end"
-          description="This repo now contains the auth integration points, protected route logic, and versioned schema files. Add your Supabase credentials locally to validate real sign-in and session flow."
-        />
+      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] text-slate-50">
+        <LandingTopBar />
+        <div className="px-4 py-10 sm:px-6 lg:px-8">
+          <ConfigurationRequired
+            title="Connect Supabase to prove auth end to end"
+            description="This repo now contains the auth integration points, protected route logic, and versioned schema files. Add your Supabase credentials locally to validate real sign-in and session flow."
+          />
+        </div>
       </main>
     )
   }
@@ -46,13 +50,16 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const defaultEmail = readSearchParam(params, "email")
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl">
-        <AuthPanel
-          errorMessage={errorMessage}
-          infoMessage={infoMessage}
-          defaultSignInEmail={defaultEmail}
-        />
+    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] text-slate-50">
+      <LandingTopBar />
+      <div className="px-4 py-10 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-6xl">
+          <AuthPanel
+            errorMessage={errorMessage}
+            infoMessage={infoMessage}
+            defaultSignInEmail={defaultEmail}
+          />
+        </div>
       </div>
     </main>
   )

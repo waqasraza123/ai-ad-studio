@@ -10,8 +10,12 @@ export function LandingTopBar() {
   const demoSubtext = process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_SUBTEXT?.trim()
 
   return (
-    <header className="border-b border-white/[0.08] bg-[#050816]/80 backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+    <header className="landing-top-bar-glow relative overflow-hidden border-b border-white/[0.08] bg-[#050816]/80 backdrop-blur-md">
+      <div
+        className="landing-top-bar-sheen pointer-events-none absolute inset-x-0 top-0 z-10"
+        aria-hidden
+      />
+      <div className="relative z-[1] mx-auto flex max-w-7xl flex-col gap-3 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
         <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
           <Link
             href="/"

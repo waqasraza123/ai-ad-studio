@@ -1,5 +1,5 @@
 import { ImageIcon } from "lucide-react"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { selectConceptAction } from "@/features/concepts/actions/select-concept"
 import { SafetySummary } from "@/features/safety/components/safety-summary"
@@ -98,9 +98,13 @@ export function ConceptPreviewCard({
 
       <div className="mt-6">
         <form action={action}>
-          <Button className="w-full" variant={isSelected ? "secondary" : "primary"}>
+          <FormSubmitButton
+            className="w-full"
+            variant={isSelected ? "secondary" : "primary"}
+            pendingLabel="Saving selection…"
+          >
             {isSelected ? "Selected concept" : "Select concept"}
-          </Button>
+          </FormSubmitButton>
         </form>
       </div>
     </SurfaceCard>

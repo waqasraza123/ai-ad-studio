@@ -1,5 +1,5 @@
 import { generateConceptPreviewsAction } from "@/features/concepts/actions/generate-concept-previews"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type GenerateConceptPreviewsPanelProps = {
@@ -33,9 +33,12 @@ export function GenerateConceptPreviewsPanel({
       <p className="mt-3 text-sm leading-7 text-slate-400">{description}</p>
 
       <form action={action} className="mt-6">
-        <Button disabled={isBlocked}>
+        <FormSubmitButton
+          disabled={isBlocked}
+          pendingLabel="Generating previews…"
+        >
           {isBlocked ? "Preview generation unavailable" : "Generate previews"}
-        </Button>
+        </FormSubmitButton>
       </form>
     </SurfaceCard>
   )

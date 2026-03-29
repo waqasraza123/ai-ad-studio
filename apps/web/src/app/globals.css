@@ -40,3 +40,62 @@ textarea,
 select {
   font: inherit;
 }
+
+/* Marketing top bar — subtle motion (respects reduced-motion) */
+@keyframes landing-top-bar-glow {
+  0%,
+  100% {
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06),
+      0 8px 28px rgba(251, 146, 60, 0.04);
+  }
+
+  50% {
+    box-shadow:
+      0 1px 0 rgba(251, 146, 60, 0.14),
+      0 10px 36px rgba(251, 146, 60, 0.1);
+  }
+}
+
+@keyframes landing-top-bar-sheen {
+  0%,
+  100% {
+    background-position: 0% 50%;
+    opacity: 0.55;
+  }
+
+  50% {
+    background-position: 100% 50%;
+    opacity: 0.95;
+  }
+}
+
+.landing-top-bar-glow {
+  animation: landing-top-bar-glow 5s ease-in-out infinite;
+}
+
+.landing-top-bar-sheen {
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(251, 146, 60, 0.15) 25%,
+    rgba(253, 224, 71, 0.35) 50%,
+    rgba(251, 146, 60, 0.15) 75%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: landing-top-bar-sheen 7s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-top-bar-glow,
+  .landing-top-bar-sheen {
+    animation: none;
+  }
+
+  .landing-top-bar-sheen {
+    opacity: 0.65;
+    background-position: 50% 50%;
+  }
+}

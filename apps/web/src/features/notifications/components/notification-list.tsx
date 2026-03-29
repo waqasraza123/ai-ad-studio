@@ -1,7 +1,7 @@
 import Link from "next/link"
 import { markNotificationReadAction } from "@/features/notifications/actions/mark-notification-read"
 import type { NotificationRecord } from "@/server/database/types"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 
 type NotificationListProps = {
   notifications: NotificationRecord[]
@@ -90,7 +90,9 @@ export function NotificationList({ notifications }: NotificationListProps) {
 
                 {!notification.read_at ? (
                   <form action={markReadAction}>
-                    <Button variant="secondary">Mark as read</Button>
+                    <FormSubmitButton variant="secondary" pendingLabel="Updating…">
+                      Mark as read
+                    </FormSubmitButton>
                   </form>
                 ) : null}
               </div>

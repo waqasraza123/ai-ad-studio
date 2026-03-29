@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { finalizeRenderBatchAction } from "@/features/renders/actions/finalize-render-batch"
 import type {
@@ -115,7 +115,9 @@ export function FinalizeRenderBatchPanel({
           name="finalization_note"
           placeholder="Why this export is the final canonical decision"
         />
-        <Button disabled={!winner}>Finalize canonical export</Button>
+        <FormSubmitButton disabled={!winner} pendingLabel="Finalizing…">
+          Finalize canonical export
+        </FormSubmitButton>
       </form>
     </SurfaceCard>
   )

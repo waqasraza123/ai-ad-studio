@@ -2,6 +2,7 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 import { LayoutDashboard, LogOut, PlusSquare, Sparkles, Video } from "lucide-react"
 import { signOut } from "@/app/(app)/actions"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { cn } from "@/lib/utils"
 
 const navigationItems = [
@@ -109,10 +110,15 @@ export function AppShell({ children, userEmail }: AppShellProps) {
 
               {userEmail ? (
                 <form action={signOut}>
-                  <button className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-white transition hover:bg-white/[0.08]">
+                  <FormSubmitButton
+                    variant="secondary"
+                    size="sm"
+                    pendingLabel="Signing out…"
+                    className="gap-2 border-white/10 bg-white/[0.05] hover:bg-white/[0.08]"
+                  >
                     <LogOut className="h-4 w-4" />
                     <span>Sign out</span>
-                  </button>
+                  </FormSubmitButton>
                 </form>
               ) : null}
             </div>

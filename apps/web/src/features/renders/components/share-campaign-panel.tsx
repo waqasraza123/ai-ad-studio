@@ -1,4 +1,4 @@
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import {
   archiveShareCampaignAction,
@@ -56,7 +56,9 @@ export function ShareCampaignPanel({
               name="message"
               placeholder="Campaign message"
             />
-            <Button>Create share campaign</Button>
+            <FormSubmitButton pendingLabel="Creating campaign…">
+              Create share campaign
+            </FormSubmitButton>
           </form>
         ) : null}
 
@@ -69,7 +71,9 @@ export function ShareCampaignPanel({
               Open public campaign
             </a>
             <form action={archiveAction}>
-              <Button variant="secondary">Archive share campaign</Button>
+              <FormSubmitButton variant="secondary" pendingLabel="Archiving…">
+                Archive share campaign
+              </FormSubmitButton>
             </form>
           </div>
         ) : null}

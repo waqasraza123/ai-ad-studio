@@ -7,7 +7,7 @@ import {
   upsertDeliveryWorkspaceAction
 } from "@/features/delivery/actions/manage-delivery-workspace"
 import { getPublicEnvironment } from "@/lib/env"
-import { Button } from "@/components/primitives/button"
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type DeliveryWorkspacePanelProps = {
@@ -95,7 +95,11 @@ export function DeliveryWorkspacePanel({
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <Button>{workspace?.status === "active" ? "Update delivery workspace" : "Create delivery workspace"}</Button>
+              <FormSubmitButton pendingLabel="Saving…">
+                {workspace?.status === "active"
+                  ? "Update delivery workspace"
+                  : "Create delivery workspace"}
+              </FormSubmitButton>
 
               {workspace?.status === "active" && publicUrl ? (
                 <a
@@ -123,7 +127,9 @@ export function DeliveryWorkspacePanel({
             ) : null}
 
             <form action={archiveAction}>
-              <Button variant="secondary">Archive delivery workspace</Button>
+              <FormSubmitButton variant="secondary" pendingLabel="Archiving…">
+                Archive delivery workspace
+              </FormSubmitButton>
             </form>
           </div>
         ) : null}
