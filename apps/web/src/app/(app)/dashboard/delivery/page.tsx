@@ -5,6 +5,7 @@ import { DeliverySupportOpsSummaryPanel } from "@/features/delivery/components/d
 import { DeliveryInvestigationViewPanel } from "@/features/delivery/components/delivery-investigation-view-panel"
 import { DeliveryInvestigationContextHeader } from "@/features/delivery/components/delivery-investigation-context-header"
 import { DeliveryInvestigationStaleContextWarning } from "@/features/delivery/components/delivery-investigation-stale-context-warning"
+import { DeliveryFocusedWorkspaceStatusRow } from "@/features/delivery/components/delivery-focused-workspace-status-row"
 import {
   buildDeliveryReminderSupportRecords,
   summarizeDeliveryReminderSupportRecords
@@ -57,6 +58,7 @@ import { summarizeDeliverySupportOps } from "@/features/delivery/lib/delivery-su
 import type { DeliveryInvestigationViewState } from "@/features/delivery/lib/delivery-investigation-view"
 import { buildDeliveryInvestigationContextSummary } from "@/features/delivery/lib/delivery-investigation-context-summary"
 import { buildDeliveryInvestigationStaleContextSummary } from "@/features/delivery/lib/delivery-investigation-stale-context"
+import { buildDeliveryFocusedWorkspaceStatusSummary } from "@/features/delivery/lib/delivery-focused-workspace-status"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
@@ -203,6 +205,14 @@ export default async function DeliveryPage({
       overviewRecords: supportFilteredWorkspaceOverviews
     })
 
+  const focusedWorkspaceStatusSummary =
+    investigationStaleContextSummary
+      ? null
+      : buildDeliveryFocusedWorkspaceStatusSummary({
+          focusWorkspaceId: focusedInvestigationWorkspaceId,
+          overviewRecords: supportFilteredWorkspaceOverviews
+        })
+
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
     record: focusedReminderSupportRecord,
     shouldFocusFollowUpForm
@@ -308,6 +318,12 @@ export default async function DeliveryPage({
       ) : investigationContextSummary ? (
         <DeliveryInvestigationContextHeader
           summary={investigationContextSummary}
+        />
+      ) : null}
+
+      {focusedWorkspaceStatusSummary ? (
+        <DeliveryFocusedWorkspaceStatusRow
+          summary={focusedWorkspaceStatusSummary}
         />
       ) : null}
 
