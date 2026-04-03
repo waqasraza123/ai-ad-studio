@@ -3,6 +3,7 @@ import { DeliveryReminderSupportPanel } from "@/features/delivery/components/del
 import { DeliverySupportActivityFilterBar } from "@/features/delivery/components/delivery-support-activity-filter-bar"
 import { DeliverySupportOpsSummaryPanel } from "@/features/delivery/components/delivery-support-ops-summary-panel"
 import { DeliveryInvestigationViewPanel } from "@/features/delivery/components/delivery-investigation-view-panel"
+import { DeliveryInvestigationContextHeader } from "@/features/delivery/components/delivery-investigation-context-header"
 import {
   buildDeliveryReminderSupportRecords,
   summarizeDeliveryReminderSupportRecords
@@ -53,6 +54,7 @@ import {
 } from "@/features/delivery/lib/delivery-support-activity-filter"
 import { summarizeDeliverySupportOps } from "@/features/delivery/lib/delivery-support-ops-summary"
 import type { DeliveryInvestigationViewState } from "@/features/delivery/lib/delivery-investigation-view"
+import { buildDeliveryInvestigationContextSummary } from "@/features/delivery/lib/delivery-investigation-context-summary"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
@@ -184,10 +186,19 @@ export default async function DeliveryPage({
     reminderSupportRecords
   })
 
+  const investigationContextSummary = buildDeliveryInvestigationContextSummary({
+    focusedReminderSupportRecord,
+    focusWorkspaceId: focusedInvestigationWorkspaceId,
+    overviewRecords: supportFilteredWorkspaceOverviews
+  })
+
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
     record: focusedReminderSupportRecord,
     shouldFocusFollowUpForm
   })
+
+  const focusedInvestigationWorkspaceId =
+    focusFollowUpFormWorkspaceId ?? focusWorkspaceId
 
   const focusedFollowUpFormIsVisible = focusFollowUpFormWorkspaceId
     ? supportFilteredWorkspaceOverviews.some(
@@ -277,6 +288,12 @@ export default async function DeliveryPage({
       <DeliveryInvestigationViewPanel
         state={deliveryInvestigationViewState}
       />
+
+      {investigationContextSummary ? (
+        <DeliveryInvestigationContextHeader
+          summary={investigationContextSummary}
+        />
+      ) : null}
 
       <DeliveryFollowUpQueue
         projectsById={projectsById}
