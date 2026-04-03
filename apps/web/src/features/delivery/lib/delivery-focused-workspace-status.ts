@@ -19,7 +19,7 @@ type FocusedWorkspaceActivityRecord = {
 
 type FocusedWorkspaceRecord = {
   follow_up_due_on: string | null
-  follow_up_last_notification_bucket: "due_today" | "overdue" | null
+  follow_up_last_notification_bucket: string | null
   follow_up_last_notification_date: string | null
   follow_up_status: DeliveryFollowUpStatus | null
   id: string
@@ -63,19 +63,24 @@ function formatNullableDate(value: string | null) {
 }
 
 function getReminderCheckpointLabel(input: {
-  bucket: "due_today" | "overdue" | null
+  bucket: string | null
   date: string | null
 }) {
   if (!input.bucket && !input.date) {
     return "No reminder checkpoint"
   }
 
+  const bucketLabel =
+    input.bucket === "due_today" || input.bucket === "overdue"
+      ? getDeliveryWorkspaceReminderBucketLabel(input.bucket)
+      : input.bucket ?? "Unknown checkpoint"
+
   if (input.bucket && input.date) {
-    return `${getDeliveryWorkspaceReminderBucketLabel(input.bucket)} on ${input.date}`
+    return `${bucketLabel} on ${input.date}`
   }
 
   if (input.bucket) {
-    return getDeliveryWorkspaceReminderBucketLabel(input.bucket)
+    return bucketLabel
   }
 
   return `Checkpoint date ${input.date}`

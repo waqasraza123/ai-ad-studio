@@ -44,7 +44,7 @@ function getActivityEntries<TActivity extends InvestigationActivityRecord>(
   return []
 }
 
-function getReminderBucketLabel(value: "due_today" | "overdue" | null) {
+function getReminderBucketLabel(value: string | null) {
   if (value === "due_today") {
     return "Due today"
   }
@@ -56,7 +56,7 @@ function getReminderBucketLabel(value: "due_today" | "overdue" | null) {
   return "Unspecified bucket"
 }
 
-function getReminderBucketDescription(value: "due_today" | "overdue" | null) {
+function getReminderBucketDescription(value: string | null) {
   if (value === "due_today") {
     return "due today"
   }
@@ -69,7 +69,7 @@ function getReminderBucketDescription(value: "due_today" | "overdue" | null) {
 }
 
 function getCheckpointLabel(input: {
-  bucket: "due_today" | "overdue" | null
+  bucket: string | null
   date: string | null
 }) {
   if (!input.bucket && !input.date) {

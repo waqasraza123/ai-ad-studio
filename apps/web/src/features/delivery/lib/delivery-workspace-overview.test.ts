@@ -44,6 +44,11 @@ function createWorkspaceRecord(
       overrides.follow_up_last_notification_bucket ?? null,
     follow_up_last_notification_date:
       overrides.follow_up_last_notification_date ?? null,
+    reminder_mismatch_resolved_at: overrides.reminder_mismatch_resolved_at ?? null,
+    reminder_mismatch_resolved_notification_id:
+      overrides.reminder_mismatch_resolved_notification_id ?? null,
+    reminder_mismatch_resolution_note:
+      overrides.reminder_mismatch_resolution_note ?? null,
     created_at: overrides.created_at ?? "2026-03-21T10:00:00.000Z",
     updated_at: overrides.updated_at ?? "2026-03-21T10:00:00.000Z"
   }

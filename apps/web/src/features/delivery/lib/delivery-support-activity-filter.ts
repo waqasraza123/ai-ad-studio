@@ -99,6 +99,13 @@ function replaceActivityEntries<TRecord extends Record<string, unknown>>(
   return record
 }
 
+function isSupportOriginatedActivity(activity: FilterableActivityRecord) {
+  return (
+    isDeliveryReminderRepairActivityMetadata(activity.metadata) ||
+    isDeliveryReminderSupportNoteActivityMetadata(activity.metadata)
+  )
+}
+
 function getSupportActivityCategory(
   activity: FilterableActivityRecord
 ): "failed_reminder_repairs" | "reminder_repairs" | "support_handoff_notes" | null {
