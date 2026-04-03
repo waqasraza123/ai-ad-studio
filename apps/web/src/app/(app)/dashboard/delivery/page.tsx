@@ -1,6 +1,7 @@
 import { DeliveryReminderRepairOutcomeBanner } from "@/features/delivery/components/delivery-reminder-repair-outcome-banner"
 import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
 import { DeliverySupportActivityFilterBar } from "@/features/delivery/components/delivery-support-activity-filter-bar"
+import { DeliverySupportOpsSummaryPanel } from "@/features/delivery/components/delivery-support-ops-summary-panel"
 import {
   buildDeliveryReminderSupportRecords,
   summarizeDeliveryReminderSupportRecords
@@ -49,6 +50,7 @@ import {
   normalizeDeliverySupportActivityFilter,
   summarizeDeliverySupportActivityFilter
 } from "@/features/delivery/lib/delivery-support-activity-filter"
+import { summarizeDeliverySupportOps } from "@/features/delivery/lib/delivery-support-ops-summary"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
@@ -175,6 +177,11 @@ export default async function DeliveryPage({
       activeSupportActivityFilter
     )
 
+  const supportOpsSummary = summarizeDeliverySupportOps({
+    overviewRecords: supportFilteredWorkspaceOverviews,
+    reminderSupportRecords
+  })
+
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
     record: focusedReminderSupportRecord,
     shouldFocusFollowUpForm
@@ -244,6 +251,11 @@ export default async function DeliveryPage({
           status: resolvedSearchParams.status ?? null
         }}
         summary={supportActivityFilterSummary}
+      />
+
+      <DeliverySupportOpsSummaryPanel
+        activeSupportActivityFilter={activeSupportActivityFilter}
+        summary={supportOpsSummary}
       />
 
       <DeliveryFollowUpQueue
