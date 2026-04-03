@@ -13,6 +13,7 @@ import {
   getDeliveryReminderSupportFilterLabel,
   type DeliveryReminderSupportFilter
 } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import type { DeliverySupportActivityFilter } from "@/features/delivery/lib/delivery-support-activity-filter"
 import {
   buildDeliveryReminderDashboardHref,
   buildDeliveryReminderFollowUpFormHref,
@@ -23,9 +24,12 @@ type DeliveryReminderSupportPanelProps = {
   activeFilter: DeliveryReminderSupportFilter
   currentDashboardSearchParams: {
     activity?: string | null
+    focusFollowUpForm?: boolean | null
+    focusReminderNotificationId?: string | null
     focusWorkspaceId?: string | null
     sort?: string | null
     status?: string | null
+    supportActivityFilter?: DeliverySupportActivityFilter | null
   }
   overallSummary: DeliveryReminderSupportSummary
   records: DeliveryReminderSupportRecord[]
@@ -145,11 +149,17 @@ export function DeliveryReminderSupportPanel({
               )}`}
               href={buildDeliveryReminderSupportFilterHref({
                 activity: currentDashboardSearchParams.activity ?? null,
+                focusFollowUpForm:
+                  currentDashboardSearchParams.focusFollowUpForm ?? null,
+                focusReminderNotificationId:
+                  currentDashboardSearchParams.focusReminderNotificationId ?? null,
                 focusWorkspaceId:
                   currentDashboardSearchParams.focusWorkspaceId ?? null,
                 reminderSupportFilter: filterOption.value,
                 sort: currentDashboardSearchParams.sort ?? null,
-                status: currentDashboardSearchParams.status ?? null
+                status: currentDashboardSearchParams.status ?? null,
+                supportActivityFilter:
+                  currentDashboardSearchParams.supportActivityFilter ?? null
               })}
             >
               <span>{getDeliveryReminderSupportFilterLabel(filterOption.value)}</span>
@@ -240,7 +250,9 @@ export function DeliveryReminderSupportPanel({
                       <Link
                         className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
                         href={buildDeliveryReminderDashboardHref(record.workspaceId, {
-                          reminderSupportFilter: activeFilter
+                          reminderSupportFilter: activeFilter,
+                          supportActivityFilter:
+                            currentDashboardSearchParams.supportActivityFilter ?? null
                         })}
                       >
                         Open workspace in delivery dashboard
@@ -253,6 +265,8 @@ export function DeliveryReminderSupportPanel({
                         href={buildDeliveryReminderFollowUpFormHref({
                           notificationId: record.notificationId,
                           reminderSupportFilter: activeFilter,
+                          supportActivityFilter:
+                            currentDashboardSearchParams.supportActivityFilter ?? null,
                           workspaceId: record.workspaceId
                         })}
                       >

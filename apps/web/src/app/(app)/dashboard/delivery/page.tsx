@@ -2,6 +2,7 @@ import { DeliveryReminderRepairOutcomeBanner } from "@/features/delivery/compone
 import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
 import { DeliverySupportActivityFilterBar } from "@/features/delivery/components/delivery-support-activity-filter-bar"
 import { DeliverySupportOpsSummaryPanel } from "@/features/delivery/components/delivery-support-ops-summary-panel"
+import { DeliveryInvestigationViewPanel } from "@/features/delivery/components/delivery-investigation-view-panel"
 import {
   buildDeliveryReminderSupportRecords,
   summarizeDeliveryReminderSupportRecords
@@ -51,6 +52,7 @@ import {
   summarizeDeliverySupportActivityFilter
 } from "@/features/delivery/lib/delivery-support-activity-filter"
 import { summarizeDeliverySupportOps } from "@/features/delivery/lib/delivery-support-ops-summary"
+import type { DeliveryInvestigationViewState } from "@/features/delivery/lib/delivery-investigation-view"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
@@ -201,6 +203,17 @@ export default async function DeliveryPage({
 
   const projectsById = new Map(projects.map((project) => [project.id, project]))
 
+  const deliveryInvestigationViewState: DeliveryInvestigationViewState = {
+    activity: resolvedSearchParams.activity ?? null,
+    focusFollowUpForm: shouldFocusFollowUpForm,
+    focusReminderNotificationId: focusReminderNotificationId ?? null,
+    focusWorkspaceId: focusWorkspaceId ?? null,
+    reminderSupportFilter: activeReminderSupportFilter,
+    sort: resolvedSearchParams.sort ?? null,
+    status: resolvedSearchParams.status ?? null,
+    supportActivityFilter: activeSupportActivityFilter
+  }
+
   return (
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
@@ -226,9 +239,12 @@ export default async function DeliveryPage({
         activeFilter={activeReminderSupportFilter}
         currentDashboardSearchParams={{
           activity: resolvedSearchParams.activity ?? null,
+          focusFollowUpForm: shouldFocusFollowUpForm,
+          focusReminderNotificationId: focusReminderNotificationId ?? null,
           focusWorkspaceId: focusWorkspaceId ?? null,
           sort: resolvedSearchParams.sort ?? null,
-          status: resolvedSearchParams.status ?? null
+          status: resolvedSearchParams.status ?? null,
+          supportActivityFilter: activeSupportActivityFilter
         }}
         overallSummary={overallReminderSupportSummary}
         records={filteredReminderSupportRecords}
@@ -256,6 +272,10 @@ export default async function DeliveryPage({
       <DeliverySupportOpsSummaryPanel
         activeSupportActivityFilter={activeSupportActivityFilter}
         summary={supportOpsSummary}
+      />
+
+      <DeliveryInvestigationViewPanel
+        state={deliveryInvestigationViewState}
       />
 
       <DeliveryFollowUpQueue
@@ -300,6 +320,7 @@ export default async function DeliveryPage({
 
       <DeliveryWorkspaceList
         activeReminderSupportFilter={activeReminderSupportFilter}
+        activeSupportActivityFilter={activeSupportActivityFilter}
         focusFollowUpFormWorkspaceId={focusFollowUpFormWorkspaceId}
         focusWorkspaceId={focusWorkspaceId}
         focusedReminderSupportRecord={focusedReminderSupportRecord}

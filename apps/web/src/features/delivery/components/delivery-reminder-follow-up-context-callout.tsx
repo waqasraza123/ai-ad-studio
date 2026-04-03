@@ -3,6 +3,7 @@ import {
 } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
 import { DeliveryReminderRepairActionButton } from "@/features/delivery/components/delivery-reminder-repair-action-button"
 import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import type { DeliverySupportActivityFilter } from "@/features/delivery/lib/delivery-support-activity-filter"
 import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
 import {
   doesDeliveryReminderRepairOutcomeMatchRecord,
@@ -23,6 +24,7 @@ import {
 
 type DeliveryReminderFollowUpContextCalloutProps = {
   activeReminderSupportFilter: DeliveryReminderSupportFilter
+  activeSupportActivityFilter: DeliverySupportActivityFilter
   currentFollowUpNote: string | null
   record: DeliveryReminderSupportRecord
   repairOutcome?: DeliveryReminderRepairOutcome | null
@@ -38,6 +40,7 @@ function formatDateTime(value: string) {
 
 export function DeliveryReminderFollowUpContextCallout({
   activeReminderSupportFilter,
+  activeSupportActivityFilter,
   currentFollowUpNote,
   record,
   repairOutcome = null
@@ -49,6 +52,7 @@ export function DeliveryReminderFollowUpContextCallout({
   const returnToHref = buildDeliveryReminderFollowUpFormHref({
     notificationId: record.notificationId,
     reminderSupportFilter: activeReminderSupportFilter,
+    supportActivityFilter: activeSupportActivityFilter,
     workspaceId: record.workspaceId
   })
 
