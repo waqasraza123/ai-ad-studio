@@ -122,6 +122,11 @@ export function DeliveryReminderFollowUpContextCallout({
         <input name="workspaceId" type="hidden" value={record.workspaceId} />
         <input name="returnToHref" type="hidden" value={returnToHref} />
         <input
+          name="focusedReminderBucket"
+          type="hidden"
+          value={record.reminderBucket}
+        />
+        <input
           name="focusedReminderNotificationId"
           type="hidden"
           value={record.notificationId}

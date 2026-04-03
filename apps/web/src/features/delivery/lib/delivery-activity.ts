@@ -1,3 +1,10 @@
+import {
+  getDeliveryReminderRepairActivityBadgeClasses,
+  getDeliveryReminderRepairActivityBadgeLabel,
+  getDeliveryReminderRepairActivityDescription,
+  getDeliveryReminderRepairActivityTitle,
+  isDeliveryReminderRepairActivityMetadata
+} from "@/features/delivery/lib/delivery-reminder-repair-activity"
 import type { DeliveryWorkspaceEventRecord } from "@/server/database/types"
 
 export type DeliveryWorkspaceActivitySummary = {
@@ -67,5 +74,67 @@ export function summarizeDeliveryWorkspaceActivity(
     downloadCount,
     lastDownloadedAt,
     lastViewedAt
+  }
+}
+
+
+export function resolveDeliveryWorkspaceEventPresentation(
+  event: DeliveryWorkspaceEventRecord
+) {
+  if (isDeliveryReminderRepairActivityMetadata(event.metadata)) {
+    return {
+      badgeClassName: getDeliveryReminderRepairActivityBadgeClasses(
+        event.metadata
+      ),
+      badgeLabel: getDeliveryReminderRepairActivityBadgeLabel(event.metadata),
+      description: getDeliveryReminderRepairActivityDescription(event.metadata),
+      title: getDeliveryReminderRepairActivityTitle(event.metadata)
+    }
+  }
+
+  if (event.event_type === "acknowledged") {
+    return {
+      badgeClassName: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
+      badgeLabel: "Acknowledged",
+      description:
+        typeof event.metadata.note === "string" && event.metadata.note.length > 0
+          ? event.metadata.note
+          : "Recipient acknowledged the delivery workspace.",
+      title: "Delivery acknowledged"
+    }
+  }
+
+  if (event.event_type === "downloaded") {
+    return {
+      badgeClassName: "border-cyan-400/30 bg-cyan-500/10 text-cyan-200",
+      badgeLabel: "Downloaded",
+      description: "Recipient downloaded delivery assets.",
+      title: "Delivery assets downloaded"
+    }
+  }
+
+  if (event.event_type === "viewed") {
+    return {
+      badgeClassName: "border-indigo-400/30 bg-indigo-500/10 text-indigo-200",
+      badgeLabel: "Viewed",
+      description: "Recipient viewed the delivery workspace.",
+      title: "Delivery workspace viewed"
+    }
+  }
+
+  if (event.event_type === "delivered") {
+    return {
+      badgeClassName: "border-emerald-400/30 bg-emerald-500/10 text-emerald-200",
+      badgeLabel: "Delivered",
+      description: "Delivery workspace became available to the recipient.",
+      title: "Delivery sent"
+    }
+  }
+
+  return {
+    badgeClassName: "border-white/10 bg-white/[0.05] text-slate-300",
+    badgeLabel: "Activity",
+    description: "Delivery workspace activity recorded.",
+    title: "Delivery activity"
   }
 }

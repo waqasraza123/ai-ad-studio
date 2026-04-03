@@ -6,6 +6,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   getDeliveryWorkspaceByIdForOwner,
+  getDeliveryWorkspaceFollowUpSnapshotById,
+  recordDeliveryWorkspaceEvent,
   updateDeliveryWorkspaceFollowUp
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
 import { getRenderBatchByIdForOwner } from "@/server/render-batches/render-batch-repository"
@@ -19,6 +21,11 @@ import {
   normalizeDeliveryReminderRepairAction
 } from "@/features/delivery/lib/delivery-reminder-repair"
 import { buildDeliveryReminderRepairResultHref } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
+import {
+  buildDeliveryReminderRepairActivityMetadata,
+  normalizeReminderBucketForRepairActivity,
+  normalizeReminderNotificationIdForRepairActivity
+} from "@/features/delivery/lib/delivery-reminder-repair-activity"
 
 function getOptionalTrimmedFormValue(formData: FormData, fieldName: string) {
   const rawValue = formData.get(fieldName)
@@ -169,10 +176,13 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     formData,
     "currentFollowUpNote"
   )
-  const focusedReminderNotificationId = getOptionalTrimmedFormValue(
-    formData,
-    "focusedReminderNotificationId"
+  const focusedReminderBucket = normalizeReminderBucketForRepairActivity(
+    formData.get("focusedReminderBucket")
   )
+  const focusedReminderNotificationId =
+    normalizeReminderNotificationIdForRepairActivity(
+      formData.get("focusedReminderNotificationId")
+    )
   const reminderRepairAction = normalizeDeliveryReminderRepairAction(
     formData.get(deliveryReminderRepairActionFieldName)
   )
@@ -190,6 +200,8 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
   if (!workspace) {
     throw new Error("Delivery workspace not found")
   }
+
+  const workspaceBefore = await getDeliveryWorkspaceFollowUpSnapshotById(workspace.id)
 
   const repairValues = buildDeliveryReminderRepairValues({
     action: reminderRepairAction
@@ -209,6 +221,37 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     revalidatePath("/dashboard/delivery")
   } catch {
     outcomeStatus = "error"
+  }
+
+  try {
+    await recordDeliveryWorkspaceEvent({
+      workspaceId: workspace.id,
+      ownerId: user.id,
+      projectId: workspace.project_id,
+      exportId: workspace.canonical_export_id,
+      eventType: "viewed",
+      actorLabel: "Support operator",
+      metadata: buildDeliveryReminderRepairActivityMetadata({
+        nextFollowUpDueOn:
+          outcomeStatus === "success"
+            ? repairValues.followUpDueOn
+            : workspaceBefore.follow_up_due_on,
+        nextFollowUpStatus:
+          outcomeStatus === "success"
+            ? repairValues.followUpStatus
+            : workspaceBefore.follow_up_status,
+        previousFollowUpDueOn: workspaceBefore.follow_up_due_on,
+        previousFollowUpStatus: workspaceBefore.follow_up_status,
+        reminderBucket: focusedReminderBucket,
+        reminderNotificationId: focusedReminderNotificationId,
+        repairAction: reminderRepairAction,
+        repairOutcome: outcomeStatus
+      })
+    })
+
+    revalidatePath("/dashboard/delivery")
+  } catch (error) {
+    console.error("Failed to append delivery reminder repair activity", error)
   }
 
   redirect(

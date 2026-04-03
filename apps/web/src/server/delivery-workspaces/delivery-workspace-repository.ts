@@ -426,6 +426,27 @@ export async function getDeliveryWorkspaceByIdForOwner(
   )
 }
 
+
+export async function getDeliveryWorkspaceFollowUpSnapshotById(workspaceId: string) {
+  const supabase = await createSupabaseServerClient()
+
+  const { data, error } = await supabase
+    .from("delivery_workspaces")
+    .select("id, follow_up_status, follow_up_due_on")
+    .eq("id", workspaceId)
+    .single()
+
+  if (error || !data) {
+    throw new Error("Failed to load delivery workspace follow-up snapshot")
+  }
+
+  return {
+    follow_up_due_on: data.follow_up_due_on ?? null,
+    follow_up_status: normalizeDeliveryFollowUpStatus(data.follow_up_status),
+    id: data.id
+  }
+}
+
 export async function updateDeliveryWorkspaceFollowUp(input: {
   followUpDueOn: string | null
   followUpNote: string | null
