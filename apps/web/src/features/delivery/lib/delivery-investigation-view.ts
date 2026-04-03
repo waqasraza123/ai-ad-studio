@@ -1,15 +1,15 @@
-import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import type { DeliveryReminderSupportFilter } from "./delivery-reminder-support-filter"
 import {
   buildDeliveryWorkspaceFocusAnchorId,
   buildDeliveryWorkspaceFollowUpAnchorId
-} from "@/features/delivery/lib/delivery-reminder-support-links"
+} from "./delivery-reminder-support-links"
 import {
   getDeliveryReminderSupportFilterLabel
-} from "@/features/delivery/lib/delivery-reminder-support-filter"
-import type { DeliverySupportActivityFilter } from "@/features/delivery/lib/delivery-support-activity-filter"
+} from "./delivery-reminder-support-filter"
+import type { DeliverySupportActivityFilter } from "./delivery-support-activity-filter"
 import {
   getDeliverySupportActivityFilterLabel
-} from "@/features/delivery/lib/delivery-support-activity-filter"
+} from "./delivery-support-activity-filter"
 
 export type DeliveryInvestigationViewState = {
   activity: string | null

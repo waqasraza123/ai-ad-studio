@@ -1,10 +1,10 @@
-import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
+import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
 import {
   isDeliveryReminderRepairActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-repair-activity"
+} from "./delivery-reminder-repair-activity"
 import {
   isDeliveryReminderSupportNoteActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-support-note"
+} from "./delivery-reminder-support-note"
 
 type SupportActivityRecord = {
   metadata: unknown

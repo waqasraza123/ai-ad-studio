@@ -1,12 +1,12 @@
 import {
   isDeliveryReminderRepairActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-repair-activity"
+} from "./delivery-reminder-repair-activity"
 import {
   isDeliveryReminderSupportNoteActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-support-note"
+} from "./delivery-reminder-support-note"
 import {
   isDeliveryReminderMismatchResolutionActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
+} from "./delivery-reminder-mismatch-resolution"
 
 export type DeliverySupportActivityFilter =
   | "all"

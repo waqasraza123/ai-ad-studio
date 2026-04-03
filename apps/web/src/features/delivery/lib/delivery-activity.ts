@@ -4,21 +4,21 @@ import {
   getDeliveryReminderRepairActivityDescription,
   getDeliveryReminderRepairActivityTitle,
   isDeliveryReminderRepairActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-repair-activity"
+} from "./delivery-reminder-repair-activity"
 import {
   getDeliveryReminderSupportNoteActivityBadgeClasses,
   getDeliveryReminderSupportNoteActivityBadgeLabel,
   getDeliveryReminderSupportNoteActivityDescription,
   getDeliveryReminderSupportNoteActivityTitle,
   isDeliveryReminderSupportNoteActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-support-note"
+} from "./delivery-reminder-support-note"
 import {
   getDeliveryReminderMismatchResolutionActivityBadgeClasses,
   getDeliveryReminderMismatchResolutionActivityBadgeLabel,
   getDeliveryReminderMismatchResolutionActivityDescription,
   getDeliveryReminderMismatchResolutionActivityTitle,
   isDeliveryReminderMismatchResolutionActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
+} from "./delivery-reminder-mismatch-resolution"
 import type { DeliveryWorkspaceEventRecord } from "@/server/database/types"
 
 export type DeliveryWorkspaceActivitySummary = {
