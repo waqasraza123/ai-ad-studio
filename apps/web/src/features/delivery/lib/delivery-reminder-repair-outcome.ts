@@ -1,5 +1,9 @@
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
 import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
+import {
+  deliveryReminderClearReasonMaxLength,
+  type DeliveryReminderClearReasonValidationError
+} from "./delivery-reminder-repair-reason"
 
 export const deliveryReminderRepairActionQueryParam = "reminder_repair_action"
 export const deliveryReminderRepairNotificationIdQueryParam =
@@ -7,11 +11,14 @@ export const deliveryReminderRepairNotificationIdQueryParam =
 export const deliveryReminderRepairStatusQueryParam = "reminder_repair_status"
 export const deliveryReminderRepairWorkspaceIdQueryParam =
   "reminder_repair_workspace_id"
+export const deliveryReminderRepairErrorCodeQueryParam =
+  "reminder_repair_error_code"
 
 export type DeliveryReminderRepairStatus = "error" | "success"
 
 export type DeliveryReminderRepairOutcome = {
   action: DeliveryReminderRepairAction
+  errorCode: DeliveryReminderClearReasonValidationError | null
   notificationId: string | null
   status: DeliveryReminderRepairStatus
   workspaceId: string
@@ -51,9 +58,20 @@ function normalizeDeliveryReminderRepairAction(
   return null
 }
 
+function normalizeDeliveryReminderRepairErrorCode(
+  value: string | null | undefined
+): DeliveryReminderClearReasonValidationError | null {
+  if (value === "reason_required" || value === "reason_too_long") {
+    return value
+  }
+
+  return null
+}
+
 export function buildDeliveryReminderRepairResultHref(input: {
   action: DeliveryReminderRepairAction
   baseHref: string
+  errorCode?: DeliveryReminderClearReasonValidationError | null
   notificationId: string | null
   status: DeliveryReminderRepairStatus
   workspaceId: string
@@ -76,11 +94,21 @@ export function buildDeliveryReminderRepairResultHref(input: {
     url.searchParams.delete(deliveryReminderRepairNotificationIdQueryParam)
   }
 
+  if (input.errorCode) {
+    url.searchParams.set(
+      deliveryReminderRepairErrorCodeQueryParam,
+      input.errorCode
+    )
+  } else {
+    url.searchParams.delete(deliveryReminderRepairErrorCodeQueryParam)
+  }
+
   return `${url.pathname}${url.search}${url.hash}`
 }
 
 export function normalizeDeliveryReminderRepairOutcome(input: {
   action: string | null | undefined
+  errorCode?: string | null | undefined
   notificationId: string | null | undefined
   status: string | null | undefined
   workspaceId: string | null | undefined
@@ -95,6 +123,7 @@ export function normalizeDeliveryReminderRepairOutcome(input: {
 
   return {
     action,
+    errorCode: normalizeDeliveryReminderRepairErrorCode(input.errorCode),
     notificationId: normalizeNonEmptyString(input.notificationId),
     status,
     workspaceId
@@ -127,4 +156,26 @@ export function getDeliveryReminderRepairActionLabel(
   }
 
   return "Cleared reminder scheduling"
+}
+
+export function getDeliveryReminderRepairOutcomeMessage(
+  outcome: DeliveryReminderRepairOutcome
+) {
+  if (outcome.status === "success") {
+    return `${getDeliveryReminderRepairActionLabel(
+      outcome.action
+    )} for workspace ${outcome.workspaceId}.`
+  }
+
+  if (outcome.errorCode === "reason_required") {
+    return "Clear reminder scheduling requires an explicit operator reason."
+  }
+
+  if (outcome.errorCode === "reason_too_long") {
+    return `Clear reason must be ${deliveryReminderClearReasonMaxLength} characters or fewer.`
+  }
+
+  return `Could not complete ${getDeliveryReminderRepairActionLabel(
+    outcome.action
+  ).toLowerCase()} for workspace ${outcome.workspaceId}.`
 }

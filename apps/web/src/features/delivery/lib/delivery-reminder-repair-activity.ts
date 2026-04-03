@@ -1,7 +1,10 @@
 import type { DeliveryFollowUpStatus } from "@/server/database/types"
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
+import type { DeliveryReminderClearReasonValidationError } from "./delivery-reminder-repair-reason"
 
 export type DeliveryReminderRepairActivityMetadata = {
+  clearReminderReason: string | null
+  errorCode: DeliveryReminderClearReasonValidationError | null
   nextFollowUpDueOn: string | null
   nextFollowUpStatus: DeliveryFollowUpStatus | null
   previousFollowUpDueOn: string | null
@@ -23,11 +26,9 @@ function isFollowUpStatusValue(value: unknown): value is DeliveryFollowUpStatus 
   )
 }
 
-function normalizeNullableString(value: unknown) {
-  return typeof value === "string" && value.length > 0 ? value : null
-}
-
 export function buildDeliveryReminderRepairActivityMetadata(input: {
+  clearReminderReason: string | null
+  errorCode: DeliveryReminderClearReasonValidationError | null
   nextFollowUpDueOn: string | null
   nextFollowUpStatus: DeliveryFollowUpStatus | null
   previousFollowUpDueOn: string | null
@@ -38,6 +39,8 @@ export function buildDeliveryReminderRepairActivityMetadata(input: {
   repairOutcome: "error" | "success"
 }): DeliveryReminderRepairActivityMetadata {
   return {
+    clearReminderReason: input.clearReminderReason,
+    errorCode: input.errorCode,
     nextFollowUpDueOn: input.nextFollowUpDueOn,
     nextFollowUpStatus: input.nextFollowUpStatus,
     previousFollowUpDueOn: input.previousFollowUpDueOn,
@@ -64,6 +67,7 @@ export function isDeliveryReminderRepairActivityMetadata(
   const reminderBucket = metadata.reminderBucket
   const previousFollowUpStatus = metadata.previousFollowUpStatus
   const nextFollowUpStatus = metadata.nextFollowUpStatus
+  const errorCode = metadata.errorCode
 
   return (
     metadata.source === "reminder_support_repair" &&
@@ -73,10 +77,12 @@ export function isDeliveryReminderRepairActivityMetadata(
     (reminderBucket === null ||
       reminderBucket === "due_today" ||
       reminderBucket === "overdue") &&
-    normalizeNullableString(metadata.reminderNotificationId) !== undefined &&
     (previousFollowUpStatus === null ||
       isFollowUpStatusValue(previousFollowUpStatus)) &&
-    (nextFollowUpStatus === null || isFollowUpStatusValue(nextFollowUpStatus))
+    (nextFollowUpStatus === null || isFollowUpStatusValue(nextFollowUpStatus)) &&
+    (errorCode === null ||
+      errorCode === "reason_required" ||
+      errorCode === "reason_too_long")
   )
 }
 
@@ -140,6 +146,26 @@ export function getDeliveryReminderRepairActivityTitle(
 export function getDeliveryReminderRepairActivityDescription(
   metadata: DeliveryReminderRepairActivityMetadata
 ) {
+  if (
+    metadata.repairAction === "clear_reminder_scheduling" &&
+    metadata.repairOutcome === "error" &&
+    metadata.errorCode === "reason_required"
+  ) {
+    return `Triggered from ${getReminderBucketLabel(
+      metadata.reminderBucket
+    )} reminder context. Clear reminder scheduling requires an explicit operator reason.`
+  }
+
+  if (
+    metadata.repairAction === "clear_reminder_scheduling" &&
+    metadata.repairOutcome === "error" &&
+    metadata.errorCode === "reason_too_long"
+  ) {
+    return `Triggered from ${getReminderBucketLabel(
+      metadata.reminderBucket
+    )} reminder context. Clear reason exceeded the allowed length.`
+  }
+
   const previousState = getFollowUpStateLabel({
     dueOn: metadata.previousFollowUpDueOn,
     status: metadata.previousFollowUpStatus
@@ -150,23 +176,16 @@ export function getDeliveryReminderRepairActivityDescription(
     status: metadata.nextFollowUpStatus
   })
 
-  return `Triggered from ${getReminderBucketLabel(
+  const baseDescription = `Triggered from ${getReminderBucketLabel(
     metadata.reminderBucket
   )} reminder context. Follow-up changed from ${previousState} to ${nextState}.`
-}
 
-export function normalizeReminderBucketForRepairActivity(
-  value: FormDataEntryValue | null | undefined
-): "due_today" | "overdue" | null {
-  if (value === "due_today" || value === "overdue") {
-    return value
+  if (
+    metadata.repairAction === "clear_reminder_scheduling" &&
+    metadata.clearReminderReason
+  ) {
+    return `${baseDescription} Reason: ${metadata.clearReminderReason}`
   }
 
-  return null
-}
-
-export function normalizeReminderNotificationIdForRepairActivity(
-  value: FormDataEntryValue | null | undefined
-) {
-  return normalizeNullableString(value)
+  return baseDescription
 }

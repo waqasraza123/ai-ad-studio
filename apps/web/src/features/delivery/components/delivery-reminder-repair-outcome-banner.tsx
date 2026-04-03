@@ -1,5 +1,5 @@
 import type { DeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
-import { getDeliveryReminderRepairActionLabel } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
+import { getDeliveryReminderRepairOutcomeMessage } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryReminderRepairOutcomeBannerProps = {
   outcome: DeliveryReminderRepairOutcome
@@ -18,13 +18,7 @@ export function DeliveryReminderRepairOutcomeBanner({
           : "border-rose-400/30 bg-rose-500/10 text-rose-100"
       }`}
     >
-      {isSuccess
-        ? `${getDeliveryReminderRepairActionLabel(
-            outcome.action
-          )} for workspace ${outcome.workspaceId}.`
-        : `Could not complete ${getDeliveryReminderRepairActionLabel(
-            outcome.action
-          ).toLowerCase()} for workspace ${outcome.workspaceId}.`}
+      {getDeliveryReminderRepairOutcomeMessage(outcome)}
     </div>
   )
 }

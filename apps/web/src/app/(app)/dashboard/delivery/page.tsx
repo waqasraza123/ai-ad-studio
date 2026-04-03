@@ -52,6 +52,7 @@ type DeliveryPageProps = {
     focus_reminder_notification_id?: string
     focus_workspace_id?: string
     reminder_repair_action?: string
+    reminder_repair_error_code?: string
     reminder_repair_notification_id?: string
     reminder_repair_status?: string
     reminder_repair_workspace_id?: string
@@ -73,6 +74,7 @@ export default async function DeliveryPage({
   const resolvedSearchParams = await searchParams
   const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
     action: resolvedSearchParams.reminder_repair_action,
+    errorCode: resolvedSearchParams.reminder_repair_error_code,
     notificationId: resolvedSearchParams.reminder_repair_notification_id,
     status: resolvedSearchParams.reminder_repair_status,
     workspaceId: resolvedSearchParams.reminder_repair_workspace_id

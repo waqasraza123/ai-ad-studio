@@ -22,6 +22,11 @@ import {
 } from "@/features/delivery/lib/delivery-reminder-repair"
 import { buildDeliveryReminderRepairResultHref } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 import {
+  deliveryReminderClearReasonFieldName,
+  normalizeDeliveryReminderClearReason,
+  validateDeliveryReminderClearReason
+} from "@/features/delivery/lib/delivery-reminder-repair-reason"
+import {
   buildDeliveryReminderRepairActivityMetadata,
   normalizeReminderBucketForRepairActivity,
   normalizeReminderNotificationIdForRepairActivity
@@ -176,6 +181,9 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     formData,
     "currentFollowUpNote"
   )
+  const reminderRepairAction = normalizeDeliveryReminderRepairAction(
+    formData.get(deliveryReminderRepairActionFieldName)
+  )
   const focusedReminderBucket = normalizeReminderBucketForRepairActivity(
     formData.get("focusedReminderBucket")
   )
@@ -183,8 +191,8 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     normalizeReminderNotificationIdForRepairActivity(
       formData.get("focusedReminderNotificationId")
     )
-  const reminderRepairAction = normalizeDeliveryReminderRepairAction(
-    formData.get(deliveryReminderRepairActionFieldName)
+  const clearReminderReason = normalizeDeliveryReminderClearReason(
+    formData.get(deliveryReminderClearReasonFieldName)
   )
 
   if (!workspaceId) {
@@ -201,11 +209,55 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     throw new Error("Delivery workspace not found")
   }
 
-  const workspaceBefore = await getDeliveryWorkspaceFollowUpSnapshotById(workspace.id)
-
+  const workspaceBefore = await getDeliveryWorkspaceFollowUpSnapshotById(workspaceId)
   const repairValues = buildDeliveryReminderRepairValues({
     action: reminderRepairAction
   })
+
+  if (reminderRepairAction === "clear_reminder_scheduling") {
+    const clearReasonValidationError =
+      validateDeliveryReminderClearReason(clearReminderReason)
+
+    if (clearReasonValidationError) {
+      try {
+        await recordDeliveryWorkspaceEvent({
+          workspaceId: workspace.id,
+          ownerId: user.id,
+          projectId: workspace.project_id,
+          exportId: workspace.canonical_export_id,
+          eventType: "viewed",
+          actorLabel: "Support operator",
+          metadata: buildDeliveryReminderRepairActivityMetadata({
+            clearReminderReason,
+            errorCode: clearReasonValidationError,
+            nextFollowUpDueOn: workspaceBefore.follow_up_due_on,
+            nextFollowUpStatus: workspaceBefore.follow_up_status,
+            previousFollowUpDueOn: workspaceBefore.follow_up_due_on,
+            previousFollowUpStatus: workspaceBefore.follow_up_status,
+            reminderBucket: focusedReminderBucket,
+            reminderNotificationId: focusedReminderNotificationId,
+            repairAction: reminderRepairAction,
+            repairOutcome: "error"
+          })
+        })
+
+        revalidatePath("/dashboard/delivery")
+      } catch (error) {
+        console.error("Failed to append delivery reminder validation activity", error)
+      }
+
+      redirect(
+        buildDeliveryReminderRepairResultHref({
+          action: reminderRepairAction,
+          baseHref: returnToHref,
+          errorCode: clearReasonValidationError,
+          notificationId: focusedReminderNotificationId,
+          status: "error",
+          workspaceId
+        })
+      )
+    }
+  }
 
   let outcomeStatus: "error" | "success" = "success"
 
@@ -217,8 +269,6 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
       ownerId: user.id,
       workspaceId: workspace.id
     })
-
-    revalidatePath("/dashboard/delivery")
   } catch {
     outcomeStatus = "error"
   }
@@ -232,6 +282,11 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
       eventType: "viewed",
       actorLabel: "Support operator",
       metadata: buildDeliveryReminderRepairActivityMetadata({
+        clearReminderReason:
+          reminderRepairAction === "clear_reminder_scheduling"
+            ? clearReminderReason
+            : null,
+        errorCode: null,
         nextFollowUpDueOn:
           outcomeStatus === "success"
             ? repairValues.followUpDueOn
@@ -252,6 +307,10 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     revalidatePath("/dashboard/delivery")
   } catch (error) {
     console.error("Failed to append delivery reminder repair activity", error)
+  }
+
+  if (outcomeStatus === "success") {
+    revalidatePath("/dashboard/delivery")
   }
 
   redirect(

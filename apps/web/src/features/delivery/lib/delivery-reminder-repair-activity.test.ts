@@ -4,32 +4,34 @@ import {
   getDeliveryReminderRepairActivityBadgeLabel,
   getDeliveryReminderRepairActivityDescription,
   getDeliveryReminderRepairActivityTitle,
-  isDeliveryReminderRepairActivityMetadata,
-  normalizeReminderBucketForRepairActivity,
-  normalizeReminderNotificationIdForRepairActivity
+  isDeliveryReminderRepairActivityMetadata
 } from "./delivery-reminder-repair-activity"
 
 describe("buildDeliveryReminderRepairActivityMetadata", () => {
   it("builds the expected repair metadata", () => {
     expect(
       buildDeliveryReminderRepairActivityMetadata({
-        nextFollowUpDueOn: "2026-03-28",
-        nextFollowUpStatus: "reminder_scheduled",
+        clearReminderReason: "Client confirmed no further reminders needed",
+        errorCode: null,
+        nextFollowUpDueOn: null,
+        nextFollowUpStatus: "none",
         previousFollowUpDueOn: "2026-03-27",
         previousFollowUpStatus: "reminder_scheduled",
         reminderBucket: "overdue",
         reminderNotificationId: "notification-1",
-        repairAction: "reschedule_tomorrow",
+        repairAction: "clear_reminder_scheduling",
         repairOutcome: "success"
       })
     ).toEqual({
-      nextFollowUpDueOn: "2026-03-28",
-      nextFollowUpStatus: "reminder_scheduled",
+      clearReminderReason: "Client confirmed no further reminders needed",
+      errorCode: null,
+      nextFollowUpDueOn: null,
+      nextFollowUpStatus: "none",
       previousFollowUpDueOn: "2026-03-27",
       previousFollowUpStatus: "reminder_scheduled",
       reminderBucket: "overdue",
       reminderNotificationId: "notification-1",
-      repairAction: "reschedule_tomorrow",
+      repairAction: "clear_reminder_scheduling",
       repairOutcome: "success",
       source: "reminder_support_repair"
     })
@@ -40,6 +42,8 @@ describe("isDeliveryReminderRepairActivityMetadata", () => {
   it("returns true for valid repair metadata", () => {
     expect(
       isDeliveryReminderRepairActivityMetadata({
+        clearReminderReason: null,
+        errorCode: "reason_required",
         nextFollowUpDueOn: "2026-03-28",
         nextFollowUpStatus: "reminder_scheduled",
         previousFollowUpDueOn: "2026-03-27",
@@ -63,48 +67,47 @@ describe("isDeliveryReminderRepairActivityMetadata", () => {
 })
 
 describe("presentation helpers", () => {
-  const metadata = buildDeliveryReminderRepairActivityMetadata({
-    nextFollowUpDueOn: "2026-03-28",
-    nextFollowUpStatus: "reminder_scheduled",
-    previousFollowUpDueOn: "2026-03-27",
-    previousFollowUpStatus: "reminder_scheduled",
-    reminderBucket: "overdue",
-    reminderNotificationId: "notification-1",
-    repairAction: "reschedule_tomorrow",
-    repairOutcome: "success"
-  })
+  it("returns the expected success description with a reason", () => {
+    const metadata = buildDeliveryReminderRepairActivityMetadata({
+      clearReminderReason: "Client confirmed no further reminders needed",
+      errorCode: null,
+      nextFollowUpDueOn: null,
+      nextFollowUpStatus: "none",
+      previousFollowUpDueOn: "2026-03-27",
+      previousFollowUpStatus: "reminder_scheduled",
+      reminderBucket: "overdue",
+      reminderNotificationId: "notification-1",
+      repairAction: "clear_reminder_scheduling",
+      repairOutcome: "success"
+    })
 
-  it("returns the expected badge label", () => {
     expect(getDeliveryReminderRepairActivityBadgeLabel(metadata)).toBe(
       "Reminder repair"
     )
-  })
-
-  it("returns the expected title", () => {
     expect(getDeliveryReminderRepairActivityTitle(metadata)).toBe(
-      "Rescheduled reminder follow-up from support context"
+      "Cleared reminder scheduling from support context"
     )
-  })
-
-  it("returns the expected description", () => {
     expect(getDeliveryReminderRepairActivityDescription(metadata)).toBe(
-      "Triggered from overdue reminder context. Follow-up changed from reminder_scheduled on 2026-03-27 to reminder_scheduled on 2026-03-28."
+      "Triggered from overdue reminder context. Follow-up changed from reminder_scheduled on 2026-03-27 to none. Reason: Client confirmed no further reminders needed"
     )
   })
-})
 
-describe("normalizers", () => {
-  it("normalizes reminder bucket values", () => {
-    expect(normalizeReminderBucketForRepairActivity("due_today")).toBe("due_today")
-    expect(normalizeReminderBucketForRepairActivity("overdue")).toBe("overdue")
-    expect(normalizeReminderBucketForRepairActivity("invalid")).toBeNull()
-  })
+  it("returns the expected validation failure description", () => {
+    const metadata = buildDeliveryReminderRepairActivityMetadata({
+      clearReminderReason: null,
+      errorCode: "reason_required",
+      nextFollowUpDueOn: "2026-03-27",
+      nextFollowUpStatus: "reminder_scheduled",
+      previousFollowUpDueOn: "2026-03-27",
+      previousFollowUpStatus: "reminder_scheduled",
+      reminderBucket: "due_today",
+      reminderNotificationId: "notification-1",
+      repairAction: "clear_reminder_scheduling",
+      repairOutcome: "error"
+    })
 
-  it("normalizes reminder notification ids", () => {
-    expect(
-      normalizeReminderNotificationIdForRepairActivity("notification-1")
-    ).toBe("notification-1")
-    expect(normalizeReminderNotificationIdForRepairActivity("")).toBeNull()
-    expect(normalizeReminderNotificationIdForRepairActivity(null)).toBeNull()
+    expect(getDeliveryReminderRepairActivityDescription(metadata)).toBe(
+      "Triggered from due today reminder context. Clear reminder scheduling requires an explicit operator reason."
+    )
   })
 })

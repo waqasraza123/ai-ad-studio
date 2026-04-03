@@ -6,12 +6,16 @@ import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/deli
 import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
 import {
   doesDeliveryReminderRepairOutcomeMatchRecord,
-  getDeliveryReminderRepairActionLabel,
+  getDeliveryReminderRepairOutcomeMessage,
   type DeliveryReminderRepairOutcome
 } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 import {
   buildDeliveryReminderFollowUpFormHref
 } from "@/features/delivery/lib/delivery-reminder-support-links"
+import {
+  deliveryReminderClearReasonFieldName,
+  deliveryReminderClearReasonMaxLength
+} from "@/features/delivery/lib/delivery-reminder-repair-reason"
 import {
   getDeliveryWorkspaceReminderBucketClasses,
   getDeliveryWorkspaceReminderBucketLabel
@@ -99,13 +103,7 @@ export function DeliveryReminderFollowUpContextCallout({
               : "border-rose-400/30 bg-rose-500/10 text-rose-100"
           }`}
         >
-          {matchingRepairOutcome.status === "success"
-            ? `${getDeliveryReminderRepairActionLabel(
-                matchingRepairOutcome.action
-              )} in this focused workspace view.`
-            : `${getDeliveryReminderRepairActionLabel(
-                matchingRepairOutcome.action
-              )} failed in this focused workspace view.`}
+          {getDeliveryReminderRepairOutcomeMessage(matchingRepairOutcome)}
         </div>
       ) : null}
 
@@ -122,14 +120,14 @@ export function DeliveryReminderFollowUpContextCallout({
         <input name="workspaceId" type="hidden" value={record.workspaceId} />
         <input name="returnToHref" type="hidden" value={returnToHref} />
         <input
-          name="focusedReminderBucket"
-          type="hidden"
-          value={record.reminderBucket}
-        />
-        <input
           name="focusedReminderNotificationId"
           type="hidden"
           value={record.notificationId}
+        />
+        <input
+          name="focusedReminderBucket"
+          type="hidden"
+          value={record.reminderBucket}
         />
         <input
           name="currentFollowUpNote"
@@ -142,12 +140,58 @@ export function DeliveryReminderFollowUpContextCallout({
           label="Reschedule for tomorrow"
           value="reschedule_tomorrow"
         />
+      </form>
 
-        <DeliveryReminderRepairActionButton
-          className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:border-rose-300/40 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-          label="Clear reminder scheduling"
-          value="clear_reminder_scheduling"
+      <form
+        action={repairDeliveryWorkspaceReminderFromSupport}
+        className="mt-4 rounded-[1rem] border border-white/10 bg-black/10 p-4"
+      >
+        <input name="workspaceId" type="hidden" value={record.workspaceId} />
+        <input name="returnToHref" type="hidden" value={returnToHref} />
+        <input
+          name="focusedReminderNotificationId"
+          type="hidden"
+          value={record.notificationId}
         />
+        <input
+          name="focusedReminderBucket"
+          type="hidden"
+          value={record.reminderBucket}
+        />
+        <input
+          name="currentFollowUpNote"
+          type="hidden"
+          value={currentFollowUpNote ?? ""}
+        />
+
+        <div className="space-y-2">
+          <label
+            className="block text-sm font-medium text-white"
+            htmlFor={`${record.notificationId}-clear-reason`}
+          >
+            Reason for clearing reminder scheduling
+          </label>
+          <textarea
+            className="min-h-[96px] w-full rounded-[1rem] border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40 focus:bg-white/[0.06]"
+            id={`${record.notificationId}-clear-reason`}
+            maxLength={deliveryReminderClearReasonMaxLength}
+            name={deliveryReminderClearReasonFieldName}
+            placeholder="Explain why reminder scheduling should be cleared."
+            required
+          />
+          <p className="text-xs text-amber-100/70">
+            This reason is required and will be written into the delivery
+            activity audit trail.
+          </p>
+        </div>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <DeliveryReminderRepairActionButton
+            className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:border-rose-300/40 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+            label="Clear reminder scheduling"
+            value="clear_reminder_scheduling"
+          />
+        </div>
       </form>
     </div>
   )

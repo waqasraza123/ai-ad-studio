@@ -4,6 +4,7 @@ import {
   buildDeliveryReminderRepairResultHref,
   doesDeliveryReminderRepairOutcomeMatchRecord,
   getDeliveryReminderRepairActionLabel,
+  getDeliveryReminderRepairOutcomeMessage,
   normalizeDeliveryReminderRepairOutcome
 } from "./delivery-reminder-repair-outcome"
 
@@ -49,6 +50,21 @@ describe("buildDeliveryReminderRepairResultHref", () => {
       "/dashboard/delivery?activity=needs_follow_up&status=active&reminder_repair_action=reschedule_tomorrow&reminder_repair_status=success&reminder_repair_workspace_id=workspace-1&reminder_repair_notification_id=notification-1#delivery-workspace-workspace-1-follow-up"
     )
   })
+
+  it("adds an error code when present", () => {
+    expect(
+      buildDeliveryReminderRepairResultHref({
+        action: "clear_reminder_scheduling",
+        baseHref: "/dashboard/delivery",
+        errorCode: "reason_required",
+        notificationId: "notification-1",
+        status: "error",
+        workspaceId: "workspace-1"
+      })
+    ).toBe(
+      "/dashboard/delivery?reminder_repair_action=clear_reminder_scheduling&reminder_repair_status=error&reminder_repair_workspace_id=workspace-1&reminder_repair_notification_id=notification-1&reminder_repair_error_code=reason_required"
+    )
+  })
 })
 
 describe("normalizeDeliveryReminderRepairOutcome", () => {
@@ -67,12 +83,14 @@ describe("normalizeDeliveryReminderRepairOutcome", () => {
     expect(
       normalizeDeliveryReminderRepairOutcome({
         action: "clear_reminder_scheduling",
+        errorCode: "reason_too_long",
         notificationId: " notification-1 ",
         status: "error",
         workspaceId: " workspace-1 "
       })
     ).toEqual({
       action: "clear_reminder_scheduling",
+      errorCode: "reason_too_long",
       notificationId: "notification-1",
       status: "error",
       workspaceId: "workspace-1"
@@ -86,6 +104,7 @@ describe("doesDeliveryReminderRepairOutcomeMatchRecord", () => {
       doesDeliveryReminderRepairOutcomeMatchRecord({
         outcome: {
           action: "reschedule_tomorrow",
+          errorCode: null,
           notificationId: "notification-1",
           status: "success",
           workspaceId: "workspace-1"
@@ -100,6 +119,7 @@ describe("doesDeliveryReminderRepairOutcomeMatchRecord", () => {
       doesDeliveryReminderRepairOutcomeMatchRecord({
         outcome: {
           action: "reschedule_tomorrow",
+          errorCode: null,
           notificationId: "notification-2",
           status: "success",
           workspaceId: "workspace-1"
@@ -110,7 +130,7 @@ describe("doesDeliveryReminderRepairOutcomeMatchRecord", () => {
   })
 })
 
-describe("getDeliveryReminderRepairActionLabel", () => {
+describe("presentation helpers", () => {
   it("returns the expected labels", () => {
     expect(getDeliveryReminderRepairActionLabel("reschedule_tomorrow")).toBe(
       "Rescheduled for tomorrow"
@@ -118,5 +138,29 @@ describe("getDeliveryReminderRepairActionLabel", () => {
     expect(
       getDeliveryReminderRepairActionLabel("clear_reminder_scheduling")
     ).toBe("Cleared reminder scheduling")
+  })
+
+  it("returns the expected success message", () => {
+    expect(
+      getDeliveryReminderRepairOutcomeMessage({
+        action: "reschedule_tomorrow",
+        errorCode: null,
+        notificationId: "notification-1",
+        status: "success",
+        workspaceId: "workspace-1"
+      })
+    ).toBe("Rescheduled for tomorrow for workspace workspace-1.")
+  })
+
+  it("returns the expected validation error message", () => {
+    expect(
+      getDeliveryReminderRepairOutcomeMessage({
+        action: "clear_reminder_scheduling",
+        errorCode: "reason_required",
+        notificationId: "notification-1",
+        status: "error",
+        workspaceId: "workspace-1"
+      })
+    ).toBe("Clear reminder scheduling requires an explicit operator reason.")
   })
 })
