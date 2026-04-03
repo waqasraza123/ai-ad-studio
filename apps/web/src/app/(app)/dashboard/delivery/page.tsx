@@ -4,6 +4,7 @@ import { DeliverySupportActivityFilterBar } from "@/features/delivery/components
 import { DeliverySupportOpsSummaryPanel } from "@/features/delivery/components/delivery-support-ops-summary-panel"
 import { DeliveryInvestigationViewPanel } from "@/features/delivery/components/delivery-investigation-view-panel"
 import { DeliveryInvestigationContextHeader } from "@/features/delivery/components/delivery-investigation-context-header"
+import { DeliveryInvestigationStaleContextWarning } from "@/features/delivery/components/delivery-investigation-stale-context-warning"
 import {
   buildDeliveryReminderSupportRecords,
   summarizeDeliveryReminderSupportRecords
@@ -55,6 +56,7 @@ import {
 import { summarizeDeliverySupportOps } from "@/features/delivery/lib/delivery-support-ops-summary"
 import type { DeliveryInvestigationViewState } from "@/features/delivery/lib/delivery-investigation-view"
 import { buildDeliveryInvestigationContextSummary } from "@/features/delivery/lib/delivery-investigation-context-summary"
+import { buildDeliveryInvestigationStaleContextSummary } from "@/features/delivery/lib/delivery-investigation-stale-context"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
@@ -192,6 +194,15 @@ export default async function DeliveryPage({
     overviewRecords: supportFilteredWorkspaceOverviews
   })
 
+  const investigationStaleContextSummary =
+    buildDeliveryInvestigationStaleContextSummary({
+      focusFollowUpForm: shouldFocusFollowUpForm,
+      focusReminderNotificationId: focusReminderNotificationId ?? null,
+      focusWorkspaceId: focusedInvestigationWorkspaceId,
+      reminderSupportRecords: filteredReminderSupportRecords,
+      overviewRecords: supportFilteredWorkspaceOverviews
+    })
+
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
     record: focusedReminderSupportRecord,
     shouldFocusFollowUpForm
@@ -289,7 +300,12 @@ export default async function DeliveryPage({
         state={deliveryInvestigationViewState}
       />
 
-      {investigationContextSummary ? (
+      {investigationStaleContextSummary ? (
+        <DeliveryInvestigationStaleContextWarning
+          state={deliveryInvestigationViewState}
+          summary={investigationStaleContextSummary}
+        />
+      ) : investigationContextSummary ? (
         <DeliveryInvestigationContextHeader
           summary={investigationContextSummary}
         />

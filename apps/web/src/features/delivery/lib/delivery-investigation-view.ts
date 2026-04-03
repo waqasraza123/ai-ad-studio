@@ -114,6 +114,36 @@ export function buildDeliveryInvestigationBaseHref(
     : "/dashboard/delivery"
 }
 
+export function buildDeliveryInvestigationFocuslessHref(
+  state: DeliveryInvestigationViewState
+) {
+  const searchParams = new URLSearchParams()
+
+  setOptionalSearchParam(searchParams, "activity", state.activity)
+  setOptionalSearchParam(searchParams, "status", state.status)
+  setOptionalSearchParam(searchParams, "sort", state.sort)
+
+  if (state.reminderSupportFilter !== "all") {
+    searchParams.set(
+      "reminder_support_filter",
+      state.reminderSupportFilter
+    )
+  }
+
+  if (state.supportActivityFilter !== "all") {
+    searchParams.set(
+      "support_activity_filter",
+      state.supportActivityFilter
+    )
+  }
+
+  const search = searchParams.toString()
+
+  return search.length > 0
+    ? `/dashboard/delivery?${search}`
+    : "/dashboard/delivery"
+}
+
 export function hasPinnedDeliveryInvestigationContext(
   state: DeliveryInvestigationViewState
 ) {

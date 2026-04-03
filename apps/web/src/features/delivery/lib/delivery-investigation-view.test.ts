@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import {
   buildDeliveryInvestigationBaseHref,
+  buildDeliveryInvestigationFocuslessHref,
   buildDeliveryInvestigationViewHref,
   hasPinnedDeliveryInvestigationContext,
   summarizeDeliveryInvestigationViewState,
@@ -63,6 +64,24 @@ describe("buildDeliveryInvestigationBaseHref", () => {
       )
     ).toBe(
       "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity"
+    )
+  })
+})
+
+describe("buildDeliveryInvestigationFocuslessHref", () => {
+  it("keeps the current support filters while clearing stale focus params", () => {
+    expect(
+      buildDeliveryInvestigationFocuslessHref(
+        createState({
+          focusFollowUpForm: true,
+          focusReminderNotificationId: "notification-123",
+          focusWorkspaceId: "workspace-123",
+          reminderSupportFilter: "checkpoint_mismatch",
+          supportActivityFilter: "failed_reminder_repairs"
+        })
+      )
+    ).toBe(
+      "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&reminder_support_filter=checkpoint_mismatch&support_activity_filter=failed_reminder_repairs"
     )
   })
 })
