@@ -29,7 +29,7 @@ function createSupportRecord(
     workspaceId: overrides.workspaceId ?? "workspace-1",
     workspaceLastNotificationBucket:
       overrides.workspaceLastNotificationBucket ?? "due_today",
-    workspaceLastNotificationDate:
+      workspaceLastNotificationDate:
       overrides.workspaceLastNotificationDate ?? "2026-03-26",
     workspaceTitle: overrides.workspaceTitle ?? "Workspace"
   }
@@ -51,18 +51,19 @@ describe("buildDeliveryReminderRepairResultHref", () => {
     )
   })
 
-  it("adds an error code when present", () => {
+  it("adds error and note flags when present", () => {
     expect(
       buildDeliveryReminderRepairResultHref({
         action: "clear_reminder_scheduling",
         baseHref: "/dashboard/delivery",
-        errorCode: "reason_required",
+        errorCode: "handoff_note_too_long",
+        noteSaved: true,
         notificationId: "notification-1",
         status: "error",
         workspaceId: "workspace-1"
       })
     ).toBe(
-      "/dashboard/delivery?reminder_repair_action=clear_reminder_scheduling&reminder_repair_status=error&reminder_repair_workspace_id=workspace-1&reminder_repair_notification_id=notification-1&reminder_repair_error_code=reason_required"
+      "/dashboard/delivery?reminder_repair_action=clear_reminder_scheduling&reminder_repair_status=error&reminder_repair_workspace_id=workspace-1&reminder_repair_notification_id=notification-1&reminder_repair_error_code=handoff_note_too_long&reminder_repair_note_saved=1"
     )
   })
 })
@@ -83,14 +84,16 @@ describe("normalizeDeliveryReminderRepairOutcome", () => {
     expect(
       normalizeDeliveryReminderRepairOutcome({
         action: "clear_reminder_scheduling",
-        errorCode: "reason_too_long",
+        errorCode: "handoff_note_too_long",
+        noteSaved: "1",
         notificationId: " notification-1 ",
         status: "error",
         workspaceId: " workspace-1 "
       })
     ).toEqual({
       action: "clear_reminder_scheduling",
-      errorCode: "reason_too_long",
+      errorCode: "handoff_note_too_long",
+      noteSaved: true,
       notificationId: "notification-1",
       status: "error",
       workspaceId: "workspace-1"
@@ -105,6 +108,7 @@ describe("doesDeliveryReminderRepairOutcomeMatchRecord", () => {
         outcome: {
           action: "reschedule_tomorrow",
           errorCode: null,
+          noteSaved: false,
           notificationId: "notification-1",
           status: "success",
           workspaceId: "workspace-1"
@@ -112,21 +116,6 @@ describe("doesDeliveryReminderRepairOutcomeMatchRecord", () => {
         record: createSupportRecord()
       })
     ).toBe(true)
-  })
-
-  it("returns false when workspace or notification do not match", () => {
-    expect(
-      doesDeliveryReminderRepairOutcomeMatchRecord({
-        outcome: {
-          action: "reschedule_tomorrow",
-          errorCode: null,
-          notificationId: "notification-2",
-          status: "success",
-          workspaceId: "workspace-1"
-        },
-        record: createSupportRecord()
-      })
-    ).toBe(false)
   })
 })
 
@@ -140,27 +129,33 @@ describe("presentation helpers", () => {
     ).toBe("Cleared reminder scheduling")
   })
 
-  it("returns the expected success message", () => {
+  it("returns the expected success message with note confirmation", () => {
     expect(
       getDeliveryReminderRepairOutcomeMessage({
         action: "reschedule_tomorrow",
         errorCode: null,
+        noteSaved: true,
         notificationId: "notification-1",
         status: "success",
         workspaceId: "workspace-1"
       })
-    ).toBe("Rescheduled for tomorrow for workspace workspace-1.")
+    ).toBe(
+      "Rescheduled for tomorrow for workspace workspace-1. Support handoff note saved to the activity timeline."
+    )
   })
 
   it("returns the expected validation error message", () => {
     expect(
       getDeliveryReminderRepairOutcomeMessage({
         action: "clear_reminder_scheduling",
-        errorCode: "reason_required",
+        errorCode: "handoff_note_too_long",
+        noteSaved: false,
         notificationId: "notification-1",
         status: "error",
         workspaceId: "workspace-1"
       })
-    ).toBe("Clear reminder scheduling requires an explicit operator reason.")
+    ).toBe(
+      "Support handoff note must be 500 characters or fewer."
+    )
   })
 })

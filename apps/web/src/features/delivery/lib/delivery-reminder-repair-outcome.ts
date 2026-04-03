@@ -4,6 +4,10 @@ import {
   deliveryReminderClearReasonMaxLength,
   type DeliveryReminderClearReasonValidationError
 } from "./delivery-reminder-repair-reason"
+import {
+  deliveryReminderSupportHandoffNoteMaxLength,
+  type DeliveryReminderSupportNoteValidationError
+} from "./delivery-reminder-support-note"
 
 export const deliveryReminderRepairActionQueryParam = "reminder_repair_action"
 export const deliveryReminderRepairNotificationIdQueryParam =
@@ -13,12 +17,19 @@ export const deliveryReminderRepairWorkspaceIdQueryParam =
   "reminder_repair_workspace_id"
 export const deliveryReminderRepairErrorCodeQueryParam =
   "reminder_repair_error_code"
+export const deliveryReminderRepairNoteSavedQueryParam =
+  "reminder_repair_note_saved"
 
 export type DeliveryReminderRepairStatus = "error" | "success"
 
+export type DeliveryReminderRepairErrorCode =
+  | DeliveryReminderClearReasonValidationError
+  | DeliveryReminderSupportNoteValidationError
+
 export type DeliveryReminderRepairOutcome = {
   action: DeliveryReminderRepairAction
-  errorCode: DeliveryReminderClearReasonValidationError | null
+  errorCode: DeliveryReminderRepairErrorCode | null
+  noteSaved: boolean
   notificationId: string | null
   status: DeliveryReminderRepairStatus
   workspaceId: string
@@ -60,18 +71,33 @@ function normalizeDeliveryReminderRepairAction(
 
 function normalizeDeliveryReminderRepairErrorCode(
   value: string | null | undefined
-): DeliveryReminderClearReasonValidationError | null {
-  if (value === "reason_required" || value === "reason_too_long") {
+): DeliveryReminderRepairErrorCode | null {
+  if (
+    value === "reason_required" ||
+    value === "reason_too_long" ||
+    value === "handoff_note_too_long"
+  ) {
     return value
   }
 
   return null
 }
 
+function normalizeNoteSaved(value: string | null | undefined) {
+  if (typeof value !== "string") {
+    return false
+  }
+
+  const normalizedValue = value.trim().toLowerCase()
+
+  return normalizedValue === "1" || normalizedValue === "true"
+}
+
 export function buildDeliveryReminderRepairResultHref(input: {
   action: DeliveryReminderRepairAction
   baseHref: string
-  errorCode?: DeliveryReminderClearReasonValidationError | null
+  errorCode?: DeliveryReminderRepairErrorCode | null
+  noteSaved?: boolean
   notificationId: string | null
   status: DeliveryReminderRepairStatus
   workspaceId: string
@@ -103,12 +129,19 @@ export function buildDeliveryReminderRepairResultHref(input: {
     url.searchParams.delete(deliveryReminderRepairErrorCodeQueryParam)
   }
 
+  if (input.noteSaved) {
+    url.searchParams.set(deliveryReminderRepairNoteSavedQueryParam, "1")
+  } else {
+    url.searchParams.delete(deliveryReminderRepairNoteSavedQueryParam)
+  }
+
   return `${url.pathname}${url.search}${url.hash}`
 }
 
 export function normalizeDeliveryReminderRepairOutcome(input: {
   action: string | null | undefined
   errorCode?: string | null | undefined
+  noteSaved?: string | null | undefined
   notificationId: string | null | undefined
   status: string | null | undefined
   workspaceId: string | null | undefined
@@ -124,6 +157,7 @@ export function normalizeDeliveryReminderRepairOutcome(input: {
   return {
     action,
     errorCode: normalizeDeliveryReminderRepairErrorCode(input.errorCode),
+    noteSaved: normalizeNoteSaved(input.noteSaved),
     notificationId: normalizeNonEmptyString(input.notificationId),
     status,
     workspaceId
@@ -162,9 +196,13 @@ export function getDeliveryReminderRepairOutcomeMessage(
   outcome: DeliveryReminderRepairOutcome
 ) {
   if (outcome.status === "success") {
-    return `${getDeliveryReminderRepairActionLabel(
+    const baseMessage = `${getDeliveryReminderRepairActionLabel(
       outcome.action
     )} for workspace ${outcome.workspaceId}.`
+
+    return outcome.noteSaved
+      ? `${baseMessage} Support handoff note saved to the activity timeline.`
+      : baseMessage
   }
 
   if (outcome.errorCode === "reason_required") {
@@ -173,6 +211,10 @@ export function getDeliveryReminderRepairOutcomeMessage(
 
   if (outcome.errorCode === "reason_too_long") {
     return `Clear reason must be ${deliveryReminderClearReasonMaxLength} characters or fewer.`
+  }
+
+  if (outcome.errorCode === "handoff_note_too_long") {
+    return `Support handoff note must be ${deliveryReminderSupportHandoffNoteMaxLength} characters or fewer.`
   }
 
   return `Could not complete ${getDeliveryReminderRepairActionLabel(

@@ -5,6 +5,13 @@ import {
   getDeliveryReminderRepairActivityTitle,
   isDeliveryReminderRepairActivityMetadata
 } from "@/features/delivery/lib/delivery-reminder-repair-activity"
+import {
+  getDeliveryReminderSupportNoteActivityBadgeClasses,
+  getDeliveryReminderSupportNoteActivityBadgeLabel,
+  getDeliveryReminderSupportNoteActivityDescription,
+  getDeliveryReminderSupportNoteActivityTitle,
+  isDeliveryReminderSupportNoteActivityMetadata
+} from "@/features/delivery/lib/delivery-reminder-support-note"
 import type { DeliveryWorkspaceEventRecord } from "@/server/database/types"
 
 export type DeliveryWorkspaceActivitySummary = {
@@ -89,6 +96,17 @@ export function resolveDeliveryWorkspaceEventPresentation(
       badgeLabel: getDeliveryReminderRepairActivityBadgeLabel(event.metadata),
       description: getDeliveryReminderRepairActivityDescription(event.metadata),
       title: getDeliveryReminderRepairActivityTitle(event.metadata)
+    }
+  }
+
+  if (isDeliveryReminderSupportNoteActivityMetadata(event.metadata)) {
+    return {
+      badgeClassName: getDeliveryReminderSupportNoteActivityBadgeClasses(),
+      badgeLabel: getDeliveryReminderSupportNoteActivityBadgeLabel(),
+      description: getDeliveryReminderSupportNoteActivityDescription(
+        event.metadata
+      ),
+      title: getDeliveryReminderSupportNoteActivityTitle(event.metadata)
     }
   }
 
