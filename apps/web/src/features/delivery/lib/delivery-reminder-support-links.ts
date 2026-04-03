@@ -1,4 +1,5 @@
 import type { DeliveryReminderSupportFilter } from "./delivery-reminder-support-filter"
+import type { DeliverySupportActivityFilter } from "./delivery-support-activity-filter"
 
 export const deliveryReminderFocusWorkspaceQueryParam = "focus_workspace_id"
 export const deliveryReminderSupportFilterQueryParam =
@@ -7,6 +8,8 @@ export const deliveryReminderFollowUpFormFocusQueryParam =
   "focus_follow_up_form"
 export const deliveryReminderNotificationIdQueryParam =
   "focus_reminder_notification_id"
+export const deliverySupportActivityFilterQueryParam =
+  "support_activity_filter"
 
 const deliveryWorkspaceAnchorPrefix = "delivery-workspace"
 
@@ -18,6 +21,7 @@ type DeliveryReminderDashboardSearchParams = {
   reminderSupportFilter?: DeliveryReminderSupportFilter | null
   sort?: string | null
   status?: string | null
+  supportActivityFilter?: DeliverySupportActivityFilter | null
 }
 
 function normalizeWorkspaceId(workspaceId: string) {
@@ -62,13 +66,17 @@ function buildDashboardSearchParams(input: DeliveryReminderDashboardSearchParams
     input.focusReminderNotificationId
   )
 
-  if (
-    input.reminderSupportFilter &&
-    input.reminderSupportFilter !== "all"
-  ) {
+  if (input.reminderSupportFilter && input.reminderSupportFilter !== "all") {
     searchParams.set(
       deliveryReminderSupportFilterQueryParam,
       input.reminderSupportFilter
+    )
+  }
+
+  if (input.supportActivityFilter && input.supportActivityFilter !== "all") {
+    searchParams.set(
+      deliverySupportActivityFilterQueryParam,
+      input.supportActivityFilter
     )
   }
 
@@ -87,6 +95,7 @@ export function buildDeliveryReminderDashboardHref(
   workspaceId: string,
   input?: {
     reminderSupportFilter?: DeliveryReminderSupportFilter | null
+    supportActivityFilter?: DeliverySupportActivityFilter | null
   }
 ) {
   const normalizedWorkspaceId = normalizeWorkspaceId(workspaceId)
@@ -95,7 +104,8 @@ export function buildDeliveryReminderDashboardHref(
     focusWorkspaceId: normalizedWorkspaceId,
     reminderSupportFilter: input?.reminderSupportFilter ?? null,
     sort: "latest_activity",
-    status: "active"
+    status: "active",
+    supportActivityFilter: input?.supportActivityFilter ?? null
   })
 
   return `/dashboard/delivery?${searchParams.toString()}#${buildDeliveryWorkspaceFocusAnchorId(
@@ -106,6 +116,7 @@ export function buildDeliveryReminderDashboardHref(
 export function buildDeliveryReminderFollowUpFormHref(input: {
   notificationId: string
   reminderSupportFilter?: DeliveryReminderSupportFilter | null
+  supportActivityFilter?: DeliverySupportActivityFilter | null
   workspaceId: string
 }) {
   const normalizedWorkspaceId = normalizeWorkspaceId(input.workspaceId)
@@ -118,7 +129,8 @@ export function buildDeliveryReminderFollowUpFormHref(input: {
     focusWorkspaceId: normalizedWorkspaceId,
     reminderSupportFilter: input.reminderSupportFilter ?? null,
     sort: "latest_activity",
-    status: "active"
+    status: "active",
+    supportActivityFilter: input.supportActivityFilter ?? null
   })
 
   return `/dashboard/delivery?${searchParams.toString()}#${buildDeliveryWorkspaceFollowUpAnchorId(
@@ -129,6 +141,19 @@ export function buildDeliveryReminderFollowUpFormHref(input: {
 export function buildDeliveryReminderSupportFilterHref(
   input: DeliveryReminderDashboardSearchParams & {
     reminderSupportFilter: DeliveryReminderSupportFilter
+  }
+) {
+  const searchParams = buildDashboardSearchParams(input)
+  const serializedSearchParams = searchParams.toString()
+
+  return serializedSearchParams.length > 0
+    ? `/dashboard/delivery?${serializedSearchParams}`
+    : "/dashboard/delivery"
+}
+
+export function buildDeliverySupportActivityFilterHref(
+  input: DeliveryReminderDashboardSearchParams & {
+    supportActivityFilter: DeliverySupportActivityFilter
   }
 ) {
   const searchParams = buildDashboardSearchParams(input)

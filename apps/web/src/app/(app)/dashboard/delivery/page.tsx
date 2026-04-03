@@ -1,5 +1,6 @@
 import { DeliveryReminderRepairOutcomeBanner } from "@/features/delivery/components/delivery-reminder-repair-outcome-banner"
 import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
+import { DeliverySupportActivityFilterBar } from "@/features/delivery/components/delivery-support-activity-filter-bar"
 import {
   buildDeliveryReminderSupportRecords,
   summarizeDeliveryReminderSupportRecords
@@ -43,6 +44,11 @@ import {
   filterDeliveryReminderSupportRecords,
   normalizeDeliveryReminderSupportFilter
 } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import {
+  filterDeliveryWorkspaceOverviewsBySupportActivityFilter,
+  normalizeDeliverySupportActivityFilter,
+  summarizeDeliverySupportActivityFilter
+} from "@/features/delivery/lib/delivery-support-activity-filter"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
@@ -99,6 +105,9 @@ export default async function DeliveryPage({
   )
   const activeReminderSupportFilter = normalizeDeliveryReminderSupportFilter(
     resolvedSearchParams.reminder_support_filter
+  )
+  const activeSupportActivityFilter = normalizeDeliverySupportActivityFilter(
+    resolvedSearchParams.support_activity_filter
   )
   const todayDateKey = new Date().toISOString().slice(0, 10)
 
@@ -157,19 +166,28 @@ export default async function DeliveryPage({
     statusFilter: selectedStatusFilter
   })
 
+  const supportActivityFilterSummary =
+    summarizeDeliverySupportActivityFilter(visibleWorkspaceOverviews)
+
+  const supportFilteredWorkspaceOverviews =
+    filterDeliveryWorkspaceOverviewsBySupportActivityFilter(
+      visibleWorkspaceOverviews,
+      activeSupportActivityFilter
+    )
+
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
     record: focusedReminderSupportRecord,
     shouldFocusFollowUpForm
   })
 
   const focusedFollowUpFormIsVisible = focusFollowUpFormWorkspaceId
-    ? visibleWorkspaceOverviews.some(
+    ? supportFilteredWorkspaceOverviews.some(
         (record) => record.workspace.id === focusFollowUpFormWorkspaceId
       )
     : false
 
   const focusedWorkspaceIsVisible = focusWorkspaceId
-    ? visibleWorkspaceOverviews.some(
+    ? supportFilteredWorkspaceOverviews.some(
         (record) => record.workspace.id === focusWorkspaceId
       )
     : false
@@ -214,6 +232,20 @@ export default async function DeliveryPage({
         <DeliveryReminderRepairOutcomeBanner outcome={reminderRepairOutcome} />
       ) : null}
 
+      <DeliverySupportActivityFilterBar
+        activeFilter={activeSupportActivityFilter}
+        currentDashboardSearchParams={{
+          activity: resolvedSearchParams.activity ?? null,
+          focusFollowUpForm: shouldFocusFollowUpForm,
+          focusReminderNotificationId: focusReminderNotificationId ?? null,
+          focusWorkspaceId: focusWorkspaceId ?? null,
+          reminderSupportFilter: activeReminderSupportFilter,
+          sort: resolvedSearchParams.sort ?? null,
+          status: resolvedSearchParams.status ?? null
+        }}
+        summary={supportActivityFilterSummary}
+      />
+
       <DeliveryFollowUpQueue
         projectsById={projectsById}
         queueRecords={followUpQueueRecords}
@@ -246,6 +278,14 @@ export default async function DeliveryPage({
         </div>
       ) : null}
 
+      {supportFilteredWorkspaceOverviews.length === 0 ? (
+        <div className="rounded-[1.25rem] border border-dashed border-white/10 bg-white/[0.03] px-4 py-6 text-sm text-slate-400">
+          {activeSupportActivityFilter === "all"
+            ? "No support-originated workspace activity is visible under the current delivery filters."
+            : "No workspace activity matches the current support activity filter under the current delivery filters."}
+        </div>
+      ) : null}
+
       <DeliveryWorkspaceList
         activeReminderSupportFilter={activeReminderSupportFilter}
         focusFollowUpFormWorkspaceId={focusFollowUpFormWorkspaceId}
@@ -257,7 +297,7 @@ export default async function DeliveryPage({
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
         todayDateKey={todayDateKey}
-        workspaceOverviews={visibleWorkspaceOverviews}
+        workspaceOverviews={supportFilteredWorkspaceOverviews}
       />
     </div>
   )
