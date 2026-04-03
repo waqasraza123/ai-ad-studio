@@ -1,3 +1,4 @@
+import type { DeliveryFollowUpStatus } from "@/server/database/types"
 import {
   getDeliveryWorkspaceFollowUpLabel,
   getDeliveryWorkspaceReminderBucketLabel
@@ -8,6 +9,9 @@ import {
 import {
   isDeliveryReminderSupportNoteActivityMetadata
 } from "@/features/delivery/lib/delivery-reminder-support-note"
+import {
+  isDeliveryReminderMismatchResolutionActivityMetadata
+} from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
 
 type FocusedWorkspaceActivityRecord = {
   metadata: unknown
@@ -17,7 +21,7 @@ type FocusedWorkspaceRecord = {
   follow_up_due_on: string | null
   follow_up_last_notification_bucket: "due_today" | "overdue" | null
   follow_up_last_notification_date: string | null
-  follow_up_status: string | null
+  follow_up_status: DeliveryFollowUpStatus | null
   id: string
   title: string
 }
@@ -78,6 +82,10 @@ function getReminderCheckpointLabel(input: {
 }
 
 function getSupportEventLabel(activity: FocusedWorkspaceActivityRecord) {
+  if (isDeliveryReminderMismatchResolutionActivityMetadata(activity.metadata)) {
+    return "Resolved reminder mismatch"
+  }
+
   if (isDeliveryReminderSupportNoteActivityMetadata(activity.metadata)) {
     return "Support handoff note"
   }

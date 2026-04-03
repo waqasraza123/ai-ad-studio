@@ -1,9 +1,9 @@
 import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
 import {
-  getDeliveryReminderRepairActionLabel,
   isDeliveryReminderRepairActivityMetadata,
   type DeliveryReminderRepairActivityMetadata
 } from "@/features/delivery/lib/delivery-reminder-repair-activity"
+import { getDeliveryReminderRepairActionLabel } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type InvestigationActivityRecord = {
   metadata: unknown
@@ -27,7 +27,7 @@ export type DeliveryInvestigationContextSummary = {
   badges: string[]
   description: string
   title: string
-  tone: "amber" | "rose"
+  tone: "amber" | "emerald" | "rose"
 }
 
 function getActivityEntries<TActivity extends InvestigationActivityRecord>(
@@ -165,6 +165,25 @@ function buildFailedRepairSummary(input: {
   }
 }
 
+function buildResolvedMismatchSummary(input: {
+  reminderSupportRecord: DeliveryReminderSupportRecord
+  workspaceTitle: string
+}): DeliveryInvestigationContextSummary {
+  return {
+    badges: [
+      "Resolved mismatch",
+      getReminderBucketLabel(input.reminderSupportRecord.reminderBucket),
+      `Notification ${input.reminderSupportRecord.notificationId}`
+    ],
+    description: `The focused reminder notification for ${input.workspaceTitle} was marked as resolved from the workspace view. Current follow-up state is ${getFollowUpStateLabel({
+      dueOn: input.reminderSupportRecord.workspaceFollowUpDueOn ?? null,
+      status: input.reminderSupportRecord.workspaceFollowUpStatus ?? null
+    })}.`,
+    title: `Why this view matters: ${input.workspaceTitle} has a resolved reminder mismatch`,
+    tone: "emerald"
+  }
+}
+
 function buildUnresolvedMismatchSummary(input: {
   reminderSupportRecord: DeliveryReminderSupportRecord
   workspaceTitle: string
@@ -210,6 +229,28 @@ export function buildDeliveryInvestigationContextSummary<
 
   if (!focusedOverviewRecord) {
     return null
+  }
+
+  if (
+    input.focusedReminderSupportRecord &&
+    input.focusedReminderSupportRecord.workspaceId === input.focusWorkspaceId &&
+    input.focusedReminderSupportRecord.checkpointState === "resolved"
+  ) {
+    return buildResolvedMismatchSummary({
+      reminderSupportRecord: input.focusedReminderSupportRecord,
+      workspaceTitle: focusedOverviewRecord.workspace.title
+    })
+  }
+
+  if (
+    input.focusedReminderSupportRecord &&
+    input.focusedReminderSupportRecord.workspaceId === input.focusWorkspaceId &&
+    input.focusedReminderSupportRecord.checkpointState === "resolved"
+  ) {
+    return buildResolvedMismatchSummary({
+      reminderSupportRecord: input.focusedReminderSupportRecord,
+      workspaceTitle: focusedOverviewRecord.workspace.title
+    })
   }
 
   const failedRepairActivity = findLatestFailedReminderRepairActivity(

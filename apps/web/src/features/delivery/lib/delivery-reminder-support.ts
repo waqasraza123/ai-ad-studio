@@ -1,3 +1,6 @@
+import {
+  isDeliveryReminderMismatchResolved
+} from "./delivery-reminder-mismatch-resolution"
 import type { DeliveryWorkspaceRecord } from "@/server/database/types"
 import type {
   DeliveryReminderNotificationKind,
@@ -7,6 +10,7 @@ import type {
 export type DeliveryReminderSupportCheckpointState =
   | "checkpoint_mismatch"
   | "in_sync"
+  | "resolved"
   | "workspace_missing"
 
 export type DeliveryReminderSupportRecord = {
@@ -33,6 +37,7 @@ export type DeliveryReminderSupportSummary = {
   dueTodayCount: number
   inSyncCount: number
   overdueCount: number
+  resolvedCount: number
   totalCount: number
   workspaceMissingCount: number
 }
@@ -75,11 +80,21 @@ function resolveReminderBucket(
 
 function resolveCheckpointState(input: {
   notificationCreatedAt: string
+  notificationId: string
   reminderBucket: "due_today" | "overdue"
   workspace: DeliveryWorkspaceRecord | null
 }): DeliveryReminderSupportCheckpointState {
   if (!input.workspace) {
     return "workspace_missing"
+  }
+
+  if (
+    isDeliveryReminderMismatchResolved({
+      reminderNotificationId: input.notificationId,
+      workspace: input.workspace
+    })
+  ) {
+    return "resolved"
   }
 
   const notificationDateKey = input.notificationCreatedAt.slice(0, 10)
@@ -111,6 +126,7 @@ export function buildDeliveryReminderSupportRecords(input: {
     return {
       checkpointState: resolveCheckpointState({
         notificationCreatedAt: notification.created_at,
+        notificationId: notification.id,
         reminderBucket,
         workspace
       }),
@@ -140,6 +156,7 @@ export function summarizeDeliveryReminderSupportRecords(
   let overdueCount = 0
   let inSyncCount = 0
   let checkpointMismatchCount = 0
+  let resolvedCount = 0
   let workspaceMissingCount = 0
 
   for (const record of records) {
@@ -159,6 +176,11 @@ export function summarizeDeliveryReminderSupportRecords(
       continue
     }
 
+    if (record.checkpointState === "resolved") {
+      resolvedCount += 1
+      continue
+    }
+
     workspaceMissingCount += 1
   }
 
@@ -167,6 +189,7 @@ export function summarizeDeliveryReminderSupportRecords(
     dueTodayCount,
     inSyncCount,
     overdueCount,
+    resolvedCount,
     totalCount: records.length,
     workspaceMissingCount
   }

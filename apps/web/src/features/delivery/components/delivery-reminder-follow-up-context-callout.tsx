@@ -1,5 +1,6 @@
 import {
-  repairDeliveryWorkspaceReminderFromSupport
+  repairDeliveryWorkspaceReminderFromSupport,
+  resolveDeliveryWorkspaceReminderMismatchFromSupport
 } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
 import { DeliveryReminderRepairActionButton } from "@/features/delivery/components/delivery-reminder-repair-action-button"
 import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
@@ -17,6 +18,10 @@ import {
   deliveryReminderClearReasonFieldName,
   deliveryReminderClearReasonMaxLength
 } from "@/features/delivery/lib/delivery-reminder-repair-reason"
+import {
+  deliveryReminderMismatchResolutionNoteFieldName,
+  deliveryReminderMismatchResolutionNoteMaxLength
+} from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
 import {
   getDeliveryWorkspaceReminderBucketClasses,
   getDeliveryWorkspaceReminderBucketLabel
@@ -116,6 +121,56 @@ export function DeliveryReminderFollowUpContextCallout({
         You can repair reminder scheduling here without leaving the current
         workspace view.
       </p>
+
+      {record.checkpointState === "resolved" ? (
+        <div className="mt-4 rounded-[1rem] border border-cyan-400/30 bg-cyan-500/10 px-3 py-3 text-sm text-cyan-100">
+          This reminder mismatch has already been marked as resolved for this
+          notification context.
+        </div>
+      ) : record.checkpointState === "checkpoint_mismatch" ? (
+        <form
+          action={resolveDeliveryWorkspaceReminderMismatchFromSupport}
+          className="mt-4 rounded-[1rem] border border-white/10 bg-black/10 p-4"
+        >
+          <input name="workspaceId" type="hidden" value={record.workspaceId ?? ""} />
+          <input
+            name="focusedReminderNotificationId"
+            type="hidden"
+            value={record.notificationId}
+          />
+          <input
+            name="focusedReminderBucket"
+            type="hidden"
+            value={record.reminderBucket}
+          />
+          <input name="returnToHref" type="hidden" value={returnToHref} />
+
+          <div className="space-y-2">
+            <label
+              className="block text-sm font-medium text-white"
+              htmlFor={`${record.notificationId}-mismatch-resolution-note`}
+            >
+              Optional mismatch resolution note
+            </label>
+            <textarea
+              className="min-h-[88px] w-full rounded-[1rem] border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/[0.06]"
+              id={`${record.notificationId}-mismatch-resolution-note`}
+              maxLength={deliveryReminderMismatchResolutionNoteMaxLength}
+              name={deliveryReminderMismatchResolutionNoteFieldName}
+              placeholder="Optional context explaining why this mismatch is considered resolved."
+            />
+          </div>
+
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
+              type="submit"
+            >
+              Mark mismatch as resolved
+            </button>
+          </div>
+        </form>
+      ) : null}
 
       <form
         action={repairDeliveryWorkspaceReminderFromSupport}

@@ -471,6 +471,9 @@ export type DeliveryWorkspaceRecord = {
   follow_up_updated_at: string | null
   follow_up_last_notification_bucket: DeliveryReminderBucket | null
   follow_up_last_notification_date: string | null
+  reminder_mismatch_resolution_note: string | null
+  reminder_mismatch_resolved_notification_id: string | null
+  reminder_mismatch_resolved_at: string | null
   created_at: string
   updated_at: string
 }

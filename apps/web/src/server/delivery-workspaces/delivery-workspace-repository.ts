@@ -16,7 +16,7 @@ import type {
 } from "@/server/database/types"
 
 const deliveryWorkspaceSelection =
-  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_due_on, follow_up_updated_at, follow_up_last_notification_bucket, follow_up_last_notification_date, created_at, updated_at"
+  "id, owner_id, project_id, render_batch_id, canonical_export_id, title, summary, handoff_notes, approval_summary, token, status, follow_up_status, follow_up_note, follow_up_due_on, follow_up_updated_at, follow_up_last_notification_bucket, follow_up_last_notification_date, reminder_mismatch_resolved_notification_id, reminder_mismatch_resolved_at, reminder_mismatch_resolution_note, created_at, updated_at"
 
 const deliveryWorkspaceExportSelection =
   "id, delivery_workspace_id, owner_id, project_id, export_id, label, sort_order, created_at"
@@ -444,6 +444,30 @@ export async function getDeliveryWorkspaceFollowUpSnapshotById(workspaceId: stri
     follow_up_due_on: data.follow_up_due_on ?? null,
     follow_up_status: normalizeDeliveryFollowUpStatus(data.follow_up_status),
     id: data.id
+  }
+}
+
+
+export async function resolveDeliveryWorkspaceReminderMismatch(input: {
+  reminderNotificationId: string
+  resolutionNote: string | null
+  workspaceId: string
+}) {
+  const supabase = await createSupabaseServerClient()
+  const updatedAt = new Date().toISOString()
+
+  const { error } = await supabase
+    .from("delivery_workspaces")
+    .update({
+      reminder_mismatch_resolved_at: updatedAt,
+      reminder_mismatch_resolved_notification_id: input.reminderNotificationId,
+      reminder_mismatch_resolution_note: input.resolutionNote,
+      updated_at: updatedAt
+    })
+    .eq("id", input.workspaceId)
+
+  if (error) {
+    throw new Error("Failed to resolve delivery reminder mismatch")
   }
 }
 

@@ -8,6 +8,7 @@ import {
   getDeliveryWorkspaceByIdForOwner,
   getDeliveryWorkspaceFollowUpSnapshotById,
   recordDeliveryWorkspaceEvent,
+  resolveDeliveryWorkspaceReminderMismatch,
   updateDeliveryWorkspaceFollowUp
 } from "@/server/delivery-workspaces/delivery-workspace-repository"
 import { getRenderBatchByIdForOwner } from "@/server/render-batches/render-batch-repository"
@@ -31,6 +32,12 @@ import {
   normalizeReminderBucketForRepairActivity,
   normalizeReminderNotificationIdForRepairActivity
 } from "@/features/delivery/lib/delivery-reminder-repair-activity"
+import {
+  buildDeliveryReminderMismatchResolutionActivityMetadata,
+  deliveryReminderMismatchResolutionNoteFieldName,
+  normalizeDeliveryReminderMismatchResolutionNote,
+  validateDeliveryReminderMismatchResolutionNote
+} from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
 
 function getOptionalTrimmedFormValue(formData: FormData, fieldName: string) {
   const rawValue = formData.get(fieldName)
@@ -322,4 +329,77 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
       workspaceId
     })
   )
+}
+
+
+export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
+  formData: FormData
+) {
+  const workspaceId = getOptionalTrimmedFormValue(formData, "workspaceId")
+  const reminderNotificationId = getOptionalTrimmedFormValue(
+    formData,
+    "focusedReminderNotificationId"
+  )
+  const returnToHref =
+    getOptionalTrimmedFormValue(formData, "returnToHref") ??
+    "/dashboard/delivery"
+  const reminderBucket = normalizeReminderBucketForRepairActivity(
+    formData.get("focusedReminderBucket")
+  )
+  const resolutionNote = normalizeDeliveryReminderMismatchResolutionNote(
+    formData.get(deliveryReminderMismatchResolutionNoteFieldName)
+  )
+
+  if (!workspaceId) {
+    throw new Error("workspaceId is required")
+  }
+
+  if (!reminderNotificationId) {
+    throw new Error("focusedReminderNotificationId is required")
+  }
+
+  const resolutionNoteError =
+    validateDeliveryReminderMismatchResolutionNote(resolutionNote)
+
+  if (resolutionNoteError) {
+    throw new Error("Reminder mismatch resolution note is too long")
+  }
+
+  await resolveDeliveryWorkspaceReminderMismatch({
+    reminderNotificationId,
+    resolutionNote,
+    workspaceId
+  })
+
+  try {
+    const user = await getAuthenticatedUser()
+
+    if (user) {
+      const workspace = await getDeliveryWorkspaceByIdForOwner(workspaceId, user.id)
+
+      if (workspace) {
+        await recordDeliveryWorkspaceEvent({
+          workspaceId,
+          ownerId: user.id,
+          projectId: workspace.project_id,
+          exportId: workspace.canonical_export_id,
+          eventType: "viewed",
+          actorLabel: "Support operator",
+          metadata: buildDeliveryReminderMismatchResolutionActivityMetadata({
+            reminderBucket,
+            reminderNotificationId,
+            resolutionNote
+          })
+        })
+      }
+    }
+  } catch (error) {
+    console.error(
+      "Failed to append delivery reminder mismatch resolution activity",
+      error
+    )
+  }
+
+  revalidatePath("/dashboard/delivery")
+  redirect(returnToHref)
 }

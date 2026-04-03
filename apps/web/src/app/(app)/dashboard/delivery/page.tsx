@@ -69,9 +69,11 @@ type DeliveryPageProps = {
     focus_workspace_id?: string
     reminder_repair_action?: string
     reminder_repair_error_code?: string
+    reminder_repair_note_saved?: string
     reminder_repair_notification_id?: string
     reminder_repair_status?: string
     reminder_repair_workspace_id?: string
+    support_activity_filter?: string
     reminder_support_filter?: string
     sort?: string
     status?: string
@@ -91,6 +93,7 @@ export default async function DeliveryPage({
   const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
     action: resolvedSearchParams.reminder_repair_action,
     errorCode: resolvedSearchParams.reminder_repair_error_code,
+    noteSaved: resolvedSearchParams.reminder_repair_note_saved,
     notificationId: resolvedSearchParams.reminder_repair_notification_id,
     status: resolvedSearchParams.reminder_repair_status,
     workspaceId: resolvedSearchParams.reminder_repair_workspace_id
@@ -185,33 +188,13 @@ export default async function DeliveryPage({
       activeSupportActivityFilter
     )
 
+  const supportFilteredWorkspaceOverviewsForDisplay =
+    supportFilteredWorkspaceOverviews as typeof visibleWorkspaceOverviews
+
   const supportOpsSummary = summarizeDeliverySupportOps({
-    overviewRecords: supportFilteredWorkspaceOverviews,
+    overviewRecords: supportFilteredWorkspaceOverviewsForDisplay,
     reminderSupportRecords
   })
-
-  const investigationContextSummary = buildDeliveryInvestigationContextSummary({
-    focusedReminderSupportRecord,
-    focusWorkspaceId: focusedInvestigationWorkspaceId,
-    overviewRecords: supportFilteredWorkspaceOverviews
-  })
-
-  const investigationStaleContextSummary =
-    buildDeliveryInvestigationStaleContextSummary({
-      focusFollowUpForm: shouldFocusFollowUpForm,
-      focusReminderNotificationId: focusReminderNotificationId ?? null,
-      focusWorkspaceId: focusedInvestigationWorkspaceId,
-      reminderSupportRecords: filteredReminderSupportRecords,
-      overviewRecords: supportFilteredWorkspaceOverviews
-    })
-
-  const focusedWorkspaceStatusSummary =
-    investigationStaleContextSummary
-      ? null
-      : buildDeliveryFocusedWorkspaceStatusSummary({
-          focusWorkspaceId: focusedInvestigationWorkspaceId,
-          overviewRecords: supportFilteredWorkspaceOverviews
-        })
 
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
     record: focusedReminderSupportRecord,
@@ -221,14 +204,37 @@ export default async function DeliveryPage({
   const focusedInvestigationWorkspaceId =
     focusFollowUpFormWorkspaceId ?? focusWorkspaceId
 
+  const investigationContextSummary = buildDeliveryInvestigationContextSummary({
+    focusedReminderSupportRecord,
+    focusWorkspaceId: focusedInvestigationWorkspaceId,
+    overviewRecords: supportFilteredWorkspaceOverviewsForDisplay
+  })
+
+  const investigationStaleContextSummary =
+    buildDeliveryInvestigationStaleContextSummary({
+      focusFollowUpForm: shouldFocusFollowUpForm,
+      focusReminderNotificationId: focusReminderNotificationId ?? null,
+      focusWorkspaceId: focusedInvestigationWorkspaceId,
+      reminderSupportRecords: reminderSupportRecords,
+      overviewRecords: supportFilteredWorkspaceOverviewsForDisplay
+    })
+
+  const focusedWorkspaceStatusSummary =
+    investigationStaleContextSummary
+      ? null
+      : buildDeliveryFocusedWorkspaceStatusSummary({
+          focusWorkspaceId: focusedInvestigationWorkspaceId,
+          overviewRecords: supportFilteredWorkspaceOverviewsForDisplay
+        })
+
   const focusedFollowUpFormIsVisible = focusFollowUpFormWorkspaceId
-    ? supportFilteredWorkspaceOverviews.some(
+    ? supportFilteredWorkspaceOverviewsForDisplay.some(
         (record) => record.workspace.id === focusFollowUpFormWorkspaceId
       )
     : false
 
   const focusedWorkspaceIsVisible = focusWorkspaceId
-    ? supportFilteredWorkspaceOverviews.some(
+    ? supportFilteredWorkspaceOverviewsForDisplay.some(
         (record) => record.workspace.id === focusWorkspaceId
       )
     : false
@@ -359,7 +365,7 @@ export default async function DeliveryPage({
         </div>
       ) : null}
 
-      {supportFilteredWorkspaceOverviews.length === 0 ? (
+      {supportFilteredWorkspaceOverviewsForDisplay.length === 0 ? (
         <div className="rounded-[1.25rem] border border-dashed border-white/10 bg-white/[0.03] px-4 py-6 text-sm text-slate-400">
           {activeSupportActivityFilter === "all"
             ? "No support-originated workspace activity is visible under the current delivery filters."
@@ -379,7 +385,7 @@ export default async function DeliveryPage({
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
         todayDateKey={todayDateKey}
-        workspaceOverviews={supportFilteredWorkspaceOverviews}
+        workspaceOverviews={supportFilteredWorkspaceOverviewsForDisplay}
       />
     </div>
   )

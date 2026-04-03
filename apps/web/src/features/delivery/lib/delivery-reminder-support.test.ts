@@ -38,6 +38,11 @@ function createWorkspaceRecord(
       overrides.follow_up_last_notification_bucket ?? "due_today",
     follow_up_last_notification_date:
       overrides.follow_up_last_notification_date ?? "2026-03-25",
+    reminder_mismatch_resolution_note:
+      overrides.reminder_mismatch_resolution_note ?? null,
+    reminder_mismatch_resolved_notification_id:
+      overrides.reminder_mismatch_resolved_notification_id ?? null,
+    reminder_mismatch_resolved_at: overrides.reminder_mismatch_resolved_at ?? null,
     created_at: overrides.created_at ?? "2026-03-24T08:00:00.000Z",
     updated_at: overrides.updated_at ?? "2026-03-25T09:00:00.000Z"
   }
@@ -116,6 +121,23 @@ describe("buildDeliveryReminderSupportRecords", () => {
 
     expect(records[0]?.checkpointState).toBe("checkpoint_mismatch")
     expect(records[0]?.reminderBucket).toBe("overdue")
+  })
+
+
+  it("marks a record as resolved when the workspace resolution points at the same notification", () => {
+    const records = buildDeliveryReminderSupportRecords({
+      notifications: [createReminderNotification()],
+      workspaces: [
+        createWorkspaceRecord({
+          id: "workspace-1",
+          reminder_mismatch_resolved_at: "2026-03-26T10:00:00.000Z",
+          reminder_mismatch_resolved_notification_id: "notification-1",
+          reminder_mismatch_resolution_note: "Operator confirmed resolution"
+        })
+      ]
+    })
+
+    expect(records[0]?.checkpointState).toBe("resolved")
   })
 
   it("marks a record as workspace missing when the referenced workspace cannot be resolved", () => {
@@ -219,6 +241,7 @@ describe("summarizeDeliveryReminderSupportRecords", () => {
       dueTodayCount: 2,
       inSyncCount: 1,
       overdueCount: 1,
+      resolvedCount: 0,
       totalCount: 3,
       workspaceMissingCount: 1
     })

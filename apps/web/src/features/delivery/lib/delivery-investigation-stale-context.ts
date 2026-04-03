@@ -75,22 +75,6 @@ function buildFocusedWorkspaceStaleSummary(input: {
   }
 }
 
-function getActivityEntries<
-  TActivity extends InvestigationActivityRecord,
-  TWorkspace extends InvestigationWorkspaceRecord,
-  TRecord extends DeliveryInvestigationWorkspaceOverviewRecord<TActivity, TWorkspace>
->(record: TRecord) {
-  if (Array.isArray(record.activityEntries)) {
-    return record.activityEntries
-  }
-
-  if (Array.isArray(record.activityTimeline)) {
-    return record.activityTimeline
-  }
-
-  return []
-}
-
 export function buildDeliveryInvestigationStaleContextSummary<
   TActivity extends InvestigationActivityRecord,
   TWorkspace extends InvestigationWorkspaceRecord,

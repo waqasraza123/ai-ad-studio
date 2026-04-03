@@ -95,8 +95,8 @@ describe("buildDeliveryFocusedWorkspaceStatusSummary", () => {
             }
           }
         ]
-      })
-    )?.latestSupportEventLabel.toLowerCase()).toBe("failed reminder repair")
+      })?.latestSupportEventLabel.toLowerCase()
+    ).toBe("failed reminder repair")
   })
 
   it("returns null when no focused workspace is present in the current scope", () => {

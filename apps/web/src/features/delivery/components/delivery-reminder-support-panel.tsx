@@ -51,6 +51,10 @@ function getCheckpointStateClasses(
     return "border-emerald-400/30 bg-emerald-500/10 text-emerald-200"
   }
 
+  if (checkpointState === "resolved") {
+    return "border-cyan-400/30 bg-cyan-500/10 text-cyan-200"
+  }
+
   if (checkpointState === "checkpoint_mismatch") {
     return "border-amber-400/30 bg-amber-500/10 text-amber-200"
   }
@@ -63,6 +67,10 @@ function getCheckpointStateLabel(
 ) {
   if (checkpointState === "in_sync") {
     return "Checkpoint in sync"
+  }
+
+  if (checkpointState === "resolved") {
+    return "Mismatch resolved"
   }
 
   if (checkpointState === "checkpoint_mismatch") {
@@ -126,6 +134,9 @@ export function DeliveryReminderSupportPanel({
           </span>
           <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-200">
             {summary.inSyncCount} in sync
+          </span>
+          <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-cyan-200">
+            {summary.resolvedCount} resolved
           </span>
           <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-amber-200">
             {summary.checkpointMismatchCount} mismatch

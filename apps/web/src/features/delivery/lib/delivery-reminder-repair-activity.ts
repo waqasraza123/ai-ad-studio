@@ -189,3 +189,20 @@ export function getDeliveryReminderRepairActivityDescription(
 
   return baseDescription
 }
+
+
+export function normalizeReminderBucketForRepairActivity(
+  value: FormDataEntryValue | null | undefined
+): "due_today" | "overdue" | null {
+  if (value === "due_today" || value === "overdue") {
+    return value
+  }
+
+  return null
+}
+
+export function normalizeReminderNotificationIdForRepairActivity(
+  value: FormDataEntryValue | null | undefined
+) {
+  return typeof value === "string" && value.length > 0 ? value : null
+}

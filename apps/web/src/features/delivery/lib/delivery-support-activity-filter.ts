@@ -4,6 +4,9 @@ import {
 import {
   isDeliveryReminderSupportNoteActivityMetadata
 } from "@/features/delivery/lib/delivery-reminder-support-note"
+import {
+  isDeliveryReminderMismatchResolutionActivityMetadata
+} from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
 
 export type DeliverySupportActivityFilter =
   | "all"
@@ -61,37 +64,32 @@ type FilterableActivityRecord = {
   metadata: unknown
 }
 
-type FilterableWorkspaceOverviewRecord<TActivity extends FilterableActivityRecord> = {
-  activityEntries?: TActivity[]
-  activityTimeline?: TActivity[]
-}
-
-function getActivityEntries<TActivity extends FilterableActivityRecord>(
-  record: FilterableWorkspaceOverviewRecord<TActivity>
-): TActivity[] {
-  if (Array.isArray(record.activityEntries)) {
-    return record.activityEntries
+function getActivityEntries(record: Record<string, unknown>): FilterableActivityRecord[] {
+  const activityEntries = record["activityEntries"]
+  if (Array.isArray(activityEntries)) {
+    return activityEntries as FilterableActivityRecord[]
   }
 
-  if (Array.isArray(record.activityTimeline)) {
-    return record.activityTimeline
+  const activityTimeline = record["activityTimeline"]
+  if (Array.isArray(activityTimeline)) {
+    return activityTimeline as FilterableActivityRecord[]
   }
 
   return []
 }
 
-function replaceActivityEntries<TActivity extends FilterableActivityRecord, TRecord extends FilterableWorkspaceOverviewRecord<TActivity>>(
+function replaceActivityEntries<TRecord extends Record<string, unknown>>(
   record: TRecord,
-  activityEntries: TActivity[]
+  activityEntries: FilterableActivityRecord[]
 ): TRecord {
-  if (Array.isArray(record.activityEntries)) {
+  if (Array.isArray(record["activityEntries"])) {
     return {
       ...record,
       activityEntries
     }
   }
 
-  if (Array.isArray(record.activityTimeline)) {
+  if (Array.isArray(record["activityTimeline"])) {
     return {
       ...record,
       activityTimeline: activityEntries
@@ -123,12 +121,12 @@ export function doesDeliveryActivityMatchSupportFilter(
 ) {
   const category = getSupportActivityCategory(activity)
 
-  if (!category) {
-    return false
+  if (filter === "all") {
+    return isSupportOriginatedActivity(activity)
   }
 
-  if (filter === "all") {
-    return true
+  if (!category) {
+    return false
   }
 
   if (filter === "failed_reminder_repairs") {
@@ -146,8 +144,7 @@ export function doesDeliveryActivityMatchSupportFilter(
 }
 
 export function summarizeDeliverySupportActivityFilter<
-  TActivity extends FilterableActivityRecord,
-  TRecord extends FilterableWorkspaceOverviewRecord<TActivity>
+  TRecord extends Record<string, unknown>
 >(records: TRecord[]): DeliverySupportActivityFilterSummary {
   let reminderRepairsCount = 0
   let failedReminderRepairsCount = 0
@@ -170,6 +167,11 @@ export function summarizeDeliverySupportActivityFilter<
 
       if (category === "support_handoff_notes") {
         supportHandoffNotesCount += 1
+        continue
+      }
+
+      if (isDeliveryReminderMismatchResolutionActivityMetadata(activity.metadata)) {
+        continue
       }
     }
   }
@@ -186,8 +188,7 @@ export function summarizeDeliverySupportActivityFilter<
 }
 
 export function filterDeliveryWorkspaceOverviewsBySupportActivityFilter<
-  TActivity extends FilterableActivityRecord,
-  TRecord extends FilterableWorkspaceOverviewRecord<TActivity>
+  TRecord extends Record<string, unknown>
 >(records: TRecord[], filter: DeliverySupportActivityFilter): TRecord[] {
   if (filter === "all") {
     return records.filter((record) =>
