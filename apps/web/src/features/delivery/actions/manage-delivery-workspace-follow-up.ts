@@ -18,6 +18,7 @@ import {
   deliveryReminderRepairActionFieldName,
   normalizeDeliveryReminderRepairAction
 } from "@/features/delivery/lib/delivery-reminder-repair"
+import { buildDeliveryReminderRepairResultHref } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 function getOptionalTrimmedFormValue(formData: FormData, fieldName: string) {
   const rawValue = formData.get(fieldName)
@@ -168,6 +169,10 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     formData,
     "currentFollowUpNote"
   )
+  const focusedReminderNotificationId = getOptionalTrimmedFormValue(
+    formData,
+    "focusedReminderNotificationId"
+  )
   const reminderRepairAction = normalizeDeliveryReminderRepairAction(
     formData.get(deliveryReminderRepairActionFieldName)
   )
@@ -190,14 +195,29 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
     action: reminderRepairAction
   })
 
-  await updateDeliveryWorkspaceFollowUp({
-    followUpDueOn: repairValues.followUpDueOn,
-    followUpNote: currentFollowUpNote,
-    followUpStatus: repairValues.followUpStatus,
-    ownerId: user.id,
-    workspaceId: workspace.id
-  })
+  let outcomeStatus: "error" | "success" = "success"
 
-  revalidatePath("/dashboard/delivery")
-  redirect(returnToHref)
+  try {
+    await updateDeliveryWorkspaceFollowUp({
+      followUpDueOn: repairValues.followUpDueOn,
+      followUpNote: currentFollowUpNote,
+      followUpStatus: repairValues.followUpStatus,
+      ownerId: user.id,
+      workspaceId: workspace.id
+    })
+
+    revalidatePath("/dashboard/delivery")
+  } catch {
+    outcomeStatus = "error"
+  }
+
+  redirect(
+    buildDeliveryReminderRepairResultHref({
+      action: reminderRepairAction,
+      baseHref: returnToHref,
+      notificationId: focusedReminderNotificationId,
+      status: outcomeStatus,
+      workspaceId
+    })
+  )
 }

@@ -1,15 +1,17 @@
-import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import {
   repairDeliveryWorkspaceReminderFromSupport
 } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
+import { DeliveryReminderRepairActionButton } from "@/features/delivery/components/delivery-reminder-repair-action-button"
 import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
 import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
 import {
+  doesDeliveryReminderRepairOutcomeMatchRecord,
+  getDeliveryReminderRepairActionLabel,
+  type DeliveryReminderRepairOutcome
+} from "@/features/delivery/lib/delivery-reminder-repair-outcome"
+import {
   buildDeliveryReminderFollowUpFormHref
 } from "@/features/delivery/lib/delivery-reminder-support-links"
-import {
-  deliveryReminderRepairActionFieldName
-} from "@/features/delivery/lib/delivery-reminder-repair"
 import {
   getDeliveryWorkspaceReminderBucketClasses,
   getDeliveryWorkspaceReminderBucketLabel
@@ -19,6 +21,7 @@ type DeliveryReminderFollowUpContextCalloutProps = {
   activeReminderSupportFilter: DeliveryReminderSupportFilter
   currentFollowUpNote: string | null
   record: DeliveryReminderSupportRecord
+  repairOutcome?: DeliveryReminderRepairOutcome | null
 }
 
 function formatDate(value: string | null) {
@@ -32,7 +35,8 @@ function formatDateTime(value: string) {
 export function DeliveryReminderFollowUpContextCallout({
   activeReminderSupportFilter,
   currentFollowUpNote,
-  record
+  record,
+  repairOutcome = null
 }: DeliveryReminderFollowUpContextCalloutProps) {
   if (!record.workspaceId) {
     return null
@@ -43,6 +47,13 @@ export function DeliveryReminderFollowUpContextCallout({
     reminderSupportFilter: activeReminderSupportFilter,
     workspaceId: record.workspaceId
   })
+
+  const matchingRepairOutcome = doesDeliveryReminderRepairOutcomeMatchRecord({
+    outcome: repairOutcome,
+    record
+  })
+    ? repairOutcome
+    : null
 
   return (
     <div className="rounded-[1.25rem] border border-amber-400/30 bg-amber-500/10 p-4 text-amber-50">
@@ -80,52 +91,59 @@ export function DeliveryReminderFollowUpContextCallout({
         </div>
       </dl>
 
+      {matchingRepairOutcome ? (
+        <div
+          className={`mt-4 rounded-[1rem] border px-3 py-2 text-sm ${
+            matchingRepairOutcome.status === "success"
+              ? "border-emerald-400/30 bg-emerald-500/10 text-emerald-100"
+              : "border-rose-400/30 bg-rose-500/10 text-rose-100"
+          }`}
+        >
+          {matchingRepairOutcome.status === "success"
+            ? `${getDeliveryReminderRepairActionLabel(
+                matchingRepairOutcome.action
+              )} in this focused workspace view.`
+            : `${getDeliveryReminderRepairActionLabel(
+                matchingRepairOutcome.action
+              )} failed in this focused workspace view.`}
+        </div>
+      ) : null}
+
       <p className="mt-4 text-sm text-amber-50/90">
         This follow-up form is focused from a reminder checkpoint mismatch row.
         You can repair reminder scheduling here without leaving the current
         workspace view.
       </p>
 
-      <div className="mt-4 flex flex-wrap gap-2">
-        <form action={repairDeliveryWorkspaceReminderFromSupport} className="contents">
-          <input name="workspaceId" type="hidden" value={record.workspaceId} />
-          <input name="returnToHref" type="hidden" value={returnToHref} />
-          <input
-            name="currentFollowUpNote"
-            type="hidden"
-            value={currentFollowUpNote ?? ""}
-          />
-          <FormSubmitButton
-            name={deliveryReminderRepairActionFieldName}
-            value="reschedule_tomorrow"
-            variant="secondary"
-            size="sm"
-            pendingLabel="Scheduling…"
-            className="border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 hover:border-cyan-300/40 hover:bg-cyan-500/15"
-          >
-            Reschedule for tomorrow
-          </FormSubmitButton>
-        </form>
-        <form action={repairDeliveryWorkspaceReminderFromSupport} className="contents">
-          <input name="workspaceId" type="hidden" value={record.workspaceId} />
-          <input name="returnToHref" type="hidden" value={returnToHref} />
-          <input
-            name="currentFollowUpNote"
-            type="hidden"
-            value={currentFollowUpNote ?? ""}
-          />
-          <FormSubmitButton
-            name={deliveryReminderRepairActionFieldName}
-            value="clear_reminder_scheduling"
-            variant="secondary"
-            size="sm"
-            pendingLabel="Clearing…"
-            className="border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 hover:border-rose-300/40 hover:bg-rose-500/15"
-          >
-            Clear reminder scheduling
-          </FormSubmitButton>
-        </form>
-      </div>
+      <form
+        action={repairDeliveryWorkspaceReminderFromSupport}
+        className="mt-4 flex flex-wrap gap-2"
+      >
+        <input name="workspaceId" type="hidden" value={record.workspaceId} />
+        <input name="returnToHref" type="hidden" value={returnToHref} />
+        <input
+          name="focusedReminderNotificationId"
+          type="hidden"
+          value={record.notificationId}
+        />
+        <input
+          name="currentFollowUpNote"
+          type="hidden"
+          value={currentFollowUpNote ?? ""}
+        />
+
+        <DeliveryReminderRepairActionButton
+          className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+          label="Reschedule for tomorrow"
+          value="reschedule_tomorrow"
+        />
+
+        <DeliveryReminderRepairActionButton
+          className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:border-rose-300/40 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-60"
+          label="Clear reminder scheduling"
+          value="clear_reminder_scheduling"
+        />
+      </form>
     </div>
   )
 }

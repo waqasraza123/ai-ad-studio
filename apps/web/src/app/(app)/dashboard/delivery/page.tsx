@@ -1,3 +1,4 @@
+import { DeliveryReminderRepairOutcomeBanner } from "@/features/delivery/components/delivery-reminder-repair-outcome-banner"
 import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
 import {
   buildDeliveryReminderSupportRecords,
@@ -42,6 +43,7 @@ import {
   filterDeliveryReminderSupportRecords,
   normalizeDeliveryReminderSupportFilter
 } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 
 type DeliveryPageProps = {
   searchParams: Promise<{
@@ -49,6 +51,10 @@ type DeliveryPageProps = {
     focus_follow_up_form?: string
     focus_reminder_notification_id?: string
     focus_workspace_id?: string
+    reminder_repair_action?: string
+    reminder_repair_notification_id?: string
+    reminder_repair_status?: string
+    reminder_repair_workspace_id?: string
     reminder_support_filter?: string
     sort?: string
     status?: string
@@ -65,6 +71,12 @@ export default async function DeliveryPage({
   }
 
   const resolvedSearchParams = await searchParams
+  const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
+    action: resolvedSearchParams.reminder_repair_action,
+    notificationId: resolvedSearchParams.reminder_repair_notification_id,
+    status: resolvedSearchParams.reminder_repair_status,
+    workspaceId: resolvedSearchParams.reminder_repair_workspace_id
+  })
   const selectedActivityFilter = normalizeDeliveryWorkspaceQuickFilter(
     resolvedSearchParams.activity
   )
@@ -196,6 +208,10 @@ export default async function DeliveryPage({
         summary={filteredReminderSupportSummary}
       />
 
+      {reminderRepairOutcome ? (
+        <DeliveryReminderRepairOutcomeBanner outcome={reminderRepairOutcome} />
+      ) : null}
+
       <DeliveryFollowUpQueue
         projectsById={projectsById}
         queueRecords={followUpQueueRecords}
@@ -234,6 +250,7 @@ export default async function DeliveryPage({
         focusWorkspaceId={focusWorkspaceId}
         focusedReminderSupportRecord={focusedReminderSupportRecord}
         projectsById={projectsById}
+        repairOutcome={reminderRepairOutcome}
         selectedActivityFilter={selectedActivityFilter}
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
