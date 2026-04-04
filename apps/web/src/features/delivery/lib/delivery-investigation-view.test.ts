@@ -16,6 +16,7 @@ function createState(
     focusFollowUpForm: false,
     focusReminderNotificationId: null,
     focusWorkspaceId: null,
+    reminderMismatchLifecycleFilter: "all",
     reminderSupportFilter: "all",
     sort: "latest_activity",
     status: "active",
@@ -32,12 +33,13 @@ describe("buildDeliveryInvestigationViewHref", () => {
           focusFollowUpForm: true,
           focusReminderNotificationId: "notification-123",
           focusWorkspaceId: "workspace-123",
+          reminderMismatchLifecycleFilter: "resolved",
           reminderSupportFilter: "checkpoint_mismatch",
           supportActivityFilter: "failed_reminder_repairs"
         })
       )
     ).toBe(
-      "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&focus_workspace_id=workspace-123&focus_reminder_notification_id=notification-123&focus_follow_up_form=1&reminder_support_filter=checkpoint_mismatch&support_activity_filter=failed_reminder_repairs#delivery-workspace-workspace-123-follow-up"
+      "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&focus_workspace_id=workspace-123&focus_reminder_notification_id=notification-123&focus_follow_up_form=1&reminder_mismatch_lifecycle_filter=resolved&reminder_support_filter=checkpoint_mismatch&support_activity_filter=failed_reminder_repairs#delivery-workspace-workspace-123-follow-up"
     )
   })
 
@@ -58,6 +60,7 @@ describe("buildDeliveryInvestigationBaseHref", () => {
           focusFollowUpForm: true,
           focusReminderNotificationId: "notification-123",
           focusWorkspaceId: "workspace-123",
+          reminderMismatchLifecycleFilter: "resolved",
           reminderSupportFilter: "checkpoint_mismatch",
           supportActivityFilter: "failed_reminder_repairs"
         })
@@ -76,12 +79,13 @@ describe("buildDeliveryInvestigationFocuslessHref", () => {
           focusFollowUpForm: true,
           focusReminderNotificationId: "notification-123",
           focusWorkspaceId: "workspace-123",
+          reminderMismatchLifecycleFilter: "resolved",
           reminderSupportFilter: "checkpoint_mismatch",
           supportActivityFilter: "failed_reminder_repairs"
         })
       )
     ).toBe(
-      "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&reminder_support_filter=checkpoint_mismatch&support_activity_filter=failed_reminder_repairs"
+      "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&reminder_support_filter=checkpoint_mismatch&reminder_mismatch_lifecycle_filter=resolved&support_activity_filter=failed_reminder_repairs"
     )
   })
 })
@@ -92,6 +96,14 @@ describe("hasPinnedDeliveryInvestigationContext", () => {
   })
 
   it("returns true when support filters or focus state are active", () => {
+    expect(
+      hasPinnedDeliveryInvestigationContext(
+        createState({
+          reminderMismatchLifecycleFilter: "unresolved"
+        })
+      )
+    ).toBe(true)
+
     expect(
       hasPinnedDeliveryInvestigationContext(
         createState({
@@ -118,12 +130,14 @@ describe("summarizeDeliveryInvestigationViewState", () => {
           focusFollowUpForm: true,
           focusReminderNotificationId: "notification-123",
           focusWorkspaceId: "workspace-123",
+          reminderMismatchLifecycleFilter: "failed_reopen_attempts",
           reminderSupportFilter: "checkpoint_mismatch",
           supportActivityFilter: "failed_reminder_repairs"
         })
       )
     ).toEqual([
       "Support activity: Failed reminder repairs",
+      "Mismatch lifecycle: Failed reopen attempts",
       "Reminder support: Checkpoint mismatches",
       "Focused workspace: workspace-123",
       "Focused follow-up form",

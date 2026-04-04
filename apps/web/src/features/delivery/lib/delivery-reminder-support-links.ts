@@ -1,4 +1,5 @@
 import type { DeliveryReminderSupportFilter } from "./delivery-reminder-support-filter"
+import type { DeliveryReminderMismatchLifecycleFilter } from "./delivery-reminder-mismatch-lifecycle-filter"
 import type { DeliverySupportActivityFilter } from "./delivery-support-activity-filter"
 
 export const deliveryReminderFocusWorkspaceQueryParam = "focus_workspace_id"
@@ -10,6 +11,8 @@ export const deliveryReminderNotificationIdQueryParam =
   "focus_reminder_notification_id"
 export const deliverySupportActivityFilterQueryParam =
   "support_activity_filter"
+export const deliveryReminderMismatchLifecycleFilterQueryParam =
+  "reminder_mismatch_lifecycle_filter"
 
 const deliveryWorkspaceAnchorPrefix = "delivery-workspace"
 
@@ -18,6 +21,7 @@ type DeliveryReminderDashboardSearchParams = {
   focusFollowUpForm?: boolean | null
   focusReminderNotificationId?: string | null
   focusWorkspaceId?: string | null
+  reminderMismatchLifecycleFilter?: DeliveryReminderMismatchLifecycleFilter | null
   reminderSupportFilter?: DeliveryReminderSupportFilter | null
   sort?: string | null
   status?: string | null
@@ -66,6 +70,16 @@ function buildDashboardSearchParams(input: DeliveryReminderDashboardSearchParams
     input.focusReminderNotificationId
   )
 
+  if (
+    input.reminderMismatchLifecycleFilter &&
+    input.reminderMismatchLifecycleFilter !== "all"
+  ) {
+    searchParams.set(
+      deliveryReminderMismatchLifecycleFilterQueryParam,
+      input.reminderMismatchLifecycleFilter
+    )
+  }
+
   if (input.reminderSupportFilter && input.reminderSupportFilter !== "all") {
     searchParams.set(
       deliveryReminderSupportFilterQueryParam,
@@ -94,6 +108,7 @@ export function buildDeliveryWorkspaceFollowUpAnchorId(workspaceId: string) {
 export function buildDeliveryReminderDashboardHref(
   workspaceId: string,
   input?: {
+    reminderMismatchLifecycleFilter?: DeliveryReminderMismatchLifecycleFilter | null
     reminderSupportFilter?: DeliveryReminderSupportFilter | null
     supportActivityFilter?: DeliverySupportActivityFilter | null
   }
@@ -102,6 +117,8 @@ export function buildDeliveryReminderDashboardHref(
   const searchParams = buildDashboardSearchParams({
     activity: "needs_follow_up",
     focusWorkspaceId: normalizedWorkspaceId,
+    reminderMismatchLifecycleFilter:
+      input?.reminderMismatchLifecycleFilter ?? null,
     reminderSupportFilter: input?.reminderSupportFilter ?? null,
     sort: "latest_activity",
     status: "active",
@@ -115,6 +132,7 @@ export function buildDeliveryReminderDashboardHref(
 
 export function buildDeliveryReminderFollowUpFormHref(input: {
   notificationId: string
+  reminderMismatchLifecycleFilter?: DeliveryReminderMismatchLifecycleFilter | null
   reminderSupportFilter?: DeliveryReminderSupportFilter | null
   supportActivityFilter?: DeliverySupportActivityFilter | null
   workspaceId: string
@@ -127,6 +145,8 @@ export function buildDeliveryReminderFollowUpFormHref(input: {
     focusFollowUpForm: true,
     focusReminderNotificationId: normalizedNotificationId,
     focusWorkspaceId: normalizedWorkspaceId,
+    reminderMismatchLifecycleFilter:
+      input.reminderMismatchLifecycleFilter ?? null,
     reminderSupportFilter: input.reminderSupportFilter ?? null,
     sort: "latest_activity",
     status: "active",
@@ -154,6 +174,19 @@ export function buildDeliveryReminderSupportFilterHref(
 export function buildDeliverySupportActivityFilterHref(
   input: DeliveryReminderDashboardSearchParams & {
     supportActivityFilter: DeliverySupportActivityFilter
+  }
+) {
+  const searchParams = buildDashboardSearchParams(input)
+  const serializedSearchParams = searchParams.toString()
+
+  return serializedSearchParams.length > 0
+    ? `/dashboard/delivery?${serializedSearchParams}`
+    : "/dashboard/delivery"
+}
+
+export function buildDeliveryReminderMismatchLifecycleFilterHref(
+  input: DeliveryReminderDashboardSearchParams & {
+    reminderMismatchLifecycleFilter: DeliveryReminderMismatchLifecycleFilter
   }
 ) {
   const searchParams = buildDashboardSearchParams(input)

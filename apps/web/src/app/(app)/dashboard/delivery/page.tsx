@@ -1,4 +1,8 @@
 import { summarizeDeliveryReminderMismatchLifecycle } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-summary"
+import {
+  filterDeliveryReminderMismatchLifecycleScope,
+  normalizeDeliveryReminderMismatchLifecycleFilter
+} from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-filter"
 import { DeliveryReminderMismatchLifecycleSummaryPanel } from "@/features/delivery/components/delivery-reminder-mismatch-lifecycle-summary-panel"
 import { DeliveryReminderRepairOutcomeBanner } from "@/features/delivery/components/delivery-reminder-repair-outcome-banner"
 import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
@@ -75,6 +79,7 @@ type DeliveryPageProps = {
     reminder_repair_notification_id?: string
     reminder_repair_status?: string
     reminder_repair_workspace_id?: string
+    reminder_mismatch_lifecycle_filter?: string
     support_activity_filter?: string
     reminder_support_filter?: string
     sort?: string
@@ -121,6 +126,10 @@ export default async function DeliveryPage({
   const activeReminderSupportFilter = normalizeDeliveryReminderSupportFilter(
     resolvedSearchParams.reminder_support_filter
   )
+  const activeReminderMismatchLifecycleFilter =
+    normalizeDeliveryReminderMismatchLifecycleFilter(
+      resolvedSearchParams.reminder_mismatch_lifecycle_filter
+    )
   const activeSupportActivityFilter = normalizeDeliverySupportActivityFilter(
     resolvedSearchParams.support_activity_filter
   )
@@ -171,9 +180,6 @@ export default async function DeliveryPage({
     activeReminderSupportFilter
   )
 
-  const filteredReminderSupportSummary =
-    summarizeDeliveryReminderSupportRecords(filteredReminderSupportRecords)
-
   const visibleWorkspaceOverviews = filterAndSortDeliveryWorkspaceOverviewRecords({
     overviewRecords: allWorkspaceOverviews,
     quickFilter: selectedActivityFilter,
@@ -196,12 +202,23 @@ export default async function DeliveryPage({
   const reminderMismatchLifecycleSummary =
     summarizeDeliveryReminderMismatchLifecycle({
       overviewRecords: supportFilteredWorkspaceOverviews,
-      reminderSupportRecords
+      reminderSupportRecords: filteredReminderSupportRecords
     })
 
-  const supportOpsSummary = summarizeDeliverySupportOps({
+  const lifecycleScopedSupportScope = filterDeliveryReminderMismatchLifecycleScope({
+    filter: activeReminderMismatchLifecycleFilter,
     overviewRecords: supportFilteredWorkspaceOverviewsForDisplay,
-    reminderSupportRecords
+    reminderSupportRecords: filteredReminderSupportRecords
+  })
+
+  const lifecycleScopedReminderSupportSummary =
+    summarizeDeliveryReminderSupportRecords(
+      lifecycleScopedSupportScope.reminderSupportRecords
+    )
+
+  const supportOpsSummary = summarizeDeliverySupportOps({
+    overviewRecords: lifecycleScopedSupportScope.overviewRecords,
+    reminderSupportRecords: lifecycleScopedSupportScope.reminderSupportRecords
   })
 
   const focusFollowUpFormWorkspaceId = resolveFocusedFollowUpFormWorkspaceId({
@@ -215,7 +232,7 @@ export default async function DeliveryPage({
   const investigationContextSummary = buildDeliveryInvestigationContextSummary({
     focusedReminderSupportRecord,
     focusWorkspaceId: focusedInvestigationWorkspaceId,
-    overviewRecords: supportFilteredWorkspaceOverviewsForDisplay
+    overviewRecords: lifecycleScopedSupportScope.overviewRecords
   })
 
   const investigationStaleContextSummary =
@@ -223,8 +240,8 @@ export default async function DeliveryPage({
       focusFollowUpForm: shouldFocusFollowUpForm,
       focusReminderNotificationId: focusReminderNotificationId ?? null,
       focusWorkspaceId: focusedInvestigationWorkspaceId,
-      reminderSupportRecords: reminderSupportRecords,
-      overviewRecords: supportFilteredWorkspaceOverviewsForDisplay
+      reminderSupportRecords: lifecycleScopedSupportScope.reminderSupportRecords,
+      overviewRecords: lifecycleScopedSupportScope.overviewRecords
     })
 
   const focusedWorkspaceStatusSummary =
@@ -232,17 +249,17 @@ export default async function DeliveryPage({
       ? null
       : buildDeliveryFocusedWorkspaceStatusSummary({
           focusWorkspaceId: focusedInvestigationWorkspaceId,
-          overviewRecords: supportFilteredWorkspaceOverviewsForDisplay
+          overviewRecords: lifecycleScopedSupportScope.overviewRecords
         })
 
   const focusedFollowUpFormIsVisible = focusFollowUpFormWorkspaceId
-    ? supportFilteredWorkspaceOverviewsForDisplay.some(
+    ? lifecycleScopedSupportScope.overviewRecords.some(
         (record) => record.workspace.id === focusFollowUpFormWorkspaceId
       )
     : false
 
   const focusedWorkspaceIsVisible = focusWorkspaceId
-    ? supportFilteredWorkspaceOverviewsForDisplay.some(
+    ? lifecycleScopedSupportScope.overviewRecords.some(
         (record) => record.workspace.id === focusWorkspaceId
       )
     : false
@@ -254,6 +271,7 @@ export default async function DeliveryPage({
     focusFollowUpForm: shouldFocusFollowUpForm,
     focusReminderNotificationId: focusReminderNotificationId ?? null,
     focusWorkspaceId: focusWorkspaceId ?? null,
+    reminderMismatchLifecycleFilter: activeReminderMismatchLifecycleFilter,
     reminderSupportFilter: activeReminderSupportFilter,
     sort: resolvedSearchParams.sort ?? null,
     status: resolvedSearchParams.status ?? null,
@@ -288,13 +306,14 @@ export default async function DeliveryPage({
           focusFollowUpForm: shouldFocusFollowUpForm,
           focusReminderNotificationId: focusReminderNotificationId ?? null,
           focusWorkspaceId: focusWorkspaceId ?? null,
+          reminderMismatchLifecycleFilter: activeReminderMismatchLifecycleFilter,
           sort: resolvedSearchParams.sort ?? null,
           status: resolvedSearchParams.status ?? null,
           supportActivityFilter: activeSupportActivityFilter
         }}
         overallSummary={overallReminderSupportSummary}
-        records={filteredReminderSupportRecords}
-        summary={filteredReminderSupportSummary}
+        records={lifecycleScopedSupportScope.reminderSupportRecords}
+        summary={lifecycleScopedReminderSupportSummary}
       />
 
       {reminderRepairOutcome ? (
@@ -308,6 +327,7 @@ export default async function DeliveryPage({
           focusFollowUpForm: shouldFocusFollowUpForm,
           focusReminderNotificationId: focusReminderNotificationId ?? null,
           focusWorkspaceId: focusWorkspaceId ?? null,
+          reminderMismatchLifecycleFilter: activeReminderMismatchLifecycleFilter,
           reminderSupportFilter: activeReminderSupportFilter,
           sort: resolvedSearchParams.sort ?? null,
           status: resolvedSearchParams.status ?? null
@@ -321,12 +341,23 @@ export default async function DeliveryPage({
       />
 
       <DeliveryReminderMismatchLifecycleSummaryPanel
-  activeSupportActivityFilter={activeSupportActivityFilter}
-  summary={reminderMismatchLifecycleSummary}
-/>
+        activeLifecycleFilter={activeReminderMismatchLifecycleFilter}
+        activeSupportActivityFilter={activeSupportActivityFilter}
+        currentDashboardSearchParams={{
+          activity: resolvedSearchParams.activity ?? null,
+          focusFollowUpForm: shouldFocusFollowUpForm,
+          focusReminderNotificationId: focusReminderNotificationId ?? null,
+          focusWorkspaceId: focusWorkspaceId ?? null,
+          reminderMismatchLifecycleFilter: activeReminderMismatchLifecycleFilter,
+          reminderSupportFilter: activeReminderSupportFilter,
+          sort: resolvedSearchParams.sort ?? null,
+          status: resolvedSearchParams.status ?? null,
+          supportActivityFilter: activeSupportActivityFilter
+        }}
+        summary={reminderMismatchLifecycleSummary}
+      />
 
-
-<DeliveryInvestigationViewPanel
+      <DeliveryInvestigationViewPanel
         state={deliveryInvestigationViewState}
       />
 
@@ -379,11 +410,13 @@ export default async function DeliveryPage({
         </div>
       ) : null}
 
-      {supportFilteredWorkspaceOverviewsForDisplay.length === 0 ? (
+      {lifecycleScopedSupportScope.overviewRecords.length === 0 ? (
         <div className="rounded-[1.25rem] border border-dashed border-white/10 bg-white/[0.03] px-4 py-6 text-sm text-slate-400">
-          {activeSupportActivityFilter === "all"
-            ? "No support-originated workspace activity is visible under the current delivery filters."
-            : "No workspace activity matches the current support activity filter under the current delivery filters."}
+          {activeReminderMismatchLifecycleFilter !== "all"
+            ? "No workspace activity matches the current reminder mismatch lifecycle filter under the current delivery support scope."
+            : activeSupportActivityFilter === "all"
+              ? "No support-originated workspace activity is visible under the current delivery filters."
+              : "No workspace activity matches the current support activity filter under the current delivery filters."}
         </div>
       ) : null}
 
@@ -399,7 +432,7 @@ export default async function DeliveryPage({
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
         todayDateKey={todayDateKey}
-        workspaceOverviews={supportFilteredWorkspaceOverviewsForDisplay}
+        workspaceOverviews={lifecycleScopedSupportScope.overviewRecords}
       />
     </div>
   )

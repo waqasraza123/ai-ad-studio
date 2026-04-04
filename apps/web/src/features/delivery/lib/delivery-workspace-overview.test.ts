@@ -134,11 +134,13 @@ describe("buildDeliveryWorkspaceOverviewRecords", () => {
 
     const events = [
       createEventRecord({
+        id: "event-a-delivered",
         delivery_workspace_id: "workspace-a",
         event_type: "delivered",
         created_at: "2026-03-21T09:30:00.000Z"
       }),
       createEventRecord({
+        id: "event-a-viewed",
         delivery_workspace_id: "workspace-a",
         event_type: "viewed",
         created_at: "2026-03-21T10:00:00.000Z"
@@ -180,6 +182,20 @@ describe("buildDeliveryWorkspaceOverviewRecords", () => {
     expect(workspaceAOverview?.activityExcerpt).toBe(
       "Viewed by recipient. Awaiting acknowledgement."
     )
+    expect(workspaceAOverview?.activityTimeline).toEqual([
+      createEventRecord({
+        id: "event-a-delivered",
+        delivery_workspace_id: "workspace-a",
+        event_type: "delivered",
+        created_at: "2026-03-21T09:30:00.000Z"
+      }),
+      createEventRecord({
+        id: "event-a-viewed",
+        delivery_workspace_id: "workspace-a",
+        event_type: "viewed",
+        created_at: "2026-03-21T10:00:00.000Z"
+      })
+    ])
 
     expect(workspaceBOverview?.activitySummary.downloadCount).toBe(1)
     expect(workspaceBOverview?.activityExcerpt).toBe(

@@ -9,6 +9,7 @@ import type {
   DeliveryReminderSupportRecord,
   DeliveryReminderSupportSummary
 } from "@/features/delivery/lib/delivery-reminder-support"
+import type { DeliveryReminderMismatchLifecycleFilter } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-filter"
 import {
   getDeliveryReminderSupportFilterLabel,
   type DeliveryReminderSupportFilter
@@ -27,6 +28,7 @@ type DeliveryReminderSupportPanelProps = {
     focusFollowUpForm?: boolean | null
     focusReminderNotificationId?: string | null
     focusWorkspaceId?: string | null
+    reminderMismatchLifecycleFilter?: DeliveryReminderMismatchLifecycleFilter | null
     sort?: string | null
     status?: string | null
     supportActivityFilter?: DeliverySupportActivityFilter | null
@@ -166,6 +168,9 @@ export function DeliveryReminderSupportPanel({
                   currentDashboardSearchParams.focusReminderNotificationId ?? null,
                 focusWorkspaceId:
                   currentDashboardSearchParams.focusWorkspaceId ?? null,
+                reminderMismatchLifecycleFilter:
+                  currentDashboardSearchParams.reminderMismatchLifecycleFilter ??
+                  null,
                 reminderSupportFilter: filterOption.value,
                 sort: currentDashboardSearchParams.sort ?? null,
                 status: currentDashboardSearchParams.status ?? null,
@@ -261,6 +266,9 @@ export function DeliveryReminderSupportPanel({
                       <Link
                         className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
                         href={buildDeliveryReminderDashboardHref(record.workspaceId, {
+                          reminderMismatchLifecycleFilter:
+                            currentDashboardSearchParams.reminderMismatchLifecycleFilter ??
+                            null,
                           reminderSupportFilter: activeFilter,
                           supportActivityFilter:
                             currentDashboardSearchParams.supportActivityFilter ?? null
@@ -275,6 +283,9 @@ export function DeliveryReminderSupportPanel({
                         className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-500/15"
                         href={buildDeliveryReminderFollowUpFormHref({
                           notificationId: record.notificationId,
+                          reminderMismatchLifecycleFilter:
+                            currentDashboardSearchParams.reminderMismatchLifecycleFilter ??
+                            null,
                           reminderSupportFilter: activeFilter,
                           supportActivityFilter:
                             currentDashboardSearchParams.supportActivityFilter ?? null,

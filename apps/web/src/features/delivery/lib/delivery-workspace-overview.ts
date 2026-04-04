@@ -17,6 +17,7 @@ export type DeliveryWorkspaceQuickFilter =
 export type DeliveryWorkspaceOverviewRecord = {
   activityExcerpt: string
   activitySummary: DeliveryWorkspaceActivitySummary
+  activityTimeline?: DeliveryWorkspaceEventRecord[]
   latestActivityAt: string | null
   workspace: DeliveryWorkspaceRecord
 }
@@ -184,6 +185,7 @@ export function buildDeliveryWorkspaceOverviewRecords(input: {
     return {
       activityExcerpt: buildDeliveryWorkspaceActivityExcerpt(activitySummary),
       activitySummary,
+      activityTimeline: workspaceEvents,
       latestActivityAt,
       workspace
     }

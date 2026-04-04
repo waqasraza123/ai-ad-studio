@@ -1,3 +1,7 @@
+import type { DeliveryReminderMismatchLifecycleFilter } from "./delivery-reminder-mismatch-lifecycle-filter"
+import {
+  getDeliveryReminderMismatchLifecycleFilterLabel
+} from "./delivery-reminder-mismatch-lifecycle-filter"
 import type { DeliveryReminderSupportFilter } from "./delivery-reminder-support-filter"
 import {
   buildDeliveryWorkspaceFocusAnchorId,
@@ -16,6 +20,7 @@ export type DeliveryInvestigationViewState = {
   focusFollowUpForm: boolean
   focusReminderNotificationId: string | null
   focusWorkspaceId: string | null
+  reminderMismatchLifecycleFilter: DeliveryReminderMismatchLifecycleFilter
   reminderSupportFilter: DeliveryReminderSupportFilter
   sort: string | null
   status: string | null
@@ -55,6 +60,13 @@ function buildDeliveryInvestigationSearchParams(
 
   if (state.focusFollowUpForm) {
     searchParams.set("focus_follow_up_form", "1")
+  }
+
+  if (state.reminderMismatchLifecycleFilter !== "all") {
+    searchParams.set(
+      "reminder_mismatch_lifecycle_filter",
+      state.reminderMismatchLifecycleFilter
+    )
   }
 
   if (state.reminderSupportFilter !== "all") {
@@ -130,6 +142,13 @@ export function buildDeliveryInvestigationFocuslessHref(
     )
   }
 
+  if (state.reminderMismatchLifecycleFilter !== "all") {
+    searchParams.set(
+      "reminder_mismatch_lifecycle_filter",
+      state.reminderMismatchLifecycleFilter
+    )
+  }
+
   if (state.supportActivityFilter !== "all") {
     searchParams.set(
       "support_activity_filter",
@@ -151,6 +170,7 @@ export function hasPinnedDeliveryInvestigationContext(
     state.focusFollowUpForm ||
     Boolean(state.focusReminderNotificationId) ||
     Boolean(state.focusWorkspaceId) ||
+    state.reminderMismatchLifecycleFilter !== "all" ||
     state.reminderSupportFilter !== "all" ||
     state.supportActivityFilter !== "all"
   )
@@ -165,6 +185,14 @@ export function summarizeDeliveryInvestigationViewState(
     labels.push(
       `Support activity: ${getDeliverySupportActivityFilterLabel(
         state.supportActivityFilter
+      )}`
+    )
+  }
+
+  if (state.reminderMismatchLifecycleFilter !== "all") {
+    labels.push(
+      `Mismatch lifecycle: ${getDeliveryReminderMismatchLifecycleFilterLabel(
+        state.reminderMismatchLifecycleFilter
       )}`
     )
   }

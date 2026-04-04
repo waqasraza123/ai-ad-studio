@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest"
 import {
   buildDeliveryReminderDashboardHref,
   buildDeliveryReminderFollowUpFormHref,
+  buildDeliveryReminderMismatchLifecycleFilterHref,
   buildDeliveryReminderSupportFilterHref,
   buildDeliverySupportActivityFilterHref,
   buildDeliveryWorkspaceFocusAnchorId,
   buildDeliveryWorkspaceFollowUpAnchorId,
   deliveryReminderFollowUpFormFocusQueryParam,
   deliveryReminderFocusWorkspaceQueryParam,
+  deliveryReminderMismatchLifecycleFilterQueryParam,
   deliveryReminderNotificationIdQueryParam,
   deliveryReminderSupportFilterQueryParam,
   deliverySupportActivityFilterQueryParam,
@@ -42,11 +44,12 @@ describe("buildDeliveryReminderDashboardHref", () => {
   it("preserves non-default reminder and support activity filters", () => {
     expect(
       buildDeliveryReminderDashboardHref("workspace-123", {
+        reminderMismatchLifecycleFilter: "resolved",
         reminderSupportFilter: "overdue",
         supportActivityFilter: "failed_reminder_repairs"
       })
     ).toBe(
-      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderSupportFilterQueryParam}=overdue&${deliverySupportActivityFilterQueryParam}=failed_reminder_repairs#delivery-workspace-workspace-123`
+      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderMismatchLifecycleFilterQueryParam}=resolved&${deliveryReminderSupportFilterQueryParam}=overdue&${deliverySupportActivityFilterQueryParam}=failed_reminder_repairs#delivery-workspace-workspace-123`
     )
   })
 })
@@ -67,12 +70,13 @@ describe("buildDeliveryReminderFollowUpFormHref", () => {
     expect(
       buildDeliveryReminderFollowUpFormHref({
         notificationId: "notification-123",
+        reminderMismatchLifecycleFilter: "failed_reopen_attempts",
         reminderSupportFilter: "checkpoint_mismatch",
         supportActivityFilter: "support_handoff_notes",
         workspaceId: "workspace-123"
       })
     ).toBe(
-      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderSupportFilterQueryParam}=checkpoint_mismatch&${deliverySupportActivityFilterQueryParam}=support_handoff_notes#delivery-workspace-workspace-123-follow-up`
+      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderMismatchLifecycleFilterQueryParam}=failed_reopen_attempts&${deliveryReminderSupportFilterQueryParam}=checkpoint_mismatch&${deliverySupportActivityFilterQueryParam}=support_handoff_notes#delivery-workspace-workspace-123-follow-up`
     )
   })
 })
@@ -85,13 +89,14 @@ describe("buildDeliveryReminderSupportFilterHref", () => {
         focusFollowUpForm: true,
         focusReminderNotificationId: "notification-123",
         focusWorkspaceId: "workspace-123",
+        reminderMismatchLifecycleFilter: "unresolved",
         reminderSupportFilter: "workspace_missing",
         sort: "latest_activity",
         status: "active",
         supportActivityFilter: "failed_reminder_repairs"
       })
     ).toBe(
-      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderSupportFilterQueryParam}=workspace_missing&${deliverySupportActivityFilterQueryParam}=failed_reminder_repairs`
+      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderMismatchLifecycleFilterQueryParam}=unresolved&${deliveryReminderSupportFilterQueryParam}=workspace_missing&${deliverySupportActivityFilterQueryParam}=failed_reminder_repairs`
     )
   })
 })
@@ -104,13 +109,14 @@ describe("buildDeliverySupportActivityFilterHref", () => {
         focusFollowUpForm: true,
         focusReminderNotificationId: "notification-123",
         focusWorkspaceId: "workspace-123",
+        reminderMismatchLifecycleFilter: "resolved",
         reminderSupportFilter: "checkpoint_mismatch",
         sort: "latest_activity",
         status: "active",
         supportActivityFilter: "support_handoff_notes"
       })
     ).toBe(
-      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderSupportFilterQueryParam}=checkpoint_mismatch&${deliverySupportActivityFilterQueryParam}=support_handoff_notes`
+      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderMismatchLifecycleFilterQueryParam}=resolved&${deliveryReminderSupportFilterQueryParam}=checkpoint_mismatch&${deliverySupportActivityFilterQueryParam}=support_handoff_notes`
     )
   })
 
@@ -124,6 +130,26 @@ describe("buildDeliverySupportActivityFilterHref", () => {
       })
     ).toBe(
       "/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity"
+    )
+  })
+})
+
+describe("buildDeliveryReminderMismatchLifecycleFilterHref", () => {
+  it("builds a delivery dashboard href that preserves current investigation context", () => {
+    expect(
+      buildDeliveryReminderMismatchLifecycleFilterHref({
+        activity: "needs_follow_up",
+        focusFollowUpForm: true,
+        focusReminderNotificationId: "notification-123",
+        focusWorkspaceId: "workspace-123",
+        reminderMismatchLifecycleFilter: "failed_reopen_attempts",
+        reminderSupportFilter: "checkpoint_mismatch",
+        sort: "latest_activity",
+        status: "active",
+        supportActivityFilter: "failed_reminder_repairs"
+      })
+    ).toBe(
+      `/dashboard/delivery?activity=needs_follow_up&status=active&sort=latest_activity&${deliveryReminderFocusWorkspaceQueryParam}=workspace-123&${deliveryReminderFollowUpFormFocusQueryParam}=1&${deliveryReminderNotificationIdQueryParam}=notification-123&${deliveryReminderMismatchLifecycleFilterQueryParam}=failed_reopen_attempts&${deliveryReminderSupportFilterQueryParam}=checkpoint_mismatch&${deliverySupportActivityFilterQueryParam}=failed_reminder_repairs`
     )
   })
 })

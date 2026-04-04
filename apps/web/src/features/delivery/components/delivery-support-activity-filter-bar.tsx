@@ -1,4 +1,5 @@
 import Link from "next/link"
+import type { DeliveryReminderMismatchLifecycleFilter } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-filter"
 import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
 import {
   buildDeliverySupportActivityFilterHref
@@ -16,6 +17,7 @@ type DeliverySupportActivityFilterBarProps = {
     focusFollowUpForm?: boolean | null
     focusReminderNotificationId?: string | null
     focusWorkspaceId?: string | null
+    reminderMismatchLifecycleFilter?: DeliveryReminderMismatchLifecycleFilter | null
     reminderSupportFilter?: DeliveryReminderSupportFilter | null
     sort?: string | null
     status?: string | null
@@ -86,6 +88,9 @@ export function DeliverySupportActivityFilterBar({
                   null,
                 focusWorkspaceId:
                   currentDashboardSearchParams.focusWorkspaceId ?? null,
+                reminderMismatchLifecycleFilter:
+                  currentDashboardSearchParams.reminderMismatchLifecycleFilter ??
+                  null,
                 reminderSupportFilter:
                   currentDashboardSearchParams.reminderSupportFilter ?? null,
                 sort: currentDashboardSearchParams.sort ?? null,
