@@ -447,6 +447,27 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
     validateDeliveryReminderMismatchReopenNote(reopenNote)
 
   if (reopenNoteError) {
+    try {
+      await appendDeliveryWorkspaceActivity({
+        workspaceId,
+        kind: "follow_up_updated",
+        metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
+          errorCode: "reopen_note_too_long",
+          reminderBucket,
+          reminderNotificationId,
+          reopenNote,
+          reopenOutcome: "error"
+        })
+      })
+    } catch (error) {
+      console.error(
+        "Failed to append delivery reminder mismatch reopen validation activity",
+        error
+      )
+    }
+
+    revalidatePath("/dashboard/delivery")
+
     redirect(
       buildDeliveryReminderMismatchOutcomeHref({
         action: "reopened",
@@ -467,6 +488,27 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
   } catch (error) {
     console.error("Failed to reopen delivery reminder mismatch", error)
 
+    try {
+      await appendDeliveryWorkspaceActivity({
+        workspaceId,
+        kind: "follow_up_updated",
+        metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
+          errorCode: "not_currently_resolved",
+          reminderBucket,
+          reminderNotificationId,
+          reopenNote,
+          reopenOutcome: "error"
+        })
+      })
+    } catch (activityError) {
+      console.error(
+        "Failed to append delivery reminder mismatch reopen failure activity",
+        activityError
+      )
+    }
+
+    revalidatePath("/dashboard/delivery")
+
     redirect(
       buildDeliveryReminderMismatchOutcomeHref({
         action: "reopened",
@@ -484,9 +526,11 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
       workspaceId,
       kind: "follow_up_updated",
       metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
+        errorCode: null,
         reminderBucket,
         reminderNotificationId,
-        reopenNote
+        reopenNote,
+        reopenOutcome: "success"
       })
     })
   } catch (error) {

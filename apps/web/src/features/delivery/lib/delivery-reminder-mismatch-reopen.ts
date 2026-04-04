@@ -3,10 +3,17 @@ export const deliveryReminderMismatchReopenNoteFieldName =
 
 export const deliveryReminderMismatchReopenNoteMaxLength = 500
 
+export type DeliveryReminderMismatchReopenErrorCode =
+  | "not_currently_resolved"
+  | "reopen_note_too_long"
+  | null
+
 export type DeliveryReminderMismatchReopenActivityMetadata = {
+  errorCode: DeliveryReminderMismatchReopenErrorCode
   reminderBucket: "due_today" | "overdue" | null
   reminderNotificationId: string
   reopenNote: string | null
+  reopenOutcome: "error" | "success"
   source: "reminder_mismatch_reopened"
 }
 
@@ -37,14 +44,18 @@ export function validateDeliveryReminderMismatchReopenNote(
 }
 
 export function buildDeliveryReminderMismatchReopenActivityMetadata(input: {
+  errorCode: DeliveryReminderMismatchReopenErrorCode
   reminderBucket: "due_today" | "overdue" | null
   reminderNotificationId: string
   reopenNote: string | null
+  reopenOutcome: "error" | "success"
 }): DeliveryReminderMismatchReopenActivityMetadata {
   return {
+    errorCode: input.errorCode,
     reminderBucket: input.reminderBucket,
     reminderNotificationId: input.reminderNotificationId,
     reopenNote: input.reopenNote,
+    reopenOutcome: input.reopenOutcome,
     source: "reminder_mismatch_reopened"
   }
 }
@@ -65,7 +76,13 @@ export function isDeliveryReminderMismatchReopenActivityMetadata(
     (metadata.reminderBucket === null ||
       metadata.reminderBucket === "due_today" ||
       metadata.reminderBucket === "overdue") &&
-    (metadata.reopenNote === null || typeof metadata.reopenNote === "string")
+    (metadata.reopenNote === null ||
+      typeof metadata.reopenNote === "string") &&
+    (metadata.reopenOutcome === "success" ||
+      metadata.reopenOutcome === "error") &&
+    (metadata.errorCode === null ||
+      metadata.errorCode === "not_currently_resolved" ||
+      metadata.errorCode === "reopen_note_too_long")
   )
 }
 
@@ -81,21 +98,51 @@ function getReminderBucketLabel(reminderBucket: "due_today" | "overdue" | null) 
   return "unspecified"
 }
 
-export function getDeliveryReminderMismatchReopenActivityBadgeLabel() {
-  return "Mismatch reopened"
+export function getDeliveryReminderMismatchReopenActivityBadgeLabel(
+  metadata: DeliveryReminderMismatchReopenActivityMetadata
+) {
+  return metadata.reopenOutcome === "success"
+    ? "Mismatch reopened"
+    : "Mismatch reopen failed"
 }
 
-export function getDeliveryReminderMismatchReopenActivityBadgeClasses() {
-  return "border-amber-400/30 bg-amber-500/10 text-amber-200"
+export function getDeliveryReminderMismatchReopenActivityBadgeClasses(
+  metadata: DeliveryReminderMismatchReopenActivityMetadata
+) {
+  return metadata.reopenOutcome === "success"
+    ? "border-amber-400/30 bg-amber-500/10 text-amber-200"
+    : "border-rose-400/30 bg-rose-500/10 text-rose-200"
 }
 
-export function getDeliveryReminderMismatchReopenActivityTitle() {
-  return "Reopened previously resolved reminder mismatch"
+export function getDeliveryReminderMismatchReopenActivityTitle(
+  metadata: DeliveryReminderMismatchReopenActivityMetadata
+) {
+  return metadata.reopenOutcome === "success"
+    ? "Reopened previously resolved reminder mismatch"
+    : "Failed to reopen previously resolved reminder mismatch"
 }
 
 export function getDeliveryReminderMismatchReopenActivityDescription(
   metadata: DeliveryReminderMismatchReopenActivityMetadata
 ) {
+  if (
+    metadata.reopenOutcome === "error" &&
+    metadata.errorCode === "reopen_note_too_long"
+  ) {
+    return `Attempted to reopen a resolved mismatch from ${getReminderBucketLabel(
+      metadata.reminderBucket
+    )} reminder context, but the reopen note exceeded the allowed length.`
+  }
+
+  if (
+    metadata.reopenOutcome === "error" &&
+    metadata.errorCode === "not_currently_resolved"
+  ) {
+    return `Attempted to reopen a resolved mismatch from ${getReminderBucketLabel(
+      metadata.reminderBucket
+    )} reminder context, but that reminder is no longer currently resolved for this workspace.`
+  }
+
   const baseDescription = `Reopened resolved reminder mismatch from ${getReminderBucketLabel(
     metadata.reminderBucket
   )} reminder context.`

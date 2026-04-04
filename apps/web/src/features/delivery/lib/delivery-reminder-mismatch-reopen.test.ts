@@ -44,30 +44,48 @@ describe("validateDeliveryReminderMismatchReopenNote", () => {
 })
 
 describe("activity metadata", () => {
-  const metadata = buildDeliveryReminderMismatchReopenActivityMetadata({
-    reminderBucket: "overdue",
-    reminderNotificationId: "notification-1",
-    reopenNote: "Operator determined the earlier resolution was incorrect."
-  })
-
-  it("builds valid metadata", () => {
-    expect(metadata).toEqual({
+  it("builds valid success metadata", () => {
+    const metadata = buildDeliveryReminderMismatchReopenActivityMetadata({
+      errorCode: null,
       reminderBucket: "overdue",
       reminderNotificationId: "notification-1",
       reopenNote: "Operator determined the earlier resolution was incorrect.",
+      reopenOutcome: "success"
+    })
+
+    expect(metadata).toEqual({
+      errorCode: null,
+      reminderBucket: "overdue",
+      reminderNotificationId: "notification-1",
+      reopenNote: "Operator determined the earlier resolution was incorrect.",
+      reopenOutcome: "success",
       source: "reminder_mismatch_reopened"
     })
-  })
 
-  it("detects valid metadata", () => {
     expect(isDeliveryReminderMismatchReopenActivityMetadata(metadata)).toBe(true)
-  })
 
-  it("returns the expected description", () => {
     expect(
       getDeliveryReminderMismatchReopenActivityDescription(metadata)
     ).toBe(
       "Reopened resolved reminder mismatch from overdue reminder context. Operator determined the earlier resolution was incorrect."
+    )
+  })
+
+  it("builds valid failed metadata", () => {
+    const metadata = buildDeliveryReminderMismatchReopenActivityMetadata({
+      errorCode: "not_currently_resolved",
+      reminderBucket: "due_today",
+      reminderNotificationId: "notification-1",
+      reopenNote: null,
+      reopenOutcome: "error"
+    })
+
+    expect(isDeliveryReminderMismatchReopenActivityMetadata(metadata)).toBe(true)
+
+    expect(
+      getDeliveryReminderMismatchReopenActivityDescription(metadata)
+    ).toBe(
+      "Attempted to reopen a resolved mismatch from due today reminder context, but that reminder is no longer currently resolved for this workspace."
     )
   })
 })
