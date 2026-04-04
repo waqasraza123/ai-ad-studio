@@ -1,3 +1,5 @@
+import { summarizeDeliveryReminderMismatchLifecycle } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-summary"
+import { DeliveryReminderMismatchLifecycleSummaryPanel } from "@/features/delivery/components/delivery-reminder-mismatch-lifecycle-summary-panel"
 import { DeliveryReminderRepairOutcomeBanner } from "@/features/delivery/components/delivery-reminder-repair-outcome-banner"
 import { DeliveryReminderSupportPanel } from "@/features/delivery/components/delivery-reminder-support-panel"
 import { DeliverySupportActivityFilterBar } from "@/features/delivery/components/delivery-support-activity-filter-bar"
@@ -90,7 +92,14 @@ export default async function DeliveryPage({
   }
 
   const resolvedSearchParams = await searchParams
-  const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
+  const reminderMismatchLifecycleSummary =
+  summarizeDeliveryReminderMismatchLifecycle({
+    overviewRecords: supportFilteredWorkspaceOverviews,
+    reminderSupportRecords
+  })
+
+
+const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
     action: resolvedSearchParams.reminder_repair_action,
     errorCode: resolvedSearchParams.reminder_repair_error_code,
     noteSaved: resolvedSearchParams.reminder_repair_note_saved,
@@ -312,7 +321,13 @@ export default async function DeliveryPage({
         summary={supportOpsSummary}
       />
 
-      <DeliveryInvestigationViewPanel
+      <DeliveryReminderMismatchLifecycleSummaryPanel
+  activeSupportActivityFilter={activeSupportActivityFilter}
+  summary={reminderMismatchLifecycleSummary}
+/>
+
+
+<DeliveryInvestigationViewPanel
         state={deliveryInvestigationViewState}
       />
 

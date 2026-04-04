@@ -1,88 +1,166 @@
-import { isDeliveryReminderMismatchReopenActivityMetadata } from "@/features/delivery/lib/delivery-reminder-mismatch-reopen"
+import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
+import {
+  isDeliveryReminderMismatchReopenActivityMetadata
+} from "@/features/delivery/lib/delivery-reminder-mismatch-reopen"
 
-type ReminderMismatchLifecycleSummaryActivityRecord = {
+type ReminderMismatchLifecycleActivityRecord = {
   metadata: unknown
 }
 
-type ReminderMismatchLifecycleSummarySupportRecord = {
-  checkpointState: string | null
-}
-
-type ReminderMismatchLifecycleSummaryWorkspaceRecord = {
-  activities?: ReminderMismatchLifecycleSummaryActivityRecord[] | null
-  activityRecords?: ReminderMismatchLifecycleSummaryActivityRecord[] | null
-  activityTimeline?: ReminderMismatchLifecycleSummaryActivityRecord[] | null
-  timeline?: ReminderMismatchLifecycleSummaryActivityRecord[] | null
+type ReminderMismatchLifecycleWorkspaceRecord = {
+  id?: string | null
+  workspaceId?: string | null
 }
 
 export type DeliveryReminderMismatchLifecycleSummary = {
   failedReopenAttemptsCount: number
-  reopenedCount: number
-  resolvedCount: number
-  unresolvedCount: number
+  reopenedMismatchCount: number
+  resolvedMismatchCount: number
+  unresolvedMismatchCount: number
+  visibleWorkspaceCount: number
 }
 
-function getWorkspaceActivityRecords(
-  record: ReminderMismatchLifecycleSummaryWorkspaceRecord
+export type DeliveryReminderMismatchLifecycleWorkspaceOverviewRecord<
+  TActivity extends ReminderMismatchLifecycleActivityRecord = ReminderMismatchLifecycleActivityRecord,
+  TWorkspace extends ReminderMismatchLifecycleWorkspaceRecord = ReminderMismatchLifecycleWorkspaceRecord
+> = {
+  activityEntries?: TActivity[] | null
+  activityTimeline?: TActivity[] | null
+  workspace?: TWorkspace | null
+  workspaceId?: string | null
+  id?: string | null
+}
+
+function getOverviewActivityEntries<
+  TActivity extends ReminderMismatchLifecycleActivityRecord,
+  TWorkspace extends ReminderMismatchLifecycleWorkspaceRecord
+>(
+  overviewRecord: DeliveryReminderMismatchLifecycleWorkspaceOverviewRecord<
+    TActivity,
+    TWorkspace
+  >
 ) {
-  if (Array.isArray(record.activityTimeline)) {
-    return record.activityTimeline
+  if (Array.isArray(overviewRecord.activityEntries)) {
+    return overviewRecord.activityEntries
   }
 
-  if (Array.isArray(record.activityRecords)) {
-    return record.activityRecords
-  }
-
-  if (Array.isArray(record.activities)) {
-    return record.activities
-  }
-
-  if (Array.isArray(record.timeline)) {
-    return record.timeline
+  if (Array.isArray(overviewRecord.activityTimeline)) {
+    return overviewRecord.activityTimeline
   }
 
   return []
 }
 
-export function buildDeliveryReminderMismatchLifecycleSummary(input: {
-  reminderSupportRecords: ReminderMismatchLifecycleSummarySupportRecord[]
-  workspaceRecords: ReminderMismatchLifecycleSummaryWorkspaceRecord[]
-}): DeliveryReminderMismatchLifecycleSummary {
-  let unresolvedCount = 0
-  let resolvedCount = 0
+function getOverviewWorkspaceId<
+  TActivity extends ReminderMismatchLifecycleActivityRecord,
+  TWorkspace extends ReminderMismatchLifecycleWorkspaceRecord
+>(
+  overviewRecord: DeliveryReminderMismatchLifecycleWorkspaceOverviewRecord<
+    TActivity,
+    TWorkspace
+  >
+) {
+  if (typeof overviewRecord.workspace?.id === "string") {
+    return overviewRecord.workspace.id
+  }
 
-  for (const record of input.reminderSupportRecords) {
-    if (record.checkpointState === "checkpoint_mismatch") {
-      unresolvedCount += 1
+  if (typeof overviewRecord.workspace?.workspaceId === "string") {
+    return overviewRecord.workspace.workspaceId
+  }
+
+  if (typeof overviewRecord.workspaceId === "string") {
+    return overviewRecord.workspaceId
+  }
+
+  if (typeof overviewRecord.id === "string") {
+    return overviewRecord.id
+  }
+
+  return null
+}
+
+function summarizeReopenLifecycleEvents(
+  activityEntries: ReminderMismatchLifecycleActivityRecord[]
+) {
+  let failedReopenAttemptsCount = 0
+  let reopenedMismatchCount = 0
+
+  for (const activityEntry of activityEntries) {
+    if (!isDeliveryReminderMismatchReopenActivityMetadata(activityEntry.metadata)) {
       continue
     }
 
-    if (record.checkpointState === "resolved") {
-      resolvedCount += 1
+    if (activityEntry.metadata.reopenOutcome === "error") {
+      failedReopenAttemptsCount += 1
+      continue
     }
+
+    reopenedMismatchCount += 1
   }
 
-  let reopenedCount = 0
+  return {
+    failedReopenAttemptsCount,
+    reopenedMismatchCount
+  }
+}
+
+export function summarizeDeliveryReminderMismatchLifecycle<
+  TActivity extends ReminderMismatchLifecycleActivityRecord,
+  TWorkspace extends ReminderMismatchLifecycleWorkspaceRecord,
+  TRecord extends DeliveryReminderMismatchLifecycleWorkspaceOverviewRecord<
+    TActivity,
+    TWorkspace
+  >
+>(input: {
+  overviewRecords: TRecord[]
+  reminderSupportRecords: DeliveryReminderSupportRecord[]
+}): DeliveryReminderMismatchLifecycleSummary {
+  const visibleWorkspaceIds = new Set<string>()
   let failedReopenAttemptsCount = 0
+  let reopenedMismatchCount = 0
+  let resolvedMismatchCount = 0
+  let unresolvedMismatchCount = 0
 
-  for (const workspaceRecord of input.workspaceRecords) {
-    for (const activity of getWorkspaceActivityRecords(workspaceRecord)) {
-      if (!isDeliveryReminderMismatchReopenActivityMetadata(activity.metadata)) {
-        continue
-      }
+  for (const overviewRecord of input.overviewRecords) {
+    const workspaceId = getOverviewWorkspaceId(overviewRecord)
 
-      if (activity.metadata.reopenOutcome === "error") {
-        failedReopenAttemptsCount += 1
-      } else {
-        reopenedCount += 1
-      }
+    if (workspaceId) {
+      visibleWorkspaceIds.add(workspaceId)
+    }
+
+    const reopenLifecycleEventSummary = summarizeReopenLifecycleEvents(
+      getOverviewActivityEntries(overviewRecord)
+    )
+
+    failedReopenAttemptsCount +=
+      reopenLifecycleEventSummary.failedReopenAttemptsCount
+    reopenedMismatchCount += reopenLifecycleEventSummary.reopenedMismatchCount
+  }
+
+  for (const reminderSupportRecord of input.reminderSupportRecords) {
+    if (!reminderSupportRecord.workspaceId) {
+      continue
+    }
+
+    if (!visibleWorkspaceIds.has(reminderSupportRecord.workspaceId)) {
+      continue
+    }
+
+    if (reminderSupportRecord.checkpointState === "resolved") {
+      resolvedMismatchCount += 1
+      continue
+    }
+
+    if (reminderSupportRecord.checkpointState === "checkpoint_mismatch") {
+      unresolvedMismatchCount += 1
     }
   }
 
   return {
     failedReopenAttemptsCount,
-    reopenedCount,
-    resolvedCount,
-    unresolvedCount
+    reopenedMismatchCount,
+    resolvedMismatchCount,
+    unresolvedMismatchCount,
+    visibleWorkspaceCount: visibleWorkspaceIds.size
   }
 }
