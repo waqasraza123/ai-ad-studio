@@ -92,14 +92,7 @@ export default async function DeliveryPage({
   }
 
   const resolvedSearchParams = await searchParams
-  const reminderMismatchLifecycleSummary =
-  summarizeDeliveryReminderMismatchLifecycle({
-    overviewRecords: supportFilteredWorkspaceOverviews,
-    reminderSupportRecords
-  })
-
-
-const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
+  const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
     action: resolvedSearchParams.reminder_repair_action,
     errorCode: resolvedSearchParams.reminder_repair_error_code,
     noteSaved: resolvedSearchParams.reminder_repair_note_saved,
@@ -199,6 +192,12 @@ const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
 
   const supportFilteredWorkspaceOverviewsForDisplay =
     supportFilteredWorkspaceOverviews as typeof visibleWorkspaceOverviews
+
+  const reminderMismatchLifecycleSummary =
+    summarizeDeliveryReminderMismatchLifecycle({
+      overviewRecords: supportFilteredWorkspaceOverviews,
+      reminderSupportRecords
+    })
 
   const supportOpsSummary = summarizeDeliverySupportOps({
     overviewRecords: supportFilteredWorkspaceOverviewsForDisplay,

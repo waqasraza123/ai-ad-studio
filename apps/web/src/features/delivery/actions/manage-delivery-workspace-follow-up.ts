@@ -95,6 +95,24 @@ function buildNotificationBody(input: {
   ).toLowerCase()}.`
 }
 
+async function appendDeliveryWorkspaceActivity(input: {
+  exportId: string | null
+  metadata: Record<string, unknown>
+  ownerId: string
+  projectId: string
+  workspaceId: string
+}) {
+  await recordDeliveryWorkspaceEvent({
+    actorLabel: "Support operator",
+    eventType: "viewed",
+    exportId: input.exportId,
+    metadata: input.metadata,
+    ownerId: input.ownerId,
+    projectId: input.projectId,
+    workspaceId: input.workspaceId
+  })
+}
+
 export async function updateDeliveryWorkspaceFollowUpAction(
   workspaceId: string,
   formData: FormData
@@ -363,6 +381,18 @@ export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
     throw new Error("focusedReminderNotificationId is required")
   }
 
+  const user = await getAuthenticatedUser()
+
+  if (!user) {
+    throw new Error("Authentication is required")
+  }
+
+  const workspace = await getDeliveryWorkspaceByIdForOwner(workspaceId, user.id)
+
+  if (!workspace) {
+    throw new Error("Delivery workspace not found")
+  }
+
   const resolutionNoteError =
     validateDeliveryReminderMismatchResolutionNote(resolutionNote)
 
@@ -387,13 +417,15 @@ export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
 
   try {
     await appendDeliveryWorkspaceActivity({
-      workspaceId,
-      kind: "follow_up_updated",
+      exportId: workspace.canonical_export_id,
       metadata: buildDeliveryReminderMismatchResolutionActivityMetadata({
         reminderBucket,
         reminderNotificationId,
         resolutionNote
-      })
+      }),
+      ownerId: user.id,
+      projectId: workspace.project_id,
+      workspaceId: workspace.id
     })
   } catch (error) {
     console.error(
@@ -443,21 +475,35 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
     throw new Error("focusedReminderNotificationId is required")
   }
 
+  const user = await getAuthenticatedUser()
+
+  if (!user) {
+    throw new Error("Authentication is required")
+  }
+
+  const workspace = await getDeliveryWorkspaceByIdForOwner(workspaceId, user.id)
+
+  if (!workspace) {
+    throw new Error("Delivery workspace not found")
+  }
+
   const reopenNoteError =
     validateDeliveryReminderMismatchReopenNote(reopenNote)
 
   if (reopenNoteError) {
     try {
       await appendDeliveryWorkspaceActivity({
-        workspaceId,
-        kind: "follow_up_updated",
+        exportId: workspace.canonical_export_id,
         metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
           errorCode: "reopen_note_too_long",
           reminderBucket,
           reminderNotificationId,
           reopenNote,
           reopenOutcome: "error"
-        })
+        }),
+        ownerId: user.id,
+        projectId: workspace.project_id,
+        workspaceId: workspace.id
       })
     } catch (error) {
       console.error(
@@ -490,15 +536,17 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
 
     try {
       await appendDeliveryWorkspaceActivity({
-        workspaceId,
-        kind: "follow_up_updated",
+        exportId: workspace.canonical_export_id,
         metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
           errorCode: "not_currently_resolved",
           reminderBucket,
           reminderNotificationId,
           reopenNote,
           reopenOutcome: "error"
-        })
+        }),
+        ownerId: user.id,
+        projectId: workspace.project_id,
+        workspaceId: workspace.id
       })
     } catch (activityError) {
       console.error(
@@ -523,15 +571,17 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
 
   try {
     await appendDeliveryWorkspaceActivity({
-      workspaceId,
-      kind: "follow_up_updated",
+      exportId: workspace.canonical_export_id,
       metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
         errorCode: null,
         reminderBucket,
         reminderNotificationId,
         reopenNote,
         reopenOutcome: "success"
-      })
+      }),
+      ownerId: user.id,
+      projectId: workspace.project_id,
+      workspaceId: workspace.id
     })
   } catch (error) {
     console.error(
