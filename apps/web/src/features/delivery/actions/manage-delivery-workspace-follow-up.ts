@@ -1,4 +1,7 @@
 "use server"
+import { reopenDeliveryWorkspaceReminderMismatch } from "@/server/delivery-workspaces/delivery-workspace-repository"
+import { buildDeliveryReminderMismatchReopenActivityMetadata, deliveryReminderMismatchReopenNoteFieldName, normalizeDeliveryReminderMismatchReopenNote, validateDeliveryReminderMismatchReopenNote } from "@/features/delivery/lib/delivery-reminder-mismatch-reopen"
+import { buildDeliveryReminderMismatchOutcomeHref } from "@/features/delivery/lib/delivery-reminder-mismatch-outcome"
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -335,6 +338,8 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
 export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
   formData: FormData
 ) {
+  "use server"
+
   const workspaceId = getOptionalTrimmedFormValue(formData, "workspaceId")
   const reminderNotificationId = getOptionalTrimmedFormValue(
     formData,
@@ -362,7 +367,16 @@ export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
     validateDeliveryReminderMismatchResolutionNote(resolutionNote)
 
   if (resolutionNoteError) {
-    throw new Error("Reminder mismatch resolution note is too long")
+    redirect(
+      buildDeliveryReminderMismatchOutcomeHref({
+        action: "resolved",
+        baseHref: returnToHref,
+        errorCode: "resolution_note_too_long",
+        notificationId: reminderNotificationId,
+        status: "error",
+        workspaceId
+      })
+    )
   }
 
   await resolveDeliveryWorkspaceReminderMismatch({
@@ -372,27 +386,15 @@ export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
   })
 
   try {
-    const user = await getAuthenticatedUser()
-
-    if (user) {
-      const workspace = await getDeliveryWorkspaceByIdForOwner(workspaceId, user.id)
-
-      if (workspace) {
-        await recordDeliveryWorkspaceEvent({
-          workspaceId,
-          ownerId: user.id,
-          projectId: workspace.project_id,
-          exportId: workspace.canonical_export_id,
-          eventType: "viewed",
-          actorLabel: "Support operator",
-          metadata: buildDeliveryReminderMismatchResolutionActivityMetadata({
-            reminderBucket,
-            reminderNotificationId,
-            resolutionNote
-          })
-        })
-      }
-    }
+    await appendDeliveryWorkspaceActivity({
+      workspaceId,
+      kind: "follow_up_updated",
+      metadata: buildDeliveryReminderMismatchResolutionActivityMetadata({
+        reminderBucket,
+        reminderNotificationId,
+        resolutionNote
+      })
+    })
   } catch (error) {
     console.error(
       "Failed to append delivery reminder mismatch resolution activity",
@@ -401,5 +403,108 @@ export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
   }
 
   revalidatePath("/dashboard/delivery")
-  redirect(returnToHref)
+
+  redirect(
+    buildDeliveryReminderMismatchOutcomeHref({
+      action: "resolved",
+      baseHref: returnToHref,
+      notificationId: reminderNotificationId,
+      status: "success",
+      workspaceId
+    })
+  )
+}
+
+export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
+  formData: FormData
+) {
+  "use server"
+
+  const workspaceId = getOptionalTrimmedFormValue(formData, "workspaceId")
+  const reminderNotificationId = getOptionalTrimmedFormValue(
+    formData,
+    "focusedReminderNotificationId"
+  )
+  const returnToHref =
+    getOptionalTrimmedFormValue(formData, "returnToHref") ??
+    "/dashboard/delivery"
+  const reminderBucket = normalizeReminderBucketForRepairActivity(
+    formData.get("focusedReminderBucket")
+  )
+  const reopenNote = normalizeDeliveryReminderMismatchReopenNote(
+    formData.get(deliveryReminderMismatchReopenNoteFieldName)
+  )
+
+  if (!workspaceId) {
+    throw new Error("workspaceId is required")
+  }
+
+  if (!reminderNotificationId) {
+    throw new Error("focusedReminderNotificationId is required")
+  }
+
+  const reopenNoteError =
+    validateDeliveryReminderMismatchReopenNote(reopenNote)
+
+  if (reopenNoteError) {
+    redirect(
+      buildDeliveryReminderMismatchOutcomeHref({
+        action: "reopened",
+        baseHref: returnToHref,
+        errorCode: "reopen_note_too_long",
+        notificationId: reminderNotificationId,
+        status: "error",
+        workspaceId
+      })
+    )
+  }
+
+  try {
+    await reopenDeliveryWorkspaceReminderMismatch({
+      reminderNotificationId,
+      workspaceId
+    })
+  } catch (error) {
+    console.error("Failed to reopen delivery reminder mismatch", error)
+
+    redirect(
+      buildDeliveryReminderMismatchOutcomeHref({
+        action: "reopened",
+        baseHref: returnToHref,
+        errorCode: "not_currently_resolved",
+        notificationId: reminderNotificationId,
+        status: "error",
+        workspaceId
+      })
+    )
+  }
+
+  try {
+    await appendDeliveryWorkspaceActivity({
+      workspaceId,
+      kind: "follow_up_updated",
+      metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
+        reminderBucket,
+        reminderNotificationId,
+        reopenNote
+      })
+    })
+  } catch (error) {
+    console.error(
+      "Failed to append delivery reminder mismatch reopen activity",
+      error
+    )
+  }
+
+  revalidatePath("/dashboard/delivery")
+
+  redirect(
+    buildDeliveryReminderMismatchOutcomeHref({
+      action: "reopened",
+      baseHref: returnToHref,
+      notificationId: reminderNotificationId,
+      status: "success",
+      workspaceId
+    })
+  )
 }

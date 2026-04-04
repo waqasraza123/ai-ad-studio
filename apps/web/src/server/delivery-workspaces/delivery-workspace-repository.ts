@@ -690,3 +690,37 @@ export async function listAssetsForDeliveryWorkspace(input: {
 
   return (data ?? []) as AssetRecord[]
 }
+
+export async function reopenDeliveryWorkspaceReminderMismatch(input: {
+  reminderNotificationId: string
+  workspaceId: string
+}) {
+  const supabase = await createSupabaseServerClient()
+  const updatedAt = new Date().toISOString()
+
+  const { data, error } = await supabase
+    .from("delivery_workspaces")
+    .update({
+      reminder_mismatch_resolved_at: null,
+      reminder_mismatch_resolved_notification_id: null,
+      reminder_mismatch_resolution_note: null,
+      updated_at: updatedAt
+    })
+    .eq("id", input.workspaceId)
+    .eq(
+      "reminder_mismatch_resolved_notification_id",
+      input.reminderNotificationId
+    )
+    .select("id")
+    .maybeSingle()
+
+  if (error) {
+    throw new Error("Failed to reopen delivery reminder mismatch")
+  }
+
+  if (!data) {
+    throw new Error(
+      "Delivery reminder mismatch is not currently resolved for this notification"
+    )
+  }
+}
