@@ -272,6 +272,35 @@ Optional smoke inputs:
 
 The smoke command checks `/api/health` plus any configured public token surfaces and download routes.
 
+To inspect the deployment health payload directly:
+
+    curl -sS https://your-app.example.com/api/health
+
+The expected healthy shape is:
+
+```json
+{
+  "name": "AI Ad Studio",
+  "service": "web",
+  "status": "ok",
+  "readiness": {
+    "publicAppUrlConfigured": true,
+    "supabaseAuthConfigured": true,
+    "serviceRoleConfigured": true,
+    "r2Configured": true
+  }
+}
+```
+
+If `status` is `degraded`, use the readiness flags to fix the missing runtime dependency before validating public routes:
+
+- `publicAppUrlConfigured: false` means `NEXT_PUBLIC_APP_URL` is missing or empty
+- `supabaseAuthConfigured: false` means `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` is missing
+- `serviceRoleConfigured: false` means `SUPABASE_SERVICE_ROLE_KEY` is missing
+- `r2Configured: false` means one or more of `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, or `R2_BUCKET_NAME` is missing
+
+Do not treat share, campaign, or delivery downloads as production-ready while `r2Configured` is `false`.
+
 ### Build and start individually
 
 Web:
@@ -309,6 +338,12 @@ Current known limitations and truths:
 - the server-side web runtime also needs `SUPABASE_SERVICE_ROLE_KEY` and the R2 credentials for share links, public token routes, and asset delivery
 - the worker runtime needs Supabase service-role access, R2 credentials, and AI provider credentials
 - promotion, review, delivery, and public token pages assume the database schema and migrations are already applied before the services are started
+
+## Deployment troubleshooting
+
+- if `pnpm smoke:runtime` fails because `/api/health` is `degraded`, fix the missing env vars first instead of debugging public routes
+- if `r2Configured` is `false`, expect token-backed downloads and storage-backed media delivery to fail even when the pages themselves render
+- if you only need a temporary diagnostic pass while infrastructure is being wired, rerun with `SMOKE_ALLOW_DEGRADED_HEALTH=true`, but do not treat that as release-ready
 
 ## Release-candidate validation checklist
 
