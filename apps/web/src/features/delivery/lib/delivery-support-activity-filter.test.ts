@@ -136,10 +136,29 @@ describe("summarizeDeliverySupportActivityFilter", () => {
         }
       ])
     ).toEqual({
-      allCount: 4,
+      allCount: 3,
       failedReminderRepairsCount: 1,
       reminderRepairsCount: 2,
       supportHandoffNotesCount: 1
+    })
+  })
+
+  it("does not double-count failed reminder repairs in the all summary", () => {
+    expect(
+      summarizeDeliverySupportActivityFilter([
+        {
+          activityEntries: [
+            createReminderRepairActivity({
+              repairOutcome: "error"
+            })
+          ]
+        }
+      ])
+    ).toEqual({
+      allCount: 1,
+      failedReminderRepairsCount: 1,
+      reminderRepairsCount: 1,
+      supportHandoffNotesCount: 0
     })
   })
 })

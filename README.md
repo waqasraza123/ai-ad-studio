@@ -236,9 +236,41 @@ Run `pnpm dev`.
 Run:
 
     pnpm lint
-    pnpm typecheck
     pnpm test
     pnpm build
+    pnpm typecheck
+
+Or run the full Phase 31 verification wrapper:
+
+    pnpm verify:phase-31
+
+Do not run `pnpm typecheck` and `pnpm build` in parallel for this repo. Both commands touch `.next`, and parallel execution can produce false-negative Next type generation errors.
+
+### Runtime smoke
+
+For deployed runtime validation, run:
+
+    SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime
+
+To run local verification plus optional deployed smoke checks in one pass:
+
+    SMOKE_BASE_URL=https://your-app.example.com pnpm verify:phase-31
+
+Optional smoke inputs:
+
+- `SMOKE_SHARE_TOKEN`
+- `SMOKE_CAMPAIGN_TOKEN`
+- `SMOKE_DELIVERY_TOKEN`
+- `SMOKE_DELIVERY_EXPORT_ID`
+- `SMOKE_REVIEW_TOKEN`
+- `SMOKE_CHECK_SHARE_DOWNLOAD=true`
+- `SMOKE_CHECK_CAMPAIGN_DOWNLOAD=true`
+- `SMOKE_ALLOW_DEGRADED_HEALTH=true`
+- `SMOKE_REQUEST_TIMEOUT_MS=15000`
+
+`/api/health` exposes operator-safe readiness booleans for public app URL, Supabase auth, service-role availability, and R2 storage configuration. The smoke script uses that payload to fail early when requested token-surface checks depend on missing runtime configuration.
+
+The smoke command checks `/api/health` plus any configured public token surfaces and download routes.
 
 ### Build and start individually
 
@@ -259,13 +291,14 @@ Worker:
 - if the worker-required variables are missing, the worker stays alive and keeps polling for configuration instead of processing jobs
 - public campaign, share, and delivery media routes rely on token-scoped access plus server-side R2 reads
 - owner dashboard export downloads remain authenticated
+- `/api/health` now exposes operator-safe readiness booleans for auth, service-role access, R2, and public app URL configuration
 
 ## Known limitations
 
 Current known limitations and truths:
 
 - the worker still expects its required environment variables to be present in the shell environment that launches it
-- token-backed public routes are runtime-safe by design, but they should still be manually validated in each deployment environment
+- token-backed public routes are runtime-safe by design, but they should still be smoke-validated in each deployment environment
 - repo smoke coverage is focused on critical business rules and state derivation, not full browser end-to-end automation
 - migration application and infrastructure provisioning are assumed to happen outside this repo
 - delivery analytics and client acknowledgement flows are not part of Phase 31 and are better handled in Phase 32
@@ -282,9 +315,13 @@ Current known limitations and truths:
 Before treating the repo as release-candidate ready, verify all of the following:
 
 - `pnpm lint`
-- `pnpm typecheck`
 - `pnpm test`
 - `pnpm build`
+- `pnpm typecheck`
+
+And, when validating a real deployed environment:
+
+- `SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime`
 
 And manually verify:
 

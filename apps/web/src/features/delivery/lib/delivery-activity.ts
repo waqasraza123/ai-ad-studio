@@ -124,6 +124,21 @@ export function resolveDeliveryWorkspaceEventPresentation(
     }
   }
 
+  if (isDeliveryReminderMismatchReopenActivityMetadata(event.metadata)) {
+    return {
+      badgeClassName: getDeliveryReminderMismatchReopenActivityBadgeClasses(
+        event.metadata
+      ),
+      badgeLabel: getDeliveryReminderMismatchReopenActivityBadgeLabel(
+        event.metadata
+      ),
+      description: getDeliveryReminderMismatchReopenActivityDescription(
+        event.metadata
+      ),
+      title: getDeliveryReminderMismatchReopenActivityTitle(event.metadata)
+    }
+  }
+
   if (isDeliveryReminderSupportNoteActivityMetadata(event.metadata)) {
     return {
       badgeClassName: getDeliveryReminderSupportNoteActivityBadgeClasses(),

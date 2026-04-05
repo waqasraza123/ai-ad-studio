@@ -20,12 +20,12 @@ type GuardrailDecision = {
 }
 
 const defaultGuardrails: OwnerGuardrails = {
-  autoBlockOnBudget: false,
-  maxConcurrentPreviewJobs: 1,
-  maxConcurrentRenderJobs: 1,
-  monthlyOpenAiBudgetUsd: 0,
-  monthlyRunwayBudgetUsd: 0,
-  monthlyTotalBudgetUsd: 0
+  autoBlockOnBudget: true,
+  maxConcurrentPreviewJobs: 3,
+  maxConcurrentRenderJobs: 2,
+  monthlyOpenAiBudgetUsd: 75,
+  monthlyRunwayBudgetUsd: 75,
+  monthlyTotalBudgetUsd: 200
 }
 
 function startOfCurrentMonthIso() {

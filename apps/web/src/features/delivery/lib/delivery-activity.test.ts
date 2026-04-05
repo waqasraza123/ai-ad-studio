@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest"
 import type { DeliveryWorkspaceEventRecord } from "@/server/database/types"
-import { summarizeDeliveryWorkspaceActivity } from "./delivery-activity"
+import {
+  resolveDeliveryWorkspaceEventPresentation,
+  summarizeDeliveryWorkspaceActivity
+} from "./delivery-activity"
 
 function createEvent(
   overrides: Partial<DeliveryWorkspaceEventRecord>
@@ -111,5 +114,31 @@ describe("summarizeDeliveryWorkspaceActivity", () => {
     expect(summary.acknowledgedAt).toBe("2026-03-21T17:00:00.000Z")
     expect(summary.acknowledgedBy).toBe("New Contact")
     expect(summary.acknowledgementNote).toBe("Latest acknowledgement")
+  })
+})
+
+describe("resolveDeliveryWorkspaceEventPresentation", () => {
+  it("renders reminder mismatch reopen activity metadata", () => {
+    const presentation = resolveDeliveryWorkspaceEventPresentation(
+      createEvent({
+        event_type: "acknowledged",
+        metadata: {
+          errorCode: null,
+          reminderBucket: "overdue",
+          reminderNotificationId: "notification-1",
+          reopenNote: "Needs another review pass.",
+          reopenOutcome: "success",
+          source: "reminder_mismatch_reopened"
+        }
+      })
+    )
+
+    expect(presentation).toEqual({
+      badgeClassName: "border-amber-400/30 bg-amber-500/10 text-amber-200",
+      badgeLabel: "Mismatch reopened",
+      description:
+        "Reopened resolved reminder mismatch from overdue reminder context. Needs another review pass.",
+      title: "Reopened previously resolved reminder mismatch"
+    })
   })
 })

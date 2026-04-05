@@ -1,4 +1,6 @@
+import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { updateOwnerGuardrailsAction } from "@/features/settings/actions/update-owner-guardrails"
 import type { OwnerGuardrailsRecord } from "@/server/database/types"
 
 type OwnerGuardrailsFormProps = {
@@ -24,49 +26,92 @@ export function OwnerGuardrailsForm({
         Current owner-level limits used by the pipeline to keep generation and render usage under control.
       </p>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Monthly total budget</p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {formatCurrency(guardrails.monthly_total_budget_usd)}
-          </p>
-        </div>
+      <form action={updateOwnerGuardrailsAction} className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Monthly total budget</span>
+          <input
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
+            defaultValue={guardrails.monthly_total_budget_usd}
+            inputMode="decimal"
+            min="0"
+            name="monthly_total_budget_usd"
+            step="0.01"
+          />
+          <span className="text-xs text-slate-500">
+            Current default {formatCurrency(guardrails.monthly_total_budget_usd)}
+          </span>
+        </label>
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Monthly OpenAI budget</p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {formatCurrency(guardrails.monthly_openai_budget_usd)}
-          </p>
-        </div>
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Monthly OpenAI budget</span>
+          <input
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
+            defaultValue={guardrails.monthly_openai_budget_usd}
+            inputMode="decimal"
+            min="0"
+            name="monthly_openai_budget_usd"
+            step="0.01"
+          />
+          <span className="text-xs text-slate-500">
+            Current default {formatCurrency(guardrails.monthly_openai_budget_usd)}
+          </span>
+        </label>
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Monthly Runway budget</p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {formatCurrency(guardrails.monthly_runway_budget_usd)}
-          </p>
-        </div>
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Monthly Runway budget</span>
+          <input
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
+            defaultValue={guardrails.monthly_runway_budget_usd}
+            inputMode="decimal"
+            min="0"
+            name="monthly_runway_budget_usd"
+            step="0.01"
+          />
+          <span className="text-xs text-slate-500">
+            Current default {formatCurrency(guardrails.monthly_runway_budget_usd)}
+          </span>
+        </label>
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Concurrent render jobs</p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {guardrails.max_concurrent_render_jobs}
-          </p>
-        </div>
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Concurrent render jobs</span>
+          <input
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
+            defaultValue={guardrails.max_concurrent_render_jobs}
+            inputMode="numeric"
+            min="1"
+            name="max_concurrent_render_jobs"
+            step="1"
+          />
+        </label>
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Concurrent preview jobs</p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {guardrails.max_concurrent_preview_jobs}
-          </p>
-        </div>
+        <label className="grid gap-2">
+          <span className="text-sm text-slate-300">Concurrent preview jobs</span>
+          <input
+            className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
+            defaultValue={guardrails.max_concurrent_preview_jobs}
+            inputMode="numeric"
+            min="1"
+            name="max_concurrent_preview_jobs"
+            step="1"
+          />
+        </label>
 
-        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Auto block on budget</p>
-          <p className="mt-2 text-lg font-medium text-white">
-            {guardrails.auto_block_on_budget ? "Enabled" : "Disabled"}
-          </p>
+        <label className="flex items-center gap-3 rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 xl:self-end">
+          <input
+            className="h-4 w-4 rounded border-white/10 bg-white/[0.04]"
+            defaultChecked={guardrails.auto_block_on_budget}
+            name="auto_block_on_budget"
+            type="checkbox"
+          />
+          <span className="text-sm text-slate-300">Auto-block jobs that exceed budget</span>
+        </label>
+
+        <div className="md:col-span-2 xl:col-span-3">
+          <FormSubmitButton pendingLabel="Saving…">
+            Save guardrails
+          </FormSubmitButton>
         </div>
-      </div>
+      </form>
     </SurfaceCard>
   )
 }

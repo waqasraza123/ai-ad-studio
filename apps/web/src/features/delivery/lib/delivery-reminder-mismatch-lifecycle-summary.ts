@@ -1,7 +1,7 @@
 import type { DeliveryReminderSupportRecord } from "@/features/delivery/lib/delivery-reminder-support"
 import {
   isDeliveryReminderMismatchReopenActivityMetadata
-} from "@/features/delivery/lib/delivery-reminder-mismatch-reopen"
+} from "./delivery-reminder-mismatch-reopen"
 
 type ReminderMismatchLifecycleActivityRecord = {
   metadata: unknown

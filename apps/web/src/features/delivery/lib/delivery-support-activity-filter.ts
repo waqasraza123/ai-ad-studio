@@ -153,6 +153,7 @@ export function doesDeliveryActivityMatchSupportFilter(
 export function summarizeDeliverySupportActivityFilter<
   TRecord extends Record<string, unknown>
 >(records: TRecord[]): DeliverySupportActivityFilterSummary {
+  let allCount = 0
   let reminderRepairsCount = 0
   let failedReminderRepairsCount = 0
   let supportHandoffNotesCount = 0
@@ -162,17 +163,20 @@ export function summarizeDeliverySupportActivityFilter<
       const category = getSupportActivityCategory(activity)
 
       if (category === "reminder_repairs") {
+        allCount += 1
         reminderRepairsCount += 1
         continue
       }
 
       if (category === "failed_reminder_repairs") {
+        allCount += 1
         reminderRepairsCount += 1
         failedReminderRepairsCount += 1
         continue
       }
 
       if (category === "support_handoff_notes") {
+        allCount += 1
         supportHandoffNotesCount += 1
         continue
       }
@@ -184,10 +188,7 @@ export function summarizeDeliverySupportActivityFilter<
   }
 
   return {
-    allCount:
-      reminderRepairsCount +
-      failedReminderRepairsCount +
-      supportHandoffNotesCount,
+    allCount,
     failedReminderRepairsCount,
     reminderRepairsCount,
     supportHandoffNotesCount

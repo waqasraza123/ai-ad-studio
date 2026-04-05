@@ -12,8 +12,10 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "turbo lint",
+    "smoke:runtime": "tsx scripts/checks/runtime-smoke.ts",
     "test": "turbo test",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "verify:phase-31": "./scripts/checks/verify-phase-31.sh"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

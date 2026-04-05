@@ -33,9 +33,9 @@ Public surfaces are intentionally separate:
 
 ## Current Roadmap
 
-- Continue Phase 32 delivery operations hardening around follow-up reminders, support investigation, and reminder mismatch lifecycle handling.
-- Keep the delivery dashboard support views build-safe and type-safe as reminder mismatch resolution/reopen flows evolve.
-- Preserve auditability through notifications, job traces, and delivery workspace events whenever delivery support actions change.
+- The full Phase 31 roadmap audit for Phases 1 through 30 now lives in `docs/phase-31-roadmap-audit.md`.
+- Use that audit as the baseline for any further hardening, cleanup, or roadmap updates instead of relying on memory or migration naming alone.
+- Remaining Phase 31 work is now narrower: preserve clean repo-wide verification and validate deployment/runtime assumptions that repo-local checks cannot prove.
 
 ## Completed Major Slices
 
@@ -54,25 +54,30 @@ Public surfaces are intentionally separate:
 - Delivery workspaces are anchored to the canonical finalized export even when they include multiple batch exports.
 - Delivery follow-up reminders use workspace checkpoint fields plus the SQL function `create_delivery_follow_up_reminder_notification(...)` for duplicate-safe atomic notification writes.
 - Delivery support activity is expected to stay auditable through `notifications`, `job_traces`, and `delivery_workspace_events`.
+- The web app `typecheck` command now runs `next typegen` before `tsc --noEmit --incremental false` so clean checkouts do not depend on a prior build and stale `.tsbuildinfo` state does not pin missing `.next/types/*` files.
+- Owner guardrails are now treated as real schema-backed runtime state via `supabase/migrations/202604051000_phase_19_owner_guardrails.sql`; worker enforcement and dashboard settings should stay aligned to that table instead of relying on divergent code-only defaults.
+- The web app now exposes operator-safe runtime readiness at `/api/health`, and deployed smoke validation lives in `scripts/checks/runtime-smoke.ts` with the root wrapper `pnpm verify:phase-31`.
 
 ## Deferred / Not Yet Implemented
 
 - No general open-ended ad editor or unconstrained generation workflow.
 - No dotenv-style env bootstrapping inside the worker process; local shells must export required env vars first.
-- No evidence of end-to-end browser automation in the current repo; verification is mainly build, typecheck, lint, and targeted unit tests.
+- No evidence of end-to-end browser automation in the current repo; deployed validation currently relies on the health/readiness endpoint plus the token-surface smoke script rather than browser-level automation.
 - `docs/architecture` and `docs/decisions` are not populated yet; keep durable memory in this file until dedicated docs are added.
 
 ## Risks / Watchouts
 
 - Delivery reminder/support changes often cross page composition, feature libs, server actions, worker logic, and migrations at the same time.
 - Recent reminder mismatch work proved that `next build` can catch parser/import issues that plain typecheck does not surface first; run the build when touching dashboard route composition or import blocks.
+- `pnpm build` and `pnpm typecheck` must stay sequential because both commands touch `.next`; the supported repo-wide wrapper is `pnpm verify:phase-31`.
 - The most volatile area right now is the delivery dashboard support flow, especially reminder mismatch resolution/reopen and lifecycle summary behavior.
 - Worker reminder behavior depends on both code and database-side atomic functions; changing one side without the other is risky.
 
 ## Standard Verification
 
-- `pnpm --filter @ai-ad-studio/web typecheck`
-- `pnpm --filter @ai-ad-studio/web build`
-- `pnpm --filter @ai-ad-studio/worker typecheck`
-- `pnpm --filter @ai-ad-studio/worker test`
 - `pnpm lint`
+- `pnpm test`
+- `pnpm build`
+- `pnpm typecheck`
+- `pnpm verify:phase-31`
+- `SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime`
