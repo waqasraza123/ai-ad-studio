@@ -1,5 +1,11 @@
 # AI Ad Studio
 
+<p>
+  <a href="https://runwayml.com/">
+    <img src="apps/web/public/brand/runway-icon.png" alt="Runway logo" width="72" />
+  </a>
+</p>
+
 AI Ad Studio is a premium, constrained ad-generation system for product marketing teams, ecommerce brands, app founders, and agencies.
 
 Instead of trying to be a general video editor, this repository focuses on one narrow, high-quality workflow:
@@ -7,6 +13,12 @@ Instead of trying to be a general video editor, this repository focuses on one n
 **brief → concepts → previews → controlled render batches → review → canonical winner → promotion → delivery**
 
 That constraint is the product advantage. AI handles concepting, copy, and render planning, while the application enforces quality through templates, validations, approvals, review gates, and production-safe workflows.
+
+## Runway requirement
+
+The current repository depends on [Runway](https://runwayml.com/) for provider-backed concept preview generation and scene-video generation.
+
+Use an active paid Runway API subscription before expecting the core worker-driven preview and motion-render pipeline to work. Without paid Runway API access and a valid `RUNWAYML_API_SECRET`, those jobs will fail even if the web app, database, and storage are configured correctly.
 
 ## Screenshots
 
@@ -147,7 +159,8 @@ The system follows a thin web layer plus durable database plus async worker mode
 - pnpm 10
 - a configured Supabase project
 - R2 credentials for asset upload and public media delivery
-- OpenAI and Runway credentials for worker-driven generation flows
+- OpenAI credentials for text and speech generation flows
+- an active paid [Runway](https://runwayml.com/) API subscription plus `RUNWAYML_API_SECRET` for preview and scene-video generation flows
 
 ### Install
 
@@ -192,7 +205,7 @@ The worker reads directly from `process.env` and requires these values to claim 
 - `R2_SECRET_ACCESS_KEY`
 - `R2_BUCKET_NAME`
 - `OPENAI_API_KEY`
-- `RUNWAYML_API_SECRET`
+- `RUNWAYML_API_SECRET` from an active paid Runway API subscription
 
 #### Worker defaults
 
@@ -318,6 +331,7 @@ Worker:
 - if the public Supabase keys are missing, authenticated web flows and login-dependent pages will not work
 - if the R2 variables are missing, upload and download routes will return storage configuration errors
 - if the worker-required variables are missing, the worker stays alive and keeps polling for configuration instead of processing jobs
+- if `RUNWAYML_API_SECRET` is missing or not backed by paid Runway API access, concept preview and scene-video jobs will fail
 - public campaign, share, and delivery media routes rely on token-scoped access plus server-side R2 reads
 - owner dashboard export downloads remain authenticated
 - `/api/health` now exposes operator-safe readiness booleans for auth, service-role access, R2, and public app URL configuration
@@ -336,7 +350,7 @@ Current known limitations and truths:
 
 - the web runtime needs the public Supabase keys in every environment
 - the server-side web runtime also needs `SUPABASE_SERVICE_ROLE_KEY` and the R2 credentials for share links, public token routes, and asset delivery
-- the worker runtime needs Supabase service-role access, R2 credentials, and AI provider credentials
+- the worker runtime needs Supabase service-role access, R2 credentials, OpenAI credentials, and paid Runway API credentials
 - promotion, review, delivery, and public token pages assume the database schema and migrations are already applied before the services are started
 
 ## Deployment troubleshooting

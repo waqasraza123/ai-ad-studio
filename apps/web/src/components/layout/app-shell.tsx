@@ -2,6 +2,7 @@ import Link from "next/link"
 import type { ReactNode } from "react"
 import { LayoutDashboard, LogOut, PlusSquare, Sparkles, Video } from "lucide-react"
 import { signOut } from "@/app/(app)/actions"
+import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { cn } from "@/lib/utils"
 
@@ -84,6 +85,14 @@ export function AppShell({ children, userEmail }: AppShellProps) {
               3 concepts, 1 preview frame each, 1 final export.
             </p>
           </div>
+
+          <RunwayBrandPanel
+            className="mt-6"
+            eyebrow="Motion provider"
+            title="Runway-backed generation"
+            description="Dashboard execution expects a paid Runway subscription for preview and scene-video jobs."
+            compact
+          />
         </aside>
 
         <div className="flex min-h-full flex-col rounded-[1.75rem] border border-white/10 bg-white/[0.032] shadow-[0_28px_90px_rgba(0,0,0,0.32)] backdrop-blur-xl">

@@ -1,5 +1,6 @@
 import { PlusSquare } from "lucide-react"
 import Link from "next/link"
+import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { ProjectList } from "@/features/projects/components/project-list"
 import { toProjectCardViewModel } from "@/features/projects/mappers/project-view-model"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
@@ -30,7 +31,7 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_360px] xl:items-end">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
               Dashboard
@@ -40,17 +41,26 @@ export default async function DashboardPage() {
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
               Create projects, save the creative brief, and register source
-              assets before concept generation is connected in the next phase.
+              assets before sending preview and motion jobs through the current
+              Runway-backed provider pipeline.
             </p>
+
+            <div className="mt-5">
+              <Link
+                href="/dashboard/projects/new"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
+              >
+                <PlusSquare className="h-4 w-4" />
+                <span>New project</span>
+              </Link>
+            </div>
           </div>
 
-          <Link
-            href="/dashboard/projects/new"
-            className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
-          >
-            <PlusSquare className="h-4 w-4" />
-            <span>New project</span>
-          </Link>
+          <RunwayBrandPanel
+            eyebrow="Provider status"
+            title="Runway is part of the production path"
+            description="The current repo expects a paid Runway API subscription for concept previews and scene-video generation. Review plans or billing at runwayml.com."
+          />
         </div>
       </section>
 

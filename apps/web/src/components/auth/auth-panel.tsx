@@ -1,5 +1,6 @@
 import { LockKeyhole, UserRoundPlus } from "lucide-react"
 import { signInWithPassword, signUpWithPassword } from "@/app/login/actions"
+import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
@@ -28,11 +29,11 @@ export function AuthPanel({
           other protected routes in the studio.
         </p>
 
+        <RunwayBrandPanel className="mt-8" />
+
         <div className="mt-8 grid gap-4">
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-medium text-white">
-              Protected application area
-            </p>
+            <p className="text-sm font-medium text-white">Protected application area</p>
             <p className="mt-2 text-sm text-slate-400">
               Dashboard routes are now gated by authenticated session checks when
               Supabase credentials are present.
@@ -40,10 +41,10 @@ export function AuthPanel({
           </div>
 
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-medium text-white">Schema-first backend</p>
+            <p className="text-sm font-medium text-white">Paid provider dependency</p>
             <p className="mt-2 text-sm text-slate-400">
-              Versioned SQL migrations for profiles, projects, concepts, jobs, and
-              exports are now part of the repo.
+              Concept previews and scene-video generation currently depend on a
+              paid Runway API subscription plus a valid `RUNWAYML_API_SECRET`.
             </p>
           </div>
         </div>

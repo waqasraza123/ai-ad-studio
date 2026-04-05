@@ -30,6 +30,7 @@ Public surfaces are intentionally separate:
 - Use server actions for authenticated form mutations in the web app.
 - When schema contracts change, update migrations first and then align TypeScript/database contract consumers.
 - The worker reads env vars from the shell environment; it does not currently load `.env.local` itself.
+- The current provider-backed preview and scene-video pipeline depends on paid Runway API access; treat `RUNWAYML_API_SECRET` plus an active subscription as a real runtime prerequisite until an alternate default render path ships.
 
 ## Current Roadmap
 
