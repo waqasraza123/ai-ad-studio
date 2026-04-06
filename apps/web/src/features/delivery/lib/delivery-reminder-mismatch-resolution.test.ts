@@ -35,6 +35,12 @@ describe("validateDeliveryReminderMismatchResolutionNote", () => {
     ).toBe("resolution_note_too_long")
   })
 
+  it("rejects disallowed wording", () => {
+    expect(
+      validateDeliveryReminderMismatchResolutionNote("porn language")
+    ).toBe("disallowed_wording")
+  })
+
   it("accepts a valid note", () => {
     expect(
       validateDeliveryReminderMismatchResolutionNote(

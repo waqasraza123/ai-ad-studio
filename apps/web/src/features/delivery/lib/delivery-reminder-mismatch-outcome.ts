@@ -1,4 +1,4 @@
-import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording"
+import { MODEST_WORDING_ERROR_MESSAGE } from "../../../lib/modest-wording/index"
 
 export const deliveryReminderMismatchActionQueryParam =
   "reminder_mismatch_action"

@@ -34,6 +34,12 @@ describe("validateDeliveryReminderMismatchReopenNote", () => {
     )
   })
 
+  it("rejects disallowed wording", () => {
+    expect(validateDeliveryReminderMismatchReopenNote("nude wording")).toBe(
+      "disallowed_wording"
+    )
+  })
+
   it("accepts a valid note", () => {
     expect(
       validateDeliveryReminderMismatchReopenNote(

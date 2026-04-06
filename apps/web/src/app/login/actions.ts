@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { hasSupabaseAuthConfiguration } from "@/lib/env"
-import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording/index"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 function toLoginRedirect(searchParams: Record<string, string>) {

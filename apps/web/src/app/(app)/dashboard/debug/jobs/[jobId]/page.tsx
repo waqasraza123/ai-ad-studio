@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation"
 import { JobDebugDetail } from "@/features/debug/components/job-debug-detail"
 import { JobTraceTimeline } from "@/features/debug/components/job-trace-timeline"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   getJobByIdForOwner,
@@ -11,12 +12,17 @@ type DebugJobDetailPageProps = {
   params: Promise<{
     jobId: string
   }>
+  searchParams: Promise<{
+    error?: string
+  }>
 }
 
 export default async function DebugJobDetailPage({
-  params
+  params,
+  searchParams
 }: DebugJobDetailPageProps) {
   const { jobId } = await params
+  const resolvedSearchParams = await searchParams
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -32,8 +38,15 @@ export default async function DebugJobDetailPage({
     notFound()
   }
 
+  const formErrorMessage = getFormErrorMessage(resolvedSearchParams.error)
+
   return (
     <div className="space-y-6">
+      {formErrorMessage ? (
+        <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {formErrorMessage}
+        </div>
+      ) : null}
       <JobDebugDetail job={job} />
 
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">

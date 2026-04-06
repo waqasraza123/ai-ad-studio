@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { createProjectSchema } from "@/features/projects/schemas/project-schema"
-import { hasDisallowedWordingIssue, MODEST_WORDING_FORM_ERROR_CODE } from "@/lib/modest-wording"
+import { hasDisallowedWordingIssue, MODEST_WORDING_FORM_ERROR_CODE } from "@/lib/modest-wording/index"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { createProjectForOwner } from "@/server/projects/project-repository"

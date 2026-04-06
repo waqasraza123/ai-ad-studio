@@ -1,6 +1,6 @@
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
 import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
-import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording"
+import { MODEST_WORDING_ERROR_MESSAGE } from "../../../lib/modest-wording/index"
 import {
   deliveryReminderClearReasonMaxLength,
   type DeliveryReminderClearReasonValidationError

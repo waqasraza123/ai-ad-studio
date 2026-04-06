@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { hasR2StorageConfiguration } from "@/lib/env"
-import { hasDisallowedWordingIssue, MODEST_WORDING_FORM_ERROR_CODE } from "@/lib/modest-wording"
+import { hasDisallowedWordingIssue, MODEST_WORDING_FORM_ERROR_CODE } from "@/lib/modest-wording/index"
 import {
   redirectToLoginWithFormError,
   redirectWithFormError

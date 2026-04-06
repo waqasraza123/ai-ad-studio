@@ -1,5 +1,5 @@
 import type { DeliveryWorkspaceRecord } from "@/server/database/types"
-import { validateModestText } from "@/lib/modest-wording"
+import { validateModestText } from "../../../lib/modest-wording/index"
 
 export const deliveryReminderMismatchResolutionNoteFieldName =
   "reminderMismatchResolutionNote"

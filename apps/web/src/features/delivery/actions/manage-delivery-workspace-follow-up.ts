@@ -5,7 +5,7 @@ import { buildDeliveryReminderMismatchOutcomeHref } from "@/features/delivery/li
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording/index"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {

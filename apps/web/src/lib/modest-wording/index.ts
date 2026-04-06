@@ -127,7 +127,9 @@ export function validateRecordTextFields(
 export function modestZodString<T extends z.ZodString>(schema: T) {
   return schema.refine(
     (value) => !containsDisallowedWording(value),
-    DISALLOWED_WORDING_VALIDATION_ERROR
+    {
+      message: DISALLOWED_WORDING_VALIDATION_ERROR
+    }
   )
 }
 

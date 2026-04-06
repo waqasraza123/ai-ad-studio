@@ -1,5 +1,5 @@
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
-import { validateModestText } from "@/lib/modest-wording"
+import { validateModestText } from "../../../lib/modest-wording/index"
 
 export const deliveryReminderSupportHandoffNoteFieldName = "supportHandoffNote"
 export const deliveryReminderSupportHandoffNoteMaxLength = 500

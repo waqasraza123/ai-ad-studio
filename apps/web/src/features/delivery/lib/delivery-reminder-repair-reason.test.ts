@@ -33,6 +33,12 @@ describe("validateDeliveryReminderClearReason", () => {
     )
   })
 
+  it("rejects disallowed wording", () => {
+    expect(validateDeliveryReminderClearReason("porn headline")).toBe(
+      "disallowed_wording"
+    )
+  })
+
   it("accepts a valid reason", () => {
     expect(
       validateDeliveryReminderClearReason("Client confirmed no follow-up needed")

@@ -1,4 +1,4 @@
-import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording"
+import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording/index"
 
 /** Short codes in URL `?error=` — mapped to user-facing copy (never throw from actions for expected cases). */
 export const FORM_ERROR_MESSAGES: Record<string, string> = {

@@ -1,15 +1,25 @@
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { BrandKitSettingsForm } from "@/features/brand-kits/components/brand-kit-settings-form"
 import { OwnerGuardrailsForm } from "@/features/settings/components/owner-guardrails-form"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listBrandKitsByOwner } from "@/server/brand-kits/brand-kit-repository"
 import { getOwnerGuardrails } from "@/server/settings/owner-guardrails-repository"
 
-export default async function SettingsPage() {
+type SettingsPageProps = {
+  searchParams: Promise<{
+    error?: string
+  }>
+}
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
   const user = await getAuthenticatedUser()
 
   if (!user) {
     return null
   }
+
+  const resolvedSearchParams = await searchParams
+  const formErrorMessage = getFormErrorMessage(resolvedSearchParams.error)
 
   const [guardrails, brandKits] = await Promise.all([
     getOwnerGuardrails(user.id),
@@ -20,6 +30,11 @@ export default async function SettingsPage() {
 
   return (
     <div className="space-y-6">
+      {formErrorMessage ? (
+        <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {formErrorMessage}
+        </div>
+      ) : null}
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
         <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
           Settings

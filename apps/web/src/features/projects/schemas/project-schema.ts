@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { modestZodString } from "@/lib/modest-wording"
+import { modestZodString } from "../../../lib/modest-wording/index"
 
 export const createProjectSchema = z.object({
   name: modestZodString(z.string().trim().min(2).max(100))

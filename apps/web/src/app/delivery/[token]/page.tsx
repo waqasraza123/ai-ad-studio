@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { acknowledgePublicDeliveryWorkspaceAction } from "@/features/delivery/actions/public-delivery"
 import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import {
   getActiveDeliveryWorkspaceByToken,
   listAssetsForDeliveryWorkspace,
@@ -15,6 +16,20 @@ type PublicDeliveryPageProps = {
   params: Promise<{
     token: string
   }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}
+
+function readSearchParam(
+  params: Record<string, string | string[] | undefined>,
+  key: string
+) {
+  const value = params[key]
+
+  if (Array.isArray(value)) {
+    return value[0]
+  }
+
+  return value
 }
 
 function formatTimestamp(value: string | null) {
@@ -29,9 +44,12 @@ function formatTimestamp(value: string | null) {
 }
 
 export default async function PublicDeliveryPage({
-  params
+  params,
+  searchParams
 }: PublicDeliveryPageProps) {
   const { token } = await params
+  const sp = await searchParams
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
 
   const workspace = await getActiveDeliveryWorkspaceByToken(token)
 
@@ -72,6 +90,11 @@ export default async function PublicDeliveryPage({
   return (
     <main className="theme-page-shell min-h-screen px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
+        {formErrorMessage ? (
+          <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+            {formErrorMessage}
+          </div>
+        ) : null}
         <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
             Client delivery

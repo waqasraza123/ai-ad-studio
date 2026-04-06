@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording/index"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"

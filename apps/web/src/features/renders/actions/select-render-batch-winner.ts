@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording/index"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listExportsByProjectIdForOwner } from "@/server/exports/export-repository"

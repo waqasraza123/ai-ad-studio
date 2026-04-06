@@ -34,6 +34,12 @@ describe("validateDeliveryReminderSupportHandoffNote", () => {
     )
   })
 
+  it("rejects disallowed wording", () => {
+    expect(validateDeliveryReminderSupportHandoffNote("sexy assets")).toBe(
+      "disallowed_wording"
+    )
+  })
+
   it("accepts a valid note", () => {
     expect(
       validateDeliveryReminderSupportHandoffNote("Waiting on revised assets")

@@ -1,4 +1,4 @@
-import { validateModestText } from "@/lib/modest-wording"
+import { validateModestText } from "../../../lib/modest-wording/index"
 
 export const deliveryReminderClearReasonFieldName = "clearReminderReason"
 export const deliveryReminderClearReasonMaxLength = 280

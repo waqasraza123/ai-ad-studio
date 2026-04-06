@@ -1,3 +1,4 @@
+import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { summarizeDeliveryReminderMismatchLifecycle } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-summary"
 import {
   filterDeliveryReminderMismatchLifecycleScope,
@@ -82,6 +83,7 @@ type DeliveryPageProps = {
     reminder_mismatch_lifecycle_filter?: string
     support_activity_filter?: string
     reminder_support_filter?: string
+    error?: string
     sort?: string
     status?: string
   }>
@@ -97,6 +99,7 @@ export default async function DeliveryPage({
   }
 
   const resolvedSearchParams = await searchParams
+  const formErrorMessage = getFormErrorMessage(resolvedSearchParams.error)
   const reminderRepairOutcome = normalizeDeliveryReminderRepairOutcome({
     action: resolvedSearchParams.reminder_repair_action,
     errorCode: resolvedSearchParams.reminder_repair_error_code,
@@ -280,6 +283,11 @@ export default async function DeliveryPage({
 
   return (
     <div className="space-y-6">
+      {formErrorMessage ? (
+        <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
+          {formErrorMessage}
+        </div>
+      ) : null}
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
         <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
           Delivery

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { MODEST_WORDING_ERROR_MESSAGE } from "../../../lib/modest-wording/index"
 import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
 import {
   buildDeliveryReminderRepairResultHref,
@@ -157,5 +158,18 @@ describe("presentation helpers", () => {
     ).toBe(
       "Support handoff note must be 500 characters or fewer."
     )
+  })
+
+  it("returns the shared wording moderation message", () => {
+    expect(
+      getDeliveryReminderRepairOutcomeMessage({
+        action: "clear_reminder_scheduling",
+        errorCode: "disallowed_wording",
+        noteSaved: false,
+        notificationId: "notification-1",
+        status: "error",
+        workspaceId: "workspace-1"
+      })
+    ).toBe(MODEST_WORDING_ERROR_MESSAGE)
   })
 })

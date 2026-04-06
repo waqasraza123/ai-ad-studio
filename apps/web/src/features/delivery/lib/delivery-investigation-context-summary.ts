@@ -113,8 +113,8 @@ function getFailedRepairReasonText(
     return "because the clear reason exceeded the allowed length"
   }
 
-  if (metadata.errorCode === "handoff_note_too_long") {
-    return "because the support handoff note exceeded the allowed length"
+  if (metadata.errorCode === "disallowed_wording") {
+    return "because the submitted wording was not allowed"
   }
 
   return "and left the follow-up state unchanged"

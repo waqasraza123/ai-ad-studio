@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { MODEST_WORDING_ERROR_MESSAGE } from "../../../lib/modest-wording/index"
 import {
   buildDeliveryReminderMismatchOutcomeHref,
   getDeliveryReminderMismatchLifecycleMessage,
@@ -107,5 +108,17 @@ describe("getDeliveryReminderMismatchLifecycleMessage", () => {
     ).toBe(
       "This reminder mismatch is no longer currently resolved for the selected notification."
     )
+  })
+
+  it("returns the shared wording moderation message", () => {
+    expect(
+      getDeliveryReminderMismatchLifecycleMessage({
+        action: "resolved",
+        errorCode: "disallowed_wording",
+        notificationId: "notification-1",
+        status: "error",
+        workspaceId: "workspace-1"
+      })
+    ).toBe(MODEST_WORDING_ERROR_MESSAGE)
   })
 })
