@@ -34,6 +34,8 @@ The current local-model matrix is:
 
 ## Screenshots
 
+![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.35 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.43 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.03 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.34 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.45 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.54 AM.png>)
+
 ![Dashboard overview](.github/screenshots/Screenshot%202026-03-18%20at%205.02.25%E2%80%AFPM.png)
 
 ![Project detail](.github/screenshots/Screenshot%202026-03-18%20at%205.02.42%E2%80%AFPM.png)
@@ -80,11 +82,13 @@ The repository currently has three public token-based surfaces. They are not int
 Campaign pages are the primary public promotion surface.
 
 Use them when:
+
 - a reviewed export has been finalized
 - the export is the current canonical winner for the project
 - the goal is public-facing promotion or showcase-style sharing
 
 Rules:
+
 - winner-only
 - canonical-only
 - promotion-oriented
@@ -94,11 +98,13 @@ Rules:
 Delivery pages are the primary client handoff surface.
 
 Use them when:
+
 - a reviewed export has been finalized
 - the export is the current canonical winner for the project
 - the goal is structured delivery with handoff notes, approval summary, and downloadable assets
 
 Rules:
+
 - canonical-only
 - handoff-oriented
 - supports included exports from the finalized batch, but anchored to the canonical export
@@ -108,11 +114,13 @@ Rules:
 Share links are a lighter owner-controlled utility surface for a single export.
 
 Use them when:
+
 - you want to quickly share one export for preview or internal distribution outside the main winner-only flow
 - you do not need campaign messaging
 - you do not need delivery workspace structure or approval summary
 
 Rules:
+
 - single-export utility
 - owner-created
 - separate from winner-only campaign and canonical delivery workflows
@@ -254,11 +262,11 @@ Conditional requirements:
 
 ### Which local model should I use?
 
-| Hardware tier | Preview recommendation | Scene video recommendation | Notes |
-| --- | --- | --- | --- |
-| 12–16GB GPU | `sdxl-turbo` if needed | `cogvideox1.5-5b-i2v` | Best starting point for mixed-tier machines |
-| 24GB+ GPU | `flux-schnell` | `wan2.1-i2v-14b-480p` | Higher quality, heavier VRAM and runtime cost |
-| CPU / macOS | `mock` or `flux-schnell` only if practical | not recommended | Treat local video as unsupported or experimental |
+| Hardware tier | Preview recommendation                     | Scene video recommendation | Notes                                            |
+| ------------- | ------------------------------------------ | -------------------------- | ------------------------------------------------ |
+| 12–16GB GPU   | `sdxl-turbo` if needed                     | `cogvideox1.5-5b-i2v`      | Best starting point for mixed-tier machines      |
+| 24GB+ GPU     | `flux-schnell`                             | `wan2.1-i2v-14b-480p`      | Higher quality, heavier VRAM and runtime cost    |
+| CPU / macOS   | `mock` or `flux-schnell` only if practical | not recommended            | Treat local video as unsupported or experimental |
 
 ### Local inference sidecar setup
 
