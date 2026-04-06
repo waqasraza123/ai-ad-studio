@@ -1,18 +1,8 @@
-import { getWorkerEnvironment } from "@/lib/env"
-
-type ReferenceImageInput = {
-  tag?: string
-  uri: string
-}
-
-type RunwayPreviewProviderInput = {
-  angle: string
-  hook: string
-  productName: string
-  title: string
-  visualDirection: string
-  referenceImages: ReferenceImageInput[]
-}
+import type {
+  PreviewGenerationProvider,
+  PreviewGenerationProviderInput,
+  PreviewGenerationProviderResult
+} from "@/providers/media-provider-types"
 
 type RunwayTaskResponse = {
   id: string
@@ -75,7 +65,7 @@ function extractImageUrl(task: RunwayTaskStatusResponse) {
   )
 }
 
-function buildPrompt(input: RunwayPreviewProviderInput) {
+function buildPrompt(input: PreviewGenerationProviderInput) {
   return [
     `Create a premium ecommerce ad concept image for ${input.productName}.`,
     `Concept title: ${input.title}.`,
@@ -87,18 +77,21 @@ function buildPrompt(input: RunwayPreviewProviderInput) {
   ].join(" ")
 }
 
-export class RunwayPreviewProvider {
+type RunwayPreviewProviderOptions = {
+  apiKey: string
+  imageModel: string
+}
+
+export class RunwayPreviewProvider implements PreviewGenerationProvider {
   private readonly apiKey: string
   private readonly imageModel: string
 
-  constructor() {
-    const environment = getWorkerEnvironment()
-
-    this.apiKey = environment.RUNWAYML_API_SECRET
-    this.imageModel = environment.RUNWAY_IMAGE_MODEL
+  constructor(options: RunwayPreviewProviderOptions) {
+    this.apiKey = options.apiKey
+    this.imageModel = options.imageModel
   }
 
-  private async createTask(input: RunwayPreviewProviderInput) {
+  private async createTask(input: PreviewGenerationProviderInput) {
     const response = await fetch("https://api.dev.runwayml.com/v1/text_to_image", {
       method: "POST",
       headers: {
@@ -136,7 +129,9 @@ export class RunwayPreviewProvider {
     return (await response.json()) as RunwayTaskStatusResponse
   }
 
-  async generatePreview(input: RunwayPreviewProviderInput) {
+  async generatePreview(
+    input: PreviewGenerationProviderInput
+  ): Promise<PreviewGenerationProviderResult> {
     const task = await this.createTask(input)
 
     for (let attempt = 0; attempt < 24; attempt += 1) {
@@ -153,8 +148,13 @@ export class RunwayPreviewProvider {
         }
 
         return {
-          imageUrl,
-          taskId: task.id
+          externalJobId: task.id,
+          metadata: {
+            runwayTaskId: task.id
+          },
+          model: this.imageModel,
+          previewDataUrl: imageUrl,
+          provider: "runway"
         }
       }
 

@@ -1,8 +1,8 @@
-type RunwayVideoProviderInput = {
-  durationSeconds: number
-  promptImage: string
-  promptText: string
-}
+import type {
+  SceneVideoGenerationProvider,
+  SceneVideoGenerationProviderInput,
+  SceneVideoGenerationProviderResult
+} from "@/providers/media-provider-types"
 
 type RunwayTaskResponse = {
   id: string
@@ -12,6 +12,18 @@ type RunwayTaskStatusResponse = {
   id: string
   status?: string
   output?: unknown
+}
+
+function toRunwayRatio(aspectRatio: "9:16" | "1:1" | "16:9") {
+  if (aspectRatio === "1:1") {
+    return "1080:1080"
+  }
+
+  if (aspectRatio === "16:9") {
+    return "1280:720"
+  }
+
+  return "720:1280"
 }
 
 function wait(milliseconds: number) {
@@ -61,14 +73,21 @@ function extractVideoUrl(task: RunwayTaskStatusResponse) {
   )
 }
 
-export class RunwayVideoProvider {
-  private readonly apiKey: string
+type RunwayVideoProviderOptions = {
+  apiKey: string
+  videoModel: string
+}
 
-  constructor(apiKey: string) {
-    this.apiKey = apiKey
+export class RunwayVideoProvider implements SceneVideoGenerationProvider {
+  private readonly apiKey: string
+  private readonly videoModel: string
+
+  constructor(options: RunwayVideoProviderOptions) {
+    this.apiKey = options.apiKey
+    this.videoModel = options.videoModel
   }
 
-  private async createTask(input: RunwayVideoProviderInput) {
+  private async createTask(input: SceneVideoGenerationProviderInput) {
     const response = await fetch("https://api.dev.runwayml.com/v1/image_to_video", {
       method: "POST",
       headers: {
@@ -78,10 +97,10 @@ export class RunwayVideoProvider {
       },
       body: JSON.stringify({
         duration: input.durationSeconds,
-        model: "gen4_turbo",
+        model: this.videoModel,
         promptImage: input.promptImage,
         promptText: input.promptText,
-        ratio: "720:1280"
+        ratio: toRunwayRatio(input.aspectRatio)
       })
     })
 
@@ -107,7 +126,9 @@ export class RunwayVideoProvider {
     return (await response.json()) as RunwayTaskStatusResponse
   }
 
-  async generateSceneVideo(input: RunwayVideoProviderInput) {
+  async generateSceneVideo(
+    input: SceneVideoGenerationProviderInput
+  ): Promise<SceneVideoGenerationProviderResult> {
     const task = await this.createTask(input)
 
     for (let attempt = 0; attempt < 24; attempt += 1) {
@@ -124,8 +145,13 @@ export class RunwayVideoProvider {
         }
 
         return {
-          taskId: task.id,
-          videoUrl
+          artifactUrl: videoUrl,
+          externalJobId: task.id,
+          metadata: {
+            runwayTaskId: task.id
+          },
+          model: this.videoModel,
+          provider: "runway"
         }
       }
 

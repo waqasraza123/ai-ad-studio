@@ -14,11 +14,23 @@ Instead of trying to be a general video editor, this repository focuses on one n
 
 That constraint is the product advantage. AI handles concepting, copy, and render planning, while the application enforces quality through templates, validations, approvals, review gates, and production-safe workflows.
 
-## Runway requirement
+## Media providers
 
-The current repository depends on [Runway](https://runwayml.com/) for provider-backed concept preview generation and scene-video generation.
+The repo now supports three runtime modes for preview and scene-video generation:
 
-Use an active paid Runway API subscription before expecting the core worker-driven preview and motion-render pipeline to work. Without paid Runway API access and a valid `RUNWAYML_API_SECRET`, those jobs will fail even if the web app, database, and storage are configured correctly.
+- `Runway only`: use Runway for both previews and scene video
+- `Hybrid`: use Runway for previews and a local inference sidecar for scene video
+- `Fully local`: use the local inference sidecar for both previews and scene video
+
+Runway is now an optional provider rather than a global requirement. If either `PREVIEW_PROVIDER` or `SCENE_VIDEO_PROVIDER` is set to `runway`, you still need an active paid [Runway](https://runwayml.com/) API subscription and a valid `RUNWAYML_API_SECRET`.
+
+The current local-model matrix is:
+
+- scene video baseline: `cogvideox1.5-5b-i2v`
+- scene video high-end: `wan2.1-i2v-14b-480p`
+- scene video fallback: `svd-img2vid`
+- preview image default: `flux-schnell`
+- preview image lighter fallback: `sdxl-turbo`
 
 ## Screenshots
 
@@ -160,7 +172,8 @@ The system follows a thin web layer plus durable database plus async worker mode
 - a configured Supabase project
 - R2 credentials for asset upload and public media delivery
 - OpenAI credentials for text and speech generation flows
-- an active paid [Runway](https://runwayml.com/) API subscription plus `RUNWAYML_API_SECRET` for preview and scene-video generation flows
+- Python 3.11 or newer if you want the local inference sidecar
+- an active paid [Runway](https://runwayml.com/) API subscription only if you select `runway` for previews or scene video
 
 ### Install
 
@@ -205,7 +218,6 @@ The worker reads directly from `process.env` and requires these values to claim 
 - `R2_SECRET_ACCESS_KEY`
 - `R2_BUCKET_NAME`
 - `OPENAI_API_KEY`
-- `RUNWAYML_API_SECRET` from an active paid Runway API subscription
 
 #### Worker defaults
 
@@ -214,7 +226,115 @@ These values are optional because the worker code provides defaults:
 - `OPENAI_CONCEPT_MODEL` defaults to `gpt-4o-mini`
 - `OPENAI_TTS_MODEL` defaults to `gpt-4o-mini-tts`
 - `OPENAI_TTS_VOICE` defaults to `alloy`
+- `PREVIEW_PROVIDER` defaults to `runway`
+- `SCENE_VIDEO_PROVIDER` defaults to `runway`
 - `RUNWAY_IMAGE_MODEL` defaults to `gen4_image_turbo`
+- `RUNWAY_VIDEO_MODEL` defaults to `gen4_turbo`
+- `LOCAL_INFERENCE_BASE_URL` defaults to `http://127.0.0.1:8788`
+- `LOCAL_IMAGE_MODEL` defaults to `flux-schnell`
+- `LOCAL_VIDEO_MODEL` defaults to `cogvideox1.5-5b-i2v`
+- `LOCAL_DEVICE` defaults to `cuda`
+- `LOCAL_DTYPE` defaults to `bf16`
+- `LOCAL_ENABLE_CPU_OFFLOAD` defaults to `false`
+- `LOCAL_INFERENCE_TIMEOUT_MS` defaults to `900000`
+
+### Provider selector env vars
+
+The worker chooses preview and scene-video generation independently:
+
+- `PREVIEW_PROVIDER=runway|local_http|mock`
+- `SCENE_VIDEO_PROVIDER=runway|local_http`
+
+Conditional requirements:
+
+- `RUNWAYML_API_SECRET` is required only if either provider is `runway`
+- `LOCAL_INFERENCE_BASE_URL` is required only if either provider is `local_http`
+- `LOCAL_IMAGE_MODEL` matters only when `PREVIEW_PROVIDER=local_http`
+- `LOCAL_VIDEO_MODEL` matters only when `SCENE_VIDEO_PROVIDER=local_http`
+
+### Which local model should I use?
+
+| Hardware tier | Preview recommendation | Scene video recommendation | Notes |
+| --- | --- | --- | --- |
+| 12–16GB GPU | `sdxl-turbo` if needed | `cogvideox1.5-5b-i2v` | Best starting point for mixed-tier machines |
+| 24GB+ GPU | `flux-schnell` | `wan2.1-i2v-14b-480p` | Higher quality, heavier VRAM and runtime cost |
+| CPU / macOS | `mock` or `flux-schnell` only if practical | not recommended | Treat local video as unsupported or experimental |
+
+### Local inference sidecar setup
+
+The local sidecar lives in `services/local-inference` and exposes:
+
+- `GET /health`
+- `POST /v1/preview`
+- `POST /v1/scene-video`
+- `GET /v1/artifacts/{artifactId}`
+
+Setup:
+
+```bash
+cd services/local-inference
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+Start the sidecar from the repo root:
+
+```bash
+pnpm dev:local-inference
+```
+
+Or directly:
+
+```bash
+python3 -m uvicorn app.main:app --app-dir services/local-inference --host 127.0.0.1 --port 8788 --reload
+```
+
+### Sample env blocks
+
+Runway only:
+
+```bash
+PREVIEW_PROVIDER=runway
+SCENE_VIDEO_PROVIDER=runway
+RUNWAYML_API_SECRET=your-runway-key
+RUNWAY_IMAGE_MODEL=gen4_image_turbo
+RUNWAY_VIDEO_MODEL=gen4_turbo
+```
+
+Hybrid:
+
+```bash
+PREVIEW_PROVIDER=runway
+SCENE_VIDEO_PROVIDER=local_http
+RUNWAYML_API_SECRET=your-runway-key
+LOCAL_INFERENCE_BASE_URL=http://127.0.0.1:8788
+LOCAL_VIDEO_MODEL=cogvideox1.5-5b-i2v
+LOCAL_DEVICE=cuda
+LOCAL_DTYPE=bf16
+```
+
+Fully local:
+
+```bash
+PREVIEW_PROVIDER=local_http
+SCENE_VIDEO_PROVIDER=local_http
+LOCAL_INFERENCE_BASE_URL=http://127.0.0.1:8788
+LOCAL_IMAGE_MODEL=flux-schnell
+LOCAL_VIDEO_MODEL=cogvideox1.5-5b-i2v
+LOCAL_DEVICE=cuda
+LOCAL_DTYPE=bf16
+LOCAL_ENABLE_CPU_OFFLOAD=false
+```
+
+Preview-only local / lightweight dev:
+
+```bash
+PREVIEW_PROVIDER=mock
+SCENE_VIDEO_PROVIDER=local_http
+LOCAL_INFERENCE_BASE_URL=http://127.0.0.1:8788
+LOCAL_VIDEO_MODEL=cogvideox1.5-5b-i2v
+```
 
 ### Important startup note
 
@@ -237,6 +357,10 @@ Run `pnpm dev:web`.
 ### Start the worker
 
 Run `pnpm dev:worker`.
+
+### Start the local inference sidecar
+
+Run `pnpm dev:local-inference`.
 
 ### Start both from the repo root
 
@@ -331,10 +455,13 @@ Worker:
 - if the public Supabase keys are missing, authenticated web flows and login-dependent pages will not work
 - if the R2 variables are missing, upload and download routes will return storage configuration errors
 - if the worker-required variables are missing, the worker stays alive and keeps polling for configuration instead of processing jobs
-- if `RUNWAYML_API_SECRET` is missing or not backed by paid Runway API access, concept preview and scene-video jobs will fail
+- if a selected provider is `runway` and `RUNWAYML_API_SECRET` is missing, the worker will refuse to start that configuration
+- if a selected provider is `local_http` and the sidecar is unreachable, preview or scene-video jobs will fail with a local inference connectivity error
+- if the local model is too large for the available VRAM, the sidecar will fail during model load or inference; switch to a lighter model or enable CPU offload
 - public campaign, share, and delivery media routes rely on token-scoped access plus server-side R2 reads
 - owner dashboard export downloads remain authenticated
 - `/api/health` now exposes operator-safe readiness booleans for auth, service-role access, R2, and public app URL configuration
+- local video support only changes scene generation; FFmpeg composition remains the final export compositor
 
 ## Known limitations
 
@@ -350,7 +477,7 @@ Current known limitations and truths:
 
 - the web runtime needs the public Supabase keys in every environment
 - the server-side web runtime also needs `SUPABASE_SERVICE_ROLE_KEY` and the R2 credentials for share links, public token routes, and asset delivery
-- the worker runtime needs Supabase service-role access, R2 credentials, OpenAI credentials, and paid Runway API credentials
+- the worker runtime needs Supabase service-role access, R2 credentials, OpenAI credentials, plus whichever media-provider credentials/endpoints match the selected env providers
 - promotion, review, delivery, and public token pages assume the database schema and migrations are already applied before the services are started
 
 ## Deployment troubleshooting

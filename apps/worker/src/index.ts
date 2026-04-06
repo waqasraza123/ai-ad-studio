@@ -1,4 +1,8 @@
-import { getWorkerEnvironment, hasWorkerEnvironmentConfiguration } from "@/lib/env"
+import {
+  getWorkerEnvironment,
+  getWorkerEnvironmentConfigurationIssues,
+  hasWorkerEnvironmentConfiguration
+} from "@/lib/env"
 import { executeJob } from "@/jobs/execute-job"
 import { createLongRunningQueueNotifications } from "@/notifications/notification-service"
 import { claimNextJob, refreshJobHeartbeat } from "@/repositories/jobs-repository"
@@ -80,6 +84,13 @@ async function runWorkerLoop() {
         console.log(
           "[worker] Supabase worker environment is not configured. Waiting for credentials."
         )
+        const issues = getWorkerEnvironmentConfigurationIssues()
+
+        if (issues.length > 0) {
+          issues.forEach((issue) => {
+            console.log(`[worker] configuration issue: ${issue}`)
+          })
+        }
         hasLoggedMissingConfiguration = true
       }
 

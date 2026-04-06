@@ -12,7 +12,7 @@ import { cleanupRenderWorkspace, createRenderWorkspace } from "@/media/temp/temp
 import type { PlannedScene } from "@/planning/scene-planner"
 import { buildStructuredScenePlan } from "@/planning/scene-planner"
 import { OpenAiTtsProvider } from "@/providers/openai-tts-provider"
-import { RunwayVideoProvider } from "@/providers/runway-video-provider"
+import { createSceneVideoProvider } from "@/providers/provider-factories"
 import { getRenderPackForPlatform } from "@/render-packs/render-pack-service"
 import {
   createRenderAsset,
@@ -320,6 +320,14 @@ async function downloadRemoteVideoToFile(input: {
   await writeFile(input.filePath, Buffer.from(arrayBuffer))
 }
 
+function getSceneVideoGenerationCost(provider: string) {
+  if (provider === "runway") {
+    return 0.15
+  }
+
+  return 0
+}
+
 export async function handleRenderFinalAdJob(
   supabase: SupabaseClient,
   job: WorkerJobRecord
@@ -445,7 +453,7 @@ export async function handleRenderFinalAdJob(
     const voiceoverDurationSeconds = await getMediaDurationSeconds(voiceoverFilePath)
 
     const environment = getWorkerEnvironment()
-    const videoProvider = new RunwayVideoProvider(environment.RUNWAYML_API_SECRET)
+    const videoProvider = createSceneVideoProvider(environment)
 
     const variantPlans = await Promise.all(
       batchVariantKeys.map(async (variantKey) => {
@@ -541,6 +549,7 @@ export async function handleRenderFinalAdJob(
         const plannedScene = getPlannedScene(primaryScenePlan, index)
 
         const generated = await videoProvider.generateSceneVideo({
+          aspectRatio: primaryAspectPlan.aspectRatio,
           durationSeconds: plannedScene.durationSeconds,
           promptImage,
           promptText: plannedScene.promptText
@@ -549,7 +558,7 @@ export async function handleRenderFinalAdJob(
         const localSceneFilePath = join(workspacePath, `scene-${index + 1}.mp4`)
         await downloadRemoteVideoToFile({
           filePath: localSceneFilePath,
-          videoUrl: generated.videoUrl
+          videoUrl: generated.artifactUrl
         })
 
         const sceneStorageKey = `projects/${project.id}/scenes/${randomUUID()}.mp4`
@@ -567,10 +576,17 @@ export async function handleRenderFinalAdJob(
             brandKitId: brandKit.id,
             brandKitName: brandKit.name,
             motionStyle: plannedScene.motionStyle,
+            model: generated.model,
             purpose: plannedScene.purpose,
             renderPackId: primaryRenderPack.id,
             renderPackName: primaryRenderPack.name,
-            runwayTaskId: generated.taskId,
+            provider: generated.provider,
+            providerMetadata: generated.metadata ?? null,
+            externalJobId: generated.externalJobId ?? null,
+            runwayTaskId:
+              generated.provider === "runway" && typeof generated.externalJobId === "string"
+                ? generated.externalJobId
+                : null,
             sceneIndex: index,
             sourceConceptId: selectedConcept.id,
             templateId: template.id,
@@ -592,6 +608,8 @@ export async function handleRenderFinalAdJob(
           renderPackId: primaryRenderPack.id,
           renderPackName: primaryRenderPack.name,
           sceneCount: sceneResults.length,
+          sceneVideoModel: sceneResults[0]?.metadata.model ?? null,
+          sceneVideoProvider: sceneResults[0]?.metadata.provider ?? null,
           templateId: template.id,
           templateStyleKey: template.style_key
         },
@@ -725,11 +743,19 @@ export async function handleRenderFinalAdJob(
             ctaTiming: variantTiming,
             platformPreset,
             previewDataUrl,
-            renderMode: "ffmpeg_runway_scene_video_composition",
+            previewModel:
+              previewAsset && typeof previewAsset.model === "string" ? previewAsset.model : null,
+            previewProvider:
+              previewAsset && typeof previewAsset.provider === "string"
+                ? previewAsset.provider
+                : null,
+            renderMode: "ffmpeg_scene_video_composition",
             renderPackId: renderPack.id,
             renderPackName: renderPack.name,
             safeZone: renderPack.safe_zone,
             sceneCount: sceneResults.length,
+            sceneVideoModel: sceneResults[0]?.metadata.model ?? null,
+            sceneVideoProvider: sceneResults[0]?.metadata.provider ?? null,
             scenePlan,
             selectedConceptId: selectedConcept.id,
             templateId: template.id,
@@ -764,20 +790,24 @@ export async function handleRenderFinalAdJob(
 
           exportUsageEvents.push(
             {
-              estimated_cost_usd: 0.15,
+              estimated_cost_usd: getSceneVideoGenerationCost(
+                String(sceneResults[0]?.metadata.provider ?? "runway")
+              ),
               event_type: "scene_video_generation",
               export_id: exportRecord.id,
               metadata: {
                 batchId: renderBatch?.id ?? null,
                 batchVariantKey: variantKey,
                 brandKitId: brandKit.id,
+                model: sceneResults[0]?.metadata.model ?? null,
+                provider: sceneResults[0]?.metadata.provider ?? null,
                 renderPackId: renderPack.id,
                 sceneCount: sceneResults.length,
                 templateId: template.id
               },
               owner_id: project.owner_id,
               project_id: project.id,
-              provider: "runway",
+              provider: String(sceneResults[0]?.metadata.provider ?? "runway"),
               units: sceneResults.length
             },
             {

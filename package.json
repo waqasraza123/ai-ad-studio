@@ -7,6 +7,7 @@
     "build": "turbo build",
     "clean": "git clean -xfd -e .env",
     "dev": "turbo dev --parallel",
+    "dev:local-inference": "python3 -m uvicorn app.main:app --app-dir services/local-inference --host 127.0.0.1 --port 8788 --reload",
     "dev:web": "pnpm --filter @ai-ad-studio/web dev",
     "dev:worker": "pnpm --filter @ai-ad-studio/worker dev",
     "format": "prettier --write .",

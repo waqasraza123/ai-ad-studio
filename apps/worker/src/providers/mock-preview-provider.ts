@@ -1,8 +1,8 @@
-type MockPreviewInput = {
-  angle: string
-  hook: string
-  title: string
-}
+import type {
+  PreviewGenerationProvider,
+  PreviewGenerationProviderInput,
+  PreviewGenerationProviderResult
+} from "@/providers/media-provider-types"
 
 function escapeXml(value: string) {
   return value
@@ -17,8 +17,10 @@ function createDataUrl(svg: string) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
 
-export class MockPreviewProvider {
-  generatePreview(input: MockPreviewInput) {
+export class MockPreviewProvider implements PreviewGenerationProvider {
+  async generatePreview(
+    input: PreviewGenerationProviderInput
+  ): Promise<PreviewGenerationProviderResult> {
     const title = escapeXml(input.title.slice(0, 28))
     const angle = escapeXml(input.angle.slice(0, 24))
     const hook = escapeXml(input.hook.slice(0, 120))
@@ -52,6 +54,10 @@ export class MockPreviewProvider {
       </svg>
     `.trim()
 
-    return createDataUrl(svg)
+    return {
+      model: "mock-svg",
+      previewDataUrl: createDataUrl(svg),
+      provider: "mock"
+    }
   }
 }

@@ -9,3 +9,5 @@ node_modules
 .DS_Store
 .cursor/
 docs/_local/
+__pycache__/
+.venv/

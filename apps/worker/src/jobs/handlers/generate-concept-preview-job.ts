@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { getWorkerEnvironment } from "@/lib/env"
 import { downloadObjectAsDataUri } from "@/lib/storage/r2"
-import { RunwayPreviewProvider } from "@/providers/runway-preview-provider"
+import { createPreviewProvider } from "@/providers/provider-factories"
 import {
   createConceptPreviewAssets,
   deleteConceptPreviewAssetsByProjectId
@@ -20,10 +21,19 @@ function toTag(kind: string, index: number) {
   return `${base}${index + 1}`
 }
 
+function getPreviewGenerationCost(provider: string) {
+  if (provider === "runway") {
+    return 0.02
+  }
+
+  return 0
+}
+
 export async function handleGenerateConceptPreviewJob(
   supabase: SupabaseClient,
   job: WorkerJobRecord
 ) {
+  const environment = getWorkerEnvironment()
   const [project, concepts, projectAssets] = await Promise.all([
     getProjectById(supabase, job.project_id),
     listConceptsByProjectId(supabase, job.project_id),
@@ -62,7 +72,14 @@ export async function handleGenerateConceptPreviewJob(
       owner_id: job.owner_id,
       payload: {
         conceptCount: concepts.length,
-        referenceImageCount: referenceImages.length
+        previewProvider: environment.PREVIEW_PROVIDER,
+        referenceImageCount: referenceImages.length,
+        selectedModel:
+          environment.PREVIEW_PROVIDER === "runway"
+            ? environment.RUNWAY_IMAGE_MODEL
+            : environment.PREVIEW_PROVIDER === "local_http"
+              ? environment.LOCAL_IMAGE_MODEL
+              : "mock-svg"
       },
       project_id: job.project_id,
       stage: "preview_generation_requested",
@@ -70,13 +87,13 @@ export async function handleGenerateConceptPreviewJob(
     }
   ])
 
-  const provider = new RunwayPreviewProvider()
+  const provider = createPreviewProvider(environment)
 
   await deleteConceptPreviewAssetsByProjectId(supabase, job.project_id)
 
-  const generatedAssets = await Promise.all(
+  const generatedPreviews = await Promise.all(
     concepts.map(async (concept) => {
-      const preview = await provider.generatePreview({
+      const result = await provider.generatePreview({
         angle: concept.angle,
         hook: concept.hook,
         productName: project.name,
@@ -86,28 +103,55 @@ export async function handleGenerateConceptPreviewJob(
       })
 
       return {
-        kind: "concept_preview" as const,
-        metadata: {
-          conceptId: concept.id,
-          previewDataUrl: preview.imageUrl,
-          provider: "runway",
-          runwayTaskId: preview.taskId,
-          uploadStatus: "ready"
-        },
-        mime_type: "image/webp",
-        owner_id: concept.owner_id,
-        project_id: concept.project_id,
-        storage_key: `runway-preview://${concept.project_id}/${concept.id}`
+        concept,
+        result
       }
     })
   )
+
+  const generatedAssets = generatedPreviews.map(({ concept, result }) => ({
+    kind: "concept_preview" as const,
+    metadata: {
+      conceptId: concept.id,
+      model: result.model,
+      previewDataUrl: result.previewDataUrl,
+      provider: result.provider,
+      providerMetadata: result.metadata ?? null,
+      externalJobId: result.externalJobId ?? null,
+      runwayTaskId:
+        result.provider === "runway" && typeof result.externalJobId === "string"
+          ? result.externalJobId
+          : null,
+      uploadStatus: "ready"
+    },
+    mime_type: result.previewDataUrl.startsWith("data:image/svg+xml")
+      ? "image/svg+xml"
+      : result.previewDataUrl.startsWith("data:image/png")
+        ? "image/png"
+        : result.previewDataUrl.startsWith("data:image/jpeg")
+          ? "image/jpeg"
+          : result.previewDataUrl.startsWith("data:image/webp")
+            ? "image/webp"
+            : "image/webp",
+    owner_id: concept.owner_id,
+    project_id: concept.project_id,
+    storage_key: `${result.provider}-preview://${concept.project_id}/${concept.id}`
+  }))
 
   await createJobTraces(supabase, [
     {
       job_id: job.id,
       owner_id: job.owner_id,
       payload: {
-        previewCount: generatedAssets.length
+        previewCount: generatedAssets.length,
+        provider: generatedPreviews[0]?.result.provider ?? environment.PREVIEW_PROVIDER,
+        model:
+          generatedPreviews[0]?.result.model ??
+          (environment.PREVIEW_PROVIDER === "runway"
+            ? environment.RUNWAY_IMAGE_MODEL
+            : environment.PREVIEW_PROVIDER === "local_http"
+              ? environment.LOCAL_IMAGE_MODEL
+              : "mock-svg")
       },
       project_id: job.project_id,
       stage: "preview_generation_completed",
@@ -119,16 +163,17 @@ export async function handleGenerateConceptPreviewJob(
 
   await createUsageEvents(
     supabase,
-    concepts.map((concept) => ({
-      estimated_cost_usd: 0.02,
+    generatedPreviews.map(({ concept, result }) => ({
+      estimated_cost_usd: getPreviewGenerationCost(result.provider),
       event_type: "concept_preview_generation",
       metadata: {
         conceptId: concept.id,
-        provider: "runway_image"
+        model: result.model,
+        provider: result.provider
       },
       owner_id: concept.owner_id,
       project_id: concept.project_id,
-      provider: "runway",
+      provider: result.provider,
       units: 1
     }))
   )
@@ -143,8 +188,15 @@ export async function handleGenerateConceptPreviewJob(
   )
 
   return {
+    model:
+      generatedPreviews[0]?.result.model ??
+      (environment.PREVIEW_PROVIDER === "runway"
+        ? environment.RUNWAY_IMAGE_MODEL
+        : environment.PREVIEW_PROVIDER === "local_http"
+          ? environment.LOCAL_IMAGE_MODEL
+          : "mock-svg"),
     previewCount: concepts.length,
-    provider: "runway",
+    provider: generatedPreviews[0]?.result.provider ?? environment.PREVIEW_PROVIDER,
     projectId: project.id
   }
 }
