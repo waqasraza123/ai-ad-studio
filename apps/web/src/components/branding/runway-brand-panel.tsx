@@ -12,8 +12,8 @@ type RunwayBrandPanelProps = {
 export function RunwayBrandPanel({
   className,
   eyebrow = "Runway integration",
-  title = "Paid Runway API required",
-  description = "This studio's current preview and scene-video pipeline is wired to Runway. Connect an active paid subscription before expecting worker-driven motion jobs to complete.",
+  title = "Hosted premium runtime",
+  description = "Runway is the fastest supported hosted path for premium previews and scene-video generation. Hybrid and local HTTP modes are also available when the environment supports them.",
   compact = false,
 }: RunwayBrandPanelProps) {
   return (

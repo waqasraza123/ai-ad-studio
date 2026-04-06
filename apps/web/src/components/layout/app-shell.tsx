@@ -4,6 +4,7 @@ import { LayoutDashboard, LogOut, PlusSquare, Sparkles, Video } from "lucide-rea
 import { signOut } from "@/app/(app)/actions"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
+import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
 import { cn } from "@/lib/utils"
 
 const navigationItems = [
@@ -76,6 +77,8 @@ export function AppShell({ children, userEmail }: AppShellProps) {
             })}
           </nav>
 
+          <RuntimeSetupLauncher context="dashboard" triggerLabel="API & GPU setup" />
+
           <div className="mt-10 rounded-[1.25rem] border border-amber-400/20 bg-amber-500/10 p-4">
             <p className="text-xs uppercase tracking-[0.22em] text-amber-200/80">
               Render profile
@@ -89,8 +92,8 @@ export function AppShell({ children, userEmail }: AppShellProps) {
           <RunwayBrandPanel
             className="mt-6"
             eyebrow="Motion provider"
-            title="Runway-backed generation"
-            description="Dashboard execution expects a paid Runway subscription for preview and scene-video jobs."
+            title="Hosted provider path"
+            description="Runway remains the fastest full-capability option. Use the runtime setup panel for hybrid and local HTTP guidance."
             compact
           />
         </aside>

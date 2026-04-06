@@ -41,10 +41,11 @@ export function AuthPanel({
           </div>
 
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-medium text-white">Paid provider dependency</p>
+            <p className="text-sm font-medium text-white">Runtime setup matters</p>
             <p className="mt-2 text-sm text-slate-400">
-              Concept previews and scene-video generation currently depend on a
-              paid Runway API subscription plus a valid `RUNWAYML_API_SECRET`.
+              Runway is the recommended hosted path, while hybrid and local HTTP
+              modes can be used when your machine or remote GPU environment is
+              set up for them.
             </p>
           </div>
         </div>

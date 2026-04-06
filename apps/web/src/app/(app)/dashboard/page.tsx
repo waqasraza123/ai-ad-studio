@@ -42,7 +42,8 @@ export default async function DashboardPage() {
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
               Create projects, save the creative brief, and register source
               assets before sending preview and motion jobs through the current
-              Runway-backed provider pipeline.
+              hosted, hybrid, or local provider path that matches your runtime
+              setup.
             </p>
 
             <div className="mt-5">
@@ -58,8 +59,8 @@ export default async function DashboardPage() {
 
           <RunwayBrandPanel
             eyebrow="Provider status"
-            title="Runway is part of the production path"
-            description="The current repo expects a paid Runway API subscription for concept previews and scene-video generation. Review plans or billing at runwayml.com."
+            title="Runway is the fastest hosted path"
+            description="Use the API & GPU setup entry in the sidebar to compare Runway, hybrid, and local HTTP modes before running previews or motion jobs."
           />
         </div>
       </section>

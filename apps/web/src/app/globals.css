@@ -88,9 +88,65 @@ select {
   animation: landing-top-bar-sheen 7s ease-in-out infinite;
 }
 
+@keyframes runtime-setup-orb-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.04);
+  }
+}
+
+.runtime-setup-backdrop {
+  background:
+    linear-gradient(180deg, rgba(3, 6, 17, 0.78), rgba(3, 6, 17, 0.9)),
+    radial-gradient(circle at top left, rgba(251, 146, 60, 0.12), transparent 24rem),
+    radial-gradient(circle at 82% 15%, rgba(244, 63, 94, 0.12), transparent 20rem),
+    rgba(3, 6, 17, 0.82);
+  backdrop-filter: blur(18px);
+}
+
+.runtime-setup-orb {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(14px);
+  opacity: 0.65;
+  animation: runtime-setup-orb-float 12s ease-in-out infinite;
+}
+
+.runtime-setup-orb-primary {
+  top: 9%;
+  left: 7%;
+  height: 16rem;
+  width: 16rem;
+  background: radial-gradient(circle, rgba(251, 146, 60, 0.22), transparent 68%);
+}
+
+.runtime-setup-orb-secondary {
+  right: 6%;
+  bottom: 10%;
+  height: 20rem;
+  width: 20rem;
+  background: radial-gradient(circle, rgba(236, 72, 153, 0.16), transparent 70%);
+  animation-delay: -4s;
+}
+
+.runtime-setup-noise {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
+    radial-gradient(rgba(255, 255, 255, 0.03) 0.7px, transparent 0.7px);
+  background-size:
+    100% 100%,
+    18px 18px;
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 90%);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-top-bar-glow,
-  .landing-top-bar-sheen {
+  .landing-top-bar-sheen,
+  .runtime-setup-orb {
     animation: none;
   }
 

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { LogIn } from "lucide-react"
 import { Button } from "@/components/primitives/button"
+import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
 
 const ADMIN_DEMO_EMAIL = "admin@gmail.com"
 
@@ -36,6 +37,7 @@ export function LandingTopBar() {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <RuntimeSetupLauncher context="homepage" triggerLabel="Runtime setup" />
           <Link href={adminLoginHref}>
             <Button size="sm" className="gap-2">
               <LogIn className="h-4 w-4" />
