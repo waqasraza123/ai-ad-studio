@@ -1,6 +1,8 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording"
 import { recordPublicDeliveryWorkspaceEventByToken } from "@/server/delivery-workspaces/delivery-workspace-repository"
 
 function readOptionalValue(formData: FormData, key: string) {
@@ -14,6 +16,11 @@ export async function acknowledgePublicDeliveryWorkspaceAction(
 ) {
   const actorLabel = readOptionalValue(formData, "actor_label")
   const note = readOptionalValue(formData, "note")
+  const path = `/delivery/${token}`
+
+  if (validateRecordTextFields({ actorLabel, note })) {
+    redirect(`${path}?error=${encodeURIComponent(MODEST_WORDING_FORM_ERROR_CODE)}`)
+  }
 
   await recordPublicDeliveryWorkspaceEventByToken({
     actorLabel,
@@ -22,5 +29,5 @@ export async function acknowledgePublicDeliveryWorkspaceAction(
     token
   })
 
-  revalidatePath(`/delivery/${token}`)
+  revalidatePath(path)
 }

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { projectBriefSchema } from "@/features/projects/schemas/project-schema"
+import { hasDisallowedWordingIssue, MODEST_WORDING_FORM_ERROR_CODE } from "@/lib/modest-wording"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
@@ -34,7 +35,12 @@ export async function saveProjectBriefAction(projectId: string, formData: FormDa
   })
 
   if (!parsed.success) {
-    redirectWithFormError(projectPath, "brief_invalid")
+    redirectWithFormError(
+      projectPath,
+      hasDisallowedWordingIssue(parsed.error)
+        ? MODEST_WORDING_FORM_ERROR_CODE
+        : "brief_invalid"
+    )
   }
 
   const brief = parsed.data

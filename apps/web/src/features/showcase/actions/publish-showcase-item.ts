@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
@@ -60,6 +61,10 @@ export async function publishShowcaseItemAction(exportId: string, formData: Form
       : null
 
   const summaryValue = String(formData.get("summary") ?? "").trim()
+
+  if (validateModestText(summaryValue)) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
+  }
 
   try {
     await upsertShowcaseItem({

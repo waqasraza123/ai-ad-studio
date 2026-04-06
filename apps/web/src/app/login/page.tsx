@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   if (!hasSupabaseAuthConfiguration()) {
     return (
-      <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] text-slate-50">
+      <main className="theme-page-shell min-h-screen text-slate-50">
         <LandingTopBar />
         <div className="px-4 py-10 sm:px-6 lg:px-8">
           <ConfigurationRequired
@@ -51,7 +51,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const defaultEmail = readSearchParam(params, "email")
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.12),transparent_28rem),linear-gradient(180deg,#050816_0%,#0b1224_100%)] text-slate-50">
+    <main className="theme-page-shell min-h-screen text-slate-50">
       <LandingTopBar />
       <div className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">

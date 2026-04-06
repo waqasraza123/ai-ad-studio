@@ -1,8 +1,10 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   listBatchReviewLinksByBatchIdForOwner
@@ -38,6 +40,7 @@ export async function upsertDeliveryWorkspaceAction(
   exportId: string,
   formData: FormData
 ) {
+  const path = `/dashboard/exports/${exportId}`
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -101,6 +104,10 @@ export async function upsertDeliveryWorkspaceAction(
     "handoff_notes",
     "Please review the included deliverables and handoff notes."
   )
+
+  if (validateRecordTextFields({ handoffNotes, summary, title })) {
+    redirect(`${path}?error=${encodeURIComponent(MODEST_WORDING_FORM_ERROR_CODE)}`)
+  }
 
   const workspace = await upsertDeliveryWorkspace({
     approvalSummary,

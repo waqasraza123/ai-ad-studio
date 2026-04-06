@@ -79,19 +79,19 @@ export function RuntimeSetupLauncher({
             type="button"
             onClick={() => setOpen(true)}
             className={cn(
-              "group mt-6 w-full rounded-[1.35rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.025))] p-4 text-left transition hover:border-amber-300/25 hover:bg-[linear-gradient(180deg,rgba(251,146,60,0.14),rgba(255,255,255,0.03))] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050816]"
+              "theme-palette-panel theme-focus-ring group mt-6 w-full rounded-[1.35rem] border p-4 text-left transition"
             )}
           >
             <div className="flex items-start gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
-                <Cpu className="h-5 w-5 text-amber-200 transition group-hover:scale-105" />
+              <div className="theme-icon-chip flex h-11 w-11 items-center justify-center rounded-2xl border">
+                <Cpu className="h-5 w-5 transition group-hover:scale-105" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
                   Setup help
                 </p>
                 <p className="mt-1 text-sm font-medium text-white">{triggerLabel}</p>
-                <p className="mt-1 text-sm leading-6 text-slate-400">
+                <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
                   See the recommended API path, local GPU requirements, and ready-to-use
                   `.env.local` blocks.
                 </p>
@@ -102,7 +102,7 @@ export function RuntimeSetupLauncher({
           <button
             ref={triggerRef}
             type="button"
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-white transition hover:bg-white/[0.1] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050816]"
+            className="theme-inline-secondary-button theme-focus-ring inline-flex h-10 items-center justify-center gap-2 rounded-full border px-4 text-sm font-medium"
             onClick={() => setOpen(true)}
           >
             <Settings2 className="h-4 w-4" />

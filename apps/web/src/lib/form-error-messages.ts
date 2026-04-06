@@ -1,6 +1,9 @@
+import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording"
+
 /** Short codes in URL `?error=` — mapped to user-facing copy (never throw from actions for expected cases). */
 export const FORM_ERROR_MESSAGES: Record<string, string> = {
   auth_required: "You must be signed in to continue.",
+  content_not_allowed: MODEST_WORDING_ERROR_MESSAGE,
   name_required: "Enter a project name (2–100 characters).",
   name_invalid: "Enter a project name (2–100 characters).",
   brief_invalid: "One or more brief fields are invalid. Check field lengths and try again.",

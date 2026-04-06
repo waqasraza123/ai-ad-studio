@@ -1,7 +1,10 @@
+import { validateModestText } from "@/lib/modest-wording"
+
 export const deliveryReminderClearReasonFieldName = "clearReminderReason"
 export const deliveryReminderClearReasonMaxLength = 280
 
 export type DeliveryReminderClearReasonValidationError =
+  | "disallowed_wording"
   | "reason_required"
   | "reason_too_long"
 
@@ -26,6 +29,10 @@ export function validateDeliveryReminderClearReason(
 
   if (value.length > deliveryReminderClearReasonMaxLength) {
     return "reason_too_long"
+  }
+
+  if (validateModestText(value)) {
+    return "disallowed_wording"
   }
 
   return null

@@ -1,6 +1,8 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   cancelJob,
@@ -21,6 +23,12 @@ export async function cancelJobAction(jobId: string, formData: FormData) {
   }
 
   const reason = String(formData.get("reason") ?? "Cancelled from debug UI")
+
+  if (validateModestText(reason)) {
+    redirect(
+      `/dashboard/debug/jobs/${jobId}?error=${encodeURIComponent(MODEST_WORDING_FORM_ERROR_CODE)}`
+    )
+  }
 
   await cancelJob({
     jobId,

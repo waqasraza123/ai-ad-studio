@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { hasR2StorageConfiguration } from "@/lib/env"
+import { hasDisallowedWordingIssue, MODEST_WORDING_FORM_ERROR_CODE } from "@/lib/modest-wording"
 import {
   redirectToLoginWithFormError,
   redirectWithFormError
@@ -49,7 +50,12 @@ export async function createAssetPlaceholderAction(
   })
 
   if (!parsed.success) {
-    redirectWithFormError(projectPath, "asset_invalid")
+    redirectWithFormError(
+      projectPath,
+      hasDisallowedWordingIssue(parsed.error)
+        ? MODEST_WORDING_FORM_ERROR_CODE
+        : "asset_invalid"
+    )
   }
 
   const assetPayload = parsed.data

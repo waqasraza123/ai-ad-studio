@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
@@ -52,15 +53,25 @@ export async function publishShareCampaignAction(exportId: string, formData: For
   }
 
   let campaignToken: string | null = null
+  const message = readValue(
+    formData,
+    "message",
+    "Reviewed winner selected from a controlled variation batch."
+  )
+  const title = readValue(formData, "title", `${project.name} campaign`)
+
+  if (validateModestText(message) || validateModestText(title)) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
+  }
 
   try {
     const campaign = await upsertShareCampaign({
       exportId,
-      message: readValue(formData, "message", "Reviewed winner selected from a controlled variation batch."),
+      message,
       ownerId: user.id,
       projectId: project.id,
       renderBatchId: eligibility.batchId,
-      title: readValue(formData, "title", `${project.name} campaign`)
+      title
     })
 
     campaignToken = campaign.token

@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
@@ -64,6 +65,16 @@ export async function createBatchReviewLinkAction(
 
   if (!reviewerName) {
     redirectWithFormError(path, "reviewer_name_required")
+  }
+
+  if (
+    validateRecordTextFields({
+      message,
+      reviewerEmail,
+      reviewerName
+    })
+  ) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
   }
 
   try {

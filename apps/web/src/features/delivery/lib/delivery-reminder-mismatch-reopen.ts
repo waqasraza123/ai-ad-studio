@@ -1,9 +1,12 @@
+import { validateModestText } from "@/lib/modest-wording"
+
 export const deliveryReminderMismatchReopenNoteFieldName =
   "reminderMismatchReopenNote"
 
 export const deliveryReminderMismatchReopenNoteMaxLength = 500
 
 export type DeliveryReminderMismatchReopenErrorCode =
+  | "disallowed_wording"
   | "not_currently_resolved"
   | "reopen_note_too_long"
   | null
@@ -38,6 +41,10 @@ export function validateDeliveryReminderMismatchReopenNote(
 
   if (value.length > deliveryReminderMismatchReopenNoteMaxLength) {
     return "reopen_note_too_long" as const
+  }
+
+  if (validateModestText(value)) {
+    return "disallowed_wording" as const
   }
 
   return null
@@ -81,6 +88,7 @@ export function isDeliveryReminderMismatchReopenActivityMetadata(
     (metadata.reopenOutcome === "success" ||
       metadata.reopenOutcome === "error") &&
     (metadata.errorCode === null ||
+      metadata.errorCode === "disallowed_wording" ||
       metadata.errorCode === "not_currently_resolved" ||
       metadata.errorCode === "reopen_note_too_long")
   )
@@ -125,6 +133,15 @@ export function getDeliveryReminderMismatchReopenActivityTitle(
 export function getDeliveryReminderMismatchReopenActivityDescription(
   metadata: DeliveryReminderMismatchReopenActivityMetadata
 ) {
+  if (
+    metadata.reopenOutcome === "error" &&
+    metadata.errorCode === "disallowed_wording"
+  ) {
+    return `Attempted to reopen a resolved mismatch from ${getReminderBucketLabel(
+      metadata.reminderBucket
+    )} reminder context, but the note used disallowed language.`
+  }
+
   if (
     metadata.reopenOutcome === "error" &&
     metadata.errorCode === "reopen_note_too_long"

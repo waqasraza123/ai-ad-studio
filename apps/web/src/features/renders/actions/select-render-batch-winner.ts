@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listExportsByProjectIdForOwner } from "@/server/exports/export-repository"
@@ -55,11 +56,17 @@ export async function selectRenderBatchWinnerAction(
     redirectWithFormError(path, "winner_export_invalid")
   }
 
+  const reviewNote = readReviewNote(formData)
+
+  if (validateModestText(reviewNote)) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
+  }
+
   try {
     await selectRenderBatchWinner({
       batchId,
       ownerId: user.id,
-      reviewNote: readReviewNote(formData),
+      reviewNote,
       winnerExportId: exportId
     })
   } catch {

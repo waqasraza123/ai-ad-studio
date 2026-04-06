@@ -29,15 +29,15 @@ const floatingCards = [
 
 export function HeroPreview() {
   return (
-    <div className="relative mx-auto mt-10 h-[28rem] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.88),rgba(2,6,23,0.92))] shadow-[0_40px_120px_rgba(0,0,0,0.45)]">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.16),transparent_30rem)]" />
+    <div className="theme-preview-shell relative mx-auto mt-10 h-[28rem] w-full max-w-5xl overflow-hidden rounded-[2rem] border">
+      <div className="theme-preview-glow absolute inset-0" />
       <div className="absolute inset-x-0 top-0 h-20 bg-[linear-gradient(180deg,rgba(255,255,255,0.08),transparent)]" />
 
       <motion.div
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
-        className="absolute inset-6 rounded-[1.75rem] border border-white/10 bg-white/[0.035] p-5"
+        className="theme-surface-card absolute inset-6 rounded-[1.75rem] border p-5"
       >
         <div className="flex items-center justify-between">
           <div>
@@ -49,26 +49,26 @@ export function HeroPreview() {
             </h3>
           </div>
 
-          <div className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs font-medium text-emerald-200">
+          <div className="theme-live-pill rounded-full border px-3 py-1 text-xs font-medium">
             Live system state
           </div>
         </div>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02))] p-4">
-            <div className="aspect-[9/16] rounded-[1.25rem] border border-white/10 bg-[radial-gradient(circle_at_top,rgba(56,189,248,0.18),transparent_16rem),linear-gradient(180deg,rgba(2,6,23,1),rgba(15,23,42,0.92))]" />
+          <div className="theme-preview-panel rounded-[1.5rem] border p-4">
+            <div className="theme-preview-canvas aspect-[9/16] rounded-[1.25rem] border" />
             <div className="mt-4 grid grid-cols-4 gap-2">
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={index}
-                  className="aspect-[4/5] rounded-2xl border border-white/10 bg-white/[0.05]"
+                  className="theme-soft-panel aspect-[4/5] rounded-2xl border"
                 />
               ))}
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+            <div className="theme-soft-panel rounded-[1.5rem] border p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
                 Generation stages
               </p>
@@ -80,7 +80,7 @@ export function HeroPreview() {
                   "Final 10s render queued"
                 ].map((item, index) => (
                   <div key={item} className="flex items-center gap-3">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-full border border-amber-400/20 bg-amber-400/10 text-xs font-semibold text-amber-200">
+                    <div className="theme-accent-pill flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
                       {index + 1}
                     </div>
                     <p className="text-sm text-slate-200">{item}</p>
@@ -89,12 +89,12 @@ export function HeroPreview() {
               </div>
             </div>
 
-            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
+            <div className="theme-soft-panel rounded-[1.5rem] border p-4">
               <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
                 Concept summary
               </p>
               <div className="mt-4 space-y-3">
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <div className="theme-soft-panel rounded-2xl border p-3">
                   <p className="text-sm font-medium text-white">
                     Premium reveal with tight product framing
                   </p>
@@ -102,7 +102,7 @@ export function HeroPreview() {
                     Designed for premium ecommerce and app launches.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-3">
+                <div className="theme-soft-panel rounded-2xl border p-3">
                   <p className="text-sm font-medium text-white">
                     Direct-response offer ad with visual urgency
                   </p>
@@ -130,10 +130,10 @@ export function HeroPreview() {
               repeat: Infinity,
               repeatType: "mirror"
             }}
-            className={`absolute ${card.className} rounded-[1.25rem] border border-white/10 bg-slate-950/75 p-4 backdrop-blur-xl`}
+            className={`theme-floating-card absolute ${card.className} rounded-[1.25rem] border p-4 backdrop-blur-xl`}
           >
             <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
-              <Icon className="h-4 w-4 text-amber-300" />
+              <Icon className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
               <span>{card.label}</span>
             </div>
             <p className="mt-3 text-sm font-medium text-white">{card.title}</p>

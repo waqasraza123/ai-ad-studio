@@ -11,7 +11,7 @@ export function LandingTopBar() {
   const demoSubtext = process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_SUBTEXT?.trim()
 
   return (
-    <header className="landing-top-bar-glow relative overflow-hidden border-b border-white/[0.08] bg-[#050816]/80 backdrop-blur-md">
+    <header className="landing-top-bar-glow theme-top-bar relative overflow-hidden border-b backdrop-blur-md">
       <div
         className="landing-top-bar-sheen pointer-events-none absolute inset-x-0 top-0 z-10"
         aria-hidden
@@ -20,19 +20,19 @@ export function LandingTopBar() {
         <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
           <Link
             href="/"
-            className="text-sm font-semibold tracking-tight text-white transition hover:text-amber-100"
+            className="text-sm font-semibold tracking-tight text-white transition hover:text-[rgb(var(--accent-rgb))]"
           >
             AI Ad Studio
           </Link>
-          <div className="min-w-0 border-l-0 border-white/10 sm:border-l sm:pl-6">
-            <p className="text-xs font-medium uppercase tracking-[0.2em] text-slate-500">
+          <div className="min-w-0 border-l-0 border-[var(--border)] sm:border-l sm:pl-6">
+            <p className="text-xs font-medium uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
               Administrator sign-in
             </p>
-            <p className="mt-0.5 truncate font-mono text-sm text-slate-300">
+            <p className="mt-0.5 truncate font-mono text-sm text-[var(--soft-foreground)]">
               {ADMIN_DEMO_EMAIL}
             </p>
             {demoSubtext ? (
-              <p className="mt-1 text-xs text-slate-500">{demoSubtext}</p>
+              <p className="mt-1 text-xs text-[var(--muted-foreground)]">{demoSubtext}</p>
             ) : null}
           </div>
         </div>

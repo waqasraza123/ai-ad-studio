@@ -1,9 +1,11 @@
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
+import { validateModestText } from "@/lib/modest-wording"
 
 export const deliveryReminderSupportHandoffNoteFieldName = "supportHandoffNote"
 export const deliveryReminderSupportHandoffNoteMaxLength = 500
 
 export type DeliveryReminderSupportNoteValidationError =
+  | "disallowed_wording"
   | "handoff_note_too_long"
 
 export type DeliveryReminderSupportNoteActivityMetadata = {
@@ -35,6 +37,10 @@ export function validateDeliveryReminderSupportHandoffNote(
 
   if (value.length > deliveryReminderSupportHandoffNoteMaxLength) {
     return "handoff_note_too_long"
+  }
+
+  if (validateModestText(value)) {
+    return "disallowed_wording"
   }
 
   return null

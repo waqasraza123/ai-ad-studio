@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
@@ -36,11 +37,16 @@ export async function finalizeRenderBatchAction(
   }
 
   let finalizedBatch
+  const finalizationNote = readFinalizationNote(formData)
+
+  if (validateModestText(finalizationNote)) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
+  }
 
   try {
     finalizedBatch = await finalizeRenderBatchDecision({
       batchId,
-      finalizationNote: readFinalizationNote(formData),
+      finalizationNote,
       ownerId: user.id
     })
   } catch {

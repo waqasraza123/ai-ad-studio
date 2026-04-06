@@ -96,7 +96,7 @@ export default async function PublicBatchReviewPage({
     context.response_status === "approved" || context.response_status === "rejected"
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,rgba(99,102,241,0.16),transparent_24rem),linear-gradient(180deg,#050816_0%,#0f172a_100%)] px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
+    <main className="theme-page-shell min-h-screen px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
         {formErrorMessage ? (
           <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">

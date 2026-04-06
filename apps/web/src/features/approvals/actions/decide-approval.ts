@@ -1,6 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
@@ -87,6 +88,10 @@ export async function approveRenderAction(jobId: string, formData: FormData) {
   const path = projectPath(approval.project_id)
   const decisionNote = readDecisionNote(formData)
 
+  if (validateModestText(decisionNote)) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
+  }
+
   try {
     const updated = await updateApprovalDecision({
       approvalId: approval.id,
@@ -131,6 +136,10 @@ export async function rejectRenderAction(jobId: string, formData: FormData) {
 
   const path = projectPath(approval.project_id)
   const decisionNote = readDecisionNote(formData)
+
+  if (validateModestText(decisionNote)) {
+    redirectWithFormError(path, MODEST_WORDING_FORM_ERROR_CODE)
+  }
 
   try {
     const updated = await updateApprovalDecision({

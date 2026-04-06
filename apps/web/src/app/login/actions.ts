@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation"
 import { hasSupabaseAuthConfiguration } from "@/lib/env"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 function toLoginRedirect(searchParams: Record<string, string>) {
@@ -24,6 +25,14 @@ export async function signInWithPassword(formData: FormData) {
 
   const email = readCredential(formData, "email")
   const password = readCredential(formData, "password")
+
+  if (validateRecordTextFields({ email, password })) {
+    redirect(
+      toLoginRedirect({
+        error: MODEST_WORDING_FORM_ERROR_CODE
+      })
+    )
+  }
 
   if (!email || !password) {
     redirect(
@@ -61,6 +70,14 @@ export async function signUpWithPassword(formData: FormData) {
 
   const email = readCredential(formData, "email")
   const password = readCredential(formData, "password")
+
+  if (validateRecordTextFields({ email, password })) {
+    redirect(
+      toLoginRedirect({
+        error: MODEST_WORDING_FORM_ERROR_CODE
+      })
+    )
+  }
 
   if (!email || !password) {
     redirect(

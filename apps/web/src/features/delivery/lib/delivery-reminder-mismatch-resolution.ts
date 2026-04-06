@@ -1,4 +1,5 @@
 import type { DeliveryWorkspaceRecord } from "@/server/database/types"
+import { validateModestText } from "@/lib/modest-wording"
 
 export const deliveryReminderMismatchResolutionNoteFieldName =
   "reminderMismatchResolutionNote"
@@ -33,6 +34,10 @@ export function validateDeliveryReminderMismatchResolutionNote(
 
   if (value.length > deliveryReminderMismatchResolutionNoteMaxLength) {
     return "resolution_note_too_long" as const
+  }
+
+  if (validateModestText(value)) {
+    return "disallowed_wording" as const
   }
 
   return null

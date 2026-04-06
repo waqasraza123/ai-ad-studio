@@ -5,6 +5,7 @@ import { buildDeliveryReminderMismatchOutcomeHref } from "@/features/delivery/li
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest-wording"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
@@ -144,10 +145,15 @@ export async function updateDeliveryWorkspaceFollowUpAction(
 
   const followUpDueOn =
     followUpStatus === "reminder_scheduled" ? rawFollowUpDueOn : null
+  const followUpNote = readFollowUpNote(formData)
+
+  if (validateModestText(followUpNote)) {
+    redirect(`/dashboard/delivery?error=${encodeURIComponent(MODEST_WORDING_FORM_ERROR_CODE)}`)
+  }
 
   const updatedWorkspace = await updateDeliveryWorkspaceFollowUp({
     followUpDueOn,
-    followUpNote: readFollowUpNote(formData),
+    followUpNote,
     followUpStatus,
     ownerId: user.id,
     workspaceId: workspace.id
@@ -241,6 +247,19 @@ export async function repairDeliveryWorkspaceReminderFromSupport(
   const repairValues = buildDeliveryReminderRepairValues({
     action: reminderRepairAction
   })
+
+  if (validateModestText(currentFollowUpNote)) {
+    redirect(
+      buildDeliveryReminderRepairResultHref({
+        action: reminderRepairAction,
+        baseHref: returnToHref,
+        errorCode: "disallowed_wording",
+        notificationId: focusedReminderNotificationId,
+        status: "error",
+        workspaceId
+      })
+    )
+  }
 
   if (reminderRepairAction === "clear_reminder_scheduling") {
     const clearReasonValidationError =
@@ -401,7 +420,7 @@ export async function resolveDeliveryWorkspaceReminderMismatchFromSupport(
       buildDeliveryReminderMismatchOutcomeHref({
         action: "resolved",
         baseHref: returnToHref,
-        errorCode: "resolution_note_too_long",
+        errorCode: resolutionNoteError,
         notificationId: reminderNotificationId,
         status: "error",
         workspaceId
@@ -495,7 +514,7 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
       await appendDeliveryWorkspaceActivity({
         exportId: workspace.canonical_export_id,
         metadata: buildDeliveryReminderMismatchReopenActivityMetadata({
-          errorCode: "reopen_note_too_long",
+          errorCode: reopenNoteError,
           reminderBucket,
           reminderNotificationId,
           reopenNote,
@@ -518,7 +537,7 @@ export async function reopenDeliveryWorkspaceReminderMismatchFromSupport(
       buildDeliveryReminderMismatchOutcomeHref({
         action: "reopened",
         baseHref: returnToHref,
-        errorCode: "reopen_note_too_long",
+        errorCode: reopenNoteError,
         notificationId: reminderNotificationId,
         status: "error",
         workspaceId

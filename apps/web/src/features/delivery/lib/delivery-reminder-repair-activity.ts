@@ -81,6 +81,7 @@ export function isDeliveryReminderRepairActivityMetadata(
       isFollowUpStatusValue(previousFollowUpStatus)) &&
     (nextFollowUpStatus === null || isFollowUpStatusValue(nextFollowUpStatus)) &&
     (errorCode === null ||
+      errorCode === "disallowed_wording" ||
       errorCode === "reason_required" ||
       errorCode === "reason_too_long")
   )
@@ -154,6 +155,16 @@ export function getDeliveryReminderRepairActivityDescription(
     return `Triggered from ${getReminderBucketLabel(
       metadata.reminderBucket
     )} reminder context. Clear reminder scheduling requires an explicit operator reason.`
+  }
+
+  if (
+    metadata.repairAction === "clear_reminder_scheduling" &&
+    metadata.repairOutcome === "error" &&
+    metadata.errorCode === "disallowed_wording"
+  ) {
+    return `Triggered from ${getReminderBucketLabel(
+      metadata.reminderBucket
+    )} reminder context. The submitted reason used disallowed language.`
   }
 
   if (

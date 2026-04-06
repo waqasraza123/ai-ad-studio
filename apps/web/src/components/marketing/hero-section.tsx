@@ -8,7 +8,7 @@ export function HeroSection() {
     <section className="relative overflow-hidden px-4 pb-20 pt-8 sm:px-6 lg:px-8 lg:pb-28 lg:pt-10">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-amber-400/20 bg-amber-400/10 px-4 py-2 text-sm text-amber-100">
+          <div className="theme-accent-pill inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm">
             <Sparkles className="h-4 w-4" />
             <span>AI product ad generation workflow</span>
           </div>
@@ -33,7 +33,7 @@ export function HeroSection() {
 
             <a
               href="/api/health"
-              className="inline-flex h-12 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] px-6 text-sm font-medium text-slate-200 transition hover:bg-white/[0.08] hover:text-white"
+              className="theme-inline-secondary-button inline-flex h-12 items-center justify-center rounded-full border px-6 text-sm font-medium"
             >
               API health
             </a>

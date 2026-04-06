@@ -1,3 +1,5 @@
+import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording"
+
 export const deliveryReminderMismatchActionQueryParam =
   "reminder_mismatch_action"
 export const deliveryReminderMismatchStatusQueryParam =
@@ -16,6 +18,7 @@ export type DeliveryReminderMismatchLifecycleAction =
 export type DeliveryReminderMismatchLifecycleStatus = "error" | "success"
 
 export type DeliveryReminderMismatchLifecycleErrorCode =
+  | "disallowed_wording"
   | "not_currently_resolved"
   | "reopen_note_too_long"
   | "resolution_note_too_long"
@@ -64,6 +67,7 @@ function normalizeErrorCode(
   if (
     value === "resolution_note_too_long" ||
     value === "reopen_note_too_long" ||
+    value === "disallowed_wording" ||
     value === "not_currently_resolved"
   ) {
     return value
@@ -153,6 +157,10 @@ export function getDeliveryReminderMismatchLifecycleMessage(
 
   if (outcome.errorCode === "not_currently_resolved") {
     return "This reminder mismatch is no longer currently resolved for the selected notification."
+  }
+
+  if (outcome.errorCode === "disallowed_wording") {
+    return MODEST_WORDING_ERROR_MESSAGE
   }
 
   return outcome.action === "resolved"

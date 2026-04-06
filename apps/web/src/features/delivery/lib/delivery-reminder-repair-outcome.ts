@@ -1,5 +1,6 @@
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
 import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
+import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording"
 import {
   deliveryReminderClearReasonMaxLength,
   type DeliveryReminderClearReasonValidationError
@@ -75,6 +76,7 @@ function normalizeDeliveryReminderRepairErrorCode(
   if (
     value === "reason_required" ||
     value === "reason_too_long" ||
+    value === "disallowed_wording" ||
     value === "handoff_note_too_long"
   ) {
     return value
@@ -215,6 +217,10 @@ export function getDeliveryReminderRepairOutcomeMessage(
 
   if (outcome.errorCode === "handoff_note_too_long") {
     return `Support handoff note must be ${deliveryReminderSupportHandoffNoteMaxLength} characters or fewer.`
+  }
+
+  if (outcome.errorCode === "disallowed_wording") {
+    return MODEST_WORDING_ERROR_MESSAGE
   }
 
   return `Could not complete ${getDeliveryReminderRepairActionLabel(
