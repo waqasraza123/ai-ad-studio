@@ -39,7 +39,7 @@ export function RunwayBrandPanel({
           <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
             {eyebrow}
           </p>
-          <p className="mt-1 text-sm font-medium text-white">{title}</p>
+          <p className="mt-1 text-sm font-medium text-[var(--foreground)]">{title}</p>
           {description ? (
             <p
               className={cn(

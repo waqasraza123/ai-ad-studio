@@ -28,24 +28,24 @@ export default async function PublicCampaignPage({
       : null
 
   return (
-    <main className="theme-page-shell min-h-screen px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
+    <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
-          <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+        <section className="theme-surface-card rounded-[2rem] border p-6">
+          <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
             Public campaign
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
             {campaign.title}
           </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
+          <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--muted-foreground)]">
             {campaign.message}
           </p>
 
           <div className="mt-5 flex flex-wrap gap-2">
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
+            <span className="theme-soft-panel rounded-full border px-3 py-1 text-xs text-[var(--soft-foreground)]">
               {exportRecord.variant_key}
             </span>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
+            <span className="theme-soft-panel rounded-full border px-3 py-1 text-xs text-[var(--soft-foreground)]">
               {exportRecord.aspect_ratio}
             </span>
             <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
@@ -54,7 +54,7 @@ export default async function PublicCampaignPage({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[2rem] border border-white/10 bg-white/[0.04] p-4 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
+        <section className="theme-surface-card overflow-hidden rounded-[2rem] border p-4">
           {videoSrc ? (
             <video
               className="h-auto w-full rounded-[1.5rem] object-cover"
@@ -70,7 +70,7 @@ export default async function PublicCampaignPage({
               src={previewDataUrl}
             />
           ) : (
-            <div className="flex h-96 items-center justify-center rounded-[1.5rem] bg-white/[0.04] text-sm text-slate-400">
+            <div className="theme-soft-panel flex h-96 items-center justify-center rounded-[1.5rem] border text-sm text-[var(--muted-foreground)]">
               Preview unavailable
             </div>
           )}

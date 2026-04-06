@@ -220,7 +220,7 @@ export function RuntimeSetupModal({
             aria-modal="true"
             aria-labelledby={titleId}
             aria-describedby={descriptionId}
-            className="relative z-[1] flex max-h-[92vh] w-full max-w-[1280px] flex-col overflow-hidden rounded-[2rem] border border-white/12 bg-[linear-gradient(180deg,rgba(7,10,23,0.96),rgba(10,14,30,0.94))] shadow-[0_32px_120px_rgba(0,0,0,0.55)] backdrop-blur-2xl"
+            className="theme-runtime-surface relative z-[1] flex max-h-[92vh] w-full max-w-[1280px] flex-col overflow-hidden rounded-[2rem] border backdrop-blur-2xl"
             initial={
               shouldReduceMotion
                 ? { opacity: 1 }
@@ -235,15 +235,15 @@ export function RuntimeSetupModal({
             transition={{ duration: shouldReduceMotion ? 0 : 0.28, ease: "easeOut" }}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(251,146,60,0.12),transparent_24rem),radial-gradient(circle_at_85%_10%,rgba(244,63,94,0.08),transparent_18rem)]" />
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.35),transparent)]" />
+            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgb(var(--page-glow-rgb)_/_0.12),transparent_24rem),radial-gradient(circle_at_85%_10%,rgb(var(--page-secondary-glow-rgb)_/_0.08),transparent_18rem)]" />
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,color-mix(in_srgb,var(--foreground)_35%,transparent),transparent)]" />
 
-            <div className="relative flex items-center justify-between border-b border-white/10 px-5 py-4 sm:px-6 lg:px-8">
+            <div className="relative flex items-center justify-between border-b border-[var(--border)] px-5 py-4 sm:px-6 lg:px-8">
               <div className="min-w-0">
-                <p className="text-[11px] uppercase tracking-[0.28em] text-amber-200/75">
+                <p className="text-[11px] uppercase tracking-[0.28em] text-[rgb(var(--accent-tertiary-rgb))]">
                   Runtime setup
                 </p>
-                <p className="mt-1 text-sm text-slate-400">
+                <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                   API, GPU, and env guidance for the current supported provider paths
                 </p>
               </div>
@@ -252,7 +252,7 @@ export function RuntimeSetupModal({
                 ref={closeButtonRef}
                 type="button"
                 onClick={() => onOpenChange(false)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.04] text-slate-300 transition hover:border-white/20 hover:bg-white/[0.08] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050816]"
+                className="theme-runtime-secondary-button theme-focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border transition"
                 aria-label="Close runtime setup modal"
               >
                 <X className="h-5 w-5" />
@@ -260,26 +260,26 @@ export function RuntimeSetupModal({
             </div>
 
             <div className="grid min-h-0 flex-1 gap-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-              <div className="overflow-y-auto border-b border-white/10 px-5 py-5 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 lg:py-7">
+              <div className="overflow-y-auto border-b border-[var(--border)] px-5 py-5 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 lg:py-7">
                 <motion.div
                   initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: shouldReduceMotion ? 0 : 0.22 }}
                 >
-                  <div className="inline-flex items-center gap-2 rounded-full border border-amber-300/20 bg-amber-400/10 px-4 py-2 text-sm text-amber-100">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--primary-rgb)_/_0.22)] bg-[rgb(var(--primary-rgb)_/_0.1)] px-4 py-2 text-sm text-[rgb(var(--accent-tertiary-rgb))]">
                     <Sparkles className="h-4 w-4" />
                     <span>Connect the right runtime to unlock full ad generation</span>
                   </div>
 
                   <h2
                     id={titleId}
-                    className="mt-6 max-w-xl text-4xl font-semibold tracking-[-0.05em] text-white sm:text-[2.85rem]"
+                    className="mt-6 max-w-xl text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)] sm:text-[2.85rem]"
                   >
                     Choose the fastest path to full previews, motion, and delivery.
                   </h2>
                   <p
                     id={descriptionId}
-                    className="mt-5 max-w-2xl text-sm leading-7 text-slate-300 sm:text-[15px]"
+                    className="mt-5 max-w-2xl text-sm leading-7 text-[var(--soft-foreground)] sm:text-[15px]"
                   >
                     AI Ad Studio can run in hosted, hybrid, or local modes. Today the
                     supported runtime paths are Runway, local HTTP inference, and mock
@@ -303,16 +303,16 @@ export function RuntimeSetupModal({
                     return (
                       <div
                         key={item.id}
-                        className="rounded-[1.6rem] border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_44px_rgba(0,0,0,0.18)]"
+                        className="theme-runtime-soft-panel rounded-[1.6rem] border p-4"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
-                            <Icon className="h-5 w-5 text-amber-200" />
+                          <div className="theme-icon-chip flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border">
+                            <Icon className="h-5 w-5" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-white">{item.label}</p>
-                            <p className="mt-1 text-sm text-slate-300">{item.summary}</p>
-                            <p className="mt-2 text-sm leading-6 text-slate-400">
+                            <p className="text-sm font-medium text-[var(--foreground)]">{item.label}</p>
+                            <p className="mt-1 text-sm text-[var(--soft-foreground)]">{item.summary}</p>
+                            <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
                               {item.detail}
                             </p>
                           </div>
@@ -323,7 +323,7 @@ export function RuntimeSetupModal({
                 </motion.div>
 
                 <motion.div
-                  className="mt-7 rounded-[1.8rem] border border-amber-300/18 bg-[linear-gradient(180deg,rgba(251,146,60,0.12),rgba(255,255,255,0.03))] p-5 shadow-[0_20px_60px_rgba(251,146,60,0.12)]"
+                  className="theme-accent-panel mt-7 rounded-[1.8rem] border p-5"
                   initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -332,14 +332,14 @@ export function RuntimeSetupModal({
                   }}
                 >
                   <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-300/20 bg-black/20">
-                      <CheckCircle2 className="h-5 w-5 text-amber-100" />
+                    <div className="theme-icon-chip flex h-11 w-11 items-center justify-center rounded-2xl border">
+                      <CheckCircle2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-white">
+                      <p className="text-sm font-medium text-[var(--foreground)]">
                         What changes after buying Runway
                       </p>
-                      <p className="mt-2 text-sm leading-6 text-amber-50/85">
+                      <p className="mt-2 text-sm leading-6 text-[var(--soft-foreground)]">
                         Buying Runway changes your env setup, not the product workflow.
                         Add your key, keep previews on Runway, and decide whether scene
                         video stays hosted or moves to a supported local sidecar.
@@ -349,8 +349,8 @@ export function RuntimeSetupModal({
 
                   <ol className="mt-4 space-y-3">
                     {runwayUpgradeSteps.map((step, index) => (
-                      <li key={step} className="flex items-start gap-3 text-sm text-slate-200">
-                        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-white/10 bg-white/10 text-xs font-semibold text-white">
+                      <li key={step} className="flex items-start gap-3 text-sm text-[var(--soft-foreground)]">
+                        <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--background-strong)] text-xs font-semibold text-[var(--foreground)]">
                           {index + 1}
                         </span>
                         <span className="leading-6">{step}</span>
@@ -360,7 +360,7 @@ export function RuntimeSetupModal({
                 </motion.div>
 
                 <motion.div
-                  className="mt-7 rounded-[1.6rem] border border-white/10 bg-[#060913] p-4"
+                  className="theme-runtime-code-block mt-7 rounded-[1.6rem] border p-4"
                   initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -368,21 +368,21 @@ export function RuntimeSetupModal({
                     delay: shouldReduceMotion ? 0 : 0.15
                   }}
                 >
-                  <div className="flex items-center gap-2 text-sm text-white">
-                    <TerminalSquare className="h-4 w-4 text-amber-200" />
+                  <div className="flex items-center gap-2 text-sm text-[var(--foreground)]">
+                    <TerminalSquare className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
                     <span>After editing `.env.local`, export it before starting the worker.</span>
                   </div>
 
-                  <div className="mt-4 overflow-hidden rounded-[1.2rem] border border-white/10 bg-black/40">
-                    <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+                  <div className="theme-runtime-code-block mt-4 overflow-hidden rounded-[1.2rem] border">
+                    <div className="theme-runtime-code-header flex items-center gap-2 border-b px-4 py-2">
                       <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
                       <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                      <span className="ml-3 text-xs uppercase tracking-[0.22em] text-slate-500">
+                      <span className="ml-3 text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
                         shell session
                       </span>
                     </div>
-                    <pre className="overflow-x-auto px-4 py-4 text-sm leading-7 text-slate-200">
+                    <pre className="overflow-x-auto px-4 py-4 text-sm leading-7 text-[var(--soft-foreground)]">
                       <code>{workerEnvExportLines.join("\n")}</code>
                     </pre>
                   </div>
@@ -395,12 +395,12 @@ export function RuntimeSetupModal({
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: shouldReduceMotion ? 0 : 0.22, delay: 0.04 }}
                 >
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-[11px] uppercase tracking-[0.28em] text-slate-500">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                      <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">
                         Supported runtime modes
                       </p>
-                      <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
+                      <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
                         Edit `.env.local` with the mode you actually want to test.
                       </h3>
                     </div>
@@ -417,10 +417,10 @@ export function RuntimeSetupModal({
                           type="button"
                           onClick={() => setSelectedModeId(mode.id)}
                           className={cn(
-                            "group relative overflow-hidden rounded-[1.6rem] border p-4 text-left transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050816]",
+                            "theme-focus-ring group relative overflow-hidden rounded-[1.6rem] border p-4 text-left transition",
                             isSelected
-                              ? "border-amber-300/30 bg-[linear-gradient(180deg,rgba(251,146,60,0.16),rgba(255,255,255,0.04))] shadow-[0_20px_48px_rgba(249,115,22,0.14)]"
-                              : "border-white/10 bg-white/[0.03] hover:border-white/15 hover:bg-white/[0.05]",
+                              ? "border-[rgb(var(--primary-rgb)_/_0.3)] bg-[linear-gradient(180deg,rgb(var(--primary-rgb)_/_0.16),color-mix(in_srgb,var(--background-strong)_70%,transparent))] shadow-[0_20px_48px_rgb(var(--primary-rgb)_/_0.14)]"
+                              : "theme-runtime-soft-panel hover:border-[var(--border-strong)] hover:bg-[var(--background-strong)]",
                             mode.muted ? "opacity-90" : null
                           )}
                           aria-pressed={isSelected}
@@ -434,17 +434,17 @@ export function RuntimeSetupModal({
                           }}
                         >
                           <div className="flex items-start justify-between gap-4">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-black/20">
-                              <Icon className="h-5 w-5 text-amber-200" />
+                            <div className="theme-icon-chip flex h-11 w-11 items-center justify-center rounded-2xl border">
+                              <Icon className="h-5 w-5" />
                             </div>
                             <span
                               className={cn(
                                 "rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.24em]",
                                 mode.recommended
-                                  ? "border-amber-300/25 bg-amber-400/10 text-amber-100"
+                                  ? "border-[rgb(var(--primary-rgb)_/_0.25)] bg-[rgb(var(--primary-rgb)_/_0.1)] text-[rgb(var(--accent-tertiary-rgb))]"
                                   : mode.experimental
                                     ? "border-rose-300/20 bg-rose-400/10 text-rose-100"
-                                    : "border-white/10 bg-white/[0.04] text-slate-400"
+                                    : "border-[var(--border)] bg-[var(--background-soft)] text-[var(--muted-foreground)]"
                               )}
                             >
                               {mode.eyebrow}
@@ -452,18 +452,18 @@ export function RuntimeSetupModal({
                           </div>
 
                           <div className="mt-4">
-                            <p className="text-sm font-medium text-white">{mode.label}</p>
-                            <p className="mt-1 text-sm text-slate-300">{mode.summary}</p>
-                            <p className="mt-3 text-sm leading-6 text-slate-400">
+                            <p className="text-sm font-medium text-[var(--foreground)]">{mode.label}</p>
+                            <p className="mt-1 text-sm text-[var(--soft-foreground)]">{mode.summary}</p>
+                            <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
                               {mode.detail}
                             </p>
                           </div>
 
-                          <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/10 pt-3">
-                            <span className="text-xs uppercase tracking-[0.22em] text-slate-500">
+                          <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
+                            <span className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
                               {mode.compatibility}
                             </span>
-                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-100">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[rgb(var(--accent-tertiary-rgb))]">
                               Open config
                               <ChevronRight className="h-3.5 w-3.5" />
                             </span>
@@ -475,7 +475,7 @@ export function RuntimeSetupModal({
                 </motion.div>
 
                 <motion.div
-                  className="mt-6 flex min-h-0 flex-1 flex-col rounded-[1.9rem] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.025))]"
+                  className="theme-runtime-soft-panel mt-6 flex min-h-0 flex-1 flex-col rounded-[1.9rem] border"
                   initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -483,16 +483,16 @@ export function RuntimeSetupModal({
                     delay: shouldReduceMotion ? 0 : 0.16
                   }}
                 >
-                  <div className="border-b border-white/10 px-5 py-5">
+                  <div className="border-b border-[var(--border)] px-5 py-5">
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
-                        <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
+                        <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                           Edit your `.env.local`
                         </p>
-                        <h4 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-white">
+                        <h4 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
                           {selectedMode.label}
                         </h4>
-                        <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+                        <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--soft-foreground)]">
                           {selectedMode.highlight}
                         </p>
                       </div>
@@ -500,7 +500,7 @@ export function RuntimeSetupModal({
                       <button
                         type="button"
                         onClick={() => copySnippet(selectedMode.id, selectedMode.envLines)}
-                        className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-white transition hover:bg-white/[0.08] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-300/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#050816]"
+                        className="theme-runtime-secondary-button theme-focus-ring inline-flex h-11 items-center justify-center gap-2 rounded-full border px-4 text-sm font-medium transition"
                       >
                         <Copy className="h-4 w-4" />
                         <span>
@@ -511,35 +511,35 @@ export function RuntimeSetupModal({
                   </div>
 
                   <div className="grid min-h-0 flex-1 gap-0 xl:grid-cols-[minmax(0,1fr)_280px]">
-                    <div className="min-h-0 border-b border-white/10 px-5 py-5 xl:border-b-0 xl:border-r">
-                      <div className="h-full overflow-hidden rounded-[1.4rem] border border-white/10 bg-[#060913] shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]">
-                        <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
+                    <div className="min-h-0 border-b border-[var(--border)] px-5 py-5 xl:border-b-0 xl:border-r">
+                      <div className="theme-runtime-code-block h-full overflow-hidden rounded-[1.4rem] border">
+                        <div className="theme-runtime-code-header flex items-center justify-between border-b px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
                             <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
                             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                            <span className="ml-2 text-xs uppercase tracking-[0.22em] text-slate-500">
+                            <span className="ml-2 text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
                               .env.local
                             </span>
                           </div>
-                          <span className="text-xs text-slate-500">
+                          <span className="text-xs text-[var(--muted-foreground)]">
                             Current support only
                           </span>
                         </div>
-                        <pre className="h-full overflow-auto px-4 py-4 text-sm leading-7 text-slate-100">
+                        <pre className="h-full overflow-auto px-4 py-4 text-sm leading-7 text-[var(--soft-foreground)]">
                           <code>{selectedMode.envLines.join("\n")}</code>
                         </pre>
                       </div>
                     </div>
 
                     <div className="px-5 py-5">
-                      <p className="text-[11px] uppercase tracking-[0.24em] text-slate-500">
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                         Why this mode
                       </p>
                       <ul className="mt-4 space-y-3">
                         {selectedMode.notes.map((note) => (
-                          <li key={note} className="flex items-start gap-3 text-sm text-slate-300">
-                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-amber-200" />
+                          <li key={note} className="flex items-start gap-3 text-sm text-[var(--soft-foreground)]">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[rgb(var(--accent-rgb))]" />
                             <span className="leading-6">{note}</span>
                           </li>
                         ))}
@@ -549,7 +549,7 @@ export function RuntimeSetupModal({
                 </motion.div>
 
                 <motion.div
-                  className="mt-6 rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-4 py-3 text-sm text-slate-300"
+                  className="theme-runtime-soft-panel mt-6 rounded-[1.5rem] border px-4 py-3 text-sm text-[var(--soft-foreground)]"
                   initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{
@@ -563,9 +563,9 @@ export function RuntimeSetupModal({
               </div>
             </div>
 
-            <div className="relative border-t border-white/10 bg-[rgba(7,10,23,0.88)] px-5 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
+            <div className="relative border-t border-[var(--border)] bg-[color-mix(in_srgb,var(--background-deep)_84%,transparent)] px-5 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-                <div className="max-w-2xl text-sm text-slate-400">
+                <div className="max-w-2xl text-sm text-[var(--muted-foreground)]">
                   Choose a mode, update `.env.local`, then export it into the worker shell
                   before running jobs.
                 </div>
@@ -575,7 +575,7 @@ export function RuntimeSetupModal({
                     <Link
                       href={primaryAction.href}
                       onClick={() => onOpenChange(false)}
-                      className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-amber-300/20 bg-[linear-gradient(180deg,rgba(251,146,60,1),rgba(244,63,94,0.92))] px-6 text-sm font-medium text-white shadow-[0_18px_56px_rgba(249,115,22,0.28)] transition hover:brightness-[1.03] hover:shadow-[0_22px_72px_rgba(249,115,22,0.34)]"
+                      className="theme-runtime-primary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium transition"
                     >
                       <span>{primaryAction.label}</span>
                       <ArrowUpRight className="h-4 w-4" />
@@ -584,7 +584,7 @@ export function RuntimeSetupModal({
                     <button
                       type="button"
                       onClick={() => onOpenChange(false)}
-                      className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-amber-300/20 bg-[linear-gradient(180deg,rgba(251,146,60,1),rgba(244,63,94,0.92))] px-6 text-sm font-medium text-white shadow-[0_18px_56px_rgba(249,115,22,0.28)] transition hover:brightness-[1.03] hover:shadow-[0_22px_72px_rgba(249,115,22,0.34)]"
+                      className="theme-runtime-primary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium transition"
                     >
                       <span>Back to workspace</span>
                       <ArrowUpRight className="h-4 w-4" />
@@ -596,7 +596,7 @@ export function RuntimeSetupModal({
                     target="_blank"
                     rel="noreferrer"
                     onClick={() => onOpenChange(false)}
-                    className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-5 text-sm font-medium text-white transition hover:bg-white/[0.09]"
+                    className="theme-runtime-secondary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition"
                   >
                     <span>View setup guide</span>
                     <ExternalLink className="h-4 w-4" />
@@ -605,7 +605,7 @@ export function RuntimeSetupModal({
                   <button
                     type="button"
                     onClick={() => onOpenChange(false)}
-                    className="inline-flex h-12 items-center justify-center rounded-full border border-white/10 bg-transparent px-5 text-sm font-medium text-slate-300 transition hover:bg-white/[0.05] hover:text-white"
+                    className="theme-runtime-ghost-button inline-flex h-12 items-center justify-center rounded-full border bg-transparent px-5 text-sm font-medium transition"
                   >
                     Dismiss
                   </button>

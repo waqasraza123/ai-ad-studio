@@ -41,10 +41,10 @@ export function HeroPreview() {
       >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+            <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
               Studio preview
             </p>
-            <h3 className="mt-2 text-xl font-semibold text-white">
+            <h3 className="mt-2 text-xl font-semibold text-[var(--foreground)]">
               Concept to export workflow
             </h3>
           </div>
@@ -69,7 +69,7 @@ export function HeroPreview() {
 
           <div className="space-y-4">
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                 Generation stages
               </p>
               <div className="mt-4 space-y-3">
@@ -83,30 +83,30 @@ export function HeroPreview() {
                     <div className="theme-accent-pill flex h-7 w-7 items-center justify-center rounded-full border text-xs font-semibold">
                       {index + 1}
                     </div>
-                    <p className="text-sm text-slate-200">{item}</p>
+                    <p className="text-sm text-[var(--soft-foreground)]">{item}</p>
                   </div>
                 ))}
               </div>
             </div>
 
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-xs uppercase tracking-[0.24em] text-slate-400">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                 Concept summary
               </p>
               <div className="mt-4 space-y-3">
                 <div className="theme-soft-panel rounded-2xl border p-3">
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-[var(--foreground)]">
                     Premium reveal with tight product framing
                   </p>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                     Designed for premium ecommerce and app launches.
                   </p>
                 </div>
                 <div className="theme-soft-panel rounded-2xl border p-3">
-                  <p className="text-sm font-medium text-white">
+                  <p className="text-sm font-medium text-[var(--foreground)]">
                     Direct-response offer ad with visual urgency
                   </p>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-1 text-sm text-[var(--muted-foreground)]">
                     Built for CTA-focused campaigns and promo drops.
                   </p>
                 </div>
@@ -132,11 +132,13 @@ export function HeroPreview() {
             }}
             className={`theme-floating-card absolute ${card.className} rounded-[1.25rem] border p-4 backdrop-blur-xl`}
           >
-            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-slate-400">
+            <div className="flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
               <Icon className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
               <span>{card.label}</span>
             </div>
-            <p className="mt-3 text-sm font-medium text-white">{card.title}</p>
+            <p className="mt-3 text-sm font-medium text-[var(--foreground)]">
+              {card.title}
+            </p>
           </motion.div>
         )
       })}

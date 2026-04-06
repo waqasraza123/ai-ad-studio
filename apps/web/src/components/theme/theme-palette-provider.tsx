@@ -11,47 +11,73 @@ import {
 import {
   DEFAULT_THEME_ID,
   findThemePaletteById,
+  LEGACY_THEME_STORAGE_KEY,
   THEME_ROTATION_INTERVAL_MS,
   THEME_STORAGE_KEY,
-  themePalettes,
-  type ThemeMode,
-  type ThemePalette
+  type ThemeColorMode,
+  type ThemePalette,
+  type ThemePaletteMode,
+  themePalettes
 } from "./theme-palette-config"
 
 type ThemePalettePreference = {
-  mode: ThemeMode
+  paletteMode: ThemePaletteMode
   selectedPaletteId: string
+  colorMode: ThemeColorMode
 }
 
 type ThemePaletteContextValue = {
-  mode: ThemeMode
+  paletteMode: ThemePaletteMode
+  colorMode: ThemeColorMode
   activePalette: ThemePalette
   palettes: ThemePalette[]
   selectPalette: (paletteId: string) => void
   resumeAuto: () => void
+  setColorMode: (mode: ThemeColorMode) => void
 }
 
 const ThemePaletteContext = createContext<ThemePaletteContextValue | null>(null)
 
 function readStoredPreference() {
-  try {
-    const rawValue = window.localStorage.getItem(THEME_STORAGE_KEY)
+  function normalizeStoredPreference(rawValue: string | null) {
     if (!rawValue) {
       return null
     }
 
-    const parsed = JSON.parse(rawValue) as Partial<ThemePalettePreference>
-    if (
-      (parsed.mode !== "auto" && parsed.mode !== "manual") ||
-      typeof parsed.selectedPaletteId !== "string"
-    ) {
+    const parsed = JSON.parse(rawValue) as Partial<ThemePalettePreference> & {
+      mode?: ThemePaletteMode
+    }
+
+    const paletteMode =
+      parsed.paletteMode === "auto" || parsed.paletteMode === "manual"
+        ? parsed.paletteMode
+        : parsed.mode === "auto" || parsed.mode === "manual"
+          ? parsed.mode
+          : null
+
+    if (!paletteMode || typeof parsed.selectedPaletteId !== "string") {
       return null
     }
 
     return {
-      mode: parsed.mode,
+      colorMode: parsed.colorMode === "light" ? "light" : "dark",
+      paletteMode,
       selectedPaletteId: findThemePaletteById(parsed.selectedPaletteId).id
     } satisfies ThemePalettePreference
+  }
+
+  try {
+    const storedPreference = normalizeStoredPreference(
+      window.localStorage.getItem(THEME_STORAGE_KEY)
+    )
+
+    if (storedPreference) {
+      return storedPreference
+    }
+
+    return normalizeStoredPreference(
+      window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY)
+    )
   } catch (error) {
     console.error("ThemePaletteProvider failed to read stored preference", error)
     return null
@@ -66,14 +92,6 @@ function persistPreference(preference: ThemePalettePreference) {
   }
 }
 
-function clearStoredPreference() {
-  try {
-    window.localStorage.removeItem(THEME_STORAGE_KEY)
-  } catch (error) {
-    console.error("ThemePaletteProvider failed to clear stored preference", error)
-  }
-}
-
 function prefersReducedMotion() {
   if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
     return false
@@ -85,7 +103,8 @@ function prefersReducedMotion() {
 export function ThemePaletteProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const [mode, setMode] = useState<ThemeMode>("auto")
+  const [paletteMode, setPaletteMode] = useState<ThemePaletteMode>("auto")
+  const [colorMode, setColorMode] = useState<ThemeColorMode>("dark")
   const [manualPaletteId, setManualPaletteId] = useState(DEFAULT_THEME_ID)
   const [autoIndex, setAutoIndex] = useState(0)
 
@@ -101,36 +120,43 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
 
     const storedPreference = readStoredPreference()
     if (!storedPreference) {
-      setMode(prefersReducedMotion() ? "manual" : "auto")
+      setPaletteMode(prefersReducedMotion() ? "manual" : "auto")
+      setColorMode("dark")
       setManualPaletteId(DEFAULT_THEME_ID)
       setAutoIndex(0)
       return
     }
 
-    if (storedPreference.mode === "manual") {
-      setMode("manual")
+    setColorMode(storedPreference.colorMode)
+
+    if (storedPreference.paletteMode === "manual") {
+      setPaletteMode("manual")
       setManualPaletteId(storedPreference.selectedPaletteId)
       setAutoIndex(themePalettes.findIndex((p) => p.id === storedPreference.selectedPaletteId))
       return
     }
 
     if (prefersReducedMotion()) {
-      setMode("manual")
+      setPaletteMode("manual")
       setManualPaletteId(DEFAULT_THEME_ID)
       setAutoIndex(0)
       return
     }
 
-    setMode("auto")
+    setPaletteMode("auto")
     setManualPaletteId(storedPreference.selectedPaletteId)
     setAutoIndex(themePalettes.findIndex((p) => p.id === storedPreference.selectedPaletteId))
   }, [hydrated])
 
   const safeAutoIndex = autoIndex >= 0 ? autoIndex : 0
   const activePalette =
-    mode === "manual"
+    paletteMode === "manual"
       ? findThemePaletteById(manualPaletteId)
       : themePalettes[safeAutoIndex % themePalettes.length]!
+  const activeCssVariables =
+    colorMode === "light"
+      ? activePalette.lightCssVariables
+      : activePalette.darkCssVariables
 
   useEffect(() => {
     if (!hydrated) {
@@ -139,15 +165,17 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
 
     const root = document.documentElement
     root.dataset.theme = activePalette.id
-    root.dataset.themeMode = mode
+    root.dataset.themeMode = paletteMode
+    root.dataset.colorMode = colorMode
+    root.style.colorScheme = colorMode
 
-    Object.entries(activePalette.cssVariables).forEach(([key, value]) => {
+    Object.entries(activeCssVariables).forEach(([key, value]) => {
       root.style.setProperty(key, value)
     })
-  }, [activePalette, hydrated, mode])
+  }, [activeCssVariables, activePalette.id, colorMode, hydrated, paletteMode])
 
   useEffect(() => {
-    if (!hydrated || reduceMotion || mode !== "auto") {
+    if (!hydrated || reduceMotion || paletteMode !== "auto") {
       return
     }
 
@@ -158,32 +186,29 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
     return () => {
       window.clearInterval(interval)
     }
-  }, [hydrated, mode, reduceMotion])
+  }, [hydrated, paletteMode, reduceMotion])
 
   useEffect(() => {
     if (!hydrated) {
       return
     }
 
-    if (mode === "manual") {
-      persistPreference({
-        mode: "manual",
-        selectedPaletteId: activePalette.id
-      })
-      return
-    }
-
-    clearStoredPreference()
-  }, [activePalette.id, hydrated, mode])
+    persistPreference({
+      colorMode,
+      paletteMode,
+      selectedPaletteId: activePalette.id
+    })
+  }, [activePalette.id, colorMode, hydrated, paletteMode])
 
   const value = useMemo<ThemePaletteContextValue>(
     () => ({
-      mode,
+      paletteMode,
+      colorMode,
       activePalette,
       palettes: themePalettes,
       selectPalette: (paletteId: string) => {
         const nextPalette = findThemePaletteById(paletteId)
-        setMode("manual")
+        setPaletteMode("manual")
         setManualPaletteId(nextPalette.id)
         setAutoIndex(themePalettes.findIndex((palette) => palette.id === nextPalette.id))
       },
@@ -193,16 +218,17 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
         )
 
         if (reduceMotion) {
-          setMode("manual")
+          setPaletteMode("manual")
           setManualPaletteId(activePalette.id)
           return
         }
 
         setAutoIndex(currentIndex >= 0 ? currentIndex : 0)
-        setMode("auto")
-      }
+        setPaletteMode("auto")
+      },
+      setColorMode
     }),
-    [activePalette, mode, reduceMotion]
+    [activePalette, colorMode, paletteMode, reduceMotion]
   )
 
   return (

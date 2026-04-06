@@ -5,13 +5,20 @@ import { cn } from "@/lib/utils"
 import { useThemePalette } from "./theme-palette-provider"
 
 export function ThemePalettePicker() {
-  const { activePalette, mode, palettes, resumeAuto, selectPalette } = useThemePalette()
+  const {
+    activePalette,
+    colorMode,
+    paletteMode,
+    palettes,
+    resumeAuto,
+    selectPalette
+  } = useThemePalette()
 
   return (
     <section className="theme-palette-panel mt-6 rounded-[1.5rem] border p-4">
       <div className="flex items-start gap-3">
-        <div className="theme-icon-chip flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border">
-          {mode === "auto" ? (
+          <div className="theme-icon-chip flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border">
+          {paletteMode === "auto" ? (
             <Orbit className="h-5 w-5" />
           ) : (
             <PaintBucket className="h-5 w-5" />
@@ -24,7 +31,7 @@ export function ThemePalettePicker() {
               Theme palette
             </p>
             <span className="theme-status-pill rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.24em]">
-              {mode === "auto" ? "Auto cycling" : "Pinned"}
+              {paletteMode === "auto" ? "Auto cycling" : "Pinned"}
             </span>
           </div>
 
@@ -32,7 +39,7 @@ export function ThemePalettePicker() {
             {activePalette.label}
           </p>
           <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
-            {activePalette.description}
+            {activePalette.description} Currently tuned for {colorMode} mode.
           </p>
         </div>
       </div>
@@ -67,7 +74,7 @@ export function ThemePalettePicker() {
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-          Changes every 2s in auto mode
+          Palette controls accent family. Top-bar switch controls light and dark.
         </p>
 
         <button

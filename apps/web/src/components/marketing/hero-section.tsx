@@ -13,11 +13,11 @@ export function HeroSection() {
             <span>AI product ad generation workflow</span>
           </div>
 
-          <h1 className="mt-8 text-balance text-5xl font-semibold tracking-[-0.04em] text-white sm:text-6xl lg:text-7xl">
+          <h1 className="mt-8 text-balance text-5xl font-semibold tracking-[-0.04em] text-[var(--foreground)] sm:text-6xl lg:text-7xl">
             Brief to premium ad concept to final short-form export
           </h1>
 
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[var(--muted-foreground)]">
             AI Ad Studio is a constrained creative system for product ads. It
             turns product images and a short brief into three ad concepts, one
             polished preview per concept, and one final 10-second vertical render.

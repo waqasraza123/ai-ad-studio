@@ -38,16 +38,16 @@ export default async function PublicSharePage({
       : null
 
   return (
-    <main className="theme-page-shell min-h-screen px-4 py-10 text-slate-50 sm:px-6 lg:px-8">
+    <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-6">
-        <section className="rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.28)]">
-          <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+        <section className="theme-surface-card rounded-[1.75rem] border p-6">
+          <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
             Shared export
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
+          <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
             {project.name}
           </h1>
-          <p className="mt-3 text-sm leading-7 text-slate-400">
+          <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
             This is an owner-controlled single-export share link. It is separate from winner-only campaign pages and finalized delivery workspaces.
           </p>
         </section>

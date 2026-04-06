@@ -28,7 +28,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   if (!hasSupabaseAuthConfiguration()) {
     return (
-      <main className="theme-page-shell min-h-screen text-slate-50">
+      <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
         <LandingTopBar />
         <div className="px-4 py-10 sm:px-6 lg:px-8">
           <ConfigurationRequired
@@ -51,7 +51,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const defaultEmail = readSearchParam(params, "email")
 
   return (
-    <main className="theme-page-shell min-h-screen text-slate-50">
+    <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
       <LandingTopBar />
       <div className="px-4 py-10 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-6xl">

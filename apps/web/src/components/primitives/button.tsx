@@ -7,9 +7,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        primary: "theme-button-primary text-white",
-        secondary: "theme-button-secondary text-white",
-        ghost: "theme-button-ghost text-[var(--muted-foreground)] hover:text-white"
+        primary: "theme-button-primary",
+        secondary: "theme-button-secondary",
+        ghost: "theme-button-ghost"
       },
       size: {
         sm: "h-10 px-4 text-sm",

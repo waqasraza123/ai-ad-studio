@@ -5,6 +5,7 @@ import { signOut } from "@/app/(app)/actions"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
+import { ThemeColorModeSwitch } from "@/components/theme/theme-color-mode-switch"
 import { ThemePalettePicker } from "@/components/theme/theme-palette-picker"
 import { cn } from "@/lib/utils"
 
@@ -42,7 +43,10 @@ export function AppShell({ children, userEmail }: AppShellProps) {
       <div className="mx-auto grid min-h-screen max-w-[1600px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-6 lg:py-6">
         <aside className="theme-sidebar-shell rounded-[1.75rem] border p-5 backdrop-blur-xl">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-lg font-semibold tracking-tight text-white">
+            <Link
+              href="/"
+              className="text-lg font-semibold tracking-tight text-[var(--foreground)]"
+            >
               AI Ad Studio
             </Link>
           </div>
@@ -85,7 +89,9 @@ export function AppShell({ children, userEmail }: AppShellProps) {
             <p className="text-xs uppercase tracking-[0.22em] text-[rgb(var(--accent-tertiary-rgb))]">
               Render profile
             </p>
-            <p className="mt-2 text-sm font-medium text-white">10s vertical ads</p>
+            <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
+              10s vertical ads
+            </p>
             <p className="mt-1 text-sm text-[color:var(--soft-foreground)] opacity-80">
               3 concepts, 1 preview frame each, 1 final export.
             </p>
@@ -106,12 +112,13 @@ export function AppShell({ children, userEmail }: AppShellProps) {
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
                 Studio
               </p>
-              <h1 className="mt-2 text-xl font-semibold tracking-tight text-white">
+              <h1 className="mt-2 text-xl font-semibold tracking-tight text-[var(--foreground)]">
                 Production workspace
               </h1>
             </div>
 
             <div className="flex items-center gap-3">
+              <ThemeColorModeSwitch compact />
               {userEmail ? (
                 <div className="theme-soft-panel hidden rounded-full border px-4 py-2 text-sm text-[var(--soft-foreground)] md:block">
                   {userEmail}

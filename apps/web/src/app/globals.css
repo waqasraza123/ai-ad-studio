@@ -44,7 +44,6 @@ body {
   transition:
     background 280ms ease,
     color 220ms ease;
-  color-scheme: dark;
 }
 
 a {
@@ -91,23 +90,27 @@ select {
   background:
     linear-gradient(180deg, rgb(var(--page-glow-rgb) / 0.06), transparent 16rem),
     var(--background-elevated);
-  box-shadow: 0 28px 90px rgb(0 0 0 / 0.36);
+  box-shadow: 0 28px 90px rgb(var(--shadow-rgb) / 0.22);
 }
 
 .theme-main-shell {
   border-color: var(--border);
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.025), rgb(255 255 255 / 0.018)),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-strong) 56%, transparent),
+      color-mix(in srgb, var(--background-soft) 88%, transparent)
+    ),
     var(--background-soft);
-  box-shadow: 0 28px 90px rgb(0 0 0 / 0.32);
+  box-shadow: 0 28px 90px rgb(var(--shadow-rgb) / 0.18);
 }
 
 .theme-surface-card {
   border-color: var(--border);
   background: var(--background-elevated);
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.02),
-    0 28px 90px rgb(0 0 0 / 0.32);
+    inset 0 1px 0 color-mix(in srgb, var(--background-strong) 58%, transparent),
+    0 28px 90px rgb(var(--shadow-rgb) / 0.16);
 }
 
 .theme-soft-panel {
@@ -127,14 +130,22 @@ select {
   border-color: var(--border);
   background:
     radial-gradient(circle at top left, rgb(var(--page-glow-rgb) / 0.09), transparent 12rem),
-    linear-gradient(180deg, rgb(255 255 255 / 0.04), rgb(255 255 255 / 0.024));
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-strong) 92%, transparent),
+      color-mix(in srgb, var(--background-soft) 96%, transparent)
+    );
 }
 
 .theme-icon-chip {
   border-color: var(--border);
   background:
-    linear-gradient(180deg, rgb(var(--primary-rgb) / 0.14), rgb(255 255 255 / 0.03)),
-    rgb(0 0 0 / 0.16);
+    linear-gradient(
+      180deg,
+      rgb(var(--primary-rgb) / 0.14),
+      color-mix(in srgb, var(--background-strong) 92%, transparent)
+    ),
+    color-mix(in srgb, var(--background-deep) 55%, var(--background-elevated) 45%);
   color: rgb(var(--accent-rgb));
 }
 
@@ -196,6 +207,7 @@ select {
 .theme-button-primary {
   border-color: rgb(var(--primary-rgb) / 0.2);
   background: linear-gradient(180deg, var(--primary), var(--primary-strong));
+  color: var(--button-primary-foreground);
   box-shadow: 0 18px 56px rgb(var(--primary-rgb) / 0.28);
 }
 
@@ -207,6 +219,7 @@ select {
 .theme-button-secondary {
   border-color: var(--border);
   background: var(--background-strong);
+  color: var(--button-secondary-foreground);
 }
 
 .theme-button-secondary:hover {
@@ -214,16 +227,29 @@ select {
   background: color-mix(in srgb, var(--background-strong) 74%, white 26%);
 }
 
+.theme-button-ghost {
+  color: var(--button-ghost-foreground);
+}
+
 .theme-button-ghost:hover {
   background: var(--background-strong);
+  color: var(--button-ghost-hover-foreground);
 }
 
 .theme-preview-shell {
   border-color: var(--border);
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 0.03), transparent 20rem),
-    linear-gradient(180deg, color-mix(in srgb, var(--background-deep) 86%, black 14%), var(--background));
-  box-shadow: 0 40px 120px rgb(0 0 0 / 0.45);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-strong) 70%, transparent),
+      transparent 20rem
+    ),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-deep) 86%, black 14%),
+      var(--background)
+    );
+  box-shadow: 0 40px 120px rgb(var(--shadow-rgb) / 0.22);
 }
 
 .theme-preview-glow {
@@ -234,7 +260,11 @@ select {
 
 .theme-preview-panel {
   border-color: var(--border);
-  background: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0.02));
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--background-strong) 96%, transparent),
+    color-mix(in srgb, var(--background-soft) 94%, transparent)
+  );
 }
 
 .theme-preview-canvas {
@@ -247,14 +277,21 @@ select {
 .theme-floating-card {
   border-color: var(--border);
   background:
-    linear-gradient(180deg, rgb(0 0 0 / 0.56), rgb(var(--page-glow-rgb) / 0.08)),
-    rgb(0 0 0 / 0.56);
-  box-shadow: 0 18px 40px rgb(0 0 0 / 0.28);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-deep) 76%, transparent),
+      rgb(var(--page-glow-rgb) / 0.08)
+    ),
+    color-mix(in srgb, var(--background-deep) 72%, var(--background-elevated) 28%);
+  box-shadow: 0 18px 40px rgb(var(--shadow-rgb) / 0.18);
 }
 
 .theme-top-bar {
-  border-color: rgb(255 255 255 / 0.08);
+  border-color: var(--top-bar-border);
   background: var(--top-bar-bg);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--background-strong) 72%, transparent),
+    0 20px 60px rgb(var(--shadow-rgb) / 0.08);
 }
 
 .theme-swatch-button {
@@ -267,6 +304,143 @@ select {
   box-shadow:
     0 0 0 1px rgb(var(--accent-tertiary-rgb) / 0.92),
     0 0 22px rgb(var(--primary-rgb) / 0.22);
+}
+
+.theme-color-mode-switch {
+  border-color: var(--border);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-strong) 88%, transparent),
+      color-mix(in srgb, var(--background-soft) 96%, transparent)
+    );
+  color: var(--foreground);
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--background-strong) 68%, transparent),
+    0 16px 42px rgb(var(--shadow-rgb) / 0.12);
+  transition:
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.theme-color-mode-switch:hover {
+  border-color: var(--border-strong);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-strong) 96%, transparent),
+      color-mix(in srgb, var(--background-elevated) 90%, transparent)
+    );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--background-strong) 72%, transparent),
+    0 18px 46px rgb(var(--shadow-rgb) / 0.16);
+}
+
+.theme-color-mode-switch-icon {
+  border: 1px solid color-mix(in srgb, var(--border) 86%, transparent);
+  background:
+    radial-gradient(circle at top, rgb(var(--page-glow-rgb) / 0.14), transparent 65%),
+    color-mix(in srgb, var(--background-elevated) 92%, transparent);
+  color: rgb(var(--accent-rgb));
+}
+
+.theme-color-mode-switch-label {
+  color: var(--soft-foreground);
+}
+
+.theme-form-input {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--background-soft) 92%, transparent);
+  color: var(--foreground);
+  transition:
+    border-color 180ms ease,
+    background 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.theme-form-input::placeholder {
+  color: var(--muted-foreground);
+}
+
+.theme-form-input:focus-visible {
+  border-color: rgb(var(--primary-rgb) / 0.3);
+  box-shadow: 0 0 0 2px rgb(var(--primary-rgb) / 0.16);
+  outline: none;
+}
+
+.theme-runtime-surface {
+  border-color: color-mix(in srgb, var(--border) 82%, rgb(var(--primary-rgb)) 18%);
+  background:
+    radial-gradient(circle at top left, rgb(var(--page-glow-rgb) / 0.12), transparent 24rem),
+    radial-gradient(circle at 85% 10%, rgb(var(--page-secondary-glow-rgb) / 0.08), transparent 18rem),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-deep) 92%, var(--background-elevated) 8%),
+      color-mix(in srgb, var(--background) 96%, black 4%)
+    );
+  box-shadow: 0 32px 120px rgb(var(--shadow-rgb) / 0.28);
+}
+
+.theme-runtime-soft-panel {
+  border-color: var(--border);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-strong) 86%, transparent),
+      color-mix(in srgb, var(--background-soft) 96%, transparent)
+    );
+  box-shadow: 0 18px 44px rgb(var(--shadow-rgb) / 0.12);
+}
+
+.theme-runtime-code-block {
+  border-color: var(--border);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-deep) 92%, black 8%),
+      color-mix(in srgb, var(--background) 90%, black 10%)
+    );
+  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--background-strong) 52%, transparent);
+}
+
+.theme-runtime-code-header {
+  border-color: var(--border);
+}
+
+.theme-runtime-primary-button {
+  border-color: rgb(var(--primary-rgb) / 0.2);
+  background: linear-gradient(180deg, var(--primary), var(--primary-strong));
+  color: var(--button-primary-foreground);
+  box-shadow: 0 18px 56px rgb(var(--primary-rgb) / 0.28);
+}
+
+.theme-runtime-primary-button:hover {
+  filter: brightness(1.03);
+  box-shadow: 0 22px 72px rgb(var(--primary-rgb) / 0.34);
+}
+
+.theme-runtime-secondary-button {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--background-strong) 84%, transparent);
+  color: var(--foreground);
+}
+
+.theme-runtime-secondary-button:hover {
+  border-color: var(--border-strong);
+  background: color-mix(in srgb, var(--background-strong) 96%, transparent);
+}
+
+.theme-runtime-ghost-button {
+  border-color: var(--border);
+  color: var(--soft-foreground);
+}
+
+.theme-runtime-ghost-button:hover {
+  background: color-mix(in srgb, var(--background-strong) 84%, transparent);
+  color: var(--foreground);
 }
 
 /* Marketing top bar — subtle motion (respects reduced-motion) */
@@ -329,10 +503,14 @@ select {
 
 .runtime-setup-backdrop {
   background:
-    linear-gradient(180deg, rgba(3, 6, 17, 0.78), rgba(3, 6, 17, 0.9)),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--background-deep) 72%, black 28%),
+      color-mix(in srgb, var(--background) 68%, black 32%)
+    ),
     radial-gradient(circle at top left, rgb(var(--page-glow-rgb) / 0.14), transparent 24rem),
     radial-gradient(circle at 82% 15%, rgb(var(--page-secondary-glow-rgb) / 0.12), transparent 20rem),
-    rgba(3, 6, 17, 0.82);
+    color-mix(in srgb, var(--background) 78%, black 22%);
   backdrop-filter: blur(18px);
 }
 
@@ -363,12 +541,49 @@ select {
 
 .runtime-setup-noise {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.02)),
-    radial-gradient(rgba(255, 255, 255, 0.03) 0.7px, transparent 0.7px);
+    linear-gradient(
+      color-mix(in srgb, var(--background-strong) 18%, transparent),
+      color-mix(in srgb, var(--background-strong) 18%, transparent)
+    ),
+    radial-gradient(color-mix(in srgb, var(--foreground) 14%, transparent) 0.7px, transparent 0.7px);
   background-size:
     100% 100%,
     18px 18px;
   mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 90%);
+}
+
+html[data-color-mode="dark"] {
+  color-scheme: dark;
+}
+
+html[data-color-mode="light"] {
+  color-scheme: light;
+}
+
+html[data-color-mode="light"] :is(.text-white, .text-slate-50, .text-slate-100) {
+  color: var(--foreground) !important;
+}
+
+html[data-color-mode="light"] :is(.text-slate-200, .text-slate-300) {
+  color: var(--soft-foreground) !important;
+}
+
+html[data-color-mode="light"] :is(.text-slate-400, .text-slate-500) {
+  color: var(--muted-foreground) !important;
+}
+
+html[data-color-mode="light"] :is(.border-white\/10, .border-white\/12, .border-white\/15) {
+  border-color: var(--border) !important;
+}
+
+html[data-color-mode="light"] :is(
+  .bg-white\/\[0\.03\],
+  .bg-white\/\[0\.04\],
+  .bg-white\/\[0\.05\],
+  .bg-white\/\[0\.06\],
+  .bg-white\/10
+) {
+  background: color-mix(in srgb, var(--background-elevated) 92%, transparent) !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

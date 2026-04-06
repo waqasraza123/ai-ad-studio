@@ -13,18 +13,18 @@ type AuthPanelProps = {
 export function AuthPanel({
   errorMessage,
   infoMessage,
-  defaultSignInEmail,
+  defaultSignInEmail
 }: AuthPanelProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       <SurfaceCard className="p-8">
-        <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
+        <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
           Authentication
         </p>
-        <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-white">
+        <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
           Sign in to AI Ad Studio
         </h1>
-        <p className="mt-4 max-w-xl text-sm leading-7 text-slate-400">
+        <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--muted-foreground)]">
           Authentication secures access to projects, concepts, exports, and
           other protected routes in the studio.
         </p>
@@ -32,17 +32,21 @@ export function AuthPanel({
         <RunwayBrandPanel className="mt-8" />
 
         <div className="mt-8 grid gap-4">
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-medium text-white">Protected application area</p>
-            <p className="mt-2 text-sm text-slate-400">
+          <div className="theme-soft-panel rounded-[1.5rem] border p-5">
+            <p className="text-sm font-medium text-[var(--foreground)]">
+              Protected application area
+            </p>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
               Dashboard routes are now gated by authenticated session checks when
               Supabase credentials are present.
             </p>
           </div>
 
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-            <p className="text-sm font-medium text-white">Runtime setup matters</p>
-            <p className="mt-2 text-sm text-slate-400">
+          <div className="theme-soft-panel rounded-[1.5rem] border p-5">
+            <p className="text-sm font-medium text-[var(--foreground)]">
+              Runtime setup matters
+            </p>
+            <p className="mt-2 text-sm text-[var(--muted-foreground)]">
               Runway is the recommended hosted path, while hybrid and local HTTP
               modes can be used when your machine or remote GPU environment is
               set up for them.
@@ -65,14 +69,17 @@ export function AuthPanel({
         ) : null}
 
         <div className="grid gap-4">
-          <form action={signInWithPassword} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <form
+            action={signInWithPassword}
+            className="theme-soft-panel rounded-[1.5rem] border p-5"
+          >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <LockKeyhole className="h-4 w-4 text-amber-200" />
+              <div className="theme-icon-chip flex h-10 w-10 items-center justify-center rounded-2xl border">
+                <LockKeyhole className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white">Sign in</p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm font-medium text-[var(--foreground)]">Sign in</p>
+                <p className="text-sm text-[var(--muted-foreground)]">
                   Access the protected dashboard shell.
                 </p>
               </div>
@@ -80,24 +87,24 @@ export function AuthPanel({
 
             <div className="mt-5 grid gap-3">
               <label className="grid gap-2">
-                <span className="text-sm text-slate-300">Email</span>
+                <span className="text-sm text-[var(--soft-foreground)]">Email</span>
                 <input
                   name="email"
                   type="email"
                   autoComplete="email"
                   defaultValue={defaultSignInEmail ?? undefined}
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
+                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
                   placeholder="waqas@example.com"
                 />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm text-slate-300">Password</span>
+                <span className="text-sm text-[var(--soft-foreground)]">Password</span>
                 <input
                   name="password"
                   type="password"
                   autoComplete="current-password"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
+                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
                   placeholder="••••••••"
                 />
               </label>
@@ -110,14 +117,19 @@ export function AuthPanel({
             </div>
           </form>
 
-          <form action={signUpWithPassword} className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
+          <form
+            action={signUpWithPassword}
+            className="theme-soft-panel rounded-[1.5rem] border p-5"
+          >
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
-                <UserRoundPlus className="h-4 w-4 text-amber-200" />
+              <div className="theme-icon-chip flex h-10 w-10 items-center justify-center rounded-2xl border">
+                <UserRoundPlus className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-white">Create account</p>
-                <p className="text-sm text-slate-400">
+                <p className="text-sm font-medium text-[var(--foreground)]">
+                  Create account
+                </p>
+                <p className="text-sm text-[var(--muted-foreground)]">
                   Set up a local account to use the studio.
                 </p>
               </div>
@@ -125,23 +137,23 @@ export function AuthPanel({
 
             <div className="mt-5 grid gap-3">
               <label className="grid gap-2">
-                <span className="text-sm text-slate-300">Email</span>
+                <span className="text-sm text-[var(--soft-foreground)]">Email</span>
                 <input
                   name="email"
                   type="email"
                   autoComplete="email"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
+                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
                   placeholder="waqas@example.com"
                 />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm text-slate-300">Password</span>
+                <span className="text-sm text-[var(--soft-foreground)]">Password</span>
                 <input
                   name="password"
                   type="password"
                   autoComplete="new-password"
-                  className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40"
+                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
                   placeholder="Create a password"
                 />
               </label>

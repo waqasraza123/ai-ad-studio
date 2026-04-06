@@ -90,7 +90,9 @@ export function RuntimeSetupLauncher({
                 <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
                   Setup help
                 </p>
-                <p className="mt-1 text-sm font-medium text-white">{triggerLabel}</p>
+                <p className="mt-1 text-sm font-medium text-[var(--foreground)]">
+                  {triggerLabel}
+                </p>
                 <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
                   See the recommended API path, local GPU requirements, and ready-to-use
                   `.env.local` blocks.

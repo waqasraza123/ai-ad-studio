@@ -6,7 +6,7 @@ import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launche
 
 export default function HomePage() {
   return (
-    <main className="theme-page-shell min-h-screen text-slate-50">
+    <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
       <RuntimeSetupLauncher context="homepage" autoOpenOnFirstVisit showTrigger={false} />
       <LandingTopBar />
       <HeroSection />

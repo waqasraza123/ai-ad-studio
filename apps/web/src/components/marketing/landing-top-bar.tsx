@@ -2,6 +2,7 @@ import Link from "next/link"
 import { LogIn } from "lucide-react"
 import { Button } from "@/components/primitives/button"
 import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
+import { ThemeColorModeSwitch } from "@/components/theme/theme-color-mode-switch"
 
 const ADMIN_DEMO_EMAIL = "admin@gmail.com"
 
@@ -20,7 +21,7 @@ export function LandingTopBar() {
         <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
           <Link
             href="/"
-            className="text-sm font-semibold tracking-tight text-white transition hover:text-[rgb(var(--accent-rgb))]"
+            className="text-sm font-semibold tracking-tight text-[var(--foreground)] transition hover:text-[rgb(var(--accent-rgb))]"
           >
             AI Ad Studio
           </Link>
@@ -37,6 +38,7 @@ export function LandingTopBar() {
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">
+          <ThemeColorModeSwitch compact />
           <RuntimeSetupLauncher context="homepage" triggerLabel="Runtime setup" />
           <Link href={adminLoginHref}>
             <Button size="sm" className="gap-2">

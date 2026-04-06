@@ -32,17 +32,19 @@ export function WorkflowStrip() {
   return (
     <section className="px-4 py-16 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
-          <div className="grid gap-4 lg:grid-cols-4">
-            {workflowSteps.map((step) => {
+        <div className="grid gap-4 lg:grid-cols-4">
+          {workflowSteps.map((step) => {
             const Icon = step.icon
 
             return (
               <SurfaceCard key={step.title} className="p-5">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-amber-400/20 bg-amber-400/10">
-                  <Icon className="h-5 w-5 text-amber-200" />
+                <div className="theme-icon-chip flex h-11 w-11 items-center justify-center rounded-2xl border">
+                  <Icon className="h-5 w-5" />
                 </div>
-                <h3 className="mt-5 text-lg font-medium text-white">{step.title}</h3>
-                <p className="mt-2 text-sm leading-7 text-slate-400">
+                <h3 className="mt-5 text-lg font-medium text-[var(--foreground)]">
+                  {step.title}
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-[var(--muted-foreground)]">
                   {step.description}
                 </p>
               </SurfaceCard>
