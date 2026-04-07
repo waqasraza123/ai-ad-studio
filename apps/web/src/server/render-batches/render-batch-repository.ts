@@ -1,5 +1,6 @@
 import "server-only"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { syncBillingUsageRollup } from "@/server/billing/billing-service"
 import type {
   ExportAspectRatio,
   ExportRecord,
@@ -177,6 +178,8 @@ export async function createRenderBatchJob(input: {
     await supabase.from("jobs").delete().eq("id", jobRecord.id)
     throw new Error("Failed to create render batch")
   }
+
+  await syncBillingUsageRollup(input.ownerId, supabase)
 
   return normalizeRenderBatch(
     batchRecord as RenderBatchRecord & {

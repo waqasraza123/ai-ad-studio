@@ -29,6 +29,20 @@ function getPreviewGenerationCost(provider: string) {
   return 0
 }
 
+function getPreviewByteSize(dataUrl: string) {
+  if (!dataUrl.startsWith("data:")) {
+    return Buffer.byteLength(dataUrl)
+  }
+
+  const [, payload = ""] = dataUrl.split(",", 2)
+
+  if (dataUrl.includes(";base64,")) {
+    return Buffer.from(payload, "base64").byteLength
+  }
+
+  return Buffer.byteLength(decodeURIComponent(payload))
+}
+
 export async function handleGenerateConceptPreviewJob(
   supabase: SupabaseClient,
   job: WorkerJobRecord
@@ -116,6 +130,7 @@ export async function handleGenerateConceptPreviewJob(
       model: result.model,
       previewDataUrl: result.previewDataUrl,
       provider: result.provider,
+      sizeBytes: getPreviewByteSize(result.previewDataUrl),
       providerMetadata: result.metadata ?? null,
       externalJobId: result.externalJobId ?? null,
       runwayTaskId:

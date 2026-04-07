@@ -1,6 +1,8 @@
 import "server-only"
 import { randomBytes } from "node:crypto"
+import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { hasPublicFeatureAccess } from "@/server/billing/billing-service"
 import type { ShareCampaignRecord } from "@/server/database/types"
 
 const shareCampaignSelection =
@@ -60,7 +62,20 @@ export async function getActiveShareCampaignByToken(token: string) {
     throw new Error("Failed to load public share campaign")
   }
 
-  return (data ?? null) as ShareCampaignRecord | null
+  const campaign = (data ?? null) as ShareCampaignRecord | null
+
+  if (!campaign) {
+    return null
+  }
+
+  const allowed = await hasPublicFeatureAccess(
+    campaign.owner_id,
+    "allowShareCampaigns",
+    campaign.created_at,
+    createSupabaseAdminClient()
+  )
+
+  return allowed ? campaign : null
 }
 
 export async function upsertShareCampaign(input: {

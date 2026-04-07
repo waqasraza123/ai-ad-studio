@@ -17,13 +17,14 @@ export function OwnerGuardrailsForm({
   return (
     <SurfaceCard className="p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Guardrails
+        Personal safety caps
       </p>
       <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
-        Budget and concurrency defaults
+        Personal budget and concurrency caps
       </h2>
       <p className="mt-3 text-sm leading-7 text-slate-400">
-        Current owner-level limits used by the pipeline to keep generation and render usage under control.
+        These caps can only tighten the limits from your active subscription. They
+        cannot raise plan entitlements above what Billing and plan allows.
       </p>
 
       <form action={updateOwnerGuardrailsAction} className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">

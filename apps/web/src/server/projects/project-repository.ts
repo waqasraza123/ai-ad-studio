@@ -1,5 +1,6 @@
 import "server-only"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { syncBillingUsageRollup } from "@/server/billing/billing-service"
 import type { ProjectRecord, ProjectStatus } from "@/server/database/types"
 
 const projectSelection =
@@ -57,6 +58,8 @@ export async function createProjectForOwner(input: {
   if (error) {
     throw new Error("Failed to create project")
   }
+
+  await syncBillingUsageRollup(input.ownerId, supabase)
 
   return data as ProjectRecord
 }

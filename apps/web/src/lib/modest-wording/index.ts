@@ -1,4 +1,4 @@
-import { z } from "zod"
+import type { z } from "zod"
 
 export const DISALLOWED_WORDING_VALIDATION_ERROR = "disallowed_wording"
 export const MODEST_WORDING_FORM_ERROR_CODE = "content_not_allowed"

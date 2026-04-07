@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getBillingGateDecision } from "@/server/billing/billing-service"
 import {
   listConceptsByProjectIdForOwner,
   updateConceptStatusForProject
@@ -48,6 +49,14 @@ export async function generateConceptPreviewsAction(projectId: string) {
   }
 
   try {
+    const billingDecision = await getBillingGateDecision(user.id, "generate_previews", {
+      previewGenerations: concepts.length
+    })
+
+    if (!billingDecision.allowed) {
+      redirectWithFormError(path, billingDecision.code ?? "job_failed")
+    }
+
     await updateConceptStatusForProject({
       ownerId: user.id,
       projectId,

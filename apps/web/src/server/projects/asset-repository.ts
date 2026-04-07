@@ -1,6 +1,7 @@
 import "server-only"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import type { CreateAssetPlaceholderInput } from "@/features/projects/schemas/project-schema"
+import { syncBillingUsageRollup } from "@/server/billing/billing-service"
 import type { AssetRecord, AssetKind } from "@/server/database/types"
 
 const assetSelection =
@@ -72,6 +73,8 @@ export async function createUploadedAssetRecord(input: {
   if (error) {
     throw new Error("Failed to create uploaded asset record")
   }
+
+  await syncBillingUsageRollup(input.ownerId, supabase)
 
   return data as AssetRecord
 }

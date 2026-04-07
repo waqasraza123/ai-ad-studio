@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { getEffectiveOwnerBillingLimits } from "@/billing/billing-limits"
 
 export type UsageEventInsertRecord = {
   owner_id: string
@@ -24,4 +25,9 @@ export async function createUsageEvents(
   if (error) {
     throw new Error("Failed to create usage events")
   }
+
+  const ownerIds = [...new Set(usageEvents.map((event) => event.owner_id))]
+  await Promise.all(
+    ownerIds.map((ownerId) => getEffectiveOwnerBillingLimits(supabase, ownerId))
+  )
 }

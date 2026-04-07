@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getBillingGateDecision } from "@/server/billing/billing-service"
 import { createJob, listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
 import {
@@ -48,6 +49,14 @@ export async function generateConceptsAction(projectId: string) {
   }
 
   try {
+    const billingDecision = await getBillingGateDecision(user.id, "generate_concepts", {
+      conceptRuns: 1
+    })
+
+    if (!billingDecision.allowed) {
+      redirectWithFormError(path, billingDecision.code ?? "job_failed")
+    }
+
     await createJob({
       ownerId: user.id,
       payload: {

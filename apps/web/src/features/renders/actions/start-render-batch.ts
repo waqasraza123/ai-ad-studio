@@ -8,6 +8,7 @@ import type {
 } from "@/server/database/types"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getBillingGateDecision } from "@/server/billing/billing-service"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import { listConceptPreviewAssetsByProjectIdForOwner } from "@/server/projects/asset-repository"
 import { getProjectInputByProjectIdForOwner } from "@/server/projects/project-input-repository"
@@ -102,8 +103,18 @@ export async function startRenderBatchAction(projectId: string, formData: FormDa
   const platformPreset = readPlatformPreset(formData.get("platform_preset"))
   const aspectRatios = readAspectRatios(formData)
   const variantKeys = readVariantKeys(formData)
+  const predictedExportCount = aspectRatios.length * variantKeys.length
 
   try {
+    const billingDecision = await getBillingGateDecision(user.id, "start_render_batch", {
+      finalExports: predictedExportCount,
+      renderBatches: 1
+    })
+
+    if (!billingDecision.allowed) {
+      redirectWithFormError(path, billingDecision.code ?? "job_failed")
+    }
+
     await createRenderBatchJob({
       aspectRatios,
       callToAction: projectInput?.call_to_action ?? null,

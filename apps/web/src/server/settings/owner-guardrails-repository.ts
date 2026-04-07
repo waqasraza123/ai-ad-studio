@@ -1,5 +1,9 @@
 import "server-only"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import {
+  getBillingPlanByCode,
+  getOwnerSubscription
+} from "@/server/billing/billing-service"
 import type { OwnerGuardrailsRecord } from "@/server/database/types"
 
 const defaultOwnerGuardrails = (ownerId: string): OwnerGuardrailsRecord => ({
@@ -29,6 +33,8 @@ export type UpsertOwnerGuardrailsInput = {
 
 export async function getOwnerGuardrails(ownerId: string) {
   const supabase = await createSupabaseServerClient()
+  const subscription = await getOwnerSubscription(ownerId, supabase)
+  const plan = await getBillingPlanByCode(subscription.plan_code, supabase)
 
   const { data, error } = await supabase
     .from("owner_guardrails")
@@ -37,25 +43,100 @@ export async function getOwnerGuardrails(ownerId: string) {
     .maybeSingle()
 
   if (error || !data) {
-    return defaultOwnerGuardrails(ownerId)
+    const fallback = defaultOwnerGuardrails(ownerId)
+
+    return {
+      ...fallback,
+      max_concurrent_preview_jobs: Math.min(
+        fallback.max_concurrent_preview_jobs,
+        Number(plan.max_concurrent_preview_jobs),
+        3
+      ),
+      max_concurrent_render_jobs: Math.min(
+        fallback.max_concurrent_render_jobs,
+        Number(plan.max_concurrent_render_jobs),
+        3
+      ),
+      monthly_openai_budget_usd: Math.min(
+        fallback.monthly_openai_budget_usd,
+        Number(plan.internal_openai_cost_ceiling_usd)
+      ),
+      monthly_runway_budget_usd: Math.min(
+        fallback.monthly_runway_budget_usd,
+        Number(plan.internal_runway_cost_ceiling_usd)
+      ),
+      monthly_total_budget_usd: Math.min(
+        fallback.monthly_total_budget_usd,
+        Number(plan.internal_total_cost_ceiling_usd)
+      )
+    }
   }
 
-  return data as OwnerGuardrailsRecord
+  return {
+    ...(data as OwnerGuardrailsRecord),
+    max_concurrent_preview_jobs: Math.min(
+      Number(data.max_concurrent_preview_jobs ?? 1),
+      Number(plan.max_concurrent_preview_jobs),
+      3
+    ),
+    max_concurrent_render_jobs: Math.min(
+      Number(data.max_concurrent_render_jobs ?? 1),
+      Number(plan.max_concurrent_render_jobs),
+      3
+    ),
+    monthly_openai_budget_usd: Math.min(
+      Number(data.monthly_openai_budget_usd ?? 0),
+      Number(plan.internal_openai_cost_ceiling_usd)
+    ),
+    monthly_runway_budget_usd: Math.min(
+      Number(data.monthly_runway_budget_usd ?? 0),
+      Number(plan.internal_runway_cost_ceiling_usd)
+    ),
+    monthly_total_budget_usd: Math.min(
+      Number(data.monthly_total_budget_usd ?? 0),
+      Number(plan.internal_total_cost_ceiling_usd)
+    )
+  } satisfies OwnerGuardrailsRecord
 }
 
 export async function upsertOwnerGuardrails(input: UpsertOwnerGuardrailsInput) {
   const supabase = await createSupabaseServerClient()
+  const subscription = await getOwnerSubscription(input.ownerId, supabase)
+  const plan = await getBillingPlanByCode(subscription.plan_code, supabase)
+
+  const monthlyTotalBudgetUsd = Math.min(
+    input.monthlyTotalBudgetUsd,
+    Number(plan.internal_total_cost_ceiling_usd)
+  )
+  const monthlyOpenaiBudgetUsd = Math.min(
+    input.monthlyOpenaiBudgetUsd,
+    Number(plan.internal_openai_cost_ceiling_usd)
+  )
+  const monthlyRunwayBudgetUsd = Math.min(
+    input.monthlyRunwayBudgetUsd,
+    Number(plan.internal_runway_cost_ceiling_usd)
+  )
+  const maxConcurrentRenderJobs = Math.min(
+    input.maxConcurrentRenderJobs,
+    Number(plan.max_concurrent_render_jobs),
+    3
+  )
+  const maxConcurrentPreviewJobs = Math.min(
+    input.maxConcurrentPreviewJobs,
+    Number(plan.max_concurrent_preview_jobs),
+    3
+  )
 
   const { data, error } = await supabase
     .from("owner_guardrails")
     .upsert(
       {
         owner_id: input.ownerId,
-        monthly_total_budget_usd: input.monthlyTotalBudgetUsd,
-        monthly_openai_budget_usd: input.monthlyOpenaiBudgetUsd,
-        monthly_runway_budget_usd: input.monthlyRunwayBudgetUsd,
-        max_concurrent_render_jobs: input.maxConcurrentRenderJobs,
-        max_concurrent_preview_jobs: input.maxConcurrentPreviewJobs,
+        monthly_total_budget_usd: monthlyTotalBudgetUsd,
+        monthly_openai_budget_usd: monthlyOpenaiBudgetUsd,
+        monthly_runway_budget_usd: monthlyRunwayBudgetUsd,
+        max_concurrent_render_jobs: maxConcurrentRenderJobs,
+        max_concurrent_preview_jobs: maxConcurrentPreviewJobs,
         auto_block_on_budget: input.autoBlockOnBudget
       },
       {

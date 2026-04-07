@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { ensureRenderApproval } from "@/approvals/approval-service"
-import { evaluateOwnerGuardrails } from "@/guardrails/owner-guardrails"
+import { getBillingGateDecisionForJob, getEffectiveOwnerBillingLimits } from "@/billing/billing-limits"
 import { createNotifications } from "@/notifications/notification-service"
 import { handleGenerateConceptPreviewJob } from "./handlers/generate-concept-preview-job"
 import { handleGenerateConceptsJob } from "./handlers/generate-concepts-job"
@@ -169,23 +169,26 @@ export async function executeJob(
     })
   }
 
-  const guardrailDecision = await evaluateOwnerGuardrails(supabase, job)
+  const [billingDecision, billingLimits] = await Promise.all([
+    getBillingGateDecisionForJob(supabase, job),
+    getEffectiveOwnerBillingLimits(supabase, job.owner_id)
+  ])
 
-  if (!guardrailDecision.allowed) {
+  if (!billingDecision.allowed) {
     await markJobBlocked(supabase, {
       jobId: job.id,
-      reason: guardrailDecision.reason
+      reason: billingDecision.reason
     })
 
     await createJobTrace(supabase, {
       job_id: job.id,
       owner_id: job.owner_id,
       payload: {
-        guardrails: guardrailDecision.guardrails,
-        monthlyOpenAiCost: guardrailDecision.monthlyOpenAiCost,
-        monthlyRunwayCost: guardrailDecision.monthlyRunwayCost,
-        monthlyTotalCost: guardrailDecision.monthlyTotalCost,
-        reason: guardrailDecision.reason
+        guardrails: billingLimits.guardrails,
+        planCode: billingLimits.plan.code,
+        projectedOverageUsd: billingLimits.usage.projected_overage_usd,
+        providerCostUsd: billingLimits.usage.provider_cost_usd,
+        reason: billingDecision.reason
       },
       project_id: job.project_id,
       stage: "job_blocked_by_guardrail",
@@ -195,11 +198,11 @@ export async function executeJob(
     await createNotifications(supabase, [
       {
         action_url: `/dashboard/debug/jobs/${job.id}`,
-        body: `The ${job.type} job was blocked because ${guardrailDecision.reason}. Review owner settings to raise limits or disable auto-blocking.`,
+        body: `The ${job.type} job was blocked because ${billingDecision.reason}. Review billing and personal safety caps before retrying.`,
         job_id: job.id,
         kind: "job_blocked_by_guardrail",
         metadata: {
-          reason: guardrailDecision.reason
+          reason: billingDecision.reason
         },
         owner_id: job.owner_id,
         project_id: job.project_id,
@@ -221,10 +224,10 @@ export async function executeJob(
     owner_id: job.owner_id,
     payload: {
       attempts: job.attempts,
-      guardrails: guardrailDecision.guardrails,
-      monthlyOpenAiCost: guardrailDecision.monthlyOpenAiCost,
-      monthlyRunwayCost: guardrailDecision.monthlyRunwayCost,
-      monthlyTotalCost: guardrailDecision.monthlyTotalCost,
+      billingPlanCode: billingLimits.plan.code,
+      guardrails: billingLimits.guardrails,
+      projectedOverageUsd: billingLimits.usage.projected_overage_usd,
+      providerCostUsd: billingLimits.usage.provider_cost_usd,
       payload: job.payload,
       type: job.type
     },

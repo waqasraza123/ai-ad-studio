@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { randomUUID } from "node:crypto"
-import { readFile, writeFile } from "node:fs/promises"
+import { readFile, stat, writeFile } from "node:fs/promises"
 import { join } from "node:path"
+import { getEffectiveOwnerBillingLimits } from "@/billing/billing-limits"
 import { getProjectBrandKit } from "@/brand-kits/brand-kit-service"
 import { getWorkerEnvironment } from "@/lib/env"
 import { downloadObjectToFile, uploadFileArtifactToR2 } from "@/lib/storage/r2"
@@ -334,6 +335,7 @@ export async function handleRenderFinalAdJob(
 ) {
   const renderBatch = await getRenderBatchByJobId(supabase, job.id)
   const project = await getProjectById(supabase, job.project_id)
+  const billingLimits = await getEffectiveOwnerBillingLimits(supabase, job.owner_id)
 
   if (!project) {
     throw new Error("Project not found for final render")
@@ -621,12 +623,17 @@ export async function handleRenderFinalAdJob(
 
     await createSceneVideoAssets(
       supabase,
-      sceneResults.map((scene, index) => {
+      await Promise.all(sceneResults.map(async (scene, index) => {
         const plannedScene = getPlannedScene(primaryScenePlan, index)
+        const sceneStats = await stat(scene.localSceneFilePath)
 
         return {
           kind: "scene_video",
-          metadata: scene.metadata,
+          metadata: {
+            ...scene.metadata,
+            sizeBytes: sceneStats.size,
+            watermarked: billingLimits.plan.watermark_exports
+          },
           mime_type: "video/mp4",
           owner_id: project.owner_id,
           project_id: project.id,
@@ -635,7 +642,7 @@ export async function handleRenderFinalAdJob(
           height: 1280,
           width: 720
         }
-      })
+      }))
     )
 
     const voiceoverStorageKey = `projects/${project.id}/voiceover/${randomUUID()}.mp3`
@@ -649,7 +656,8 @@ export async function handleRenderFinalAdJob(
       kind: "voiceover_audio",
       metadata: {
         provider: "openai_tts",
-        script: selectedConcept.script
+        script: selectedConcept.script,
+        sizeBytes: (await stat(voiceoverFilePath)).size
       },
       mime_type: "audio/mpeg",
       owner_id: project.owner_id,
@@ -716,12 +724,16 @@ export async function handleRenderFinalAdJob(
             projectName: project.name,
             safeZone: renderPack.safe_zone,
             sceneVideoFilePaths: sceneResults.map((scene) => scene.localSceneFilePath),
+            watermarkText: billingLimits.plan.watermark_exports
+              ? "AI Ad Studio Free"
+              : null,
             workspacePath
           })
 
           const { height, width } = getCanvasSize(aspectRatio)
           const totalDurationSeconds = variantTiming.ctaStartSeconds + variantTiming.ctaCardSeconds
           const storageKey = `projects/${project.id}/exports/${variantKey}-${aspectRatio.replace(":", "x")}-${randomUUID()}.mp4`
+          const outputStats = await stat(outputFilePath)
 
           await uploadFileArtifactToR2({
             contentType: "video/mp4",
@@ -762,7 +774,9 @@ export async function handleRenderFinalAdJob(
             templateName: template.name,
             templateStyleKey: template.style_key,
             variantKey,
-            voiceoverProvider: "openai_tts"
+            voiceoverProvider: "openai_tts",
+            sizeBytes: outputStats.size,
+            watermarked: billingLimits.plan.watermark_exports
           }
 
           const renderAsset = await createRenderAsset(supabase, {

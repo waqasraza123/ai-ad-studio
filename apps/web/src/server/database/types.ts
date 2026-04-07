@@ -51,6 +51,21 @@ export type NotificationSeverity = "info" | "success" | "warning" | "error"
 export type ApprovalStatus = "pending" | "approved" | "rejected"
 export type ReviewerRole = "client" | "stakeholder" | "internal_reviewer"
 export type ExternalReviewStatus = "pending" | "approved" | "rejected"
+export type BillingPlanCode = "free" | "starter" | "growth" | "scale"
+export type CheckoutPreference =
+  | "card_or_crypto"
+  | "stablecoin_preferred"
+  | "invoice"
+export type OwnerSubscriptionStatus =
+  | "free"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "grace_period"
+  | "canceled"
+  | "incomplete"
+  | "incomplete_expired"
+  | "unpaid"
 
 export type TemplateScenePackItem = {
   purpose: "opener" | "product_emphasis" | "cta_close"
@@ -288,6 +303,148 @@ export type OwnerGuardrailsRecord = {
   auto_block_on_budget: boolean
   updated_at: string
   created_at: string
+}
+
+export type BillingPlanRecord = {
+  code: BillingPlanCode
+  display_name: string
+  monthly_price_usd: number
+  included_active_projects: number
+  included_concept_runs: number
+  included_preview_generations: number
+  included_render_batches: number
+  included_final_exports: number
+  included_storage_bytes: number
+  max_concurrent_preview_jobs: number
+  max_concurrent_render_jobs: number
+  allow_share_links: boolean
+  allow_public_showcase: boolean
+  allow_share_campaigns: boolean
+  allow_delivery_workspaces: boolean
+  allow_external_batch_reviews: boolean
+  watermark_exports: boolean
+  allow_manual_invoice: boolean
+  allow_overage: boolean
+  monthly_overage_cap_usd: number
+  concept_run_overage_usd: number
+  preview_generation_overage_usd: number
+  render_batch_overage_usd: number
+  storage_gb_month_overage_usd: number
+  internal_total_cost_ceiling_usd: number
+  internal_openai_cost_ceiling_usd: number
+  internal_runway_cost_ceiling_usd: number
+  sort_order: number
+  is_active: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type OwnerBillingAccountRecord = {
+  owner_id: string
+  stripe_customer_id: string | null
+  stripe_default_payment_method_id: string | null
+  billing_country: string | null
+  checkout_preference: CheckoutPreference
+  tax_exempt: boolean
+  stablecoin_eligible: boolean
+  manual_invoice_allowed: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type OwnerSubscriptionRecord = {
+  id: string
+  owner_id: string
+  plan_code: BillingPlanCode
+  provider: string
+  status: OwnerSubscriptionStatus
+  stripe_subscription_id: string | null
+  stripe_subscription_item_id: string | null
+  stripe_price_id: string | null
+  stripe_checkout_session_id: string | null
+  current_period_start: string
+  current_period_end: string
+  cancel_at_period_end: boolean
+  cancelled_at: string | null
+  payment_failed_at: string | null
+  grace_period_ends_at: string | null
+  downgrade_to_plan_code: BillingPlanCode | null
+  overage_cap_usd: number
+  manual_payment_reference: string | null
+  metadata: Record<string, unknown>
+  created_at: string
+  updated_at: string
+}
+
+export type BillingUsageRollupRecord = {
+  id: string
+  owner_id: string
+  plan_code: BillingPlanCode
+  period_start: string
+  period_end: string
+  active_projects_used: number
+  concept_runs_used: number
+  preview_generations_used: number
+  render_batches_used: number
+  final_exports_used: number
+  storage_bytes_used: number
+  provider_cost_usd: number
+  projected_overage_usd: number
+  created_at: string
+  updated_at: string
+}
+
+export type BillingEventRecord = {
+  id: string
+  owner_id: string | null
+  subscription_id: string | null
+  provider: string
+  provider_event_id: string | null
+  event_type: string
+  event_status: "received" | "processed" | "ignored" | "failed"
+  summary: string | null
+  payload: Record<string, unknown>
+  event_occurred_at: string
+  processed_at: string | null
+  created_at: string
+}
+
+export type EffectiveOwnerLimits = {
+  plan: BillingPlanRecord
+  subscription: OwnerSubscriptionRecord
+  billingAccount: OwnerBillingAccountRecord | null
+  usage: BillingUsageRollupRecord
+  guardrails: OwnerGuardrailsRecord
+  hardCaps: {
+    activeProjects: number
+    conceptRuns: number
+    previewGenerations: number
+    renderBatches: number
+    finalExports: number
+    storageBytes: number
+    concurrentPreviewJobs: number
+    concurrentRenderJobs: number
+  }
+  featureAccess: {
+    allowShareLinks: boolean
+    allowPublicShowcase: boolean
+    allowShareCampaigns: boolean
+    allowDeliveryWorkspaces: boolean
+    allowExternalBatchReviews: boolean
+    watermarkExports: boolean
+    allowManualInvoice: boolean
+  }
+  budgets: {
+    autoBlockOnBudget: boolean
+    monthlyTotalBudgetUsd: number
+    monthlyOpenaiBudgetUsd: number
+    monthlyRunwayBudgetUsd: number
+    monthlyOverageCapUsd: number
+    projectedOverageUsd: number
+    providerCostUsd: number
+  }
+  generationBlocked: boolean
+  generationBlockReason: string | null
 }
 
 export type ApprovalRecord = {

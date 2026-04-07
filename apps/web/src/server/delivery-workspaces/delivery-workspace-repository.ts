@@ -2,7 +2,9 @@ import "server-only"
 import { randomBytes } from "node:crypto"
 import { createClient } from "@supabase/supabase-js"
 import { getServerEnvironment } from "@/lib/env"
+import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { hasPublicFeatureAccess } from "@/server/billing/billing-service"
 import type {
   AssetRecord,
   DeliveryApprovalSummary,
@@ -177,12 +179,21 @@ export async function getActiveDeliveryWorkspaceByToken(token: string) {
     return null
   }
 
-  return normalizeDeliveryWorkspace(
+  const workspace = normalizeDeliveryWorkspace(
     data as DeliveryWorkspaceRecord & {
       approval_summary: unknown
       follow_up_status: unknown
     }
   )
+
+  const allowed = await hasPublicFeatureAccess(
+    workspace.owner_id,
+    "allowDeliveryWorkspaces",
+    workspace.created_at,
+    createSupabaseAdminClient()
+  )
+
+  return allowed ? workspace : null
 }
 
 export async function listDeliveryWorkspaceExportsByWorkspaceIdForOwner(

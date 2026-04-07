@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getBillingGateDecision } from "@/server/billing/billing-service"
 import {
   createBatchReviewLink,
   getBatchReviewLinkByIdForOwner,
@@ -52,6 +53,15 @@ export async function createBatchReviewLinkAction(
 
   if (batch.is_finalized) {
     redirectWithFormError(path, "batch_finalized")
+  }
+
+  const billingDecision = await getBillingGateDecision(
+    user.id,
+    "create_batch_review_link"
+  )
+
+  if (!billingDecision.allowed) {
+    redirectWithFormError(path, billingDecision.code ?? "server_error")
   }
 
   const reviewerName = readValue(formData, "reviewer_name")

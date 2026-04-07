@@ -6,6 +6,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { getPublicEnvironment } from "@/lib/env"
 import { MODEST_WORDING_FORM_ERROR_CODE, validateRecordTextFields } from "@/lib/modest-wording/index"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getBillingGateDecision } from "@/server/billing/billing-service"
 import {
   listBatchReviewLinksByBatchIdForOwner
 } from "@/server/batch-reviews/batch-review-repository"
@@ -71,6 +72,15 @@ export async function upsertDeliveryWorkspaceAction(
 
   if (!project || !batch) {
     throw new Error("Required delivery context was not found")
+  }
+
+  const billingDecision = await getBillingGateDecision(
+    user.id,
+    "publish_delivery_workspace"
+  )
+
+  if (!billingDecision.allowed) {
+    redirect(`${path}?error=${encodeURIComponent(billingDecision.code ?? "server_error")}`)
   }
 
   const batchExports = await listExportsForRenderBatch({

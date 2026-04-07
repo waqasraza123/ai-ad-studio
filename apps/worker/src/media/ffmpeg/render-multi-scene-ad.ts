@@ -35,6 +35,7 @@ type RenderMultiSceneAdInput = {
   projectName: string
   workspacePath: string
   captionTimeline: CaptionCue[]
+  watermarkText?: string | null
 }
 
 function escapeDrawText(value: string) {
@@ -229,6 +230,20 @@ function buildCaptionFilters(
   return filters
 }
 
+function buildWatermarkFilters(input: {
+  watermarkText?: string | null
+}) {
+  if (!input.watermarkText) {
+    return []
+  }
+
+  const escapedText = escapeDrawText(input.watermarkText)
+
+  return [
+    `[vout]drawtext=text='${escapedText}':fontcolor=white@0.34:fontsize=28:x=w-tw-48:y=h-th-48[vwatermarked]`
+  ]
+}
+
 export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
   const { height, width } = getCanvasSize(input.aspectRatio)
   const ctaSvgPath = join(input.workspacePath, `cta-card-${input.aspectRatio.replace(":", "x")}.svg`)
@@ -291,7 +306,10 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     `[scenev]trim=duration=${input.ctaStartSeconds},setpts=PTS-STARTPTS[trimv]`,
     `[${ctaVideoInputIndex}:v]scale=${width}:${height},setsar=1[ctav]`,
     `[trimv][ctav]concat=n=2:v=1:a=0[finalbasev]`,
-    ...buildCaptionFilters(input.captionLayout, input.captionTimeline)
+    ...buildCaptionFilters(input.captionLayout, input.captionTimeline),
+    ...buildWatermarkFilters({
+      watermarkText: input.watermarkText
+    })
   ].join(";")
 
   await runCommand("ffmpeg", [
@@ -304,7 +322,7 @@ export async function renderMultiSceneAd(input: RenderMultiSceneAdInput) {
     "-filter_complex",
     filterComplex,
     "-map",
-    "[vout]",
+    input.watermarkText ? "[vwatermarked]" : "[vout]",
     "-map",
     `${voiceoverAudioInputIndex}:a`,
     "-c:v",

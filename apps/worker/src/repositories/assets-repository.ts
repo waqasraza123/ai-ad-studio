@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
+import { getEffectiveOwnerBillingLimits } from "@/billing/billing-limits"
 
 type ConceptPreviewAssetInsertRecord = {
   kind: "concept_preview"
@@ -56,6 +57,16 @@ export async function deleteConceptPreviewAssetsByProjectId(
   if (error) {
     throw new Error("Failed to clear concept preview assets")
   }
+
+  const { data } = await supabase
+    .from("projects")
+    .select("owner_id")
+    .eq("id", projectId)
+    .maybeSingle()
+
+  if (data?.owner_id) {
+    await getEffectiveOwnerBillingLimits(supabase, data.owner_id)
+  }
 }
 
 export async function deleteSceneVideoAssetsByProjectId(
@@ -71,6 +82,16 @@ export async function deleteSceneVideoAssetsByProjectId(
   if (error) {
     throw new Error("Failed to clear scene video assets")
   }
+
+  const { data } = await supabase
+    .from("projects")
+    .select("owner_id")
+    .eq("id", projectId)
+    .maybeSingle()
+
+  if (data?.owner_id) {
+    await getEffectiveOwnerBillingLimits(supabase, data.owner_id)
+  }
 }
 
 export async function createConceptPreviewAssets(
@@ -81,6 +102,10 @@ export async function createConceptPreviewAssets(
 
   if (error) {
     throw new Error("Failed to create concept preview assets")
+  }
+
+  if (assets[0]?.owner_id) {
+    await getEffectiveOwnerBillingLimits(supabase, assets[0].owner_id)
   }
 }
 
@@ -97,6 +122,10 @@ export async function createSceneVideoAssets(
 
   if (error) {
     throw new Error("Failed to create scene video assets")
+  }
+
+  if (assets[0]?.owner_id) {
+    await getEffectiveOwnerBillingLimits(supabase, assets[0].owner_id)
   }
 
   return data as {
@@ -130,6 +159,8 @@ export async function createRenderAsset(
     throw new Error("Failed to create render asset")
   }
 
+  await getEffectiveOwnerBillingLimits(supabase, asset.owner_id)
+
   return data as {
     id: string
     project_id: string
@@ -160,6 +191,8 @@ export async function createVoiceoverAsset(
   if (error) {
     throw new Error("Failed to create voiceover asset")
   }
+
+  await getEffectiveOwnerBillingLimits(supabase, asset.owner_id)
 
   return data as {
     id: string

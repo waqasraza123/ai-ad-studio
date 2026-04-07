@@ -1,5 +1,7 @@
 import "server-only"
+import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { hasPublicFeatureAccess } from "@/server/billing/billing-service"
 import type {
   ExportAspectRatio,
   ExportRecord,
@@ -140,7 +142,23 @@ export async function listPublishedShowcaseItems() {
     throw new Error("Failed to list published showcase items")
   }
 
-  return enrichShowcaseItems(supabase, (data ?? []) as ShowcaseBaseRecord[])
+  const items = (data ?? []) as ShowcaseBaseRecord[]
+  const access = await Promise.all(
+    items.map(async (item) => ({
+      allowed: await hasPublicFeatureAccess(
+        item.owner_id,
+        "allowPublicShowcase",
+        item.created_at,
+        createSupabaseAdminClient()
+      ),
+      item
+    }))
+  )
+
+  return enrichShowcaseItems(
+    supabase,
+    access.filter((entry) => entry.allowed).map((entry) => entry.item)
+  )
 }
 
 export async function getShowcaseItemByExportIdForOwner(

@@ -14,7 +14,14 @@ const serverEnvironmentSchema = z.object({
   R2_ACCOUNT_ID: z.string().min(1).optional(),
   R2_ACCESS_KEY_ID: z.string().min(1).optional(),
   R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
-  R2_BUCKET_NAME: z.string().min(1).optional()
+  R2_BUCKET_NAME: z.string().min(1).optional(),
+  STRIPE_SECRET_KEY: z.string().min(1).optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().min(1).optional(),
+  STRIPE_BILLING_PORTAL_CONFIGURATION_ID: z.string().min(1).optional(),
+  STRIPE_PRICE_STARTER_MONTHLY: z.string().min(1).optional(),
+  STRIPE_PRICE_GROWTH_MONTHLY: z.string().min(1).optional(),
+  STRIPE_PRICE_SCALE_MONTHLY: z.string().min(1).optional(),
+  BILLING_OPERATOR_SECRET: z.string().min(1).optional()
 })
 
 export type WebRuntimeReadiness = {
@@ -76,6 +83,14 @@ export function getServerEnvironment() {
     R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
     R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
     R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
-    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME
+    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_BILLING_PORTAL_CONFIGURATION_ID:
+      process.env.STRIPE_BILLING_PORTAL_CONFIGURATION_ID,
+    STRIPE_PRICE_STARTER_MONTHLY: process.env.STRIPE_PRICE_STARTER_MONTHLY,
+    STRIPE_PRICE_GROWTH_MONTHLY: process.env.STRIPE_PRICE_GROWTH_MONTHLY,
+    STRIPE_PRICE_SCALE_MONTHLY: process.env.STRIPE_PRICE_SCALE_MONTHLY,
+    BILLING_OPERATOR_SECRET: process.env.BILLING_OPERATOR_SECRET
   })
 }

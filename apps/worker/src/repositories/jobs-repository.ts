@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js"
-import { getOwnerConcurrencyLimit, getRetryDelaySeconds } from "@/lib/queue/config"
+import { getOwnerConcurrencyLimitForJob } from "@/billing/billing-limits"
+import { getRetryDelaySeconds } from "@/lib/queue/config"
 
 export type WorkerJobRecord = {
   id: string
@@ -59,7 +60,11 @@ export async function claimNextJob(supabase: SupabaseClient) {
   const queuedJobs = (data ?? []) as WorkerJobRecord[]
 
   for (const queuedJob of queuedJobs) {
-    const ownerLimit = getOwnerConcurrencyLimit(queuedJob.type)
+    const ownerLimit = await getOwnerConcurrencyLimitForJob(
+      supabase,
+      queuedJob.owner_id,
+      queuedJob.type
+    )
 
     const { count, error: countError } = await supabase
       .from("jobs")

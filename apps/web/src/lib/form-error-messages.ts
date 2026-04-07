@@ -42,6 +42,46 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
   showcase_not_found: "Showcase item could not be found.",
   approval_not_found: "Approval record could not be found.",
   share_link_failed: "Could not create or update the share link.",
+  billing_project_limit_reached:
+    "Your plan has reached its active project limit. Upgrade in Billing and plan to create another project.",
+  billing_concept_limit_reached:
+    "Your plan has reached its monthly concept-generation limit. Upgrade in Billing and plan to continue.",
+  billing_preview_limit_reached:
+    "Your plan has reached its monthly preview-generation limit. Upgrade in Billing and plan to continue.",
+  billing_render_batch_limit_reached:
+    "Your plan has reached its monthly render-batch limit. Upgrade in Billing and plan to continue.",
+  billing_export_limit_reached:
+    "Your plan has reached its monthly final export limit. Reduce batch size or upgrade in Billing and plan.",
+  billing_storage_limit_reached:
+    "Your plan has reached its storage limit. Remove assets or upgrade in Billing and plan.",
+  billing_overage_cap_reached:
+    "Your account has reached its monthly overage cap. Upgrade or wait for the next billing period.",
+  billing_upgrade_required_showcase:
+    "Your current plan does not include public showcase publishing. Upgrade in Billing and plan.",
+  billing_upgrade_required_campaign:
+    "Your current plan does not include public campaign publishing. Upgrade in Billing and plan.",
+  billing_upgrade_required_delivery:
+    "Your current plan does not include delivery workspace publishing. Upgrade in Billing and plan.",
+  billing_upgrade_required_external_review:
+    "Your current plan does not include external batch review links. Upgrade in Billing and plan.",
+  provider_cost_ceiling_reached:
+    "Generation is paused because your personal or operator safety budget ceiling has been reached.",
+  monthly_overage_cap_reached:
+    "Generation is paused because your monthly overage cap has been reached.",
+  subscription_payment_required:
+    "Generation is paused until the subscription payment issue is resolved.",
+  subscription_grace_period_expired:
+    "Generation is paused because the subscription grace period has expired.",
+  billing_generation_blocked:
+    "Generation is currently blocked by your billing state. Review Billing and plan.",
+  billing_checkout_unavailable:
+    "Checkout is not configured right now. Add Stripe billing settings and try again.",
+  billing_portal_unavailable:
+    "Billing portal is not available for this account yet.",
+  billing_plan_change_failed:
+    "The plan change could not be completed. Check billing setup and try again.",
+  billing_plan_change_unsupported:
+    "That plan change is not available through this action."
 }
 
 export function getFormErrorMessage(code: string | null | undefined): string | null {

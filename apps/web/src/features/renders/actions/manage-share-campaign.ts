@@ -5,6 +5,7 @@ import { MODEST_WORDING_FORM_ERROR_CODE, validateModestText } from "@/lib/modest
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getBillingGateDecision } from "@/server/billing/billing-service"
 import { getExportByIdForOwner } from "@/server/exports/export-repository"
 import { getProjectByIdForOwner } from "@/server/projects/project-repository"
 import { getPromotionEligibilityForExport } from "@/server/promotion/promotion-eligibility"
@@ -50,6 +51,15 @@ export async function publishShareCampaignAction(exportId: string, formData: For
 
   if (!project) {
     redirectWithFormError(path, "project_not_found")
+  }
+
+  const billingDecision = await getBillingGateDecision(
+    user.id,
+    "publish_share_campaign"
+  )
+
+  if (!billingDecision.allowed) {
+    redirectWithFormError(path, billingDecision.code ?? "server_error")
   }
 
   let campaignToken: string | null = null
