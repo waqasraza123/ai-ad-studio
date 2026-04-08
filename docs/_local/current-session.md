@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Fix the homepage hero preview readability issue where dense preview content and decorative floating cards overlap at intermediate desktop widths.
+Redesign the homepage hero preview section into a calmer editorial layout that keeps the same workflow meaning while improving hierarchy, spacing, and desktop readability.
 
 ## Last Completed Step
 
-Rebuilt the homepage hero preview area into a cleaner dashboard-style composition: the floating text cards are gone, the main preview now centers on a canonical-export board with compact checkpoint cards, and the shell height is content-driven instead of padded by large minimum-height guardrails.
+Rebuilt the hero preview again around a desktop-first editorial board: one dominant approved-campaign-package panel on the left, a vertical workflow checkpoint rail on the right, and cleaner grouped metadata/support cards with no overlapping text treatment.
 
 ## Current Step
 
-Implementation is complete and web verification passed. The next practical step is manual browser QA across mobile, tablet, intermediate laptop, and large desktop widths to confirm the redesigned preview reads cleanly in real rendering.
+Implementation is complete and targeted web verification passed. The next practical step is manual browser QA across mobile, tablet, intermediate laptop, and large desktop widths to confirm spacing and scanability in real rendering.
 
 ## Scope Boundaries
 
@@ -26,13 +26,13 @@ Implementation is complete and web verification passed. The next practical step 
 ## Likely Files To Touch Next
 
 - `apps/web/src/components/marketing/hero-preview.tsx`
-- `apps/web/src/app/globals.css`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
 
-- Keep the current premium hero-preview concept; do not replace it with a totally different hero visual.
-- Prefer readability and container safety over decorative density.
+- Keep the soft pink / muted editorial language.
+- Preserve the existing homepage workflow content structure and product meaning.
+- Prefer readability, alignment, and whitespace over decorative density.
 - Limit changes to homepage presentation/layout; no API, schema, or route changes.
 
 ## Verification Commands
@@ -44,9 +44,8 @@ Implementation is complete and web verification passed. The next practical step 
 ## Lookup Notes
 
 - Hero preview component: `apps/web/src/components/marketing/hero-preview.tsx`
-- Shared homepage styling: `apps/web/src/app/globals.css`
 - Hero section composition: `apps/web/src/components/marketing/hero-section.tsx`
 
 ## Expected Result
 
-The homepage hero preview should stay readable across viewport transitions, with no stacked text collisions, no clipped main content, and no text-bearing overlays bleeding through the primary preview area.
+The homepage hero preview should read as a polished editorial SaaS board with a clear focal point on the approved package, easily scanned workflow checkpoints, and no overlap or clipped content across responsive breakpoints.
