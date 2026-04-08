@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Redesign the homepage hero preview section with a strict simplification-first approach so the narrow desktop split stays light, airy, and fully readable.
+Keep the simplified homepage hero preview intact while restoring the old demo sign-in affordance only on the `/login` page behind a hidden reveal action.
 
 ## Last Completed Step
 
-Reduced the hero preview to one primary approved-campaign-package card plus a compact 3-step checkpoint rail, collapsing metadata into short rows and removing the extra explanatory panels that were making the section feel heavy.
+Added a login-page-only demo sign-in reveal inside the sign-in form: the old admin demo email is no longer shown in the homepage top bar, but can now be expanded on `/login` and used to prefill the sign-in email.
 
 ## Current Step
 
-Implementation is complete and targeted web verification passed. The next practical step is manual browser QA at the problematic desktop width plus tablet/mobile widths to confirm the reduced layout reads cleanly without overlap or clipping.
+Implementation is complete and targeted web verification passed. The next practical step is manual browser QA on `/login` to confirm the reveal animation, copy, and prefill flow feel intentional and unobtrusive.
 
 ## Scope Boundaries
 
@@ -25,7 +25,8 @@ Implementation is complete and targeted web verification passed. The next practi
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/components/marketing/hero-preview.tsx`
+- `apps/web/src/components/auth/auth-panel.tsx`
+- `apps/web/src/components/auth/demo-sign-in-reveal.tsx`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
@@ -45,9 +46,10 @@ Implementation is complete and targeted web verification passed. The next practi
 
 ## Lookup Notes
 
-- Hero preview component: `apps/web/src/components/marketing/hero-preview.tsx`
-- Hero section composition: `apps/web/src/components/marketing/hero-section.tsx`
+- Login page: `apps/web/src/app/login/page.tsx`
+- Auth panel: `apps/web/src/components/auth/auth-panel.tsx`
+- Demo reveal: `apps/web/src/components/auth/demo-sign-in-reveal.tsx`
 
 ## Expected Result
 
-The homepage hero preview should read as a quiet editorial SaaS panel with one clear approved-package focal point, only a few compact workflow checkpoints, and no clipped or colliding text at the narrow desktop split.
+The homepage stays free of demo credential clutter, while the sign-in page provides a small animated reveal that exposes the demo admin email and prefill action without dominating the auth UI.

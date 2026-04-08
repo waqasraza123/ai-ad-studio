@@ -1,6 +1,7 @@
 import { LockKeyhole, UserRoundPlus } from "lucide-react"
 import { signInWithPassword, signUpWithPassword } from "@/app/login/actions"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
+import { DemoSignInReveal } from "@/components/auth/demo-sign-in-reveal"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
@@ -9,6 +10,8 @@ type AuthPanelProps = {
   infoMessage?: string
   defaultSignInEmail?: string
 }
+
+const ADMIN_DEMO_EMAIL = "admin@gmail.com"
 
 export function AuthPanel({
   errorMessage,
@@ -37,8 +40,8 @@ export function AuthPanel({
               Protected application area
             </p>
             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Dashboard routes are now gated by authenticated session checks when
-              Supabase credentials are present.
+              Dashboard routes are now gated by authenticated session checks
+              when Supabase credentials are present.
             </p>
           </div>
 
@@ -78,28 +81,39 @@ export function AuthPanel({
                 <LockKeyhole className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
               </div>
               <div>
-                <p className="text-sm font-medium text-[var(--foreground)]">Sign in</p>
+                <p className="text-sm font-medium text-[var(--foreground)]">
+                  Sign in
+                </p>
                 <p className="text-sm text-[var(--muted-foreground)]">
                   Access the protected dashboard shell.
                 </p>
               </div>
             </div>
 
+            <DemoSignInReveal
+              email={ADMIN_DEMO_EMAIL}
+              subtext={process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_SUBTEXT?.trim()}
+            />
+
             <div className="mt-5 grid gap-3">
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Email</span>
+                <span className="text-sm text-[var(--soft-foreground)]">
+                  Email
+                </span>
                 <input
                   name="email"
                   type="email"
                   autoComplete="email"
                   defaultValue={defaultSignInEmail ?? undefined}
                   className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
-                  placeholder="waqas@example.com"
+                  placeholder="john@example.com"
                 />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Password</span>
+                <span className="text-sm text-[var(--soft-foreground)]">
+                  Password
+                </span>
                 <input
                   name="password"
                   type="password"
@@ -137,18 +151,22 @@ export function AuthPanel({
 
             <div className="mt-5 grid gap-3">
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Email</span>
+                <span className="text-sm text-[var(--soft-foreground)]">
+                  Email
+                </span>
                 <input
                   name="email"
                   type="email"
                   autoComplete="email"
                   className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
-                  placeholder="waqas@example.com"
+                  placeholder="john@example.com"
                 />
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Password</span>
+                <span className="text-sm text-[var(--soft-foreground)]">
+                  Password
+                </span>
                 <input
                   name="password"
                   type="password"
