@@ -23,6 +23,20 @@ type StripeSubscriptionShape = {
   status?: string
 }
 
+type StripeBalanceShape = {
+  object?: string
+}
+
+export type StripePriceShape = {
+  active?: boolean
+  currency?: string
+  id: string
+  recurring?: {
+    interval?: string
+  } | null
+  type?: string
+}
+
 function getStripeServerEnvironment() {
   const environment = getServerEnvironment()
 
@@ -91,7 +105,7 @@ async function stripeRequest<T>(
   }
 ) {
   const environment = getStripeServerEnvironment()
-  const method = input?.body ? "POST" : input?.method ?? "GET"
+  const method = input?.body ? "POST" : (input?.method ?? "GET")
   const response = await fetch(`https://api.stripe.com/v1/${path}`, {
     body: input?.body?.toString(),
     headers: {
@@ -124,8 +138,14 @@ export async function createStripeCheckoutSession(input: {
   const priceId = buildPlanPriceId(input.planCode)
 
   params.set("mode", "subscription")
-  params.set("success_url", `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=success`)
-  params.set("cancel_url", `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=cancelled`)
+  params.set(
+    "success_url",
+    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=success`
+  )
+  params.set(
+    "cancel_url",
+    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=cancelled`
+  )
   params.append("payment_method_types[]", "card")
   params.append("payment_method_types[]", "crypto")
   params.set("metadata[ownerId]", input.ownerId)
@@ -141,7 +161,10 @@ export async function createStripeCheckoutSession(input: {
     params.set("line_items[0][price]", priceId)
   } else {
     params.set("line_items[0][price_data][currency]", "usd")
-    params.set("line_items[0][price_data][product_data][name]", buildPlanName(input.planCode))
+    params.set(
+      "line_items[0][price_data][product_data][name]",
+      buildPlanName(input.planCode)
+    )
     params.set(
       "line_items[0][price_data][unit_amount]",
       String(buildPlanPriceUsd(input.planCode) * 100)
@@ -197,7 +220,9 @@ export async function updateStripeSubscriptionPlan(input: {
   const priceId = buildPlanPriceId(input.planCode)
 
   if (!priceId) {
-    throw new Error("A Stripe price id is required to change plans on an active subscription")
+    throw new Error(
+      "A Stripe price id is required to change plans on an active subscription"
+    )
   }
 
   const params = new URLSearchParams()
@@ -245,6 +270,15 @@ export async function retrieveStripeSubscription(stripeSubscriptionId: string) {
   return stripeRequest<StripeSubscriptionShape>(
     `subscriptions/${stripeSubscriptionId}`
   )
+}
+
+export async function checkStripeApiConnectivity() {
+  const balance = await stripeRequest<StripeBalanceShape>("balance")
+  return balance.object === "balance"
+}
+
+export async function retrieveStripePrice(priceId: string) {
+  return stripeRequest<StripePriceShape>(`prices/${priceId}`)
 }
 
 export function verifyStripeWebhookSignature(input: {

@@ -1,4 +1,3 @@
-
 Contributing to AI Ad Studio
 
 Thanks for contributing.
@@ -45,6 +44,10 @@ Make one cohesive change
 
 Run the full check suite
 
+Install the repo-managed Git hooks:
+
+`pnpm hooks:setup`
+
 Open a pull request with a clear description
 
 Example branch names:
@@ -66,6 +69,26 @@ pnpm typecheck
 pnpm test
 
 pnpm build
+
+Safe push workflow
+
+This repo uses a versioned Git pre-push hook in `.githooks/pre-push`.
+
+Once hooks are installed with `pnpm hooks:setup`, a normal `git push` will run:
+
+`./scripts/verify-push.sh`
+
+That verifier currently blocks the push unless:
+
+`pnpm build`
+
+passes successfully.
+
+AI-friendly command:
+
+`pnpm safe-push -- <git push args>`
+
+`pnpm safe-push` installs the versioned hook path in the current clone, runs the shared verifier once, and then executes `git push` without duplicating that same verification inside the hook.
 
 If your change touches runtime flows, also verify the affected app locally:
 
@@ -124,4 +147,3 @@ contributor expectations
 Security
 
 Do not open a public issue for a security vulnerability. Follow SECURITY.md.
-

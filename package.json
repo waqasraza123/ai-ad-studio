@@ -12,10 +12,14 @@
     "dev:worker": "pnpm --filter @ai-ad-studio/worker dev",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "hooks:setup": "git config core.hooksPath .githooks",
     "lint": "turbo lint",
+    "safe-push": "./scripts/safe-push.sh",
+    "smoke:billing": "tsx scripts/checks/billing-runtime-smoke.ts",
     "smoke:runtime": "tsx scripts/checks/runtime-smoke.ts",
     "test": "turbo test",
     "typecheck": "turbo typecheck",
+    "verify:push": "./scripts/verify-push.sh",
     "verify:phase-31": "./scripts/checks/verify-phase-31.sh"
   },
   "devDependencies": {

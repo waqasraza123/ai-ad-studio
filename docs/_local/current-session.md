@@ -2,19 +2,19 @@
 
 ## Date
 
-2026-04-07
+2026-04-08
 
 ## Current Objective
 
-Implement owner-account subscription billing with restrictive free/paid plan limits, Stripe card + stablecoin checkout, and shared enforcement across web actions and worker execution.
+Add a production-grade repo-managed safe push workflow with a versioned pre-push hook, shared verifier, wrapper command, package scripts, docs, and local clone setup.
 
 ## Last Completed Step
 
-Added the Phase 33 billing schema, effective-limit services, Stripe checkout/portal/webhook routes, billing settings UI, worker-side billing/concurrency enforcement, and free-plan export watermarking. Web `typecheck`, worker `typecheck`, and web `build` now pass.
+Added `.githooks/pre-push`, `scripts/verify-push.sh`, and `scripts/safe-push.sh`; wired root `package.json` scripts for `pnpm hooks:setup`, `pnpm verify:push`, and `pnpm safe-push`; documented the flow in `CONTRIBUTING.md`; and applied the hook path in this clone with `git config --local core.hooksPath .githooks`.
 
 ## Current Step
 
-Implementation is complete and verified at compile/build level. The next practical step is runtime validation with real Stripe secrets/webhook delivery plus end-to-end dashboard checks for upgrade, downgrade, and blocked-limit paths.
+Implementation and local verification are complete. The next practical step is deciding whether push verification should stay build-only or expand later to lint/typecheck/test in the same shared verifier.
 
 ## Scope Boundaries
 
@@ -25,35 +25,35 @@ Implementation is complete and verified at compile/build level. The next practic
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/server/billing/*`
-- `apps/web/src/features/settings/*`
-- `apps/web/src/app/api/billing/*`
-- `apps/worker/src/billing/*`
-- `supabase/migrations/202604071100_phase_33_billing_subscriptions.sql`
-- `docs/project-state.md`
+- `.githooks/pre-push`
+- `scripts/verify-push.sh`
+- `scripts/safe-push.sh`
+- `package.json`
+- `CONTRIBUTING.md`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
 
-- Do not treat `owner_guardrails` as purchased limits anymore.
-- Keep web and worker enforcement aligned through the billing services, not duplicated ad hoc checks.
-- Stripe env vars are required for live checkout, portal, and webhook reconciliation.
-- Worker metering and asset writes now also serve billing rollup freshness, so changes there affect subscription UX.
+- Normal `git push` must be blocked by the versioned pre-push hook when `pnpm build` fails.
+- `pnpm safe-push` must remain the explicit AI-friendly wrapper command.
+- `pnpm safe-push` should not pay for duplicate hook verification after it already ran the shared verifier.
+- Hook setup must stay clone-local through `git config --local core.hooksPath .githooks`.
 
 ## Verification Commands
 
-- `pnpm --filter @ai-ad-studio/web typecheck`
-- `pnpm --filter @ai-ad-studio/worker typecheck`
-- `pnpm --filter @ai-ad-studio/web build`
+- `bash -n .githooks/pre-push scripts/verify-push.sh scripts/safe-push.sh`
+- `pnpm hooks:setup`
+- `pnpm verify:push`
+- `pnpm safe-push -- --dry-run <temporary-remote> HEAD:refs/heads/<branch>`
+- direct hook failure simulation with a temporary fake `pnpm` that exits non-zero for `pnpm build`
 
 ## Lookup Notes
 
-- Core web billing service: `apps/web/src/server/billing/billing-service.ts`
-- Stripe REST + webhook verification helper: `apps/web/src/server/billing/stripe.ts`
-- Billing settings surface: `apps/web/src/features/settings/components/billing-plan-panel.tsx`
-- Worker billing enforcement: `apps/worker/src/billing/billing-limits.ts`
-- Schema seed and policies: `supabase/migrations/202604071100_phase_33_billing_subscriptions.sql`
+- Versioned hook entrypoint: `.githooks/pre-push`
+- Shared push verifier: `scripts/verify-push.sh`
+- AI-friendly wrapper: `scripts/safe-push.sh`
+- Contributor instructions: `CONTRIBUTING.md`
 
 ## Expected Result
 
-Future work should assume billing entitlements are first-class runtime state. Any new billable generation, publishing, or concurrency-sensitive workflow should plug into the billing services before adding UI affordances.
+Contributors and agents can rely on a repo-managed push safety workflow: install hooks once per clone with `pnpm hooks:setup`, use normal `git push` with hook enforcement, or use `pnpm safe-push -- ...` for an explicit wrapper that verifies once and then pushes.

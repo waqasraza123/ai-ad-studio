@@ -7,6 +7,7 @@ AI Ad Studio is a constrained ad-generation system for product marketing teams. 
 `brief -> concepts -> previews -> render batches -> review -> canonical winner -> promotion -> delivery`
 
 Public surfaces are intentionally separate:
+
 - campaign pages for public promotion of finalized canonical winners
 - delivery pages for client handoff from finalized canonical exports
 - share links for lighter single-export sharing
@@ -19,6 +20,8 @@ Public surfaces are intentionally separate:
 - `packages/shared`, `packages/config`, `packages/ui`, `packages/providers`, and `packages/media` hold shared contracts, config, UI primitives, provider adapters, and media utilities.
 - Supabase is the durable system of record for auth, workflow state, notifications, job traces, and delivery workspace events. Schema changes live in `supabase/migrations`.
 - Billing is now a separate schema-backed domain: plan definitions, owner billing accounts, owner subscriptions, billing usage rollups, and billing event audit records all live in Supabase and are no longer inferred from `owner_guardrails`.
+- Billing deployment validation now has an operator-protected diagnostics surface at `/api/billing/operator/runtime` plus the deploy smoke harness `scripts/checks/billing-runtime-smoke.ts` for Stripe/API-plan readiness checks.
+- Repo-managed Git hooks now live under `.githooks`; the versioned pre-push hook delegates to `scripts/verify-push.sh` and currently blocks pushes when `pnpm build` fails.
 - Cloudflare R2 backs asset and media storage.
 - Delivery follow-up reminders now span web UI, worker reminder sweeps, and SQL-side atomic notification creation.
 
@@ -58,6 +61,8 @@ Public surfaces are intentionally separate:
 - Delivery workspaces are anchored to the canonical finalized export even when they include multiple batch exports.
 - Billing enforcement now flows through an effective-limit service that clamps plan entitlements, user safety caps, and operator ceilings before either web actions or worker execution can proceed.
 - Stripe is the primary self-serve billing rail for cards plus stablecoin checkout; manual stablecoin settlement is a protected operator path, not the default self-serve flow.
+- Billing runtime diagnostics are operator-scoped and non-destructive: they validate Stripe API connectivity, paid-plan price readiness, and seeded billing-plan presence before live dashboard checks.
+- Contributor push safety is repo-managed rather than ad hoc: use `pnpm hooks:setup` for clone setup, `pnpm verify:push` for the shared gate, and `pnpm safe-push -- ...` as the AI-friendly wrapper around `git push`.
 - Delivery follow-up reminders use workspace checkpoint fields plus the SQL function `create_delivery_follow_up_reminder_notification(...)` for duplicate-safe atomic notification writes.
 - Delivery support activity is expected to stay auditable through `notifications`, `job_traces`, and `delivery_workspace_events`.
 - The web app `typecheck` command now runs `next typegen` before `tsc --noEmit --incremental false` so clean checkouts do not depend on a prior build and stale `.tsbuildinfo` state does not pin missing `.next/types/*` files.
@@ -88,3 +93,4 @@ Public surfaces are intentionally separate:
 - `pnpm typecheck`
 - `pnpm verify:phase-31`
 - `SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime`
+- `SMOKE_BASE_URL=https://your-app.example.com SMOKE_BILLING_OPERATOR_SECRET=... pnpm smoke:billing`
