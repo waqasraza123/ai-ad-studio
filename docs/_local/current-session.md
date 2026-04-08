@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Redesign the homepage hero preview section into a calmer editorial layout that keeps the same workflow meaning while improving hierarchy, spacing, and desktop readability.
+Redesign the homepage hero preview section with a strict simplification-first approach so the narrow desktop split stays light, airy, and fully readable.
 
 ## Last Completed Step
 
-Rebuilt the hero preview again around a desktop-first editorial board: one dominant approved-campaign-package panel on the left, a vertical workflow checkpoint rail on the right, and cleaner grouped metadata/support cards with no overlapping text treatment.
+Reduced the hero preview to one primary approved-campaign-package card plus a compact 3-step checkpoint rail, collapsing metadata into short rows and removing the extra explanatory panels that were making the section feel heavy.
 
 ## Current Step
 
-Implementation is complete and targeted web verification passed. The next practical step is manual browser QA across mobile, tablet, intermediate laptop, and large desktop widths to confirm spacing and scanability in real rendering.
+Implementation is complete and targeted web verification passed. The next practical step is manual browser QA at the problematic desktop width plus tablet/mobile widths to confirm the reduced layout reads cleanly without overlap or clipping.
 
 ## Scope Boundaries
 
@@ -32,6 +32,8 @@ Implementation is complete and targeted web verification passed. The next practi
 
 - Keep the soft pink / muted editorial language.
 - Preserve the existing homepage workflow content structure and product meaning.
+- Prefer subtraction over preservation when space is constrained.
+- Keep only one strong primary card and a lighter supporting column.
 - Prefer readability, alignment, and whitespace over decorative density.
 - Limit changes to homepage presentation/layout; no API, schema, or route changes.
 
@@ -48,4 +50,4 @@ Implementation is complete and targeted web verification passed. The next practi
 
 ## Expected Result
 
-The homepage hero preview should read as a polished editorial SaaS board with a clear focal point on the approved package, easily scanned workflow checkpoints, and no overlap or clipped content across responsive breakpoints.
+The homepage hero preview should read as a quiet editorial SaaS panel with one clear approved-package focal point, only a few compact workflow checkpoints, and no clipped or colliding text at the narrow desktop split.
