@@ -9,14 +9,18 @@ type AuthPanelProps = {
   errorMessage?: string
   infoMessage?: string
   defaultSignInEmail?: string
+  defaultSignInPassword?: string
 }
 
 const ADMIN_DEMO_EMAIL = "admin@gmail.com"
+const ADMIN_DEMO_PASSWORD =
+  process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_PASSWORD?.trim() ?? ""
 
 export function AuthPanel({
   errorMessage,
   infoMessage,
-  defaultSignInEmail
+  defaultSignInEmail,
+  defaultSignInPassword
 }: AuthPanelProps) {
   return (
     <div className="grid gap-6 xl:grid-cols-2">
@@ -92,6 +96,7 @@ export function AuthPanel({
 
             <DemoSignInReveal
               email={ADMIN_DEMO_EMAIL}
+              password={ADMIN_DEMO_PASSWORD}
               subtext={process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_SUBTEXT?.trim()}
             />
 
@@ -118,6 +123,7 @@ export function AuthPanel({
                   name="password"
                   type="password"
                   autoComplete="current-password"
+                  defaultValue={defaultSignInPassword ?? undefined}
                   className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
                   placeholder="••••••••"
                 />

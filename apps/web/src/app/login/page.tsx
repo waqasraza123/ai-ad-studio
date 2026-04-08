@@ -49,6 +49,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const errorMessage = getFormErrorMessage(readSearchParam(params, "error"))
   const infoMessage = readSearchParam(params, "message")
   const defaultEmail = readSearchParam(params, "email")
+  const defaultPassword = readSearchParam(params, "password")
 
   return (
     <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
@@ -59,6 +60,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             errorMessage={errorMessage ?? undefined}
             infoMessage={infoMessage}
             defaultSignInEmail={defaultEmail}
+            defaultSignInPassword={defaultPassword}
           />
         </div>
       </div>

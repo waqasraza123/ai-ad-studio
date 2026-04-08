@@ -7,11 +7,13 @@ import { ChevronDown, LogIn } from "lucide-react"
 
 type DemoSignInRevealProps = {
   email: string
+  password?: string
   subtext?: string
 }
 
 export function DemoSignInReveal({
   email,
+  password,
   subtext
 }: DemoSignInRevealProps) {
   const [isOpen, setIsOpen] = useState(false)
@@ -47,18 +49,40 @@ export function DemoSignInReveal({
               <p className="text-[0.68rem] font-medium uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
                 Demo access
               </p>
-              <p className="mt-2 font-mono text-sm text-[var(--foreground)]">
-                {email}
-              </p>
+              <div className="mt-3 space-y-3">
+                <div>
+                  <p className="text-[0.68rem] font-medium uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+                    Email
+                  </p>
+                  <p className="mt-1 font-mono text-sm text-[var(--foreground)]">
+                    {email}
+                  </p>
+                </div>
+                {password ? (
+                  <div>
+                    <p className="text-[0.68rem] font-medium uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+                      Password
+                    </p>
+                    <p className="mt-1 font-mono text-sm text-[var(--foreground)]">
+                      {password}
+                    </p>
+                  </div>
+                ) : null}
+              </div>
               <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-                {subtext ?? "Prefills the demo administrator email on this page."}
+                {subtext ??
+                  "Prefills the demo administrator credentials on this page."}
               </p>
               <Link
-                href={`/login?email=${encodeURIComponent(email)}`}
+                href={`/login?email=${encodeURIComponent(email)}${
+                  password
+                    ? `&password=${encodeURIComponent(password)}`
+                    : ""
+                }`}
                 className="theme-inline-secondary-button mt-4 inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium"
               >
                 <LogIn className="h-4 w-4" />
-                <span className="ml-2">Prefill demo email</span>
+                <span className="ml-2">Prefill demo credentials</span>
               </Link>
             </div>
           </motion.div>

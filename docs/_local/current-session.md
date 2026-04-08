@@ -10,11 +10,11 @@ Keep the simplified homepage hero preview intact while restoring the old demo si
 
 ## Last Completed Step
 
-Added a login-page-only demo sign-in reveal inside the sign-in form: the old admin demo email is no longer shown in the homepage top bar, but can now be expanded on `/login` and used to prefill the sign-in email.
+Expanded the login-page-only demo sign-in reveal so it now exposes both the public demo email and `NEXT_PUBLIC_HOME_DEMO_SIGNIN_PASSWORD`, and the prefill action now hydrates both sign-in fields on `/login`.
 
 ## Current Step
 
-Implementation is complete and targeted web verification passed. The next practical step is manual browser QA on `/login` to confirm the reveal animation, copy, and prefill flow feel intentional and unobtrusive.
+Implementation is complete and targeted web verification passed. The next practical step is manual browser QA on `/login` to confirm the reveal animation and the email/password prefill flow feel intentional and unobtrusive.
 
 ## Scope Boundaries
 
@@ -52,4 +52,4 @@ Implementation is complete and targeted web verification passed. The next practi
 
 ## Expected Result
 
-The homepage stays free of demo credential clutter, while the sign-in page provides a small animated reveal that exposes the demo admin email and prefill action without dominating the auth UI.
+The homepage stays free of demo credential clutter, while the sign-in page provides a small animated reveal that exposes the demo email and password and prefills both fields without dominating the auth UI.
