@@ -1,17 +1,34 @@
+import { FaqCtaSection } from "@/components/marketing/faq-cta-section"
 import { FeatureGrid } from "@/components/marketing/feature-grid"
-import { WorkflowStrip } from "@/components/marketing/demo-strip"
+import { FeaturedShowcaseSection } from "@/components/marketing/featured-showcase-section"
 import { HeroSection } from "@/components/marketing/hero-section"
+import {
+  mapHomepageFeaturedShowcaseItems,
+  mapHomepagePricingPlans
+} from "@/components/marketing/homepage-data"
 import { LandingTopBar } from "@/components/marketing/landing-top-bar"
-import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
+import { PricingSnapshotSection } from "@/components/marketing/pricing-snapshot-section"
+import { WorkflowStrip } from "@/components/marketing/demo-strip"
+import { listBillingPlans } from "@/server/billing/billing-service"
+import { listPublishedShowcaseItems } from "@/server/showcase/showcase-repository"
 
-export default function HomePage() {
+export default async function HomePage() {
+  const [billingPlans, showcaseItems] = await Promise.all([
+    listBillingPlans(),
+    listPublishedShowcaseItems()
+  ])
+  const featuredShowcaseItems = mapHomepageFeaturedShowcaseItems(showcaseItems)
+  const homepagePricingPlans = mapHomepagePricingPlans(billingPlans)
+
   return (
     <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
-      <RuntimeSetupLauncher context="homepage" autoOpenOnFirstVisit showTrigger={false} />
       <LandingTopBar />
-      <HeroSection />
+      <HeroSection featuredSampleCount={featuredShowcaseItems.length} />
+      <FeaturedShowcaseSection items={featuredShowcaseItems} />
       <WorkflowStrip />
       <FeatureGrid />
+      <PricingSnapshotSection plans={homepagePricingPlans} />
+      <FaqCtaSection />
     </main>
   )
 }

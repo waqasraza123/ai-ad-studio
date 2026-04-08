@@ -79,7 +79,10 @@ function readStoredPreference() {
       window.localStorage.getItem(LEGACY_THEME_STORAGE_KEY)
     )
   } catch (error) {
-    console.error("ThemePaletteProvider failed to read stored preference", error)
+    console.error(
+      "ThemePaletteProvider failed to read stored preference",
+      error
+    )
     return null
   }
 }
@@ -93,7 +96,10 @@ function persistPreference(preference: ThemePalettePreference) {
 }
 
 function prefersReducedMotion() {
-  if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+  if (
+    typeof window === "undefined" ||
+    typeof window.matchMedia !== "function"
+  ) {
     return false
   }
 
@@ -104,7 +110,7 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
   const [paletteMode, setPaletteMode] = useState<ThemePaletteMode>("auto")
-  const [colorMode, setColorMode] = useState<ThemeColorMode>("dark")
+  const [colorMode, setColorMode] = useState<ThemeColorMode>("light")
   const [manualPaletteId, setManualPaletteId] = useState(DEFAULT_THEME_ID)
   const [autoIndex, setAutoIndex] = useState(0)
 
@@ -121,7 +127,7 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
     const storedPreference = readStoredPreference()
     if (!storedPreference) {
       setPaletteMode(prefersReducedMotion() ? "manual" : "auto")
-      setColorMode("dark")
+      setColorMode("light")
       setManualPaletteId(DEFAULT_THEME_ID)
       setAutoIndex(0)
       return
@@ -132,7 +138,11 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
     if (storedPreference.paletteMode === "manual") {
       setPaletteMode("manual")
       setManualPaletteId(storedPreference.selectedPaletteId)
-      setAutoIndex(themePalettes.findIndex((p) => p.id === storedPreference.selectedPaletteId))
+      setAutoIndex(
+        themePalettes.findIndex(
+          (p) => p.id === storedPreference.selectedPaletteId
+        )
+      )
       return
     }
 
@@ -145,7 +155,11 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
 
     setPaletteMode("auto")
     setManualPaletteId(storedPreference.selectedPaletteId)
-    setAutoIndex(themePalettes.findIndex((p) => p.id === storedPreference.selectedPaletteId))
+    setAutoIndex(
+      themePalettes.findIndex(
+        (p) => p.id === storedPreference.selectedPaletteId
+      )
+    )
   }, [hydrated])
 
   const safeAutoIndex = autoIndex >= 0 ? autoIndex : 0
@@ -210,7 +224,9 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
         const nextPalette = findThemePaletteById(paletteId)
         setPaletteMode("manual")
         setManualPaletteId(nextPalette.id)
-        setAutoIndex(themePalettes.findIndex((palette) => palette.id === nextPalette.id))
+        setAutoIndex(
+          themePalettes.findIndex((palette) => palette.id === nextPalette.id)
+        )
       },
       resumeAuto: () => {
         const currentIndex = themePalettes.findIndex(
