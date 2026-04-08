@@ -10,11 +10,11 @@ Fix the homepage hero preview readability issue where dense preview content and 
 
 ## Last Completed Step
 
-Refactored the homepage hero preview to be content-driven instead of fixed-height: the preview shell now uses responsive min-height guardrails, the main preview content is no longer absolutely positioned, the internal layout stays stacked until wider breakpoints, and floating cards are reduced to perimeter accents that only appear on larger screens. Also shortened dense preview copy and reduced tile count to prevent text collisions.
+Rebuilt the homepage hero preview area into a cleaner dashboard-style composition: the floating text cards are gone, the main preview now centers on a canonical-export board with compact checkpoint cards, and the shell height is content-driven instead of padded by large minimum-height guardrails.
 
 ## Current Step
 
-Implementation is complete and repo-verified. The next practical step is manual browser QA across mobile, tablet, intermediate laptop, and large desktop widths to confirm the hero preview no longer overlaps visually in real rendering.
+Implementation is complete and web verification passed. The next practical step is manual browser QA across mobile, tablet, intermediate laptop, and large desktop widths to confirm the redesigned preview reads cleanly in real rendering.
 
 ## Scope Boundaries
 
@@ -49,4 +49,4 @@ Implementation is complete and repo-verified. The next practical step is manual 
 
 ## Expected Result
 
-The homepage hero preview should stay readable across viewport transitions, with no stacked text collisions, no clipped main content, and floating cards acting as secondary accents instead of overlapping the primary preview content.
+The homepage hero preview should stay readable across viewport transitions, with no stacked text collisions, no clipped main content, and no text-bearing overlays bleeding through the primary preview area.
