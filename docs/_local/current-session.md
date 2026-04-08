@@ -10,11 +10,11 @@ Keep the simplified homepage hero preview intact while restoring the old demo si
 
 ## Last Completed Step
 
-Expanded the login-page-only demo sign-in reveal so it now exposes both the public demo email and `NEXT_PUBLIC_HOME_DEMO_SIGNIN_PASSWORD`, and the prefill action now hydrates both sign-in fields on `/login`.
+Fixed the missing demo password issue by loading the repo-root `.env` into the Next app config and keeping the login-page demo reveal wired to expose and prefill both the public demo email and `NEXT_PUBLIC_HOME_DEMO_SIGNIN_PASSWORD`.
 
 ## Current Step
 
-Implementation is complete and targeted web verification passed. The next practical step is manual browser QA on `/login` to confirm the reveal animation and the email/password prefill flow feel intentional and unobtrusive.
+Implementation is complete and targeted web verification passed. The next practical step is manual browser QA on `/login` to confirm the reveal now visibly shows the password and the email/password prefill flow works in the browser.
 
 ## Scope Boundaries
 
@@ -49,6 +49,7 @@ Implementation is complete and targeted web verification passed. The next practi
 - Login page: `apps/web/src/app/login/page.tsx`
 - Auth panel: `apps/web/src/components/auth/auth-panel.tsx`
 - Demo reveal: `apps/web/src/components/auth/demo-sign-in-reveal.tsx`
+- Web app env loading: `apps/web/next.config.ts`
 
 ## Expected Result
 

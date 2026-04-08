@@ -4,6 +4,7 @@ import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { DemoSignInReveal } from "@/components/auth/demo-sign-in-reveal"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { getHomeDemoSignIn } from "@/lib/home-demo-signin"
 
 type AuthPanelProps = {
   errorMessage?: string
@@ -12,16 +13,14 @@ type AuthPanelProps = {
   defaultSignInPassword?: string
 }
 
-const ADMIN_DEMO_EMAIL = "admin@gmail.com"
-const ADMIN_DEMO_PASSWORD =
-  process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_PASSWORD?.trim() ?? ""
-
 export function AuthPanel({
   errorMessage,
   infoMessage,
   defaultSignInEmail,
   defaultSignInPassword
 }: AuthPanelProps) {
+  const demoSignIn = getHomeDemoSignIn()
+
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       <SurfaceCard className="p-8">
@@ -95,9 +94,9 @@ export function AuthPanel({
             </div>
 
             <DemoSignInReveal
-              email={ADMIN_DEMO_EMAIL}
-              password={ADMIN_DEMO_PASSWORD}
-              subtext={process.env.NEXT_PUBLIC_HOME_DEMO_SIGNIN_SUBTEXT?.trim()}
+              email={demoSignIn.email}
+              password={demoSignIn.password}
+              subtext={demoSignIn.subtext}
             />
 
             <div className="mt-5 grid gap-3">
