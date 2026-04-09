@@ -1,6 +1,7 @@
 "use client"
 
 import { MoonStar, SunMedium } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 import { useThemePalette } from "./theme-palette-provider"
 
@@ -12,13 +13,18 @@ export function ThemeColorModeSwitch({
   compact = false
 }: ThemeColorModeSwitchProps) {
   const { colorMode, setColorMode } = useThemePalette()
+  const { t } = useI18n()
   const isLight = colorMode === "light"
   const nextMode = isLight ? "dark" : "light"
 
   return (
     <button
       type="button"
-      aria-label={`Switch to ${nextMode} mode`}
+      aria-label={
+        nextMode === "dark"
+          ? t("common.theme.switchToDark")
+          : t("common.theme.switchToLight")
+      }
       aria-pressed={isLight}
       onClick={() => setColorMode(nextMode)}
       className={cn(
@@ -30,7 +36,7 @@ export function ThemeColorModeSwitch({
         {isLight ? <SunMedium className="h-4 w-4" /> : <MoonStar className="h-4 w-4" />}
       </span>
       <span className="theme-color-mode-switch-label">
-        {isLight ? "Light mode" : "Dark mode"}
+        {isLight ? t("common.theme.light") : t("common.theme.dark")}
       </span>
     </button>
   )

@@ -2,19 +2,19 @@
 
 ## Date
 
-2026-04-08
+2026-04-09
 
 ## Current Objective
 
-Keep the simplified homepage hero preview intact while restoring the old demo sign-in affordance only on the `/login` page behind a hidden reveal action.
+Add production-grade English/Arabic internationalization with real RTL support, a prominent header language switcher, and cookie-backed locale persistence across the web app.
 
 ## Last Completed Step
 
-Fixed the missing demo password issue by loading the repo-root `.env` into the Next app config and keeping the login-page demo reveal wired to expose and prefill both the public demo email and `NEXT_PUBLIC_HOME_DEMO_SIGNIN_PASSWORD`.
+Implemented the core i18n/RTL foundation in `apps/web`: locale config and catalogs, request resolution and cookie persistence, root layout `lang/dir` wiring, shared language switchers, localized auth/shared chrome/public headers, and locale-aware formatting in the analytics/project/concept surfaces touched this turn. Saved the comprehensive follow-up test strategy in `docs/_local/web-i18n-rtl-test-plan.md`.
 
 ## Current Step
 
-Implementation is complete and targeted web verification passed. The next practical step is manual browser QA on `/login` to confirm the reveal now visibly shows the password and the email/password prefill flow works in the browser.
+Implement the saved web test plan: add the `apps/web` Vitest component harness, Playwright browser coverage, i18n/RTL contract tests, and key route smoke coverage from `docs/_local/web-i18n-rtl-test-plan.md`.
 
 ## Scope Boundaries
 
@@ -25,32 +25,40 @@ Implementation is complete and targeted web verification passed. The next practi
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/components/auth/auth-panel.tsx`
-- `apps/web/src/components/auth/demo-sign-in-reveal.tsx`
+- `apps/web/src/features/delivery/components/*`
+- `apps/web/src/features/renders/components/*`
+- `apps/web/src/features/settings/components/*`
+- `apps/web/src/components/marketing/*`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
 
-- Keep the soft pink / muted editorial language.
-- Preserve the existing homepage workflow content structure and product meaning.
-- Prefer subtraction over preservation when space is constrained.
-- Keep only one strong primary card and a lighter supporting column.
-- Prefer readability, alignment, and whitespace over decorative density.
-- Limit changes to homepage presentation/layout; no API, schema, or route changes.
+- Keep URLs stable; locale stays in cookie state, not path prefixes.
+- Preserve design quality in both LTR and RTL; prefer logical properties/utilities over one-off left/right fixes.
+- Keep user-authored and provider-authored content unchanged; localize repo-owned UI copy and formatting only.
+- Preserve the existing marketing/editorial tone while improving Arabic readability and alignment.
 
 ## Verification Commands
 
+- `pnpm --filter @ai-ad-studio/web test:unit`
+- `pnpm --filter @ai-ad-studio/web test:component`
+- `pnpm --filter @ai-ad-studio/web test:i18n-audit`
+- `pnpm --filter @ai-ad-studio/web test:e2e:smoke`
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- manual viewport QA in browser
+- `pnpm --filter @ai-ad-studio/web test`
+- `rg -n 'Intl\\.DateTimeFormat\\("en"' apps/web/src --glob '!**/*.test.ts'`
+- manual browser QA in English + Arabic
 
 ## Lookup Notes
 
-- Login page: `apps/web/src/app/login/page.tsx`
-- Auth panel: `apps/web/src/components/auth/auth-panel.tsx`
-- Demo reveal: `apps/web/src/components/auth/demo-sign-in-reveal.tsx`
-- Web app env loading: `apps/web/next.config.ts`
+- i18n core: `apps/web/src/lib/i18n/*`
+- Language switcher: `apps/web/src/components/i18n/language-switcher.tsx`
+- Root locale/layout wiring: `apps/web/src/app/layout.tsx`
+- Locale cookie seeding: `apps/web/src/lib/supabase/middleware.ts`
+- Public header: `apps/web/src/components/i18n/public-page-header.tsx`
+- Saved test strategy: `docs/_local/web-i18n-rtl-test-plan.md`
 
 ## Expected Result
 
-The homepage stays free of demo credential clutter, while the sign-in page provides a small animated reveal that exposes the demo email and password and prefills both fields without dominating the auth UI.
+Arabic users can switch the product into a true RTL experience without URL changes, the preference persists across reloads, and the most visible shared/public/auth/dashboard surfaces now render translated copy with locale-aware formatting.

@@ -3,6 +3,7 @@ import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { selectConceptAction } from "@/features/concepts/actions/select-concept"
 import { SafetySummary } from "@/features/safety/components/safety-summary"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type ConceptPreviewCardProps = {
   angle: string
@@ -19,7 +20,7 @@ type ConceptPreviewCardProps = {
   wasSafetyModified: boolean
 }
 
-export function ConceptPreviewCard({
+export async function ConceptPreviewCard({
   angle,
   hook,
   id,
@@ -33,6 +34,7 @@ export function ConceptPreviewCard({
   title,
   wasSafetyModified
 }: ConceptPreviewCardProps) {
+  const { t } = await getServerI18n()
   const action = selectConceptAction.bind(null, projectId, id)
 
   return (
@@ -52,7 +54,7 @@ export function ConceptPreviewCard({
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05]">
                 <ImageIcon className="h-5 w-5 text-amber-200" />
               </div>
-              <p className="mt-4 text-sm text-slate-300">Preview pending</p>
+              <p className="mt-4 text-sm text-slate-300">{t("concepts.card.previewPending")}</p>
             </div>
           </div>
         )}
@@ -72,19 +74,19 @@ export function ConceptPreviewCard({
           </span>
           {wasSafetyModified ? (
             <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
-              Safety reviewed
+              {t("concepts.card.safetyReviewed")}
             </span>
           ) : null}
         </div>
       </div>
 
       <div className="mt-5">
-        <p className="text-sm font-medium text-white">Hook</p>
+        <p className="text-sm font-medium text-white">{t("concepts.card.hook")}</p>
         <p className="mt-2 text-sm leading-7 text-slate-300">{hook}</p>
       </div>
 
       <div className="mt-5">
-        <p className="text-sm font-medium text-white">Script</p>
+        <p className="text-sm font-medium text-white">{t("concepts.card.script")}</p>
         <p className="mt-2 line-clamp-4 text-sm leading-7 text-slate-400">{script}</p>
       </div>
 
@@ -101,9 +103,9 @@ export function ConceptPreviewCard({
           <FormSubmitButton
             className="w-full"
             variant={isSelected ? "secondary" : "primary"}
-            pendingLabel="Saving selection…"
+            pendingLabel={t("concepts.card.pendingSelection")}
           >
-            {isSelected ? "Selected concept" : "Select concept"}
+            {isSelected ? t("concepts.card.selected") : t("concepts.card.select")}
           </FormSubmitButton>
         </form>
       </div>

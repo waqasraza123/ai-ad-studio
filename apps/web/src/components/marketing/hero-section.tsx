@@ -1,19 +1,25 @@
 import Link from "next/link"
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react"
 import { Button } from "@/components/primitives/button"
+import { getServerI18n } from "@/lib/i18n/server"
 import { HeroPreview } from "./hero-preview"
 
 type HeroSectionProps = {
   featuredSampleCount: number
 }
 
-const outcomePills = [
-  "Constrained ad workflow",
-  "Review before final render",
-  "Ready for publish and delivery"
-]
+export async function HeroSection({ featuredSampleCount }: HeroSectionProps) {
+  const { t } = await getServerI18n()
+  const outcomePills = [
+    t("marketing.hero.outcomeWorkflow"),
+    t("marketing.hero.outcomeReview"),
+    t("marketing.hero.outcomeDelivery")
+  ]
+  const badgeSuffix =
+    featuredSampleCount > 0
+      ? t("marketing.hero.badgeSuffix", { count: featuredSampleCount })
+      : ""
 
-export function HeroSection({ featuredSampleCount }: HeroSectionProps) {
   return (
     <section className="theme-marketing-subtle-grid relative overflow-hidden px-4 pb-24 pt-12 sm:px-6 lg:px-8 lg:pb-32 lg:pt-16">
       <div className="mx-auto max-w-7xl relative">
@@ -21,23 +27,15 @@ export function HeroSection({ featuredSampleCount }: HeroSectionProps) {
           <div className="max-w-2xl">
             <div className="theme-accent-pill inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm">
               <Sparkles className="h-4 w-4" />
-              <span>
-                Public product workflow
-                {featuredSampleCount > 0
-                  ? ` • ${featuredSampleCount} live samples highlighted`
-                  : ""}
-              </span>
+              <span>{t("marketing.hero.badge", { suffix: badgeSuffix })}</span>
             </div>
 
             <h1 className="theme-marketing-title mt-8 text-5xl font-semibold text-[var(--foreground)] sm:text-6xl lg:text-[4.8rem]">
-              Turn product inputs into campaign-ready ad outputs with a
-              controlled studio workflow
+              {t("marketing.hero.title")}
             </h1>
 
             <p className="theme-marketing-copy mt-6 max-w-2xl text-[1.06rem]">
-              AI Ad Studio helps marketing teams move from brief and product
-              assets to concepts, previews, final exports, and public handoff
-              surfaces without drifting into an open-ended editor.
+              {t("marketing.hero.description")}
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -55,8 +53,8 @@ export function HeroSection({ featuredSampleCount }: HeroSectionProps) {
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
               <Link href="/dashboard">
                 <Button size="lg">
-                  Enter dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  {t("header.marketing.enterDashboard")}
+                  <ArrowRight className="theme-directional-icon ms-2 h-4 w-4" />
                 </Button>
               </Link>
 
@@ -64,36 +62,36 @@ export function HeroSection({ featuredSampleCount }: HeroSectionProps) {
                 href="/showcase"
                 className="theme-inline-secondary-button inline-flex h-12 items-center justify-center rounded-full border px-6 text-sm font-medium"
               >
-                Browse showcase
+                {t("marketing.hero.browseShowcase")}
               </Link>
             </div>
 
             <div className="mt-12 grid gap-4 sm:grid-cols-3">
               <div className="theme-soft-panel theme-marketing-card-lift rounded-[1.5rem] border p-5">
-                <p className="theme-marketing-eyebrow">Briefs</p>
+                <p className="theme-marketing-eyebrow">{t("marketing.hero.briefs")}</p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
-                  Structured
+                  {t("marketing.hero.briefsValue")}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
-                  Inputs stay constrained to product marketing work.
+                  {t("marketing.hero.briefsDescription")}
                 </p>
               </div>
               <div className="theme-soft-panel theme-marketing-card-lift rounded-[1.5rem] border p-5">
-                <p className="theme-marketing-eyebrow">Reviews</p>
+                <p className="theme-marketing-eyebrow">{t("marketing.hero.reviews")}</p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
-                  Before spend
+                  {t("marketing.hero.reviewsValue")}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
-                  Preview concepts first, then commit to final render output.
+                  {t("marketing.hero.reviewsDescription")}
                 </p>
               </div>
               <div className="theme-soft-panel theme-marketing-card-lift rounded-[1.5rem] border p-5">
-                <p className="theme-marketing-eyebrow">Delivery</p>
+                <p className="theme-marketing-eyebrow">{t("marketing.hero.delivery")}</p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
-                  Ready
+                  {t("marketing.hero.deliveryValue")}
                 </p>
                 <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
-                  Promote winners to showcase, campaigns, and delivery surfaces.
+                  {t("marketing.hero.deliveryDescription")}
                 </p>
               </div>
             </div>

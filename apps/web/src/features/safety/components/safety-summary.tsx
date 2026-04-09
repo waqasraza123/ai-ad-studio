@@ -1,18 +1,22 @@
+import { getServerI18n } from "@/lib/i18n/server"
+
 type SafetySummaryProps = {
   riskFlags: string[]
   safetyNotes: string | null
   wasSafetyModified: boolean
 }
 
-export function SafetySummary({
+export async function SafetySummary({
   riskFlags,
   safetyNotes,
   wasSafetyModified
 }: SafetySummaryProps) {
+  const { t } = await getServerI18n()
+
   if (!wasSafetyModified && riskFlags.length === 0 && !safetyNotes) {
     return (
       <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/10 px-4 py-3 text-sm text-emerald-100">
-        Safety review passed with no modifications.
+        {t("safety.noFlags")}
       </div>
     )
   }
@@ -20,7 +24,7 @@ export function SafetySummary({
   return (
     <div className="space-y-3 rounded-2xl border border-amber-400/20 bg-amber-400/10 p-4">
       <p className="text-sm font-medium text-amber-50">
-        Safety review adjusted or flagged this concept.
+        {t("safety.modified")}
       </p>
 
       {riskFlags.length > 0 ? (

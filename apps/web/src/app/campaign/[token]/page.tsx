@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation"
+import { PublicPageHeader } from "@/components/i18n/public-page-header"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getPublicShareCampaignBundleByToken } from "@/server/share-campaigns/public-share-campaign"
 
 type PublicCampaignPageProps = {
@@ -10,6 +12,7 @@ type PublicCampaignPageProps = {
 export default async function PublicCampaignPage({
   params
 }: PublicCampaignPageProps) {
+  const { t } = await getServerI18n()
   const { token } = await params
   const bundle = await getPublicShareCampaignBundleByToken(token)
 
@@ -29,10 +32,11 @@ export default async function PublicCampaignPage({
 
   return (
     <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
+      <PublicPageHeader />
       <div className="mx-auto max-w-5xl space-y-6">
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Public campaign
+            {t("public.campaign.eyebrow")}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
             {campaign.title}
@@ -71,7 +75,7 @@ export default async function PublicCampaignPage({
             />
           ) : (
             <div className="theme-soft-panel flex h-96 items-center justify-center rounded-[1.5rem] border text-sm text-[var(--muted-foreground)]">
-              Preview unavailable
+              {t("public.showcase.previewUnavailable")}
             </div>
           )}
         </section>

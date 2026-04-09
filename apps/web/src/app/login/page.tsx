@@ -3,6 +3,7 @@ import { AuthPanel } from "@/components/auth/auth-panel"
 import { ConfigurationRequired } from "@/components/auth/configuration-required"
 import { LandingTopBar } from "@/components/marketing/landing-top-bar"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
+import { getServerI18n } from "@/lib/i18n/server"
 import { hasSupabaseAuthConfiguration } from "@/lib/env"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 
@@ -25,6 +26,7 @@ function readSearchParam(
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams
+  const { t } = await getServerI18n()
 
   if (!hasSupabaseAuthConfiguration()) {
     return (
@@ -32,8 +34,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <LandingTopBar />
         <div className="px-4 py-10 sm:px-6 lg:px-8">
           <ConfigurationRequired
-            title="Connect Supabase to prove auth end to end"
-            description="This repo now contains the auth integration points, protected route logic, and versioned schema files. Add your Supabase credentials locally to validate real sign-in and session flow."
+            title={t("auth.configuration.title")}
+            description={t("auth.configuration.description")}
           />
         </div>
       </main>
@@ -46,8 +48,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     redirect("/dashboard")
   }
 
-  const errorMessage = getFormErrorMessage(readSearchParam(params, "error"))
-  const infoMessage = readSearchParam(params, "message")
+  const errorMessage = getFormErrorMessage(readSearchParam(params, "error"), t)
+  const infoMessage = getFormErrorMessage(readSearchParam(params, "message"), t)
   const defaultEmail = readSearchParam(params, "email")
   const defaultPassword = readSearchParam(params, "password")
 
@@ -58,7 +60,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <div className="mx-auto max-w-6xl">
           <AuthPanel
             errorMessage={errorMessage ?? undefined}
-            infoMessage={infoMessage}
+            infoMessage={infoMessage ?? undefined}
             defaultSignInEmail={defaultEmail}
             defaultSignInPassword={defaultPassword}
           />

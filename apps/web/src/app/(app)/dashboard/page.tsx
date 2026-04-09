@@ -3,10 +3,12 @@ import Link from "next/link"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { ProjectList } from "@/features/projects/components/project-list"
 import { toProjectCardViewModel } from "@/features/projects/mappers/project-view-model"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listProjectsByOwner } from "@/server/projects/project-repository"
 
 export default async function DashboardPage() {
+  const { t } = await getServerI18n()
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -34,16 +36,13 @@ export default async function DashboardPage() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_360px] xl:items-end">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-              Dashboard
+              {t("dashboard.home.eyebrow")}
             </p>
             <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
-              Project workspace is now active
+              {t("dashboard.home.title")}
             </h2>
             <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-              Create projects, save the creative brief, and register source
-              assets before sending preview and motion jobs through the current
-              hosted, hybrid, or local provider path that matches your runtime
-              setup.
+              {t("dashboard.home.description")}
             </p>
 
             <div className="mt-5">
@@ -52,15 +51,15 @@ export default async function DashboardPage() {
                 className="inline-flex h-11 items-center justify-center gap-2 rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
               >
                 <PlusSquare className="h-4 w-4" />
-                <span>New project</span>
+                <span>{t("dashboard.home.newProject")}</span>
               </Link>
             </div>
           </div>
 
           <RunwayBrandPanel
-            eyebrow="Provider status"
-            title="Runway is the fastest hosted path"
-            description="Use the API & GPU setup entry in the sidebar to compare Runway, hybrid, and local HTTP modes before running previews or motion jobs."
+            eyebrow={t("dashboard.home.providerEyebrow")}
+            title={t("dashboard.home.providerTitle")}
+            description={t("dashboard.home.providerDescription")}
           />
         </div>
       </section>

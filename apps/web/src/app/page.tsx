@@ -11,12 +11,14 @@ import { PricingSnapshotSection } from "@/components/marketing/pricing-snapshot-
 import { WorkflowStrip } from "@/components/marketing/demo-strip"
 import { listBillingPlans } from "@/server/billing/billing-service"
 import { listPublishedShowcaseItems } from "@/server/showcase/showcase-repository"
+import { getServerI18n } from "@/lib/i18n/server"
 
 export default async function HomePage() {
   const [billingPlans, showcaseItems] = await Promise.all([
     listBillingPlans(),
     listPublishedShowcaseItems()
   ])
+  await getServerI18n()
   const featuredShowcaseItems = mapHomepageFeaturedShowcaseItems(showcaseItems)
   const homepagePricingPlans = mapHomepagePricingPlans(billingPlans)
 

@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getServerI18n } from "@/lib/i18n/server"
 import type {
   ProjectRecord,
   UsageEventRecord
@@ -9,14 +10,11 @@ type ProjectUsageBreakdownProps = {
   usageEvents: UsageEventRecord[]
 }
 
-function formatUsd(value: number) {
-  return `$${value.toFixed(4)}`
-}
-
-export function ProjectUsageBreakdown({
+export async function ProjectUsageBreakdown({
   projectsById,
   usageEvents
 }: ProjectUsageBreakdownProps) {
+  const { formatCurrency, formatNumber } = await getServerI18n()
   const rows = Array.from(
     usageEvents.reduce((map, event) => {
       const current = map.get(event.project_id) ?? {
@@ -54,12 +52,15 @@ export function ProjectUsageBreakdown({
                     {project?.name ?? "Unknown project"}
                   </p>
                   <p className="mt-1 text-sm text-slate-400">
-                    {row.events} usage event{row.events === 1 ? "" : "s"}
+                    {formatNumber(row.events)} usage event{row.events === 1 ? "" : "s"}
                   </p>
                 </div>
 
                 <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
-                  {formatUsd(row.cost)}
+                  {formatCurrency(row.cost, "USD", {
+                    maximumFractionDigits: 4,
+                    minimumFractionDigits: 4
+                  })}
                 </span>
               </div>
             </Link>

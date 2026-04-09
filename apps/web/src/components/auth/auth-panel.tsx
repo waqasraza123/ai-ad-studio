@@ -5,6 +5,7 @@ import { DemoSignInReveal } from "@/components/auth/demo-sign-in-reveal"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getHomeDemoSignIn } from "@/lib/home-demo-signin"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type AuthPanelProps = {
   errorMessage?: string
@@ -13,26 +14,26 @@ type AuthPanelProps = {
   defaultSignInPassword?: string
 }
 
-export function AuthPanel({
+export async function AuthPanel({
   errorMessage,
   infoMessage,
   defaultSignInEmail,
   defaultSignInPassword
 }: AuthPanelProps) {
   const demoSignIn = getHomeDemoSignIn()
+  const { t } = await getServerI18n()
 
   return (
     <div className="grid gap-6 xl:grid-cols-2">
       <SurfaceCard className="p-8">
         <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-          Authentication
+          {t("auth.title")}
         </p>
         <h1 className="mt-4 text-4xl font-semibold tracking-[-0.04em] text-[var(--foreground)]">
-          Sign in to AI Ad Studio
+          {t("auth.heading")}
         </h1>
         <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--muted-foreground)]">
-          Authentication secures access to projects, concepts, exports, and
-          other protected routes in the studio.
+          {t("auth.description")}
         </p>
 
         <RunwayBrandPanel className="mt-8" />
@@ -40,22 +41,19 @@ export function AuthPanel({
         <div className="mt-8 grid gap-4">
           <div className="theme-soft-panel rounded-[1.5rem] border p-5">
             <p className="text-sm font-medium text-[var(--foreground)]">
-              Protected application area
+              {t("auth.protectedAreaTitle")}
             </p>
             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Dashboard routes are now gated by authenticated session checks
-              when Supabase credentials are present.
+              {t("auth.protectedAreaDescription")}
             </p>
           </div>
 
           <div className="theme-soft-panel rounded-[1.5rem] border p-5">
             <p className="text-sm font-medium text-[var(--foreground)]">
-              Runtime setup matters
+              {t("auth.runtimeTitle")}
             </p>
             <p className="mt-2 text-sm text-[var(--muted-foreground)]">
-              Runway is the recommended hosted path, while hybrid and local HTTP
-              modes can be used when your machine or remote GPU environment is
-              set up for them.
+              {t("auth.runtimeDescription")}
             </p>
           </div>
         </div>
@@ -85,10 +83,10 @@ export function AuthPanel({
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--foreground)]">
-                  Sign in
+                  {t("auth.signInTitle")}
                 </p>
                 <p className="text-sm text-[var(--muted-foreground)]">
-                  Access the protected dashboard shell.
+                  {t("auth.signInDescription")}
                 </p>
               </div>
             </div>
@@ -102,36 +100,38 @@ export function AuthPanel({
             <div className="mt-5 grid gap-3">
               <label className="grid gap-2">
                 <span className="text-sm text-[var(--soft-foreground)]">
-                  Email
+                  {t("common.words.email")}
                 </span>
                 <input
                   name="email"
                   type="email"
+                  dir="ltr"
                   autoComplete="email"
                   defaultValue={defaultSignInEmail ?? undefined}
-                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
-                  placeholder="john@example.com"
+                  className="theme-bidi-isolate theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
+                  placeholder={t("auth.placeholders.email")}
                 />
               </label>
 
               <label className="grid gap-2">
                 <span className="text-sm text-[var(--soft-foreground)]">
-                  Password
+                  {t("common.words.password")}
                 </span>
                 <input
                   name="password"
                   type="password"
+                  dir="ltr"
                   autoComplete="current-password"
                   defaultValue={defaultSignInPassword ?? undefined}
-                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
-                  placeholder="••••••••"
+                  className="theme-bidi-isolate theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
+                  placeholder={t("auth.placeholders.password")}
                 />
               </label>
             </div>
 
             <div className="mt-5">
-              <FormSubmitButton className="w-full" pendingLabel="Signing in…">
-                Sign in
+              <FormSubmitButton className="w-full" pendingLabel={t("auth.signInPending")}>
+                {t("auth.signInAction")}
               </FormSubmitButton>
             </div>
           </form>
@@ -146,10 +146,10 @@ export function AuthPanel({
               </div>
               <div>
                 <p className="text-sm font-medium text-[var(--foreground)]">
-                  Create account
+                  {t("auth.signUpTitle")}
                 </p>
                 <p className="text-sm text-[var(--muted-foreground)]">
-                  Set up a local account to use the studio.
+                  {t("auth.signUpDescription")}
                 </p>
               </div>
             </div>
@@ -157,27 +157,29 @@ export function AuthPanel({
             <div className="mt-5 grid gap-3">
               <label className="grid gap-2">
                 <span className="text-sm text-[var(--soft-foreground)]">
-                  Email
+                  {t("common.words.email")}
                 </span>
                 <input
                   name="email"
                   type="email"
+                  dir="ltr"
                   autoComplete="email"
-                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
-                  placeholder="john@example.com"
+                  className="theme-bidi-isolate theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
+                  placeholder={t("auth.placeholders.email")}
                 />
               </label>
 
               <label className="grid gap-2">
                 <span className="text-sm text-[var(--soft-foreground)]">
-                  Password
+                  {t("common.words.password")}
                 </span>
                 <input
                   name="password"
                   type="password"
+                  dir="ltr"
                   autoComplete="new-password"
-                  className="theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
-                  placeholder="Create a password"
+                  className="theme-bidi-isolate theme-focus-ring h-11 rounded-2xl border border-[var(--border)] bg-[var(--background-soft)] px-4 text-[var(--foreground)] outline-none transition placeholder:text-[var(--muted-foreground)]"
+                  placeholder={t("auth.placeholders.newPassword")}
                 />
               </label>
             </div>
@@ -186,9 +188,9 @@ export function AuthPanel({
               <FormSubmitButton
                 className="w-full"
                 variant="secondary"
-                pendingLabel="Creating account…"
+                pendingLabel={t("auth.signUpPending")}
               >
-                Create account
+                {t("auth.signUpAction")}
               </FormSubmitButton>
             </div>
           </form>

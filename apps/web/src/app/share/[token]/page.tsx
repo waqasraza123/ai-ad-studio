@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation"
+import { PublicPageHeader } from "@/components/i18n/public-page-header"
 import { ExportSummary } from "@/features/exports/components/export-summary"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getSharedExportBundleByToken } from "@/server/exports/share-link-repository"
 
 type PublicSharePageProps = {
@@ -8,16 +10,10 @@ type PublicSharePageProps = {
   }>
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
 export default async function PublicSharePage({
   params
 }: PublicSharePageProps) {
+  const { formatDateTime, t } = await getServerI18n()
   const { token } = await params
   const bundle = await getSharedExportBundleByToken(token)
 
@@ -39,21 +35,25 @@ export default async function PublicSharePage({
 
   return (
     <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
+      <PublicPageHeader />
       <div className="mx-auto max-w-5xl space-y-6">
         <section className="theme-surface-card rounded-[1.75rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Shared export
+            {t("public.share.eyebrow")}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
             {project.name}
           </h1>
           <p className="mt-3 text-sm leading-7 text-[var(--muted-foreground)]">
-            This is an owner-controlled single-export share link. It is separate from winner-only campaign pages and finalized delivery workspaces.
+            {t("public.share.description")}
           </p>
         </section>
 
         <ExportSummary
-          createdAtLabel={formatTimestamp(exportRecord.created_at)}
+          createdAtLabel={formatDateTime(exportRecord.created_at, {
+            dateStyle: "medium",
+            timeStyle: "short"
+          })}
           downloadHref={videoSrc}
           projectName={project.name}
           previewDataUrl={previewDataUrl}

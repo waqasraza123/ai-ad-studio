@@ -1,16 +1,14 @@
+import { getServerI18n } from "@/lib/i18n/server"
 import type { UsageEventRecord } from "@/server/database/types"
 
 type ProviderCostBreakdownProps = {
   usageEvents: UsageEventRecord[]
 }
 
-function formatUsd(value: number) {
-  return `$${value.toFixed(4)}`
-}
-
-export function ProviderCostBreakdown({
+export async function ProviderCostBreakdown({
   usageEvents
 }: ProviderCostBreakdownProps) {
+  const { formatCurrency, formatNumber, t } = await getServerI18n()
   const rows = Array.from(
     usageEvents.reduce((map, event) => {
       const provider = event.provider
@@ -32,26 +30,31 @@ export function ProviderCostBreakdown({
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Provider cost breakdown
+        {t("analytics.providerBreakdown")}
       </p>
 
       <div className="mt-5 overflow-hidden rounded-[1.5rem] border border-white/10">
-        <table className="w-full text-left text-sm">
+        <table className="theme-text-start w-full text-sm">
           <thead className="bg-white/[0.04] text-slate-300">
             <tr>
-              <th className="px-4 py-3 font-medium">Provider</th>
-              <th className="px-4 py-3 font-medium">Events</th>
-              <th className="px-4 py-3 font-medium">Units</th>
-              <th className="px-4 py-3 font-medium">Estimated cost</th>
+              <th className="px-4 py-3 font-medium">{t("common.words.provider")}</th>
+              <th className="px-4 py-3 font-medium">{t("common.words.events")}</th>
+              <th className="px-4 py-3 font-medium">{t("common.words.units")}</th>
+              <th className="theme-text-end px-4 py-3 font-medium">{t("common.words.estimatedCost")}</th>
             </tr>
           </thead>
           <tbody>
             {rows.map(([provider, row]) => (
               <tr key={provider} className="border-t border-white/10 text-slate-200">
                 <td className="px-4 py-3">{provider}</td>
-                <td className="px-4 py-3">{row.events}</td>
-                <td className="px-4 py-3">{row.units.toFixed(2)}</td>
-                <td className="px-4 py-3">{formatUsd(row.cost)}</td>
+                <td className="px-4 py-3">{formatNumber(row.events)}</td>
+                <td className="px-4 py-3">{formatNumber(row.units, { maximumFractionDigits: 2, minimumFractionDigits: 2 })}</td>
+                <td className="theme-text-end px-4 py-3">
+                  {formatCurrency(row.cost, "USD", {
+                    maximumFractionDigits: 4,
+                    minimumFractionDigits: 4
+                  })}
+                </td>
               </tr>
             ))}
           </tbody>

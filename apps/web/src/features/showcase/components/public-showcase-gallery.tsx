@@ -1,3 +1,4 @@
+import { getServerI18n } from "@/lib/i18n/server"
 import type { ShowcaseItemRecord } from "@/server/database/types"
 
 type PublicShowcaseGalleryProps = {
@@ -39,12 +40,13 @@ function readPreviewDataUrl(item: ShowcaseItemRecord) {
   return (item as ShowcaseGalleryItem).preview_data_url ?? null
 }
 
-export function PublicShowcaseGallery({
+export async function PublicShowcaseGallery({
   selectedAspectRatio,
   selectedPlatformPreset,
   selectedTemplate,
   showcaseItems
 }: PublicShowcaseGalleryProps) {
+  const { t } = await getServerI18n()
   const filteredItems = showcaseItems.filter((item) => {
     return (
       matchesFilter(readAspectRatio(item), selectedAspectRatio) &&
@@ -56,7 +58,7 @@ export function PublicShowcaseGallery({
   if (filteredItems.length === 0) {
     return (
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-sm text-slate-400">
-        No showcase items match the current filters.
+        {t("public.showcase.empty")}
       </div>
     )
   }
@@ -82,7 +84,7 @@ export function PublicShowcaseGallery({
               />
             ) : (
               <div className="flex h-72 items-center justify-center bg-white/[0.04] text-sm text-slate-400">
-                Preview unavailable
+                {t("public.showcase.previewUnavailable")}
               </div>
             )}
 

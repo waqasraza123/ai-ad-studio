@@ -1,4 +1,5 @@
 import { MODEST_WORDING_ERROR_MESSAGE } from "@/lib/modest-wording/index"
+import type { Translator } from "@/lib/i18n/translator"
 
 /** Short codes in URL `?error=` — mapped to user-facing copy (never throw from actions for expected cases). */
 export const FORM_ERROR_MESSAGES: Record<string, string> = {
@@ -81,10 +82,19 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
   billing_plan_change_failed:
     "The plan change could not be completed. Check billing setup and try again.",
   billing_plan_change_unsupported:
-    "That plan change is not available through this action."
+    "That plan change is not available through this action.",
+  auth_unconfigured: "Auth is not configured yet.",
+  auth_credentials_required: "Email and password are required.",
+  auth_sign_in_failed: "Unable to sign in with those credentials.",
+  auth_sign_up_failed: "Unable to create account right now.",
+  auth_sign_up_confirmation_sent:
+    "Account created. Check your email if confirmation is enabled."
 }
 
-export function getFormErrorMessage(code: string | null | undefined): string | null {
+export function getFormErrorMessage(
+  code: string | null | undefined,
+  t?: Translator["t"]
+): string | null {
   if (!code) {
     return null
   }
@@ -95,13 +105,19 @@ export function getFormErrorMessage(code: string | null | undefined): string | n
   }
 
   if (FORM_ERROR_MESSAGES[trimmed]) {
-    return FORM_ERROR_MESSAGES[trimmed]
+    const translated = t ? t(trimmed as never) : null
+    return translated && translated !== trimmed
+      ? translated
+      : FORM_ERROR_MESSAGES[trimmed]
   }
 
   try {
     const decoded = decodeURIComponent(trimmed)
     if (decoded !== trimmed && FORM_ERROR_MESSAGES[decoded]) {
-      return FORM_ERROR_MESSAGES[decoded]
+      const translated = t ? t(decoded as never) : null
+      return translated && translated !== decoded
+        ? translated
+        : FORM_ERROR_MESSAGES[decoded]
     }
   } catch {
     // ignore

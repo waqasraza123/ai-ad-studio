@@ -16,6 +16,7 @@ Public surfaces are intentionally separate:
 
 - Monorepo managed with `pnpm` workspaces and Turborepo.
 - `apps/web` is a Next.js 16 App Router app on React 19 with feature-scoped UI code under `src/features` and server/data logic under `src/server`.
+- `apps/web` now owns a typed app-level i18n layer under `src/lib/i18n` with cookie-backed locale persistence, first-visit `Accept-Language` detection, locale-aware formatting helpers, and document-level LTR/RTL switching for English and Arabic.
 - `apps/worker` is a Node/`tsx` worker for job polling, provider execution, and delivery reminder sweeps.
 - `packages/shared`, `packages/config`, `packages/ui`, `packages/providers`, and `packages/media` hold shared contracts, config, UI primitives, provider adapters, and media utilities.
 - Supabase is the durable system of record for auth, workflow state, notifications, job traces, and delivery workspace events. Schema changes live in `supabase/migrations`.
@@ -31,6 +32,8 @@ Public surfaces are intentionally separate:
 - Delivery and campaign surfaces stay gated to finalized canonical exports. Share links stay separate and single-export.
 - Persist workflow state in Supabase-backed records; do not move critical state into transient client logic.
 - In the web app, keep feature logic under `src/features/*` and repository/data access under `src/server/*`.
+- Route and shared UI copy should resolve through the web i18n catalogs rather than introducing new hardcoded user-facing English strings.
+- Any new visible UI in the web app must be direction-safe for both `dir="ltr"` and `dir="rtl"`; prefer logical CSS properties/utilities over physical left/right classes.
 - Use server actions for authenticated form mutations in the web app.
 - When schema contracts change, update migrations first and then align TypeScript/database contract consumers.
 - Subscription entitlements are system-managed state. `owner_guardrails` are now optional user-lowered safety caps and must never raise plan entitlements.
@@ -66,6 +69,7 @@ Public surfaces are intentionally separate:
 - Delivery follow-up reminders use workspace checkpoint fields plus the SQL function `create_delivery_follow_up_reminder_notification(...)` for duplicate-safe atomic notification writes.
 - Delivery support activity is expected to stay auditable through `notifications`, `job_traces`, and `delivery_workspace_events`.
 - The web app `typecheck` command now runs `next typegen` before `tsc --noEmit --incremental false` so clean checkouts do not depend on a prior build and stale `.tsbuildinfo` state does not pin missing `.next/types/*` files.
+- Locale preference in the web app is URL-stable for now: existing routes stay unprefixed, the active locale is persisted in the `ai_ad_studio_locale` cookie, and first-visit auto-detection only applies before the user picks a language manually.
 - Owner guardrails are now treated as real schema-backed runtime state via `supabase/migrations/202604051000_phase_19_owner_guardrails.sql`; worker enforcement and dashboard settings should stay aligned to that table instead of relying on divergent code-only defaults.
 - The web app now exposes operator-safe runtime readiness at `/api/health`, and deployed smoke validation lives in `scripts/checks/runtime-smoke.ts` with the root wrapper `pnpm verify:phase-31`.
 

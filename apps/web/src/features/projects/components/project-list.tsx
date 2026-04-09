@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, FolderOpen, TriangleAlert } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type ProjectCardViewModel = {
   createdAtLabel: string
@@ -15,10 +16,12 @@ type ProjectListProps = {
   projectsLoadFailed?: boolean
 }
 
-export function ProjectList({
+export async function ProjectList({
   projects,
   projectsLoadFailed = false
 }: ProjectListProps) {
+  const { t } = await getServerI18n()
+
   if (projectsLoadFailed) {
     return (
       <SurfaceCard className="p-8">
@@ -26,19 +29,17 @@ export function ProjectList({
           <TriangleAlert className="h-6 w-6 text-amber-200" />
         </div>
         <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
-          Projects are temporarily unavailable
+          {t("projects.list.unavailableTitle")}
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">
-          We could not load your projects right now. This usually means a
-          temporary backend or database issue. You can still create a new
-          project and refresh this page again in a moment.
+          {t("projects.list.unavailableDescription")}
         </p>
         <div className="mt-8">
           <Link
             href="/dashboard/projects/new"
             className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
           >
-            Create new project
+            {t("projects.list.createNew")}
           </Link>
         </div>
       </SurfaceCard>
@@ -52,18 +53,17 @@ export function ProjectList({
           <FolderOpen className="h-6 w-6 text-amber-200" />
         </div>
         <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
-          No projects yet
+          {t("projects.list.emptyTitle")}
         </h2>
         <p className="mt-3 max-w-xl text-sm leading-7 text-slate-400">
-          Create your first project to start the structured flow from product
-          brief to concept generation and final export.
+          {t("projects.list.emptyDescription")}
         </p>
         <div className="mt-8">
           <Link
             href="/dashboard/projects/new"
             className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
           >
-            Create first project
+            {t("projects.list.createFirst")}
           </Link>
         </div>
       </SurfaceCard>
@@ -79,7 +79,7 @@ export function ProjectList({
               <div>
                 <p className="text-sm font-medium text-white">{project.name}</p>
                 <p className="mt-2 text-sm text-slate-400">
-                  Created {project.createdAtLabel}
+                  {t("common.words.created", { value: project.createdAtLabel })}
                 </p>
               </div>
 
@@ -89,8 +89,8 @@ export function ProjectList({
             </div>
 
             <div className="mt-8 flex items-center gap-2 text-sm text-amber-200">
-              <span>Open project</span>
-              <ArrowRight className="h-4 w-4" />
+              <span>{t("projects.list.openProject")}</span>
+              <ArrowRight className="theme-directional-icon h-4 w-4" />
             </div>
           </SurfaceCard>
         </Link>

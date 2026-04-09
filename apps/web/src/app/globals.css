@@ -41,18 +41,20 @@ body {
   min-height: 100%;
   background: var(--background);
   color: var(--foreground);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
+  font-family: var(--app-font-family, var(--font-app-latin)), ui-sans-serif,
+    system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+html[data-locale="en"] {
+  --app-font-family: var(--font-app-latin);
+}
+
+html[data-locale="ar"] {
+  --app-font-family: var(--font-app-arabic);
 }
 
 body {
@@ -72,6 +74,39 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="hidden"],
+code,
+pre,
+.theme-bidi-isolate {
+  direction: ltr;
+  text-align: start;
+  unicode-bidi: isolate;
+}
+
+input:not([type="email"]):not([type="password"]):not([type="hidden"]),
+textarea {
+  unicode-bidi: plaintext;
+}
+
+.theme-text-start {
+  text-align: start;
+}
+
+.theme-text-end {
+  text-align: end;
+}
+
+.theme-directional-icon {
+  transition: transform 180ms ease;
+}
+
+html[dir="rtl"] .theme-directional-icon {
+  transform: scaleX(-1);
 }
 
 .theme-page-shell {
@@ -538,6 +573,18 @@ select {
 
 .theme-color-mode-switch-label {
   color: var(--soft-foreground);
+}
+
+.theme-language-switcher {
+  border-color: var(--border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--background-strong) 88%, transparent),
+    color-mix(in srgb, var(--background-soft) 96%, transparent)
+  );
+  box-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--background-strong) 68%, transparent),
+    0 16px 42px rgb(var(--shadow-rgb) / 0.12);
 }
 
 .theme-form-input {

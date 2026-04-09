@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
+import { PublicPageHeader } from "@/components/i18n/public-page-header"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
+import { getServerI18n } from "@/lib/i18n/server"
 import { submitPublicBatchReviewResponseAction } from "@/features/renders/actions/public-batch-review"
 import { PublicBatchReviewComments } from "@/features/renders/components/public-batch-review-comments"
 import { PublicBatchReviewGrid } from "@/features/renders/components/public-batch-review-grid"
@@ -46,24 +48,29 @@ function responseClasses(status: string) {
   return "border-[var(--border)] bg-[var(--background-soft)] text-[var(--soft-foreground)]"
 }
 
-function formatTimestamp(value: string | null) {
+function formatTimestamp(
+  formatDateTime: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string,
+  value: string | null,
+  pendingLabel: string
+) {
   if (!value) {
-    return "Pending"
+    return pendingLabel
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return formatDateTime(new Date(value), {
     dateStyle: "medium",
     timeStyle: "short"
-  }).format(new Date(value))
+  })
 }
 
 export default async function PublicBatchReviewPage({
   params,
   searchParams
 }: PublicBatchReviewPageProps) {
+  const { formatDateTime, t } = await getServerI18n()
   const { token } = await params
   const sp = await searchParams
-  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"), t)
 
   const [context, exports, comments] = await Promise.all([
     getPublicBatchReviewContext(token),
@@ -97,6 +104,7 @@ export default async function PublicBatchReviewPage({
 
   return (
     <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
+      <PublicPageHeader />
       <div className="mx-auto max-w-7xl space-y-6">
         {formErrorMessage ? (
           <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
@@ -107,10 +115,10 @@ export default async function PublicBatchReviewPage({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-                External batch review
+                {t("public.review.eyebrow")}
               </p>
               <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-                Review outputs for {context.project_name}
+                {t("public.review.title", { projectName: context.project_name })}
               </h1>
               <p className="mt-3 max-w-3xl text-sm leading-7 text-[var(--muted-foreground)]">
                 {context.review_message}
@@ -126,30 +134,30 @@ export default async function PublicBatchReviewPage({
 
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Reviewer</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("common.words.reviewer")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
                 {context.reviewer_name}
               </p>
             </div>
 
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Role</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("common.words.role")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
                 {context.reviewer_role}
               </p>
             </div>
 
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Outputs</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("common.words.outputs")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
                 {exports.length}
               </p>
             </div>
 
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Responded</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("common.words.responded")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
-                {formatTimestamp(context.responded_at)}
+                {formatTimestamp(formatDateTime, context.responded_at, t("common.status.pending"))}
               </p>
             </div>
           </div>
@@ -157,17 +165,13 @@ export default async function PublicBatchReviewPage({
           {decisionRecorded ? (
             <div className="mt-6 rounded-[1.5rem] border border-emerald-400/25 bg-emerald-500/10 p-4 text-sm text-emerald-50">
               <p className="font-medium text-[var(--foreground)]">
-                Thank you. Your decision is recorded.
+                {t("public.review.recordedTitle")}
               </p>
               <p className="mt-2 text-emerald-100/90">
-                Outcome:{" "}
-                <span className="font-semibold text-[var(--foreground)]">
-                  {context.response_status}
-                </span>
-                .
+                {t("public.review.outcome", { value: context.response_status })}
                 {context.response_note ? (
                   <span className="mt-2 block text-emerald-100/85">
-                    Note: {context.response_note}
+                    {t("public.review.note", { value: context.response_note })}
                   </span>
                 ) : null}
               </p>
@@ -184,7 +188,7 @@ export default async function PublicBatchReviewPage({
               className="mt-6 grid gap-4 md:grid-cols-[0.35fr_1fr_auto]"
             >
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Decision</span>
+                <span className="text-sm text-[var(--soft-foreground)]">{t("common.words.decision")}</span>
                 <select
                   className="theme-form-input h-11 rounded-2xl border px-4"
                   defaultValue={
@@ -194,23 +198,26 @@ export default async function PublicBatchReviewPage({
                   }
                   name="response_status"
                 >
-                  <option value="approved">Approve</option>
-                  <option value="rejected">Reject</option>
+                  <option value="approved">{t("public.review.decision.approve")}</option>
+                  <option value="rejected">{t("public.review.decision.reject")}</option>
                 </select>
               </label>
 
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Decision note</span>
+                <span className="text-sm text-[var(--soft-foreground)]">{t("common.words.decisionNote")}</span>
                 <textarea
+                  dir="auto"
                   className="theme-form-input min-h-28 rounded-2xl border px-4 py-3 text-sm"
                   defaultValue={context.response_note ?? ""}
                   name="response_note"
-                  placeholder="Share why you approve or reject this batch"
+                  placeholder={t("public.review.placeholder")}
                 />
               </label>
 
               <div className="flex items-end">
-                <FormSubmitButton pendingLabel="Submitting…">Submit decision</FormSubmitButton>
+                <FormSubmitButton pendingLabel={t("public.review.submitPending")}>
+                  {t("public.review.submit")}
+                </FormSubmitButton>
               </div>
             </form>
           )}

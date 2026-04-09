@@ -1,8 +1,10 @@
 import { notFound } from "next/navigation"
+import { PublicPageHeader } from "@/components/i18n/public-page-header"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { acknowledgePublicDeliveryWorkspaceAction } from "@/features/delivery/actions/public-delivery"
 import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
+import { getServerI18n } from "@/lib/i18n/server"
 import {
   getActiveDeliveryWorkspaceByToken,
   listAssetsForDeliveryWorkspace,
@@ -32,24 +34,29 @@ function readSearchParam(
   return value
 }
 
-function formatTimestamp(value: string | null) {
+function formatTimestamp(
+  formatDateTime: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string,
+  value: string | null,
+  pendingLabel: string
+) {
   if (!value) {
-    return "Pending"
+    return pendingLabel
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return formatDateTime(new Date(value), {
     dateStyle: "medium",
     timeStyle: "short"
-  }).format(new Date(value))
+  })
 }
 
 export default async function PublicDeliveryPage({
   params,
   searchParams
 }: PublicDeliveryPageProps) {
+  const { formatDateTime, t } = await getServerI18n()
   const { token } = await params
   const sp = await searchParams
-  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"), t)
 
   const workspace = await getActiveDeliveryWorkspaceByToken(token)
 
@@ -89,6 +96,7 @@ export default async function PublicDeliveryPage({
 
   return (
     <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
+      <PublicPageHeader />
       <div className="mx-auto max-w-6xl space-y-6">
         {formErrorMessage ? (
           <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
@@ -97,7 +105,7 @@ export default async function PublicDeliveryPage({
         ) : null}
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Client delivery
+            {t("public.delivery.eyebrow")}
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
             {workspace.title}
@@ -129,9 +137,9 @@ export default async function PublicDeliveryPage({
             </div>
 
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Finalized</p>
+              <p className="text-sm text-[var(--muted-foreground)]">{t("common.status.finalized")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
-                {formatTimestamp(workspace.approval_summary.finalized_at)}
+                {formatTimestamp(formatDateTime, workspace.approval_summary.finalized_at, t("common.status.pending"))}
               </p>
             </div>
           </div>
@@ -167,7 +175,12 @@ export default async function PublicDeliveryPage({
 
           {activitySummary.acknowledgedAt ? (
             <div className="mt-4 rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-              Receipt acknowledged {formatTimestamp(activitySummary.acknowledgedAt)}
+              Receipt acknowledged{" "}
+              {formatTimestamp(
+                formatDateTime,
+                activitySummary.acknowledgedAt,
+                t("common.status.pending")
+              )}
               {activitySummary.acknowledgedBy
                 ? ` by ${activitySummary.acknowledgedBy}.`
                 : "."}
@@ -178,30 +191,32 @@ export default async function PublicDeliveryPage({
           ) : (
             <form action={acknowledgeAction} className="mt-4 grid gap-4 md:grid-cols-2">
               <label className="grid gap-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Recipient label</span>
+                <span className="text-sm text-[var(--soft-foreground)]">{t("public.delivery.recipientLabel")}</span>
                 <input
+                  dir="auto"
                   className="theme-form-input h-11 rounded-2xl border px-4"
                   name="actor_label"
-                  placeholder="Client name or team"
+                  placeholder={t("public.delivery.placeholder.recipient")}
                 />
               </label>
 
               <label className="grid gap-2 md:col-span-2">
-                <span className="text-sm text-[var(--soft-foreground)]">Acknowledgement note</span>
+                <span className="text-sm text-[var(--soft-foreground)]">{t("public.delivery.acknowledgementNote")}</span>
                 <textarea
+                  dir="auto"
                   className="theme-form-input min-h-24 rounded-2xl border px-4 py-3 text-sm"
                   name="note"
-                  placeholder="Optional acknowledgement or receipt note"
+                  placeholder={t("public.delivery.placeholder.note")}
                 />
               </label>
 
               <div className="md:col-span-2">
                 <FormSubmitButton
                   variant="secondary"
-                  pendingLabel="Submitting…"
+                  pendingLabel={t("public.delivery.acknowledgementPending")}
                   className="theme-button-secondary"
                 >
-                  Acknowledge receipt
+                  {t("common.actions.submit")}
                 </FormSubmitButton>
               </div>
             </form>

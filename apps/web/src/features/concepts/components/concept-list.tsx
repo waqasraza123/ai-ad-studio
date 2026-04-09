@@ -1,5 +1,6 @@
 import { Lightbulb } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { getServerI18n } from "@/lib/i18n/server"
 import { ConceptPreviewCard } from "./concept-preview-card"
 
 type ConceptViewModel = {
@@ -21,7 +22,9 @@ type ConceptListProps = {
   projectId: string
 }
 
-export function ConceptList({ concepts, projectId }: ConceptListProps) {
+export async function ConceptList({ concepts, projectId }: ConceptListProps) {
+  const { t } = await getServerI18n()
+
   if (concepts.length === 0) {
     return (
       <SurfaceCard className="p-6">
@@ -29,11 +32,10 @@ export function ConceptList({ concepts, projectId }: ConceptListProps) {
           <Lightbulb className="h-6 w-6 text-amber-200" />
         </div>
         <h2 className="mt-6 text-2xl font-semibold tracking-[-0.03em] text-white">
-          No concepts yet
+          {t("concepts.list.emptyTitle")}
         </h2>
         <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-          Save the brief, queue a generation job, run the worker, and refresh this
-          page to see the first concept set land here.
+          {t("concepts.list.emptyDescription")}
         </p>
       </SurfaceCard>
     )

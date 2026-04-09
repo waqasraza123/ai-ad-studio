@@ -18,7 +18,7 @@ export async function signInWithPassword(formData: FormData) {
   if (!hasSupabaseAuthConfiguration()) {
     redirect(
       toLoginRedirect({
-        error: "Auth is not configured yet."
+        error: "auth_unconfigured"
       })
     )
   }
@@ -37,7 +37,7 @@ export async function signInWithPassword(formData: FormData) {
   if (!email || !password) {
     redirect(
       toLoginRedirect({
-        error: "Email and password are required."
+        error: "auth_credentials_required"
       })
     )
   }
@@ -51,7 +51,7 @@ export async function signInWithPassword(formData: FormData) {
   if (error) {
     redirect(
       toLoginRedirect({
-        error: "Unable to sign in with those credentials."
+        error: "auth_sign_in_failed"
       })
     )
   }
@@ -63,7 +63,7 @@ export async function signUpWithPassword(formData: FormData) {
   if (!hasSupabaseAuthConfiguration()) {
     redirect(
       toLoginRedirect({
-        error: "Auth is not configured yet."
+        error: "auth_unconfigured"
       })
     )
   }
@@ -82,7 +82,7 @@ export async function signUpWithPassword(formData: FormData) {
   if (!email || !password) {
     redirect(
       toLoginRedirect({
-        error: "Email and password are required."
+        error: "auth_credentials_required"
       })
     )
   }
@@ -96,7 +96,7 @@ export async function signUpWithPassword(formData: FormData) {
   if (error) {
     redirect(
       toLoginRedirect({
-        error: "Unable to create account right now."
+        error: "auth_sign_up_failed"
       })
     )
   }
@@ -107,7 +107,7 @@ export async function signUpWithPassword(formData: FormData) {
 
   redirect(
     toLoginRedirect({
-      message: "Account created. Check your email if confirmation is enabled."
+      message: "auth_sign_up_confirmation_sent"
     })
   )
 }
