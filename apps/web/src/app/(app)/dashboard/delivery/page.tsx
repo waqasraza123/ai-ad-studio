@@ -67,6 +67,7 @@ import { buildDeliveryInvestigationContextSummary } from "@/features/delivery/li
 import { buildDeliveryInvestigationStaleContextSummary } from "@/features/delivery/lib/delivery-investigation-stale-context"
 import { buildDeliveryFocusedWorkspaceStatusSummary } from "@/features/delivery/lib/delivery-focused-workspace-status"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
+import { resolveDeliveryWorkspaceVisibleCount } from "@/features/delivery/lib/delivery-workspace-list-window"
 
 type DeliveryPageProps = {
   searchParams: Promise<{
@@ -86,6 +87,7 @@ type DeliveryPageProps = {
     error?: string
     sort?: string
     status?: string
+    workspace_limit?: string
   }>
 }
 
@@ -228,6 +230,19 @@ export default async function DeliveryPage({
     record: focusedReminderSupportRecord,
     shouldFocusFollowUpForm
   })
+  const workspaceIdToKeepVisible = focusFollowUpFormWorkspaceId ?? focusWorkspaceId
+  const focusedWorkspaceIndex = lifecycleScopedSupportScope.overviewRecords.findIndex(
+    (record) => record.workspace.id === workspaceIdToKeepVisible
+  )
+  const visibleWorkspaceCount = resolveDeliveryWorkspaceVisibleCount({
+    focusedWorkspaceIndex,
+    requestedCount: resolvedSearchParams.workspace_limit
+      ? Number(resolvedSearchParams.workspace_limit)
+      : null,
+    totalCount: lifecycleScopedSupportScope.overviewRecords.length
+  })
+  const visibleWorkspaceListRecords =
+    lifecycleScopedSupportScope.overviewRecords.slice(0, visibleWorkspaceCount)
 
   const focusedInvestigationWorkspaceId =
     focusFollowUpFormWorkspaceId ?? focusWorkspaceId
@@ -431,6 +446,20 @@ export default async function DeliveryPage({
       <DeliveryWorkspaceList
         activeReminderSupportFilter={activeReminderSupportFilter}
         activeSupportActivityFilter={activeSupportActivityFilter}
+        currentDashboardSearchParams={{
+          activity: resolvedSearchParams.activity ?? null,
+          focusFollowUpForm: shouldFocusFollowUpForm,
+          focusReminderNotificationId: focusReminderNotificationId ?? null,
+          focusWorkspaceId: focusWorkspaceId ?? null,
+          reminderMismatchLifecycleFilter: activeReminderMismatchLifecycleFilter,
+          reminderSupportFilter: activeReminderSupportFilter,
+          sort: resolvedSearchParams.sort ?? null,
+          status: resolvedSearchParams.status ?? null,
+          supportActivityFilter: activeSupportActivityFilter,
+          workspaceLimit: resolvedSearchParams.workspace_limit
+            ? Number(resolvedSearchParams.workspace_limit)
+            : null
+        }}
         focusFollowUpFormWorkspaceId={focusFollowUpFormWorkspaceId}
         focusWorkspaceId={focusWorkspaceId}
         focusedReminderSupportRecord={focusedReminderSupportRecord}
@@ -440,7 +469,8 @@ export default async function DeliveryPage({
         selectedSortKey={selectedSortKey}
         selectedStatusFilter={selectedStatusFilter}
         todayDateKey={todayDateKey}
-        workspaceOverviews={lifecycleScopedSupportScope.overviewRecords}
+        totalWorkspaceCount={lifecycleScopedSupportScope.overviewRecords.length}
+        workspaceOverviews={visibleWorkspaceListRecords}
       />
     </div>
   )

@@ -9,7 +9,10 @@ export async function UsageEventsTable({ usageEvents }: UsageEventsTableProps) {
   const { formatCurrency, formatDateTime, formatNumber, t } = await getServerI18n()
 
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
+    <section
+      className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6"
+      data-testid="usage-events-table"
+    >
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
         {t("analytics.usageLedger")}
       </p>

@@ -29,7 +29,7 @@ export function PublicBatchReviewGrid({
   }
 
   return (
-    <div className="grid gap-6 xl:grid-cols-2">
+    <div className="grid gap-6 xl:grid-cols-2" data-testid="public-batch-review-grid">
       {exports.map((exportItem) => {
         const action = submitPublicBatchReviewCommentAction.bind(
           null,
@@ -45,11 +45,14 @@ export function PublicBatchReviewGrid({
                 ? "border-indigo-400/30 bg-indigo-500/10"
                 : "border-white/10 bg-white/[0.04]"
             }`}
+            data-testid="public-batch-review-card"
           >
             {exportItem.preview_data_url ? (
               <img
                 alt={`${exportItem.variant_key} preview`}
                 className="h-72 w-full rounded-[1.5rem] object-cover"
+                decoding="async"
+                loading="lazy"
                 src={exportItem.preview_data_url}
               />
             ) : (

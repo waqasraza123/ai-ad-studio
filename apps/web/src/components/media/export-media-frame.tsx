@@ -32,6 +32,8 @@ export function ExportMediaFrame({
       <img
         alt={`${projectName} export preview`}
         className="aspect-video w-full object-cover"
+        decoding="async"
+        loading="lazy"
         src={previewDataUrl}
       />
     )
@@ -58,7 +60,7 @@ export function ExportMediaFrame({
         className={cn("aspect-video w-full", phase === "error" && "hidden")}
         controls
         playsInline
-        preload="metadata"
+        preload="none"
         src={videoSrc ?? undefined}
         onLoadedData={() => setPhase("ready")}
         onError={() => setPhase("error")}

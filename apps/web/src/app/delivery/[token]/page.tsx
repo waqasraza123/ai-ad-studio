@@ -268,6 +268,8 @@ export default async function PublicDeliveryPage({
                     <img
                       alt={workspaceExport.label}
                       className="h-72 w-full rounded-[1.5rem] object-cover"
+                      decoding="async"
+                      loading="lazy"
                       src={previewDataUrl}
                     />
                   ) : (

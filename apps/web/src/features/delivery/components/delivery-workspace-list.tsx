@@ -29,10 +29,26 @@ import {
   buildDeliveryWorkspaceFocusAnchorId,
   buildDeliveryWorkspaceFollowUpAnchorId
 } from "@/features/delivery/lib/delivery-reminder-support-links"
+import {
+  DEFAULT_DELIVERY_WORKSPACE_VISIBLE_COUNT,
+  getNextDeliveryWorkspaceVisibleCount
+} from "@/features/delivery/lib/delivery-workspace-list-window"
 
 type DeliveryWorkspaceListProps = {
   activeReminderSupportFilter?: DeliveryReminderSupportFilter
   activeSupportActivityFilter?: DeliverySupportActivityFilter
+  currentDashboardSearchParams: {
+    activity?: string | null
+    focusFollowUpForm?: boolean
+    focusReminderNotificationId?: string | null
+    focusWorkspaceId?: string | null
+    reminderMismatchLifecycleFilter?: string | null
+    reminderSupportFilter?: DeliveryReminderSupportFilter
+    sort?: string | null
+    status?: string | null
+    supportActivityFilter?: DeliverySupportActivityFilter
+    workspaceLimit?: number | null
+  }
   focusFollowUpFormWorkspaceId?: string | null
   repairOutcome?: DeliveryReminderRepairOutcome | null
   focusWorkspaceId?: string | null
@@ -42,6 +58,7 @@ type DeliveryWorkspaceListProps = {
   selectedSortKey: DeliveryWorkspaceSortKey
   selectedStatusFilter: DeliveryWorkspaceStatusFilter
   todayDateKey: string
+  totalWorkspaceCount: number
   workspaceOverviews: DeliveryWorkspaceOverviewRecord[]
 }
 
@@ -94,6 +111,7 @@ function buildDeliveryDashboardHref(input: {
   activity: DeliveryWorkspaceQuickFilter
   sort: DeliveryWorkspaceSortKey
   status: DeliveryWorkspaceStatusFilter
+  workspaceLimit?: number | null
 }) {
   const searchParams = new URLSearchParams()
 
@@ -109,6 +127,86 @@ function buildDeliveryDashboardHref(input: {
     searchParams.set("sort", input.sort)
   }
 
+  if (
+    typeof input.workspaceLimit === "number" &&
+    input.workspaceLimit > DEFAULT_DELIVERY_WORKSPACE_VISIBLE_COUNT
+  ) {
+    searchParams.set("workspace_limit", String(input.workspaceLimit))
+  }
+
+  const queryString = searchParams.toString()
+
+  return queryString.length > 0
+    ? `/dashboard/delivery?${queryString}`
+    : "/dashboard/delivery"
+}
+
+function buildDeliveryWorkspaceListHref(input: {
+  activity?: string | null
+  focusFollowUpForm?: boolean
+  focusReminderNotificationId?: string | null
+  focusWorkspaceId?: string | null
+  reminderMismatchLifecycleFilter?: string | null
+  reminderSupportFilter?: DeliveryReminderSupportFilter
+  sort?: string | null
+  status?: string | null
+  supportActivityFilter?: DeliverySupportActivityFilter
+  workspaceLimit?: number | null
+}) {
+  const searchParams = new URLSearchParams()
+
+  if (input.activity) {
+    searchParams.set("activity", input.activity)
+  }
+
+  if (input.focusFollowUpForm) {
+    searchParams.set("focus_follow_up_form", "1")
+  }
+
+  if (input.focusReminderNotificationId) {
+    searchParams.set(
+      "focus_reminder_notification_id",
+      input.focusReminderNotificationId
+    )
+  }
+
+  if (input.focusWorkspaceId) {
+    searchParams.set("focus_workspace_id", input.focusWorkspaceId)
+  }
+
+  if (
+    input.reminderMismatchLifecycleFilter &&
+    input.reminderMismatchLifecycleFilter !== "all"
+  ) {
+    searchParams.set(
+      "reminder_mismatch_lifecycle_filter",
+      input.reminderMismatchLifecycleFilter
+    )
+  }
+
+  if (input.reminderSupportFilter && input.reminderSupportFilter !== "all") {
+    searchParams.set("reminder_support_filter", input.reminderSupportFilter)
+  }
+
+  if (input.sort) {
+    searchParams.set("sort", input.sort)
+  }
+
+  if (input.status) {
+    searchParams.set("status", input.status)
+  }
+
+  if (input.supportActivityFilter && input.supportActivityFilter !== "all") {
+    searchParams.set("support_activity_filter", input.supportActivityFilter)
+  }
+
+  if (
+    typeof input.workspaceLimit === "number" &&
+    input.workspaceLimit > DEFAULT_DELIVERY_WORKSPACE_VISIBLE_COUNT
+  ) {
+    searchParams.set("workspace_limit", String(input.workspaceLimit))
+  }
+
   const queryString = searchParams.toString()
 
   return queryString.length > 0
@@ -119,6 +217,7 @@ function buildDeliveryDashboardHref(input: {
 export function DeliveryWorkspaceList({
   activeReminderSupportFilter = "all",
   activeSupportActivityFilter = "all",
+  currentDashboardSearchParams,
   focusFollowUpFormWorkspaceId = null,
   focusWorkspaceId = null,
   focusedReminderSupportRecord = null,
@@ -128,12 +227,18 @@ export function DeliveryWorkspaceList({
   selectedSortKey,
   selectedStatusFilter,
   todayDateKey,
+  totalWorkspaceCount,
   workspaceOverviews
 }: DeliveryWorkspaceListProps) {
   const environment = getPublicEnvironment()
+  const showingAllWorkspaces = workspaceOverviews.length >= totalWorkspaceCount
+  const nextVisibleCount = getNextDeliveryWorkspaceVisibleCount({
+    currentCount: workspaceOverviews.length,
+    totalCount: totalWorkspaceCount
+  })
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="delivery-workspace-list">
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-5">
         <div className="flex flex-col gap-4">
           <div>
@@ -152,7 +257,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: selectedActivityFilter,
                   sort: selectedSortKey,
-                  status: "all"
+                  status: "all",
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedStatusFilter === "all")}`}
               >
@@ -162,7 +268,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: selectedActivityFilter,
                   sort: selectedSortKey,
-                  status: "active"
+                  status: "active",
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedStatusFilter === "active")}`}
               >
@@ -172,7 +279,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: selectedActivityFilter,
                   sort: selectedSortKey,
-                  status: "archived"
+                  status: "archived",
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedStatusFilter === "archived")}`}
               >
@@ -185,7 +293,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: "all",
                   sort: selectedSortKey,
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "all")}`}
               >
@@ -195,7 +304,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: "needs_follow_up",
                   sort: selectedSortKey,
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "needs_follow_up")}`}
               >
@@ -205,7 +315,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: "acknowledged",
                   sort: selectedSortKey,
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "acknowledged")}`}
               >
@@ -215,7 +326,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: "viewed_only",
                   sort: selectedSortKey,
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "viewed_only")}`}
               >
@@ -225,7 +337,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: "downloaded",
                   sort: selectedSortKey,
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "downloaded")}`}
               >
@@ -238,7 +351,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: selectedActivityFilter,
                   sort: "latest_activity",
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedSortKey === "latest_activity")}`}
               >
@@ -248,7 +362,8 @@ export function DeliveryWorkspaceList({
                 href={buildDeliveryDashboardHref({
                   activity: selectedActivityFilter,
                   sort: "newest",
-                  status: selectedStatusFilter
+                  status: selectedStatusFilter,
+                  workspaceLimit: currentDashboardSearchParams.workspaceLimit
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedSortKey === "newest")}`}
               >
@@ -258,6 +373,53 @@ export function DeliveryWorkspaceList({
           </div>
         </div>
       </div>
+
+      {totalWorkspaceCount > 0 ? (
+        <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-slate-300">
+              Showing <span className="font-medium text-white">{workspaceOverviews.length}</span>{" "}
+              of <span className="font-medium text-white">{totalWorkspaceCount}</span>{" "}
+              delivery workspaces.
+            </p>
+
+            {!showingAllWorkspaces ? (
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href={buildDeliveryWorkspaceListHref({
+                    ...currentDashboardSearchParams,
+                    workspaceLimit: nextVisibleCount
+                  })}
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
+                >
+                  Show {nextVisibleCount - workspaceOverviews.length} more
+                </Link>
+                <Link
+                  href={buildDeliveryWorkspaceListHref({
+                    ...currentDashboardSearchParams,
+                    workspaceLimit: totalWorkspaceCount
+                  })}
+                  className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
+                >
+                  Show all
+                </Link>
+              </div>
+            ) : currentDashboardSearchParams.workspaceLimit &&
+              currentDashboardSearchParams.workspaceLimit >
+                DEFAULT_DELIVERY_WORKSPACE_VISIBLE_COUNT ? (
+              <Link
+                href={buildDeliveryWorkspaceListHref({
+                  ...currentDashboardSearchParams,
+                  workspaceLimit: null
+                })}
+                className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
+              >
+                Collapse list
+              </Link>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
 
       {workspaceOverviews.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-white/10 bg-white/[0.03] p-8 text-sm text-slate-400">
@@ -300,6 +462,7 @@ export function DeliveryWorkspaceList({
             <div
               id={focusAnchorId}
               key={workspace.id}
+              data-testid="delivery-workspace-card"
               className={`scroll-mt-24 rounded-[2rem] border p-5 transition ${
                 isFocused
                   ? "border-cyan-400/40 bg-cyan-500/[0.08] ring-1 ring-cyan-300/30"

@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Add production-grade English/Arabic internationalization with real RTL support, a prominent header language switcher, and cookie-backed locale persistence across the web app.
+Stand up the comprehensive seeded Playwright browser harness for `apps/web` and close the remaining route-coverage gaps after the initial public/dashboard smoke pass.
 
 ## Last Completed Step
 
-Implemented the first saved test-plan slice for `apps/web`: added Vitest unit/component configs, shared test helpers under `src/test`, i18n and locale contract tests, component coverage for the language/theme switchers, and Playwright smoke coverage for login-page locale switching on desktop and mobile Chromium.
+Implemented the first full browser-automation slice for `apps/web`: Playwright now has global setup, deterministic Supabase-backed fixture seeding, generated dashboard auth state, public/dashboard spec folders, new e2e scripts, and smoke coverage for homepage, login, showcase, share, campaign, review, delivery, dashboard, analytics, exports, settings, notifications, campaigns, showcase, concepts, and the delivery dashboard chunk controls.
 
 ## Current Step
 
-Expand the saved web test plan beyond the first harness slice: add component and browser coverage for public headers, auth panels, dashboard chrome, analytics formatting, and the next stable public/dashboard smoke routes from `docs/_local/web-i18n-rtl-test-plan.md`.
+Run the seeded Playwright suite against a reachable Supabase environment, then harden any failing selectors/fixtures and expand coverage to the remaining dashboard detail routes.
 
 ## Scope Boundaries
 
@@ -25,11 +25,9 @@ Expand the saved web test plan beyond the first harness slice: add component and
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/components/i18n/*`
-- `apps/web/src/components/auth/*`
-- `apps/web/src/components/layout/*`
 - `apps/web/e2e/*`
-- `apps/web/src/test/*`
+- `apps/web/scripts/e2e/*`
+- `apps/web/src/features/*/components/*`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
@@ -37,31 +35,28 @@ Expand the saved web test plan beyond the first harness slice: add component and
 - Keep URLs stable; locale stays in cookie state, not path prefixes.
 - Preserve design quality in both LTR and RTL; prefer logical properties/utilities over one-off left/right fixes.
 - Keep user-authored and provider-authored content unchanged; localize repo-owned UI copy and formatting only.
-- Preserve the existing marketing/editorial tone while improving Arabic readability and alignment.
+- The browser harness is intentionally real-stack: no mock auth mode, no test-only HTTP endpoints, and fixture setup depends on reachable Supabase auth + service-role APIs.
+- The local environment here can `typecheck` and `build`, but current Supabase auth requests are timing out; seeded E2E verification has to be rerun from a network path that can reach the configured Supabase host.
 
 ## Verification Commands
 
-- `pnpm --filter @ai-ad-studio/web test`
-- `pnpm --filter @ai-ad-studio/web test:unit`
-- `pnpm --filter @ai-ad-studio/web test:component`
-- `pnpm --filter @ai-ad-studio/web test:i18n-audit`
+- `pnpm --filter @ai-ad-studio/web test:e2e:setup`
 - `pnpm --filter @ai-ad-studio/web test:e2e:smoke`
+- `pnpm --filter @ai-ad-studio/web test:e2e:public`
+- `pnpm --filter @ai-ad-studio/web test:e2e:dashboard`
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- `rg -n 'Intl\\.DateTimeFormat\\("en"' apps/web/src --glob '!**/*.test.ts'`
-- manual browser QA in English + Arabic
+- rerun the seeded browser suite once Supabase connectivity is available
 
 ## Lookup Notes
 
-- i18n core: `apps/web/src/lib/i18n/*`
-- Language switcher: `apps/web/src/components/i18n/language-switcher.tsx`
-- Root locale/layout wiring: `apps/web/src/app/layout.tsx`
-- Locale cookie seeding: `apps/web/src/lib/supabase/middleware.ts`
-- Public header: `apps/web/src/components/i18n/public-page-header.tsx`
-- Test harness: `apps/web/vitest.config.ts`, `apps/web/vitest.unit.config.ts`, `apps/web/vitest.component.config.ts`, `apps/web/playwright.config.ts`
-- Shared test helpers: `apps/web/src/test/*`
-- Saved test strategy: `docs/_local/web-i18n-rtl-test-plan.md`
+- Playwright config: `apps/web/playwright.config.ts`
+- Playwright global setup + seeding: `apps/web/e2e/setup/*`
+- Playwright manifest/auth artifacts: `apps/web/e2e/.generated/*`
+- Public route specs: `apps/web/e2e/public/*`
+- Dashboard route specs: `apps/web/e2e/dashboard/*`
+- Fixture bootstrap script: `apps/web/scripts/e2e/setup-fixtures.ts`
 
 ## Expected Result
 
-`apps/web` now has a real regression harness for the i18n/RTL slice: locale resolution and cookie persistence are unit-tested, shared switchers have component coverage, and login locale switching is smoke-tested end to end in desktop and mobile Chromium.
+`apps/web` can seed a deterministic owner/project/token dataset, log in through the real `/login` flow during Playwright global setup, and run stable browser smoke coverage across public token routes plus the authenticated dashboard once Supabase connectivity is available.

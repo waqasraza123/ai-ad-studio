@@ -17,7 +17,7 @@ Public surfaces are intentionally separate:
 - Monorepo managed with `pnpm` workspaces and Turborepo.
 - `apps/web` is a Next.js 16 App Router app on React 19 with feature-scoped UI code under `src/features` and server/data logic under `src/server`.
 - `apps/web` now owns a typed app-level i18n layer under `src/lib/i18n` with cookie-backed locale persistence, first-visit `Accept-Language` detection, locale-aware formatting helpers, and document-level LTR/RTL switching for English and Arabic.
-- `apps/web` now also has dedicated web-test infrastructure: Vitest unit/component configs, shared test render/navigation helpers under `src/test`, and Playwright smoke coverage for the login locale switcher in both desktop and mobile Chromium.
+- `apps/web` now also has dedicated web-test infrastructure: Vitest unit/component configs, shared test render/navigation helpers under `src/test`, and a Playwright harness with global setup, deterministic Supabase-backed fixture seeding, generated auth storage state, and public/dashboard/browser-project suites under `e2e`.
 - `apps/worker` is a Node/`tsx` worker for job polling, provider execution, and delivery reminder sweeps.
 - `packages/shared`, `packages/config`, `packages/ui`, `packages/providers`, and `packages/media` hold shared contracts, config, UI primitives, provider adapters, and media utilities.
 - Supabase is the durable system of record for auth, workflow state, notifications, job traces, and delivery workspace events. Schema changes live in `supabase/migrations`.
@@ -71,14 +71,17 @@ Public surfaces are intentionally separate:
 - Delivery support activity is expected to stay auditable through `notifications`, `job_traces`, and `delivery_workspace_events`.
 - The web app `typecheck` command now runs `next typegen` before `tsc --noEmit --incremental false` so clean checkouts do not depend on a prior build and stale `.tsbuildinfo` state does not pin missing `.next/types/*` files.
 - Locale preference in the web app is URL-stable for now: existing routes stay unprefixed, the active locale is persisted in the `ai_ad_studio_locale` cookie, and first-visit auto-detection only applies before the user picks a language manually.
+- Browser-side idle work in `apps/web` should stay opt-in and visibility-aware: theme palette auto-rotation is no longer the default first-visit mode, hidden tabs should not continue stale-page refresh polling, and heavyweight dashboard help UI should load on interaction instead of in the base shell.
+- The delivery dashboard now server-chunks large workspace lists by default and expands through the `workspace_limit` query param; focus-driven reminder/support links must keep the target workspace visible when they deep-link into the list.
 - Owner guardrails are now treated as real schema-backed runtime state via `supabase/migrations/202604051000_phase_19_owner_guardrails.sql`; worker enforcement and dashboard settings should stay aligned to that table instead of relying on divergent code-only defaults.
 - The web app now exposes operator-safe runtime readiness at `/api/health`, and deployed smoke validation lives in `scripts/checks/runtime-smoke.ts` with the root wrapper `pnpm verify:phase-31`.
+- Browser automation in `apps/web` now assumes a real Supabase-backed seeded owner fixture: Playwright global setup writes `e2e/.generated/fixture-manifest.json` plus `e2e/.generated/dashboard-auth.json`, `test:e2e:setup` can seed fixtures standalone, and public/dashboard smoke scripts expect reachable Supabase auth + service-role access rather than mock endpoints.
 
 ## Deferred / Not Yet Implemented
 
 - No general open-ended ad editor or unconstrained generation workflow.
 - No dotenv-style env bootstrapping inside the worker process; local shells must export required env vars first.
-- Browser automation in the repo is still early-stage: `apps/web` now has Playwright smoke coverage for login locale switching, but most public/dashboard workflows still rely on repo-local tests plus the health/readiness and token-surface smoke scripts.
+- Browser automation still needs live-environment verification whenever Supabase connectivity is unavailable locally; when seeded E2E cannot reach the configured Supabase host, fall back to `typecheck` + `build` locally and rerun `test:e2e:setup` / `test:e2e:smoke` once network access is restored.
 - `docs/architecture` and `docs/decisions` are not populated yet; keep durable memory in this file until dedicated docs are added.
 
 ## Risks / Watchouts

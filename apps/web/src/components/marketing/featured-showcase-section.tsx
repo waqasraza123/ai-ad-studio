@@ -92,6 +92,8 @@ export function FeaturedShowcaseSection({
                   <img
                     alt={item.title}
                     className="h-full w-full object-cover"
+                    decoding="async"
+                    loading="lazy"
                     src={item.imageUrl}
                   />
                 ) : (

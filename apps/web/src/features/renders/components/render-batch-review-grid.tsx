@@ -86,12 +86,15 @@ export function RenderBatchReviewGrid({
                   controls
                   playsInline
                   poster={previewDataUrl ?? undefined}
+                  preload="none"
                   src={videoSrc}
                 />
               ) : previewDataUrl ? (
                 <img
                   alt={String(exportRecord.render_metadata.templateName ?? "Batch export preview")}
                   className="h-72 w-full rounded-[1.5rem] object-cover"
+                  decoding="async"
+                  loading="lazy"
                   src={previewDataUrl}
                 />
               ) : (

@@ -1,11 +1,22 @@
 "use client"
 
+import dynamic from "next/dynamic"
 import { useEffect, useRef, useState } from "react"
 import { Cpu, Settings2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { RuntimeSetupContext } from "./runtime-setup-content"
 import { RUNTIME_SETUP_DISMISSAL_KEY } from "./runtime-setup-content"
-import { RuntimeSetupModal } from "./runtime-setup-modal"
+
+const RuntimeSetupModal = dynamic(
+  () =>
+    import("./runtime-setup-modal").then((module) => ({
+      default: module.RuntimeSetupModal
+    })),
+  {
+    loading: () => null,
+    ssr: false
+  }
+)
 
 type RuntimeSetupLauncherProps = {
   context: RuntimeSetupContext
@@ -23,8 +34,14 @@ export function RuntimeSetupLauncher({
   showTrigger = true
 }: RuntimeSetupLauncherProps) {
   const [open, setOpen] = useState(false)
+  const [hasMountedModal, setHasMountedModal] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
+
+  function openModal() {
+    setHasMountedModal(true)
+    setOpen(true)
+  }
 
   useEffect(() => {
     setHydrated(true)
@@ -44,6 +61,7 @@ export function RuntimeSetupLauncher({
     }
 
     const timeout = window.setTimeout(() => {
+      setHasMountedModal(true)
       setOpen(true)
     }, 180)
 
@@ -62,7 +80,7 @@ export function RuntimeSetupLauncher({
 
   function handleOpenChange(nextOpen: boolean) {
     if (nextOpen) {
-      setOpen(true)
+      openModal()
       return
     }
 
@@ -77,7 +95,7 @@ export function RuntimeSetupLauncher({
           <button
             ref={triggerRef}
             type="button"
-            onClick={() => setOpen(true)}
+            onClick={openModal}
             className={cn(
               "theme-palette-panel theme-focus-ring group mt-6 w-full rounded-[1.35rem] border p-4 text-left transition"
             )}
@@ -105,7 +123,7 @@ export function RuntimeSetupLauncher({
             ref={triggerRef}
             type="button"
             className="theme-inline-secondary-button theme-focus-ring inline-flex h-10 items-center justify-center gap-2 rounded-full border px-4 text-sm font-medium"
-            onClick={() => setOpen(true)}
+            onClick={openModal}
           >
             <Settings2 className="h-4 w-4" />
             <span>{triggerLabel}</span>
@@ -113,7 +131,7 @@ export function RuntimeSetupLauncher({
         )
       ) : null}
 
-      {hydrated ? (
+      {hydrated && hasMountedModal ? (
         <RuntimeSetupModal
           open={open}
           onOpenChange={handleOpenChange}

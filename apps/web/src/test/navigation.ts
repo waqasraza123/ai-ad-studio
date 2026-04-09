@@ -5,7 +5,7 @@ type NavigationState = {
   searchParams: URLSearchParams
 }
 
-type MockRouter = {
+export type MockRouter = {
   back: () => void
   forward: () => void
   prefetch: () => void
@@ -19,9 +19,24 @@ const state: NavigationState = {
   searchParams: new URLSearchParams()
 }
 
+const router: MockRouter = {
+  back: vi.fn(),
+  forward: vi.fn(),
+  prefetch: vi.fn(),
+  push: vi.fn(),
+  refresh: vi.fn(),
+  replace: vi.fn()
+}
+
 export function resetTestNavigation() {
   state.pathname = "/"
   state.searchParams = new URLSearchParams()
+  router.back = vi.fn()
+  router.forward = vi.fn()
+  router.prefetch = vi.fn()
+  router.push = vi.fn()
+  router.refresh = vi.fn()
+  router.replace = vi.fn()
 }
 
 export function setTestNavigation(input?: {
@@ -68,14 +83,11 @@ export function useSearchParams() {
 }
 
 export function useRouter(): MockRouter {
-  return {
-    back: vi.fn(),
-    forward: vi.fn(),
-    prefetch: vi.fn(),
-    push: vi.fn(),
-    refresh: vi.fn(),
-    replace: vi.fn()
-  }
+  return router
+}
+
+export function getTestRouter(): MockRouter {
+  return router
 }
 
 export function redirect() {

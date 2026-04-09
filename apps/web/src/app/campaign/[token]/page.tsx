@@ -65,12 +65,15 @@ export default async function PublicCampaignPage({
               controls
               playsInline
               poster={previewDataUrl ?? undefined}
+              preload="none"
               src={videoSrc}
             />
           ) : previewDataUrl ? (
             <img
               alt={campaign.title}
               className="h-auto w-full rounded-[1.5rem] object-cover"
+              decoding="async"
+              loading="lazy"
               src={previewDataUrl}
             />
           ) : (

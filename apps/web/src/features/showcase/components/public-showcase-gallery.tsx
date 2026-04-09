@@ -80,6 +80,8 @@ export async function PublicShowcaseGallery({
               <img
                 alt={item.title}
                 className="h-72 w-full object-cover"
+                decoding="async"
+                loading="lazy"
                 src={previewDataUrl}
               />
             ) : (

@@ -4,6 +4,7 @@ coverage
 dist
 playwright-report
 test-results
+apps/web/e2e/.generated
 node_modules
 .env
 .env.local

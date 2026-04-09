@@ -38,6 +38,14 @@ type ThemePaletteContextValue = {
 
 const ThemePaletteContext = createContext<ThemePaletteContextValue | null>(null)
 
+function isDocumentVisible() {
+  if (typeof document === "undefined") {
+    return true
+  }
+
+  return document.visibilityState !== "hidden"
+}
+
 function readStoredPreference() {
   function normalizeStoredPreference(rawValue: string | null) {
     if (!rawValue) {
@@ -109,13 +117,54 @@ function prefersReducedMotion() {
 export function ThemePaletteProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false)
   const [reduceMotion, setReduceMotion] = useState(false)
-  const [paletteMode, setPaletteMode] = useState<ThemePaletteMode>("auto")
+  const [pageVisible, setPageVisible] = useState(true)
+  const [paletteMode, setPaletteMode] = useState<ThemePaletteMode>("manual")
   const [colorMode, setColorMode] = useState<ThemeColorMode>("light")
   const [manualPaletteId, setManualPaletteId] = useState(DEFAULT_THEME_ID)
   const [autoIndex, setAutoIndex] = useState(0)
 
   useEffect(() => {
     setHydrated(true)
+
+    if (typeof document !== "undefined") {
+      setPageVisible(isDocumentVisible())
+      const handleVisibilityChange = () => {
+        setPageVisible(isDocumentVisible())
+      }
+
+      document.addEventListener("visibilitychange", handleVisibilityChange)
+
+      if (typeof window === "undefined" || typeof window.matchMedia !== "function") {
+        setReduceMotion(prefersReducedMotion())
+
+        return () => {
+          document.removeEventListener("visibilitychange", handleVisibilityChange)
+        }
+      }
+
+      const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
+      const handleMotionPreferenceChange = () => {
+        setReduceMotion(mediaQuery.matches)
+      }
+
+      handleMotionPreferenceChange()
+      if (typeof mediaQuery.addEventListener === "function") {
+        mediaQuery.addEventListener("change", handleMotionPreferenceChange)
+      } else {
+        mediaQuery.addListener(handleMotionPreferenceChange)
+      }
+
+      return () => {
+        document.removeEventListener("visibilitychange", handleVisibilityChange)
+
+        if (typeof mediaQuery.removeEventListener === "function") {
+          mediaQuery.removeEventListener("change", handleMotionPreferenceChange)
+        } else {
+          mediaQuery.removeListener(handleMotionPreferenceChange)
+        }
+      }
+    }
+
     setReduceMotion(prefersReducedMotion())
   }, [])
 
@@ -126,7 +175,7 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
 
     const storedPreference = readStoredPreference()
     if (!storedPreference) {
-      setPaletteMode(prefersReducedMotion() ? "manual" : "auto")
+      setPaletteMode("manual")
       setColorMode("light")
       setManualPaletteId(DEFAULT_THEME_ID)
       setAutoIndex(0)
@@ -148,8 +197,12 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
 
     if (prefersReducedMotion()) {
       setPaletteMode("manual")
-      setManualPaletteId(DEFAULT_THEME_ID)
-      setAutoIndex(0)
+      setManualPaletteId(storedPreference.selectedPaletteId)
+      setAutoIndex(
+        themePalettes.findIndex(
+          (p) => p.id === storedPreference.selectedPaletteId
+        )
+      )
       return
     }
 
@@ -189,7 +242,7 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
   }, [activeCssVariables, activePalette.id, colorMode, hydrated, paletteMode])
 
   useEffect(() => {
-    if (!hydrated || reduceMotion || paletteMode !== "auto") {
+    if (!hydrated || reduceMotion || paletteMode !== "auto" || !pageVisible) {
       return
     }
 
@@ -200,7 +253,7 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
     return () => {
       window.clearInterval(interval)
     }
-  }, [hydrated, paletteMode, reduceMotion])
+  }, [hydrated, pageVisible, paletteMode, reduceMotion])
 
   useEffect(() => {
     if (!hydrated) {
@@ -210,9 +263,9 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
     persistPreference({
       colorMode,
       paletteMode,
-      selectedPaletteId: activePalette.id
+      selectedPaletteId: manualPaletteId
     })
-  }, [activePalette.id, colorMode, hydrated, paletteMode])
+  }, [colorMode, hydrated, manualPaletteId, paletteMode])
 
   const value = useMemo<ThemePaletteContextValue>(
     () => ({
@@ -239,6 +292,7 @@ export function ThemePaletteProvider({ children }: { children: ReactNode }) {
           return
         }
 
+        setManualPaletteId(activePalette.id)
         setAutoIndex(currentIndex >= 0 ? currentIndex : 0)
         setPaletteMode("auto")
       },

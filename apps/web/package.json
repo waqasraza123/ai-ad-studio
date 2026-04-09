@@ -10,8 +10,11 @@
     "start": "next start",
     "test": "vitest run --passWithNoTests --config vitest.config.ts",
     "test:component": "vitest run --passWithNoTests --config vitest.component.config.ts",
+    "test:e2e:dashboard": "playwright test --config playwright.config.ts --project chromium --project mobile-chrome e2e/dashboard",
     "test:e2e:full": "playwright test --config playwright.config.ts",
-    "test:e2e:smoke": "playwright test --config playwright.config.ts --grep @smoke",
+    "test:e2e:public": "playwright test --config playwright.config.ts --project chromium --project mobile-chrome e2e/public",
+    "test:e2e:setup": "tsx ./scripts/e2e/setup-fixtures.ts",
+    "test:e2e:smoke": "playwright test --config playwright.config.ts --project chromium --project mobile-chrome --grep @smoke",
     "test:i18n-audit": "vitest run --passWithNoTests --config vitest.unit.config.ts src/lib/i18n/config.test.ts src/lib/i18n/resolve-locale.test.ts src/lib/i18n/translator.test.ts src/lib/i18n/catalog.test.ts src/lib/form-error-messages.test.ts src/lib/supabase/middleware.test.ts src/app/actions.test.ts",
     "test:unit": "vitest run --passWithNoTests --config vitest.unit.config.ts",
     "typecheck": "next typegen && tsc --noEmit --incremental false"
