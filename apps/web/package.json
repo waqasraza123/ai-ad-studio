@@ -8,7 +8,12 @@
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start",
-    "test": "vitest run --passWithNoTests",
+    "test": "vitest run --passWithNoTests --config vitest.config.ts",
+    "test:component": "vitest run --passWithNoTests --config vitest.component.config.ts",
+    "test:e2e:full": "playwright test --config playwright.config.ts",
+    "test:e2e:smoke": "playwright test --config playwright.config.ts --grep @smoke",
+    "test:i18n-audit": "vitest run --passWithNoTests --config vitest.unit.config.ts src/lib/i18n/config.test.ts src/lib/i18n/resolve-locale.test.ts src/lib/i18n/translator.test.ts src/lib/i18n/catalog.test.ts src/lib/form-error-messages.test.ts src/lib/supabase/middleware.test.ts src/app/actions.test.ts",
+    "test:unit": "vitest run --passWithNoTests --config vitest.unit.config.ts",
     "typecheck": "next typegen && tsc --noEmit --incremental false"
   },
   "dependencies": {
@@ -28,9 +33,15 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@playwright/test": "^1.59.1",
     "@tailwindcss/postcss": "^4.2.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
-    "tailwindcss": "^4.2.1"
+    "jsdom": "^26.1.0",
+    "tailwindcss": "^4.2.1",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }

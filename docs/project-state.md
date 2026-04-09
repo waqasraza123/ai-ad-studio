@@ -17,6 +17,7 @@ Public surfaces are intentionally separate:
 - Monorepo managed with `pnpm` workspaces and Turborepo.
 - `apps/web` is a Next.js 16 App Router app on React 19 with feature-scoped UI code under `src/features` and server/data logic under `src/server`.
 - `apps/web` now owns a typed app-level i18n layer under `src/lib/i18n` with cookie-backed locale persistence, first-visit `Accept-Language` detection, locale-aware formatting helpers, and document-level LTR/RTL switching for English and Arabic.
+- `apps/web` now also has dedicated web-test infrastructure: Vitest unit/component configs, shared test render/navigation helpers under `src/test`, and Playwright smoke coverage for the login locale switcher in both desktop and mobile Chromium.
 - `apps/worker` is a Node/`tsx` worker for job polling, provider execution, and delivery reminder sweeps.
 - `packages/shared`, `packages/config`, `packages/ui`, `packages/providers`, and `packages/media` hold shared contracts, config, UI primitives, provider adapters, and media utilities.
 - Supabase is the durable system of record for auth, workflow state, notifications, job traces, and delivery workspace events. Schema changes live in `supabase/migrations`.
@@ -77,7 +78,7 @@ Public surfaces are intentionally separate:
 
 - No general open-ended ad editor or unconstrained generation workflow.
 - No dotenv-style env bootstrapping inside the worker process; local shells must export required env vars first.
-- No evidence of end-to-end browser automation in the current repo; deployed validation currently relies on the health/readiness endpoint plus the token-surface smoke script rather than browser-level automation.
+- Browser automation in the repo is still early-stage: `apps/web` now has Playwright smoke coverage for login locale switching, but most public/dashboard workflows still rely on repo-local tests plus the health/readiness and token-surface smoke scripts.
 - `docs/architecture` and `docs/decisions` are not populated yet; keep durable memory in this file until dedicated docs are added.
 
 ## Risks / Watchouts

@@ -10,11 +10,11 @@ Add production-grade English/Arabic internationalization with real RTL support, 
 
 ## Last Completed Step
 
-Implemented the core i18n/RTL foundation in `apps/web`: locale config and catalogs, request resolution and cookie persistence, root layout `lang/dir` wiring, shared language switchers, localized auth/shared chrome/public headers, and locale-aware formatting in the analytics/project/concept surfaces touched this turn. Saved the comprehensive follow-up test strategy in `docs/_local/web-i18n-rtl-test-plan.md`.
+Implemented the first saved test-plan slice for `apps/web`: added Vitest unit/component configs, shared test helpers under `src/test`, i18n and locale contract tests, component coverage for the language/theme switchers, and Playwright smoke coverage for login-page locale switching on desktop and mobile Chromium.
 
 ## Current Step
 
-Implement the saved web test plan: add the `apps/web` Vitest component harness, Playwright browser coverage, i18n/RTL contract tests, and key route smoke coverage from `docs/_local/web-i18n-rtl-test-plan.md`.
+Expand the saved web test plan beyond the first harness slice: add component and browser coverage for public headers, auth panels, dashboard chrome, analytics formatting, and the next stable public/dashboard smoke routes from `docs/_local/web-i18n-rtl-test-plan.md`.
 
 ## Scope Boundaries
 
@@ -25,10 +25,11 @@ Implement the saved web test plan: add the `apps/web` Vitest component harness, 
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/features/delivery/components/*`
-- `apps/web/src/features/renders/components/*`
-- `apps/web/src/features/settings/components/*`
-- `apps/web/src/components/marketing/*`
+- `apps/web/src/components/i18n/*`
+- `apps/web/src/components/auth/*`
+- `apps/web/src/components/layout/*`
+- `apps/web/e2e/*`
+- `apps/web/src/test/*`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
@@ -40,13 +41,13 @@ Implement the saved web test plan: add the `apps/web` Vitest component harness, 
 
 ## Verification Commands
 
+- `pnpm --filter @ai-ad-studio/web test`
 - `pnpm --filter @ai-ad-studio/web test:unit`
 - `pnpm --filter @ai-ad-studio/web test:component`
 - `pnpm --filter @ai-ad-studio/web test:i18n-audit`
 - `pnpm --filter @ai-ad-studio/web test:e2e:smoke`
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- `pnpm --filter @ai-ad-studio/web test`
 - `rg -n 'Intl\\.DateTimeFormat\\("en"' apps/web/src --glob '!**/*.test.ts'`
 - manual browser QA in English + Arabic
 
@@ -57,8 +58,10 @@ Implement the saved web test plan: add the `apps/web` Vitest component harness, 
 - Root locale/layout wiring: `apps/web/src/app/layout.tsx`
 - Locale cookie seeding: `apps/web/src/lib/supabase/middleware.ts`
 - Public header: `apps/web/src/components/i18n/public-page-header.tsx`
+- Test harness: `apps/web/vitest.config.ts`, `apps/web/vitest.unit.config.ts`, `apps/web/vitest.component.config.ts`, `apps/web/playwright.config.ts`
+- Shared test helpers: `apps/web/src/test/*`
 - Saved test strategy: `docs/_local/web-i18n-rtl-test-plan.md`
 
 ## Expected Result
 
-Arabic users can switch the product into a true RTL experience without URL changes, the preference persists across reloads, and the most visible shared/public/auth/dashboard surfaces now render translated copy with locale-aware formatting.
+`apps/web` now has a real regression harness for the i18n/RTL slice: locale resolution and cookie persistence are unit-tested, shared switchers have component coverage, and login locale switching is smoke-tested end to end in desktop and mobile Chromium.
