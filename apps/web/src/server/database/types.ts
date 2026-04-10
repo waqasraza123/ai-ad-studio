@@ -52,6 +52,17 @@ export type ApprovalStatus = "pending" | "approved" | "rejected"
 export type ReviewerRole = "client" | "stakeholder" | "internal_reviewer"
 export type ExternalReviewStatus = "pending" | "approved" | "rejected"
 export type BillingPlanCode = "free" | "starter" | "growth" | "scale"
+export type ActivationChannel =
+  | "meta"
+  | "google"
+  | "tiktok"
+  | "internal_handoff"
+export type ActivationPackageStatus = "draft" | "ready" | "superseded" | "archived"
+export type ActivationReadinessStatus = "blocked" | "ready"
+export type ActivationPackageCreatedVia = "owner_dashboard" | "operator_api"
+export type CreativePerformanceIngestionSource =
+  | "manual_owner"
+  | "manual_operator"
 export type CheckoutPreference =
   | "card_or_crypto"
   | "stablecoin_preferred"
@@ -244,6 +255,7 @@ export type ExportRecord = {
   concept_id: string | null
   owner_id: string
   asset_id: string | null
+  preview_asset_id: string | null
   status: "queued" | "rendering" | "ready" | "failed"
   version: number
   variant_key: RenderVariantKey
@@ -322,6 +334,9 @@ export type BillingPlanRecord = {
   allow_share_campaigns: boolean
   allow_delivery_workspaces: boolean
   allow_external_batch_reviews: boolean
+  allow_activation_packages: boolean
+  allow_creative_performance_ingestion: boolean
+  allow_creative_performance_analytics: boolean
   watermark_exports: boolean
   allow_manual_invoice: boolean
   allow_overage: boolean
@@ -431,6 +446,9 @@ export type EffectiveOwnerLimits = {
     allowShareCampaigns: boolean
     allowDeliveryWorkspaces: boolean
     allowExternalBatchReviews: boolean
+    allowActivationPackages: boolean
+    allowCreativePerformanceIngestion: boolean
+    allowCreativePerformanceAnalytics: boolean
     watermarkExports: boolean
     allowManualInvoice: boolean
   }
@@ -485,6 +503,75 @@ export type ShowcaseItemRecord = {
   sort_order: number
   created_at: string
   updated_at: string
+}
+
+export type ActivationPackageRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  render_batch_id: string | null
+  export_id: string
+  canonical_export_id: string | null
+  channel: ActivationChannel
+  status: ActivationPackageStatus
+  readiness_status: ActivationReadinessStatus
+  readiness_issues: string[]
+  manifest_version: number
+  manifest_json: Record<string, unknown>
+  channel_payload_json: Record<string, unknown>
+  asset_bundle_json: Record<string, unknown>
+  created_by_user_id: string | null
+  created_via: ActivationPackageCreatedVia
+  created_at: string
+  updated_at: string
+}
+
+export type CreativePerformanceIngestionBatchRecord = {
+  id: string
+  owner_id: string
+  source: CreativePerformanceIngestionSource
+  channel: ActivationChannel
+  external_account_label: string | null
+  notes: string | null
+  submitted_by_user_id: string | null
+  operator_label: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type CreativePerformanceRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  concept_id: string | null
+  preview_asset_id: string | null
+  render_batch_id: string | null
+  export_id: string | null
+  canonical_export_id: string | null
+  activation_package_id: string | null
+  ingestion_batch_id: string
+  channel: ActivationChannel
+  metric_date: string
+  impressions: number
+  clicks: number
+  ctr: number
+  spend_usd: number
+  cpc: number
+  conversions: number
+  cpa: number
+  conversion_value_usd: number
+  roas: number
+  hook: string | null
+  angle: string | null
+  brand_tone: string | null
+  call_to_action: string | null
+  target_audience: string | null
+  offer_text: string | null
+  aspect_ratio: string | null
+  platform_preset: string | null
+  variant_key: string | null
+  metadata_json: Record<string, unknown>
+  created_at: string
 }
 
 export type BrandKitRecord = {

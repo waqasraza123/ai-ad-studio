@@ -6,7 +6,7 @@ export function createSupabaseAdminClient() {
   const serverEnvironment = getServerEnvironment()
 
   if (!serverEnvironment.SUPABASE_SERVICE_ROLE_KEY) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for admin billing flows")
+    throw new Error("SUPABASE_SERVICE_ROLE_KEY is required for admin server flows")
   }
 
   return createClient(

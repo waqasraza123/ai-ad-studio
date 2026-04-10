@@ -14,7 +14,7 @@ import type {
 } from "@/server/database/types"
 
 const billingPlanSelection =
-  "code, display_name, monthly_price_usd, included_active_projects, included_concept_runs, included_preview_generations, included_render_batches, included_final_exports, included_storage_bytes, max_concurrent_preview_jobs, max_concurrent_render_jobs, allow_share_links, allow_public_showcase, allow_share_campaigns, allow_delivery_workspaces, allow_external_batch_reviews, watermark_exports, allow_manual_invoice, allow_overage, monthly_overage_cap_usd, concept_run_overage_usd, preview_generation_overage_usd, render_batch_overage_usd, storage_gb_month_overage_usd, internal_total_cost_ceiling_usd, internal_openai_cost_ceiling_usd, internal_runway_cost_ceiling_usd, sort_order, is_active, created_at, updated_at"
+  "code, display_name, monthly_price_usd, included_active_projects, included_concept_runs, included_preview_generations, included_render_batches, included_final_exports, included_storage_bytes, max_concurrent_preview_jobs, max_concurrent_render_jobs, allow_share_links, allow_public_showcase, allow_share_campaigns, allow_delivery_workspaces, allow_external_batch_reviews, allow_activation_packages, allow_creative_performance_ingestion, allow_creative_performance_analytics, watermark_exports, allow_manual_invoice, allow_overage, monthly_overage_cap_usd, concept_run_overage_usd, preview_generation_overage_usd, render_batch_overage_usd, storage_gb_month_overage_usd, internal_total_cost_ceiling_usd, internal_openai_cost_ceiling_usd, internal_runway_cost_ceiling_usd, sort_order, is_active, created_at, updated_at"
 
 const ownerBillingAccountSelection =
   "owner_id, stripe_customer_id, stripe_default_payment_method_id, billing_country, checkout_preference, tax_exempt, stablecoin_eligible, manual_invoice_allowed, created_at, updated_at"
@@ -801,6 +801,11 @@ export async function getEffectiveOwnerLimits(
       providerCostUsd: usage.provider_cost_usd
     },
     featureAccess: {
+      allowActivationPackages: plan.allow_activation_packages,
+      allowCreativePerformanceAnalytics:
+        plan.allow_creative_performance_analytics,
+      allowCreativePerformanceIngestion:
+        plan.allow_creative_performance_ingestion,
       allowDeliveryWorkspaces: plan.allow_delivery_workspaces,
       allowExternalBatchReviews: plan.allow_external_batch_reviews,
       allowManualInvoice: plan.allow_manual_invoice,
@@ -856,6 +861,8 @@ export type BillingGateAction =
   | "generate_concepts"
   | "generate_previews"
   | "start_render_batch"
+  | "prepare_activation_package"
+  | "ingest_creative_performance"
   | "publish_showcase"
   | "publish_share_campaign"
   | "publish_delivery_workspace"
@@ -926,6 +933,29 @@ export async function getBillingGateDecision(
   client?: SupabaseClient
 ): Promise<BillingGateDecision> {
   const limits = await getEffectiveOwnerLimits(ownerId, client)
+
+  if (
+    action === "prepare_activation_package" &&
+    !limits.featureAccess.allowActivationPackages
+  ) {
+    return {
+      allowed: false,
+      code: "billing_upgrade_required_activation",
+      limits
+    }
+  }
+
+  if (
+    action === "ingest_creative_performance" &&
+    (!limits.featureAccess.allowCreativePerformanceIngestion ||
+      !limits.featureAccess.allowCreativePerformanceAnalytics)
+  ) {
+    return {
+      allowed: false,
+      code: "billing_upgrade_required_creative_performance",
+      limits
+    }
+  }
 
   if (
     action === "publish_showcase" &&

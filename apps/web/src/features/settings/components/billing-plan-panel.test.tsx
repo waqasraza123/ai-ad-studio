@@ -33,6 +33,9 @@ function buildPlan(
   overrides: Partial<BillingPlanRecord> = {}
 ): BillingPlanRecord {
   return {
+    allow_activation_packages: code !== "free",
+    allow_creative_performance_analytics: code !== "free",
+    allow_creative_performance_ingestion: code !== "free",
     allow_delivery_workspaces: code !== "free",
     allow_external_batch_reviews: code !== "free",
     allow_manual_invoice: code === "scale",
@@ -93,6 +96,11 @@ function buildLimits(
       providerCostUsd: 0
     },
     featureAccess: {
+      allowActivationPackages: plan.allow_activation_packages,
+      allowCreativePerformanceAnalytics:
+        plan.allow_creative_performance_analytics,
+      allowCreativePerformanceIngestion:
+        plan.allow_creative_performance_ingestion,
       allowDeliveryWorkspaces: plan.allow_delivery_workspaces,
       allowExternalBatchReviews: plan.allow_external_batch_reviews,
       allowManualInvoice: plan.allow_manual_invoice,

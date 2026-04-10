@@ -3,6 +3,7 @@ import { StaleWorkspaceRefresh } from "@/components/system/stale-workspace-refre
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { exportStatusIsInProgress } from "@/features/exports/lib/export-status-ui"
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
+import { ActivationPackagePanel } from "@/features/activation/components/activation-package-panel"
 import { ShareCampaignPanel } from "@/features/renders/components/share-campaign-panel"
 import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
@@ -10,7 +11,9 @@ import { DeliveryWorkspacePanel } from "@/features/delivery/components/delivery-
 import { DeliveryActivityTimeline } from "@/features/delivery/components/delivery-activity-timeline"
 import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listActivationPackagesForExport } from "@/server/activation/activation-service"
 import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
+import { getEffectiveOwnerLimits } from "@/server/billing/billing-service"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
 import {
   getDeliveryWorkspaceByCanonicalExportIdForOwner,
@@ -106,7 +109,9 @@ export default async function ExportDetailPage({
     shareCampaign,
     promotionEligibility,
     deliveryWorkspace,
-    projectExports
+    projectExports,
+    activationPackages,
+    billingLimits
   ] = await Promise.all([
     getProjectByIdForOwner(exportRecord.project_id, user.id),
     exportRecord.concept_id
@@ -122,7 +127,12 @@ export default async function ExportDetailPage({
       ownerId: user.id
     }),
     getDeliveryWorkspaceByCanonicalExportIdForOwner(exportRecord.id, user.id),
-    listExportsByProjectIdForOwner(exportRecord.project_id, user.id)
+    listExportsByProjectIdForOwner(exportRecord.project_id, user.id),
+    listActivationPackagesForExport({
+      exportId: exportRecord.id,
+      ownerId: user.id
+    }),
+    getEffectiveOwnerLimits(user.id)
   ])
 
   if (!project) {
@@ -308,7 +318,16 @@ export default async function ExportDetailPage({
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
+        <ActivationPackagePanel
+          activationEnabled={billingLimits.featureAccess.allowActivationPackages}
+          exportId={exportRecord.id}
+          isEligible={project.canonical_export_id === exportRecord.id}
+          packages={activationPackages}
+        />
         <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
         <DeliveryWorkspacePanel
           canonicalExportId={exportRecord.id}
           eligibleBatchExports={eligibleBatchExports}
@@ -316,6 +335,12 @@ export default async function ExportDetailPage({
           isEligible={promotionEligibility.eligible}
           workspace={deliveryWorkspace}
           workspaceExportIds={workspaceExports.map((item) => item.export_id)}
+        />
+        <ShowcasePublishPanel
+          eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
+          exportId={exportRecord.id}
+          isEligible={promotionEligibility.eligible}
+          showcaseItem={showcaseItem}
         />
       </div>
 
@@ -327,12 +352,6 @@ export default async function ExportDetailPage({
       ) : null}
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <ShowcasePublishPanel
-          eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
-          exportId={exportRecord.id}
-          isEligible={promotionEligibility.eligible}
-          showcaseItem={showcaseItem}
-        />
         <ShareCampaignPanel
           eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
           exportId={exportRecord.id}

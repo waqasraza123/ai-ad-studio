@@ -41,6 +41,11 @@ export const en = {
   "common.words.email": "Email",
   "common.words.password": "Password",
   "common.words.project": "Project",
+  "common.words.label": "Label",
+  "common.words.records": "Records",
+  "common.words.impressions": "Impressions",
+  "common.words.spend": "Spend",
+  "common.words.roas": "ROAS",
   "common.words.created": "Created {{value}}",
   "common.words.updated": "Updated {{value}}",
   "common.words.notSet": "Not set",
@@ -268,6 +273,42 @@ export const en = {
   "analytics.overview.estimatedTotalCost": "Estimated total cost",
   "analytics.overview.trackedUnits": "Tracked units",
   "analytics.overview.projectsWithUsage": "Projects with usage",
+  "analytics.creative.eyebrow": "Creative performance",
+  "analytics.creative.title": "Activation outcomes and creative scorecards",
+  "analytics.creative.description":
+    "Track manual creative outcomes against real export lineage so the studio can learn which hooks, CTAs, and formats are producing the best results.",
+  "analytics.creative.upgradeRequired":
+    "Your current plan does not include creative performance analytics. Upgrade in Billing and plan.",
+  "analytics.creative.empty":
+    "No creative performance records have been ingested yet.",
+  "analytics.creative.topExports": "Top exports and canonical winners",
+  "analytics.creative.byHook": "Winning hooks",
+  "analytics.creative.byCallToAction": "Winning CTAs",
+  "analytics.creative.byAspectRatio": "Winning aspect ratios",
+  "analytics.creative.recordCount": "{{count}} records",
+  "analytics.creative.overview.impressions": "Impressions",
+  "analytics.creative.overview.clicks": "Clicks",
+  "analytics.creative.overview.spend": "Spend",
+  "analytics.creative.overview.conversions": "Conversions",
+  "analytics.creative.overview.roas": "ROAS",
+  "analytics.creative.ingestion.eyebrow": "Manual ingestion",
+  "analytics.creative.ingestion.description":
+    "Submit campaign outcomes manually first. The system ties each record back to the real export, concept, preview, render batch, and canonical lineage.",
+  "analytics.creative.ingestion.upgradeRequired":
+    "Your current plan does not include creative performance ingestion. Upgrade in Billing and plan.",
+  "analytics.creative.ingestion.empty":
+    "Create exports first, then ingest their campaign outcomes here.",
+  "analytics.creative.ingestion.impressions": "Impressions",
+  "analytics.creative.ingestion.clicks": "Clicks",
+  "analytics.creative.ingestion.spend": "Spend (USD)",
+  "analytics.creative.ingestion.conversions": "Conversions",
+  "analytics.creative.ingestion.conversionValue": "Conversion value (USD)",
+  "analytics.creative.ingestion.accountLabel": "External account label",
+  "analytics.creative.ingestion.notes": "Notes",
+  "analytics.creative.ingestion.pending": "Recording performance…",
+  "analytics.creative.ingestion.submit": "Record creative performance",
+  "analytics.creative.ingestion.success":
+    "Creative performance was recorded successfully.",
   "notifications.overview.total": "Total notifications",
   "notifications.overview.unread": "Unread",
   "notifications.overview.warnings": "Warnings",
@@ -423,6 +464,35 @@ export const en = {
   "exports.detail.notAvailable": "n/a",
   "exports.detail.noSafetyNotes":
     "No additional safety notes were recorded.",
+  "activation.panel.eyebrow": "Activation package",
+  "activation.panel.description":
+    "Prepare a channel-ready internal package for this finalized export. Packages stay audit-friendly and separate from direct external publishing.",
+  "activation.panel.upgradeRequired":
+    "Your current plan does not include activation package preparation. Upgrade in Billing and plan.",
+  "activation.panel.ineligible":
+    "Only the finalized canonical export can be prepared as an activation package.",
+  "activation.panel.channelDescription":
+    "Build a normalized manifest, asset bundle, and channel payload for internal preparation.",
+  "activation.panel.pending": "Preparing package…",
+  "activation.panel.prepareAction": "Prepare {{value}} package",
+  "activation.panel.history": "Package history",
+  "activation.panel.empty": "No activation packages have been prepared for this export yet.",
+  "activation.panel.downloadManifest": "Download manifest",
+  "activation.panel.readiness.ready": "Ready",
+  "activation.panel.readiness.blocked": "Blocked",
+  "activation.panel.status.ready": "Ready",
+  "activation.panel.status.draft": "Draft",
+  "activation.panel.status.superseded": "Superseded",
+  "activation.panel.status.archived": "Archived",
+  "activation.channel.meta": "Meta",
+  "activation.channel.google": "Google",
+  "activation.channel.tiktok": "TikTok",
+  "activation.channel.internalHandoff": "Internal handoff",
+  "activation.issue.exportNotReady": "The export is not ready yet.",
+  "activation.issue.exportAssetMissing":
+    "The rendered export asset is missing.",
+  "activation.issue.exportNotFinalized":
+    "Only the finalized canonical export can be prepared.",
   "promotion.eligibility.finalizedCanonicalOnly":
     "Only finalized canonical exports can be promoted publicly.",
   "promotion.eligibility.batchNotFound":
@@ -498,6 +568,22 @@ export const en = {
     "Plan changes are not available right now. Check Stripe billing setup and try again.",
   "billing_portal_unavailable":
     "Billing portal is not available for this account yet.",
+  "activation_export_not_found":
+    "The export could not be found for activation packaging.",
+  "activation_export_not_finalized":
+    "Only the finalized canonical export can be prepared as an activation package.",
+  "activation_package_failed":
+    "The activation package could not be prepared. Try again.",
+  "billing_upgrade_required_activation":
+    "Your current plan does not include activation packages. Upgrade in Billing and plan.",
+  "billing_upgrade_required_creative_performance":
+    "Your current plan does not include creative performance ingestion and analytics. Upgrade in Billing and plan.",
+  "creative_performance_invalid":
+    "The creative performance record is invalid. Check the metrics and try again.",
+  "creative_performance_export_not_found":
+    "The selected export could not be found for creative performance tracking.",
+  "creative_performance_package_not_found":
+    "The selected activation package could not be found for this export.",
   "theme.palette.eyebrow": "Theme palette",
   "theme.palette.auto": "Auto cycling",
   "theme.palette.pinned": "Pinned",

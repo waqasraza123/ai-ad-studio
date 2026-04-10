@@ -12,6 +12,7 @@ function createExportRecord(id: string): ExportRecord {
     concept_id: null,
     owner_id: "owner-1",
     asset_id: null,
+    preview_asset_id: null,
     status: "ready",
     version: 1,
     variant_key: "default",

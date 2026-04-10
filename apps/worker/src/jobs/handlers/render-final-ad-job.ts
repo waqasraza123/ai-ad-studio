@@ -797,6 +797,10 @@ export async function handleRenderFinalAdJob(
             conceptId: selectedConcept.id,
             ownerId: project.owner_id,
             platformPreset,
+            previewAssetId:
+              previewAsset && typeof previewAsset.id === "string"
+                ? previewAsset.id
+                : null,
             projectId: project.id,
             renderMetadata,
             variantKey

@@ -22,6 +22,7 @@ Public surfaces are intentionally separate:
 - `packages/shared`, `packages/config`, `packages/ui`, `packages/providers`, and `packages/media` hold shared contracts, config, UI primitives, provider adapters, and media utilities.
 - Supabase is the durable system of record for auth, workflow state, notifications, job traces, and delivery workspace events. Schema changes live in `supabase/migrations`.
 - Billing is now a separate schema-backed domain: plan definitions, owner billing accounts, owner subscriptions, billing usage rollups, and billing event audit records all live in Supabase and are no longer inferred from `owner_guardrails`.
+- Creative activation and feedback now have a first durable foundation: exports persist `preview_asset_id`, finalized canonical exports can be prepared into internal `activation_packages`, and manually ingested `creative_performance_records` tie channel outcomes back to real creative lineage.
 - Billing deployment validation now has an operator-protected diagnostics surface at `/api/billing/operator/runtime` plus the deploy smoke harness `scripts/checks/billing-runtime-smoke.ts` for Stripe/API-plan readiness checks.
 - Repo-managed Git hooks now live under `.githooks`; the versioned pre-push hook delegates to `scripts/verify-push.sh` and currently blocks pushes when `pnpm build` fails.
 - Cloudflare R2 backs asset and media storage.
@@ -57,6 +58,7 @@ Public surfaces are intentionally separate:
 - Owner-controlled single-export share links.
 - Delivery follow-up queue, overdue reminder views, worker reminder sweeps, and reminder support/investigation tooling.
 - Owner-account subscription billing with seeded free/starter/growth/scale plans, Stripe checkout/webhooks, effective-limit enforcement across web + worker, and free-plan export watermarking.
+- Phase-1 activation and feedback foundation: activation packages for finalized canonical exports, owner/operator manual creative-performance ingestion, and dashboard creative scorecards derived from durable performance facts.
 
 ## Important Decisions
 
@@ -64,6 +66,8 @@ Public surfaces are intentionally separate:
 - Token-scoped public surfaces are intentionally separate products with different rules, not alternate skins on one route type.
 - Delivery workspaces are anchored to the canonical finalized export even when they include multiple batch exports.
 - Billing enforcement now flows through an effective-limit service that clamps plan entitlements, user safety caps, and operator ceilings before either web actions or worker execution can proceed.
+- Activation packages are internal preparation records, not direct publish integrations. They snapshot manifest/channel payload data per export/channel and remain separate from public showcase, campaign, and delivery publishing.
+- Creative performance analytics are a separate outcome domain from provider-cost usage analytics: `usage_events` remain provider/cost telemetry, while creative outcomes now live in dedicated ingestion batches and performance fact rows.
 - Stripe is the primary self-serve billing rail for cards plus stablecoin checkout; manual stablecoin settlement is a protected operator path, not the default self-serve flow.
 - Billing runtime diagnostics are operator-scoped and non-destructive: they validate Stripe API connectivity, paid-plan price readiness, and seeded billing-plan presence before live dashboard checks.
 - Contributor push safety is repo-managed rather than ad hoc: use `pnpm hooks:setup` for clone setup, `pnpm verify:push` for the shared gate, and `pnpm safe-push -- ...` as the AI-friendly wrapper around `git push`.
@@ -88,6 +92,7 @@ Public surfaces are intentionally separate:
 
 - Delivery reminder/support changes often cross page composition, feature libs, server actions, worker logic, and migrations at the same time.
 - Billing changes now cross Supabase schema, settings UI, public-surface eligibility, web actions, worker queue claim logic, usage metering, and webhook reconciliation in one slice.
+- Activation and creative-performance changes now cross Supabase schema, render-worker export writes, export-detail actions, analytics dashboard composition, billing feature gates, and operator ingestion routes in one slice.
 - Recent reminder mismatch work proved that `next build` can catch parser/import issues that plain typecheck does not surface first; run the build when touching dashboard route composition or import blocks.
 - `pnpm build` and `pnpm typecheck` must stay sequential because both commands touch `.next`; the supported repo-wide wrapper is `pnpm verify:phase-31`.
 - The most volatile area right now is the delivery dashboard support flow, especially reminder mismatch resolution/reopen and lifecycle summary behavior.

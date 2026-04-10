@@ -41,6 +41,11 @@ export const ar: AppMessageCatalog = {
   "common.words.email": "البريد الإلكتروني",
   "common.words.password": "كلمة المرور",
   "common.words.project": "المشروع",
+  "common.words.label": "التصنيف",
+  "common.words.records": "السجلات",
+  "common.words.impressions": "مرات الظهور",
+  "common.words.spend": "الإنفاق",
+  "common.words.roas": "عائد الإنفاق الإعلاني",
   "common.words.created": "أُنشئ {{value}}",
   "common.words.updated": "آخر تحديث {{value}}",
   "common.words.notSet": "غير محدد",
@@ -263,6 +268,42 @@ export const ar: AppMessageCatalog = {
   "analytics.overview.estimatedTotalCost": "إجمالي التكلفة التقديرية",
   "analytics.overview.trackedUnits": "الوحدات المتتبعة",
   "analytics.overview.projectsWithUsage": "المشاريع ذات الاستخدام",
+  "analytics.creative.eyebrow": "أداء الإبداع",
+  "analytics.creative.title": "نتائج التفعيل وبطاقات أداء الإبداع",
+  "analytics.creative.description":
+    "تتبّع نتائج الأداء اليدوية مقابل سلسلة نسب المخرج الحقيقية حتى يتعلّم الاستوديو أي الخطافات والدعوات إلى الإجراء والمقاسات تحقق أفضل النتائج.",
+  "analytics.creative.upgradeRequired":
+    "خطتك الحالية لا تشمل تحليلات أداء الإبداع. قم بالترقية من الفوترة والخطة.",
+  "analytics.creative.empty":
+    "لم يتم إدخال أي سجلات أداء إبداعي بعد.",
+  "analytics.creative.topExports": "أفضل المخرجات والنسخ المعتمدة",
+  "analytics.creative.byHook": "أفضل الخطافات",
+  "analytics.creative.byCallToAction": "أفضل الدعوات إلى الإجراء",
+  "analytics.creative.byAspectRatio": "أفضل نسب الأبعاد",
+  "analytics.creative.recordCount": "{{count}} سجلات",
+  "analytics.creative.overview.impressions": "مرات الظهور",
+  "analytics.creative.overview.clicks": "النقرات",
+  "analytics.creative.overview.spend": "الإنفاق",
+  "analytics.creative.overview.conversions": "التحويلات",
+  "analytics.creative.overview.roas": "عائد الإنفاق الإعلاني",
+  "analytics.creative.ingestion.eyebrow": "إدخال يدوي",
+  "analytics.creative.ingestion.description":
+    "أدخل نتائج الحملات يدويًا في البداية. يربط النظام كل سجل بالمخرج والمفهوم والمعاينة ودفعة الإخراج والسلسلة المعتمدة الحقيقية.",
+  "analytics.creative.ingestion.upgradeRequired":
+    "خطتك الحالية لا تشمل إدخال أداء الإبداع. قم بالترقية من الفوترة والخطة.",
+  "analytics.creative.ingestion.empty":
+    "أنشئ مخرجات أولًا ثم أدخل نتائج حملاتها هنا.",
+  "analytics.creative.ingestion.impressions": "مرات الظهور",
+  "analytics.creative.ingestion.clicks": "النقرات",
+  "analytics.creative.ingestion.spend": "الإنفاق (USD)",
+  "analytics.creative.ingestion.conversions": "التحويلات",
+  "analytics.creative.ingestion.conversionValue": "قيمة التحويل (USD)",
+  "analytics.creative.ingestion.accountLabel": "اسم الحساب الخارجي",
+  "analytics.creative.ingestion.notes": "ملاحظات",
+  "analytics.creative.ingestion.pending": "جارٍ تسجيل الأداء…",
+  "analytics.creative.ingestion.submit": "تسجيل أداء الإبداع",
+  "analytics.creative.ingestion.success":
+    "تم تسجيل أداء الإبداع بنجاح.",
   "notifications.overview.total": "إجمالي الإشعارات",
   "notifications.overview.unread": "غير المقروءة",
   "notifications.overview.warnings": "التحذيرات",
@@ -414,6 +455,34 @@ export const ar: AppMessageCatalog = {
   "exports.detail.unknown": "غير معروف",
   "exports.detail.notAvailable": "غير متاح",
   "exports.detail.noSafetyNotes": "لم تُسجّل ملاحظات سلامة إضافية.",
+  "activation.panel.eyebrow": "حزمة التفعيل",
+  "activation.panel.description":
+    "أعدّ حزمة داخلية جاهزة للقناة لهذا المخرج النهائي. تبقى الحزم قابلة للتدقيق ومنفصلة عن النشر الخارجي المباشر.",
+  "activation.panel.upgradeRequired":
+    "خطتك الحالية لا تشمل إعداد حزم التفعيل. قم بالترقية من الفوترة والخطة.",
+  "activation.panel.ineligible":
+    "لا يمكن إعداد حزمة التفعيل إلا للمخرج النهائي المعتمد.",
+  "activation.panel.channelDescription":
+    "ابنِ ملفًا موحدًا وملف أصول وحمولة خاصة بالقناة للتحضير الداخلي.",
+  "activation.panel.pending": "جارٍ إعداد الحزمة…",
+  "activation.panel.prepareAction": "إعداد حزمة {{value}}",
+  "activation.panel.history": "سجل الحزم",
+  "activation.panel.empty": "لم يتم إعداد أي حزم تفعيل لهذا المخرج بعد.",
+  "activation.panel.downloadManifest": "تنزيل ملف البيانات",
+  "activation.panel.readiness.ready": "جاهزة",
+  "activation.panel.readiness.blocked": "محجوبة",
+  "activation.panel.status.ready": "جاهزة",
+  "activation.panel.status.draft": "مسودة",
+  "activation.panel.status.superseded": "تم استبدالها",
+  "activation.panel.status.archived": "مؤرشفة",
+  "activation.channel.meta": "ميتا",
+  "activation.channel.google": "غوغل",
+  "activation.channel.tiktok": "تيك توك",
+  "activation.channel.internalHandoff": "تسليم داخلي",
+  "activation.issue.exportNotReady": "المخرج ليس جاهزًا بعد.",
+  "activation.issue.exportAssetMissing": "ملف المخرج النهائي غير موجود.",
+  "activation.issue.exportNotFinalized":
+    "لا يمكن الإعداد إلا للمخرج النهائي المعتمد.",
   "promotion.eligibility.finalizedCanonicalOnly":
     "لا يمكن الترويج علنًا إلا للمخرجات المعتمدة والنهائية.",
   "promotion.eligibility.batchNotFound":
@@ -489,6 +558,22 @@ export const ar: AppMessageCatalog = {
     "تبديل الخطط غير متاح الآن. تحقق من إعدادات Stripe الخاصة بالفوترة ثم حاول مرة أخرى.",
   "billing_portal_unavailable":
     "بوابة الفوترة غير متاحة لهذا الحساب بعد.",
+  "activation_export_not_found":
+    "تعذر العثور على المخرج المطلوب لإعداد حزمة التفعيل.",
+  "activation_export_not_finalized":
+    "لا يمكن إعداد حزمة التفعيل إلا للمخرج النهائي المعتمد.",
+  "activation_package_failed":
+    "تعذر إعداد حزمة التفعيل. حاول مرة أخرى.",
+  "billing_upgrade_required_activation":
+    "خطتك الحالية لا تشمل حزم التفعيل. قم بالترقية من الفوترة والخطة.",
+  "billing_upgrade_required_creative_performance":
+    "خطتك الحالية لا تشمل إدخال أداء الإبداع وتحليلاته. قم بالترقية من الفوترة والخطة.",
+  "creative_performance_invalid":
+    "سجل أداء الإبداع غير صالح. راجع المقاييس ثم حاول مرة أخرى.",
+  "creative_performance_export_not_found":
+    "تعذر العثور على المخرج المحدد لتتبع أداء الإبداع.",
+  "creative_performance_package_not_found":
+    "تعذر العثور على حزمة التفعيل المحددة لهذا المخرج.",
   "theme.palette.eyebrow": "لوحة الألوان",
   "theme.palette.auto": "تدوير تلقائي",
   "theme.palette.pinned": "مثبتة",

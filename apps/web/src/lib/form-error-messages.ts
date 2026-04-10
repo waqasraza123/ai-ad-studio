@@ -43,6 +43,11 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
   showcase_not_found: "Showcase item could not be found.",
   approval_not_found: "Approval record could not be found.",
   share_link_failed: "Could not create or update the share link.",
+  activation_export_not_found: "Export could not be found for activation packaging.",
+  activation_export_not_finalized:
+    "Only the finalized canonical export can be prepared as an activation package.",
+  activation_package_failed:
+    "Could not prepare the activation package. Try again.",
   billing_project_limit_reached:
     "Your plan has reached its active project limit. Upgrade in Billing and plan to create another project.",
   billing_concept_limit_reached:
@@ -65,6 +70,10 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
     "Your current plan does not include delivery workspace publishing. Upgrade in Billing and plan.",
   billing_upgrade_required_external_review:
     "Your current plan does not include external batch review links. Upgrade in Billing and plan.",
+  billing_upgrade_required_activation:
+    "Your current plan does not include activation packages. Upgrade in Billing and plan.",
+  billing_upgrade_required_creative_performance:
+    "Your current plan does not include creative performance ingestion and analytics. Upgrade in Billing and plan.",
   provider_cost_ceiling_reached:
     "Generation is paused because your personal or operator safety budget ceiling has been reached.",
   monthly_overage_cap_reached:
@@ -85,6 +94,12 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
     "The plan change could not be completed. Check billing setup and try again.",
   billing_plan_change_unsupported:
     "That plan change is not available through this action.",
+  creative_performance_invalid:
+    "The creative performance record is invalid. Check the metrics and try again.",
+  creative_performance_export_not_found:
+    "The selected export could not be found for creative performance tracking.",
+  creative_performance_package_not_found:
+    "The selected activation package could not be found for this export.",
   auth_unconfigured: "Auth is not configured yet.",
   auth_credentials_required: "Email and password are required.",
   auth_sign_in_failed: "Unable to sign in with those credentials.",

@@ -21,7 +21,8 @@ const serverEnvironmentSchema = z.object({
   STRIPE_PRICE_STARTER_MONTHLY: z.string().min(1).optional(),
   STRIPE_PRICE_GROWTH_MONTHLY: z.string().min(1).optional(),
   STRIPE_PRICE_SCALE_MONTHLY: z.string().min(1).optional(),
-  BILLING_OPERATOR_SECRET: z.string().min(1).optional()
+  BILLING_OPERATOR_SECRET: z.string().min(1).optional(),
+  CREATIVE_PERFORMANCE_OPERATOR_SECRET: z.string().min(1).optional()
 })
 
 export type WebRuntimeReadiness = {
@@ -91,6 +92,8 @@ export function getServerEnvironment() {
     STRIPE_PRICE_STARTER_MONTHLY: process.env.STRIPE_PRICE_STARTER_MONTHLY,
     STRIPE_PRICE_GROWTH_MONTHLY: process.env.STRIPE_PRICE_GROWTH_MONTHLY,
     STRIPE_PRICE_SCALE_MONTHLY: process.env.STRIPE_PRICE_SCALE_MONTHLY,
-    BILLING_OPERATOR_SECRET: process.env.BILLING_OPERATOR_SECRET
+    BILLING_OPERATOR_SECRET: process.env.BILLING_OPERATOR_SECRET,
+    CREATIVE_PERFORMANCE_OPERATOR_SECRET:
+      process.env.CREATIVE_PERFORMANCE_OPERATOR_SECRET
   })
 }

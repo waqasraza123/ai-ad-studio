@@ -8,6 +8,9 @@ import {
 
 function buildPlanRecord(code: BillingPlanRecord["code"]): BillingPlanRecord {
   return {
+    allow_activation_packages: code !== "free",
+    allow_creative_performance_analytics: code !== "free",
+    allow_creative_performance_ingestion: code !== "free",
     allow_delivery_workspaces: code !== "free",
     allow_external_batch_reviews: code !== "free",
     allow_manual_invoice: code === "scale",

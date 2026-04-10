@@ -8,6 +8,7 @@ export async function createExportRecord(
     conceptId: string
     ownerId: string
     platformPreset: string
+    previewAssetId: string | null
     projectId: string
     renderMetadata: Record<string, unknown>
     variantKey: string
@@ -21,12 +22,13 @@ export async function createExportRecord(
       concept_id: input.conceptId,
       owner_id: input.ownerId,
       platform_preset: input.platformPreset,
+      preview_asset_id: input.previewAssetId,
       project_id: input.projectId,
       render_metadata: input.renderMetadata,
       status: "ready",
       variant_key: input.variantKey
     })
-    .select("id, project_id, concept_id, owner_id, asset_id, status, version, variant_key, aspect_ratio, platform_preset, render_metadata, created_at, updated_at")
+    .select("id, project_id, concept_id, owner_id, asset_id, preview_asset_id, status, version, variant_key, aspect_ratio, platform_preset, render_metadata, created_at, updated_at")
     .single()
 
   if (error) {
@@ -39,6 +41,7 @@ export async function createExportRecord(
     concept_id: string
     owner_id: string
     asset_id: string
+    preview_asset_id: string | null
     status: "ready"
     version: number
     variant_key: string

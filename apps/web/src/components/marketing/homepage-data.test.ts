@@ -47,6 +47,11 @@ function buildShowcaseItem(
 
 function buildPlan(overrides: Partial<BillingPlanRecord>): BillingPlanRecord {
   return {
+    allow_activation_packages: overrides.allow_activation_packages ?? false,
+    allow_creative_performance_analytics:
+      overrides.allow_creative_performance_analytics ?? false,
+    allow_creative_performance_ingestion:
+      overrides.allow_creative_performance_ingestion ?? false,
     allow_delivery_workspaces: overrides.allow_delivery_workspaces ?? false,
     allow_external_batch_reviews:
       overrides.allow_external_batch_reviews ?? false,
