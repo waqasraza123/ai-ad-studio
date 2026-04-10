@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation"
+import { AppPageFrame } from "@/components/layout/page-frame"
 import { StaleWorkspaceRefresh } from "@/components/system/stale-workspace-refresh"
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { exportStatusIsInProgress } from "@/features/exports/lib/export-status-ui"
@@ -11,7 +12,10 @@ import { DeliveryWorkspacePanel } from "@/features/delivery/components/delivery-
 import { DeliveryActivityTimeline } from "@/features/delivery/components/delivery-activity-timeline"
 import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
-import { listActivationPackagesForExport } from "@/server/activation/activation-service"
+import {
+  getActivationReadinessForExport,
+  listActivationPackagesForExport
+} from "@/server/activation/activation-service"
 import { listUsageEventsByExportIdForOwner } from "@/server/analytics/usage-event-repository"
 import { getEffectiveOwnerLimits } from "@/server/billing/billing-service"
 import { getConceptByIdForOwner } from "@/server/concepts/concept-repository"
@@ -111,6 +115,7 @@ export default async function ExportDetailPage({
     deliveryWorkspace,
     projectExports,
     activationPackages,
+    activationReadiness,
     billingLimits
   ] = await Promise.all([
     getProjectByIdForOwner(exportRecord.project_id, user.id),
@@ -129,6 +134,10 @@ export default async function ExportDetailPage({
     getDeliveryWorkspaceByCanonicalExportIdForOwner(exportRecord.id, user.id),
     listExportsByProjectIdForOwner(exportRecord.project_id, user.id),
     listActivationPackagesForExport({
+      exportId: exportRecord.id,
+      ownerId: user.id
+    }),
+    getActivationReadinessForExport({
       exportId: exportRecord.id,
       ownerId: user.id
     }),
@@ -200,7 +209,7 @@ export default async function ExportDetailPage({
       : null
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <AppPageFrame variant="expanded" className="space-y-6">
       <StaleWorkspaceRefresh active={exportStatusIsInProgress(exportRecord.status)} />
 
       {formErrorMessage ? (
@@ -317,17 +326,23 @@ export default async function ExportDetailPage({
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.92fr)]">
         <ActivationPackagePanel
           activationEnabled={billingLimits.featureAccess.allowActivationPackages}
           exportId={exportRecord.id}
-          isEligible={project.canonical_export_id === exportRecord.id}
           packages={activationPackages}
+          readiness={
+            activationReadiness ?? {
+              isEligible: false,
+              issues: ["project_missing"],
+              status: "blocked"
+            }
+          }
         />
         <ShareLinkPanel exportId={exportRecord.id} shareUrl={shareUrl} />
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.92fr)]">
         <DeliveryWorkspacePanel
           canonicalExportId={exportRecord.id}
           eligibleBatchExports={eligibleBatchExports}
@@ -351,7 +366,7 @@ export default async function ExportDetailPage({
         />
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4">
         <ShareCampaignPanel
           eligibilityReason={promotionEligibility.eligible ? null : promotionEligibility.reason}
           exportId={exportRecord.id}
@@ -361,6 +376,6 @@ export default async function ExportDetailPage({
       </div>
 
       <UsageEventsTable usageEvents={usageEvents} />
-    </div>
+    </AppPageFrame>
   )
 }

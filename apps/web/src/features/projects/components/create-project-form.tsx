@@ -11,15 +11,15 @@ export async function CreateProjectForm({ errorMessage }: CreateProjectFormProps
   const { t } = await getServerI18n()
 
   return (
-    <SurfaceCard className="p-8">
+    <SurfaceCard className="p-8 lg:p-10">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        {t("projects.new.eyebrow")}
+        {t("projects.new.formEyebrow")}
       </p>
-      <h2 className="mt-4 text-3xl font-semibold tracking-[-0.03em] text-white">
-        {t("projects.new.title")}
+      <h2 className="mt-4 text-2xl font-semibold tracking-[-0.03em] text-white">
+        {t("projects.new.formTitle")}
       </h2>
-      <p className="mt-4 max-w-2xl text-sm leading-7 text-slate-400">
-        {t("projects.new.description")}
+      <p className="theme-page-intro-copy mt-4 text-sm leading-7 text-slate-400">
+        {t("projects.new.formDescription")}
       </p>
 
       {errorMessage ? (
@@ -28,7 +28,7 @@ export async function CreateProjectForm({ errorMessage }: CreateProjectFormProps
         </div>
       ) : null}
 
-      <form action={createProjectAction} className="mt-8 grid gap-5">
+      <form action={createProjectAction} className="mt-8 grid gap-6">
         <label className="grid gap-2">
           <span className="text-sm text-slate-300">{t("projects.new.projectName")}</span>
           <input
@@ -42,7 +42,7 @@ export async function CreateProjectForm({ errorMessage }: CreateProjectFormProps
           />
         </label>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
           <FormSubmitButton size="lg" pendingLabel={t("projects.new.pending")}>
             {t("projects.new.action")}
           </FormSubmitButton>

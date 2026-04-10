@@ -33,6 +33,9 @@ export type CreativePerformanceSummary = {
   byHook: CreativePerformanceBreakdownRow[]
   byCallToAction: CreativePerformanceBreakdownRow[]
   byAspectRatio: CreativePerformanceBreakdownRow[]
+  byBrandTone: CreativePerformanceBreakdownRow[]
+  byTargetAudience: CreativePerformanceBreakdownRow[]
+  byOfferText: CreativePerformanceBreakdownRow[]
 }
 
 function round(value: number, digits: number) {
@@ -166,8 +169,11 @@ export function buildCreativePerformanceSummary(
 
   return {
     byAspectRatio: buildBreakdown(records, (record) => record.aspect_ratio),
+    byBrandTone: buildBreakdown(records, (record) => record.brand_tone),
     byCallToAction: buildBreakdown(records, (record) => record.call_to_action),
     byHook: buildBreakdown(records, (record) => record.hook),
+    byOfferText: buildBreakdown(records, (record) => record.offer_text),
+    byTargetAudience: buildBreakdown(records, (record) => record.target_audience),
     topExports: [...topExportMap.values()]
       .map((row) => ({
         ...row,

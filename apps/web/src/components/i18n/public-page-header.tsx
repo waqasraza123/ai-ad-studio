@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ThemeColorModeSwitch } from "@/components/theme/theme-color-mode-switch"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { getServerI18n } from "@/lib/i18n/server"
 
 export async function PublicPageHeader() {
@@ -8,7 +9,7 @@ export async function PublicPageHeader() {
 
   return (
     <header className="theme-top-bar sticky top-0 z-30 border-b backdrop-blur-md">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6 lg:px-8">
+      <PublicSectionFrame className="flex flex-wrap items-center justify-between gap-3 py-4">
         <div className="flex items-center gap-4">
           <Link
             href="/"
@@ -28,8 +29,7 @@ export async function PublicPageHeader() {
           <LanguageSwitcher compact />
           <ThemeColorModeSwitch compact />
         </div>
-      </div>
+      </PublicSectionFrame>
     </header>
   )
 }
-

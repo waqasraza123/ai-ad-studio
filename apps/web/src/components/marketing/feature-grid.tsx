@@ -6,6 +6,7 @@ import {
   UploadCloud
 } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { getServerI18n } from "@/lib/i18n/server"
 
 export async function FeatureGrid() {
@@ -43,8 +44,8 @@ export async function FeatureGrid() {
     }
   ]
   return (
-    <section className="px-4 pb-24 pt-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section className="pb-24 pt-8">
+      <PublicSectionFrame>
         <div className="max-w-2xl">
           <p className="theme-marketing-eyebrow">{t("marketing.featureGrid.eyebrow")}</p>
           <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
@@ -77,7 +78,7 @@ export async function FeatureGrid() {
             )
           })}
         </div>
-      </div>
+      </PublicSectionFrame>
     </section>
   )
 }

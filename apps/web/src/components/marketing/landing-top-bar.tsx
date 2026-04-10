@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight, LogIn } from "lucide-react"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { Button } from "@/components/primitives/button"
 import { ThemeColorModeSwitch } from "@/components/theme/theme-color-mode-switch"
 import { getServerI18n } from "@/lib/i18n/server"
@@ -14,7 +15,7 @@ export async function LandingTopBar() {
         className="landing-top-bar-sheen pointer-events-none absolute inset-x-0 top-0 z-10"
         aria-hidden
       />
-      <div className="relative z-[1] mx-auto flex max-w-7xl flex-col gap-4 px-4 py-4 sm:px-6 lg:px-8">
+      <PublicSectionFrame className="relative z-[1] flex flex-col gap-4 py-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <Link
             href="/"
@@ -74,7 +75,7 @@ export async function LandingTopBar() {
             </Link>
           </div>
         </div>
-      </div>
+      </PublicSectionFrame>
     </header>
   )
 }

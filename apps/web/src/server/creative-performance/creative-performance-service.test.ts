@@ -3,6 +3,7 @@ vi.mock("server-only", () => ({}))
 import {
   CreativePerformanceError,
   creativePerformanceServiceInternals,
+  parseManualCreativePerformanceBatchInput,
   parseManualCreativePerformanceInput
 } from "./creative-performance-service"
 
@@ -74,5 +75,79 @@ describe("creative performance service", () => {
         submittedByUserId: "owner-1"
       })
     ).toThrowError(CreativePerformanceError)
+  })
+
+  it("parses batched manual performance rows", () => {
+    expect(
+      parseManualCreativePerformanceBatchInput({
+        activationPackageIds: ["", ""],
+        channels: ["meta", "google"],
+        clicks: ["20", "12"],
+        conversionValueUsd: ["250", "140"],
+        conversions: ["5", "3"],
+        exportIds: ["export-1", "export-2"],
+        externalAccountLabel: "Main ad account",
+        impressions: ["1000", "640"],
+        metricDates: ["2026-04-10", "2026-04-11"],
+        notes: "Imported manually",
+        operatorLabel: null,
+        ownerId: "owner-1",
+        source: "manual_owner",
+        spendUsd: ["50", "30"],
+        submittedByUserId: "owner-1"
+      })
+    ).toMatchObject({
+      ownerId: "owner-1",
+      rows: [
+        {
+          channel: "meta",
+          clicks: 20,
+          exportId: "export-1"
+        },
+        {
+          channel: "google",
+          clicks: 12,
+          exportId: "export-2"
+        }
+      ]
+    })
+  })
+
+  it("drops fully blank batch rows and rejects empty submissions", () => {
+    expect(() =>
+      parseManualCreativePerformanceBatchInput({
+        activationPackageIds: [""],
+        channels: [""],
+        clicks: [""],
+        conversionValueUsd: [""],
+        conversions: [""],
+        exportIds: [""],
+        externalAccountLabel: "",
+        impressions: [""],
+        metricDates: [""],
+        notes: "",
+        operatorLabel: null,
+        ownerId: "owner-1",
+        source: "manual_owner",
+        spendUsd: [""],
+        submittedByUserId: "owner-1"
+      })
+    ).toThrowError(CreativePerformanceError)
+  })
+
+  it("treats a fully blank row as removable in batch parsing", () => {
+    expect(
+      creativePerformanceServiceInternals.normalizePerformanceRow({
+        activationPackageId: "",
+        channel: "",
+        clicks: "",
+        conversionValueUsd: "",
+        conversions: "",
+        exportId: "",
+        impressions: "",
+        metricDate: "",
+        spendUsd: ""
+      })
+    ).toBeNull()
   })
 })

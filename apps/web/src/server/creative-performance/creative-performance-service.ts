@@ -83,9 +83,7 @@ function normalizeMetricDate(value: string) {
   return trimmed
 }
 
-export type ManualCreativePerformanceInput = {
-  ownerId: string
-  source: "manual_owner" | "manual_operator"
+export type ManualCreativePerformanceRowInput = {
   channel: ActivationChannel
   exportId: string
   metricDate: string
@@ -94,20 +92,33 @@ export type ManualCreativePerformanceInput = {
   spendUsd: number
   conversions: number
   conversionValueUsd: number
+  activationPackageId?: string | null
+}
+
+export type ManualCreativePerformanceBatchInput = {
+  ownerId: string
+  source: "manual_owner" | "manual_operator"
   externalAccountLabel: string | null
   notes: string | null
   submittedByUserId: string | null
   operatorLabel: string | null
-  activationPackageId?: string | null
+  rows: ManualCreativePerformanceRowInput[]
   client?: SupabaseClient
 }
 
-export async function ingestManualCreativePerformance(
-  input: ManualCreativePerformanceInput
-) {
+export type ManualCreativePerformanceInput = ManualCreativePerformanceBatchInput &
+  ManualCreativePerformanceRowInput
+
+async function createPerformanceRecordForRow(input: {
+  batchId: string
+  client: SupabaseClient
+  ownerId: string
+  source: "manual_owner" | "manual_operator"
+  row: ManualCreativePerformanceRowInput
+}) {
   const supabase = await resolveClient(input.client)
   const lineage = await resolveExportCreativeLineage({
-    exportId: input.exportId,
+    exportId: input.row.exportId,
     ownerId: input.ownerId,
     client: supabase
   })
@@ -118,9 +129,9 @@ export async function ingestManualCreativePerformance(
 
   let activationPackageId: string | null = null
 
-  if (input.activationPackageId) {
+  if (input.row.activationPackageId) {
     const packageRecord = await getActivationPackageByIdForOwner(
-      input.activationPackageId,
+      input.row.activationPackageId,
       input.ownerId,
       supabase
     )
@@ -133,22 +144,11 @@ export async function ingestManualCreativePerformance(
   }
 
   const derived = deriveMetrics({
-    clicks: input.clicks,
-    conversionValueUsd: input.conversionValueUsd,
-    conversions: input.conversions,
-    impressions: input.impressions,
-    spendUsd: input.spendUsd
-  })
-
-  const batch = await createCreativePerformanceIngestionBatch({
-    channel: input.channel,
-    client: supabase,
-    externalAccountLabel: input.externalAccountLabel,
-    notes: input.notes,
-    operatorLabel: input.operatorLabel,
-    ownerId: input.ownerId,
-    source: input.source,
-    submittedByUserId: input.submittedByUserId
+    clicks: input.row.clicks,
+    conversionValueUsd: input.row.conversionValueUsd,
+    conversions: input.row.conversions,
+    impressions: input.row.impressions,
+    spendUsd: input.row.spendUsd
   })
 
   return createCreativePerformanceRecord({
@@ -158,23 +158,23 @@ export async function ingestManualCreativePerformance(
     brandTone: lineage.projectInput?.brand_tone ?? null,
     callToAction: lineage.projectInput?.call_to_action ?? null,
     canonicalExportId: lineage.project.canonical_export_id,
-    channel: input.channel,
-    clicks: input.clicks,
+    channel: input.row.channel,
+    clicks: input.row.clicks,
     client: supabase,
     conceptId: lineage.exportRecord.concept_id,
-    conversionValueUsd: input.conversionValueUsd,
-    conversions: input.conversions,
+    conversionValueUsd: input.row.conversionValueUsd,
+    conversions: input.row.conversions,
     cpa: derived.cpa,
     cpc: derived.cpc,
     ctr: derived.ctr,
     exportId: lineage.exportRecord.id,
     hook: lineage.concept?.hook ?? null,
-    impressions: input.impressions,
-    ingestionBatchId: batch.id,
+    impressions: input.row.impressions,
+    ingestionBatchId: input.batchId,
     metadataJson: {
       source: input.source
     },
-    metricDate: input.metricDate,
+    metricDate: input.row.metricDate,
     offerText: lineage.projectInput?.offer_text ?? null,
     ownerId: input.ownerId,
     platformPreset: lineage.exportRecord.platform_preset,
@@ -182,33 +182,114 @@ export async function ingestManualCreativePerformance(
     projectId: lineage.project.id,
     renderBatchId: lineage.renderBatch?.id ?? null,
     roas: derived.roas,
-    spendUsd: input.spendUsd,
+    spendUsd: input.row.spendUsd,
     targetAudience: lineage.projectInput?.target_audience ?? null,
     variantKey: lineage.exportRecord.variant_key
   })
 }
 
-export function parseManualCreativePerformanceInput(input: {
-  ownerId: string
-  source: "manual_owner" | "manual_operator"
-  channel: unknown
-  exportId: unknown
-  metricDate: unknown
-  impressions: unknown
-  clicks: unknown
-  spendUsd: unknown
-  conversions: unknown
-  conversionValueUsd: unknown
-  externalAccountLabel: unknown
-  notes: unknown
-  submittedByUserId: string | null
-  operatorLabel: string | null
-  activationPackageId?: unknown
-}): ManualCreativePerformanceInput {
-  const ownerId = input.ownerId.trim()
-
-  if (!ownerId) {
+export async function ingestManualCreativePerformanceBatch(
+  input: ManualCreativePerformanceBatchInput
+) {
+  const supabase = await resolveClient(input.client)
+  if (input.rows.length === 0) {
     throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  const records = []
+  const batchIdsByChannel = new Map<ActivationChannel, string>()
+
+  for (const row of input.rows) {
+    let batchId = batchIdsByChannel.get(row.channel)
+
+    if (!batchId) {
+      const batch = await createCreativePerformanceIngestionBatch({
+        channel: row.channel,
+        client: supabase,
+        externalAccountLabel: input.externalAccountLabel,
+        notes: input.notes,
+        operatorLabel: input.operatorLabel,
+        ownerId: input.ownerId,
+        source: input.source,
+        submittedByUserId: input.submittedByUserId
+      })
+
+      batchId = batch.id
+      batchIdsByChannel.set(row.channel, batchId)
+    }
+
+    const record = await createPerformanceRecordForRow({
+      batchId,
+      client: supabase,
+      ownerId: input.ownerId,
+      row,
+      source: input.source
+    })
+
+    records.push(record)
+  }
+
+  return records
+}
+
+export async function ingestManualCreativePerformance(
+  input: ManualCreativePerformanceInput
+) {
+  const [record] = await ingestManualCreativePerformanceBatch({
+    client: input.client,
+    externalAccountLabel: input.externalAccountLabel,
+    notes: input.notes,
+    operatorLabel: input.operatorLabel,
+    ownerId: input.ownerId,
+    rows: [
+      {
+        activationPackageId: input.activationPackageId,
+        channel: input.channel,
+        clicks: input.clicks,
+        conversionValueUsd: input.conversionValueUsd,
+        conversions: input.conversions,
+        exportId: input.exportId,
+        impressions: input.impressions,
+        metricDate: input.metricDate,
+        spendUsd: input.spendUsd
+      }
+    ],
+    source: input.source,
+    submittedByUserId: input.submittedByUserId
+  })
+
+  if (!record) {
+    throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  return record
+}
+
+function normalizePerformanceRow(input: {
+  activationPackageId: unknown
+  channel: unknown
+  clicks: unknown
+  conversionValueUsd: unknown
+  conversions: unknown
+  exportId: unknown
+  impressions: unknown
+  metricDate: unknown
+  spendUsd: unknown
+}) {
+  const rawValues = [
+    input.activationPackageId,
+    input.channel,
+    input.clicks,
+    input.conversionValueUsd,
+    input.conversions,
+    input.exportId,
+    input.impressions,
+    input.metricDate,
+    input.spendUsd
+  ]
+
+  if (rawValues.every((value) => String(value ?? "").trim().length === 0)) {
+    return null
   }
 
   const channel = String(input.channel ?? "")
@@ -235,18 +316,146 @@ export function parseManualCreativePerformanceInput(input: {
     conversionValueUsd: normalizeDecimal(input.conversionValueUsd),
     conversions: normalizeWholeNumber(input.conversions),
     exportId,
-    externalAccountLabel: normalizeOptionalText(input.externalAccountLabel),
     impressions: normalizeWholeNumber(input.impressions),
     metricDate: normalizeMetricDate(String(input.metricDate ?? "")),
+    spendUsd: normalizeDecimal(input.spendUsd)
+  } satisfies ManualCreativePerformanceRowInput
+}
+
+export function parseManualCreativePerformanceBatchInput(input: {
+  ownerId: string
+  source: "manual_owner" | "manual_operator"
+  channels: unknown[]
+  exportIds: unknown[]
+  metricDates: unknown[]
+  impressions: unknown[]
+  clicks: unknown[]
+  spendUsd: unknown[]
+  conversions: unknown[]
+  conversionValueUsd: unknown[]
+  externalAccountLabel: unknown
+  notes: unknown
+  submittedByUserId: string | null
+  operatorLabel: string | null
+  activationPackageIds?: unknown[]
+}): ManualCreativePerformanceBatchInput {
+  const ownerId = input.ownerId.trim()
+
+  if (!ownerId) {
+    throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  const rowCount = input.exportIds.length
+
+  if (
+    rowCount === 0 ||
+    rowCount !== input.channels.length ||
+    rowCount !== input.metricDates.length ||
+    rowCount !== input.impressions.length ||
+    rowCount !== input.clicks.length ||
+    rowCount !== input.spendUsd.length ||
+    rowCount !== input.conversions.length ||
+    rowCount !== input.conversionValueUsd.length ||
+    rowCount !== (input.activationPackageIds?.length ?? rowCount)
+  ) {
+    throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  if (rowCount > 25) {
+    throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  const rows = []
+
+  for (let index = 0; index < rowCount; index += 1) {
+    const row = normalizePerformanceRow({
+      activationPackageId: input.activationPackageIds?.[index],
+      channel: input.channels[index],
+      clicks: input.clicks[index],
+      conversionValueUsd: input.conversionValueUsd[index],
+      conversions: input.conversions[index],
+      exportId: input.exportIds[index],
+      impressions: input.impressions[index],
+      metricDate: input.metricDates[index],
+      spendUsd: input.spendUsd[index]
+    })
+
+    if (row) {
+      rows.push(row)
+    }
+  }
+
+  if (rows.length === 0) {
+    throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  return {
+    externalAccountLabel: normalizeOptionalText(input.externalAccountLabel),
     notes: normalizeOptionalText(input.notes),
     operatorLabel: input.operatorLabel,
     ownerId,
+    rows,
     source: input.source,
-    spendUsd: normalizeDecimal(input.spendUsd),
     submittedByUserId: input.submittedByUserId
   }
 }
 
+export function parseManualCreativePerformanceInput(input: {
+  ownerId: string
+  source: "manual_owner" | "manual_operator"
+  channel: unknown
+  exportId: unknown
+  metricDate: unknown
+  impressions: unknown
+  clicks: unknown
+  spendUsd: unknown
+  conversions: unknown
+  conversionValueUsd: unknown
+  externalAccountLabel: unknown
+  notes: unknown
+  submittedByUserId: string | null
+  operatorLabel: string | null
+  activationPackageId?: unknown
+}): ManualCreativePerformanceInput {
+  const batch = parseManualCreativePerformanceBatchInput({
+    activationPackageIds: [input.activationPackageId],
+    channels: [input.channel],
+    clicks: [input.clicks],
+    conversionValueUsd: [input.conversionValueUsd],
+    conversions: [input.conversions],
+    exportIds: [input.exportId],
+    externalAccountLabel: input.externalAccountLabel,
+    impressions: [input.impressions],
+    metricDates: [input.metricDate],
+    notes: input.notes,
+    operatorLabel: input.operatorLabel,
+    ownerId: input.ownerId,
+    source: input.source,
+    spendUsd: [input.spendUsd],
+    submittedByUserId: input.submittedByUserId
+  })
+
+  const row = batch.rows[0]
+
+  if (!row) {
+    throw new CreativePerformanceError("creative_performance_invalid")
+  }
+
+  return {
+    ...batch,
+    activationPackageId: row.activationPackageId,
+    channel: row.channel,
+    clicks: row.clicks,
+    conversionValueUsd: row.conversionValueUsd,
+    conversions: row.conversions,
+    exportId: row.exportId,
+    impressions: row.impressions,
+    metricDate: row.metricDate,
+    spendUsd: row.spendUsd
+  }
+}
+
 export const creativePerformanceServiceInternals = {
-  deriveMetrics
+  deriveMetrics,
+  normalizePerformanceRow
 }

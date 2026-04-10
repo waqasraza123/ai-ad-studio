@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { PublicPageHeader } from "@/components/i18n/public-page-header"
+import { PublicPageFrame } from "@/components/layout/page-frame"
 import { getServerI18n } from "@/lib/i18n/server"
 import { getPublicShareCampaignBundleByToken } from "@/server/share-campaigns/public-share-campaign"
 
@@ -31,9 +32,9 @@ export default async function PublicCampaignPage({
       : null
 
   return (
-    <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
+    <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
       <PublicPageHeader />
-      <div className="mx-auto max-w-5xl space-y-6">
+      <PublicPageFrame variant="readable" className="space-y-6">
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
             {t("public.campaign.eyebrow")}
@@ -82,7 +83,7 @@ export default async function PublicCampaignPage({
             </div>
           )}
         </section>
-      </div>
+      </PublicPageFrame>
     </main>
   )
 }

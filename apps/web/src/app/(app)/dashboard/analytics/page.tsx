@@ -42,6 +42,9 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
   )
   const creativePerformanceSaved =
     readSearchParam(resolvedSearchParams, "creative_performance") === "recorded"
+  const creativePerformanceCount = Number(
+    readSearchParam(resolvedSearchParams, "creative_performance_count") ?? "1"
+  )
 
   const [usageEvents, creativePerformanceRecords, projects, billingLimits, exports] =
     await Promise.all([
@@ -74,7 +77,11 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 
       {creativePerformanceSaved ? (
         <div className="rounded-[1.5rem] border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-          {t("analytics.creative.ingestion.success")}
+          {creativePerformanceCount > 1
+            ? t("analytics.creative.ingestion.successCount", {
+                count: creativePerformanceCount
+              })
+            : t("analytics.creative.ingestion.success")}
         </div>
       ) : null}
 
@@ -110,7 +117,7 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
       {billingLimits.featureAccess.allowCreativePerformanceAnalytics ? (
         <>
           <CreativePerformanceOverview summary={creativePerformanceSummary} />
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_24rem] 2xl:grid-cols-[minmax(0,1fr)_26rem]">
             <CreativePerformanceBreakdown
               projectsById={projectsById}
               summary={creativePerformanceSummary}

@@ -1,9 +1,13 @@
+import { PageIntro } from "@/components/layout/page-frame"
+import { SurfaceCard } from "@/components/primitives/surface-card"
 import { ExportsDashboard } from "@/features/exports/components/exports-dashboard"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listAllExportsByOwner } from "@/server/exports/export-repository"
 import { listProjectsByOwner } from "@/server/projects/project-repository"
 
 export default async function ExportsPage() {
+  const { t } = await getServerI18n()
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -19,18 +23,13 @@ export default async function ExportsPage() {
 
   return (
     <div className="space-y-6">
-      <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
-        <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-          Exports
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
-          Multi-format export management
-        </h1>
-        <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-          Review all project exports, jump to the latest file per format, and manage
-          downloadable outputs from one place.
-        </p>
-      </section>
+      <SurfaceCard className="p-6">
+        <PageIntro
+          eyebrow={t("exports.dashboard.eyebrow")}
+          title={t("exports.page.title")}
+          description={t("exports.page.description")}
+        />
+      </SurfaceCard>
 
       <ExportsDashboard exports={exports} projectsById={projectsById} />
     </div>

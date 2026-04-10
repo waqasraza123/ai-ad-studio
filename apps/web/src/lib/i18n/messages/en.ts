@@ -209,11 +209,26 @@ export const en = {
   "projects.new.title": "Create the first working project flow",
   "projects.new.description":
     "This phase creates the real project spine. Start with a project name, then continue into the persisted brief and asset intake flow.",
+  "projects.new.formEyebrow": "Project setup",
+  "projects.new.formTitle": "Name the workspace and start the flow",
+  "projects.new.formDescription":
+    "The first step should stay lightweight. Name the project, create the workspace, and continue immediately into the persisted brief and asset intake surfaces.",
   "projects.new.projectName": "Project name",
   "projects.new.placeholder": "Luxe serum launch",
   "projects.new.pending": "Creating project…",
   "projects.new.action": "Create project",
   "projects.new.redirectHint": "You will be redirected to the project detail workspace.",
+  "projects.new.nextEyebrow": "What happens next",
+  "projects.new.nextTitle": "The workspace opens into the full production flow",
+  "projects.new.stepOneTitle": "Persist the brief",
+  "projects.new.stepOneDescription":
+    "Capture the offer, audience, CTA, and brand tone so concept generation starts from durable inputs instead of ad hoc notes.",
+  "projects.new.stepTwoTitle": "Bring in source assets",
+  "projects.new.stepTwoDescription":
+    "Upload product imagery and other inputs before generating previews so the concept and render surfaces have the right material to work from.",
+  "projects.new.stepThreeTitle": "Move through the constrained workflow",
+  "projects.new.stepThreeDescription":
+    "From concepts to previews, renders, review, and final exports, the workspace keeps the production path structured and auditable.",
   "projects.brief.eyebrow": "Project brief",
   "projects.brief.title":
     "Persist the inputs that will drive concept generation",
@@ -316,6 +331,9 @@ export const en = {
   "analytics.creative.byHook": "Winning hooks",
   "analytics.creative.byCallToAction": "Winning CTAs",
   "analytics.creative.byAspectRatio": "Winning aspect ratios",
+  "analytics.creative.byBrandTone": "Winning brand tones",
+  "analytics.creative.byTargetAudience": "Winning audiences",
+  "analytics.creative.byOfferText": "Winning offers",
   "analytics.creative.recordCount": "{{count}} records",
   "analytics.creative.overview.impressions": "Impressions",
   "analytics.creative.overview.clicks": "Clicks",
@@ -329,6 +347,14 @@ export const en = {
     "Your current plan does not include creative performance ingestion. Upgrade in Billing and plan.",
   "analytics.creative.ingestion.empty":
     "Create exports first, then ingest their campaign outcomes here.",
+  "analytics.creative.ingestion.sharedContext": "Batch context",
+  "analytics.creative.ingestion.rowsTitle": "Performance rows",
+  "analytics.creative.ingestion.rowsDescription":
+    "Submit multiple export outcomes in one batch while keeping one shared account label and operator note.",
+  "analytics.creative.ingestion.rowLabelPrefix": "Row",
+  "analytics.creative.ingestion.addRow": "Add row",
+  "analytics.creative.ingestion.removeRow": "Remove row",
+  "analytics.creative.ingestion.metricDate": "Metric date",
   "analytics.creative.ingestion.impressions": "Impressions",
   "analytics.creative.ingestion.clicks": "Clicks",
   "analytics.creative.ingestion.spend": "Spend (USD)",
@@ -340,6 +366,8 @@ export const en = {
   "analytics.creative.ingestion.submit": "Record creative performance",
   "analytics.creative.ingestion.success":
     "Creative performance was recorded successfully.",
+  "analytics.creative.ingestion.successCount":
+    "{{count}} creative performance rows were recorded successfully.",
   "notifications.overview.total": "Total notifications",
   "notifications.overview.unread": "Unread",
   "notifications.overview.warnings": "Warnings",
@@ -506,7 +534,17 @@ export const en = {
     "Build a normalized manifest, asset bundle, and channel payload for internal preparation.",
   "activation.panel.pending": "Preparing package…",
   "activation.panel.prepareAction": "Prepare {{value}} package",
+  "activation.panel.readinessCheck": "Readiness check",
+  "activation.panel.readySummary":
+    "This export is ready for activation package preparation across supported channels.",
+  "activation.panel.blockedSummary":
+    "This export still needs readiness fixes before a new package can be prepared.",
   "activation.panel.history": "Package history",
+  "activation.panel.historySummary": "{{count}} package snapshots",
+  "activation.panel.currentPackage": "Current package",
+  "activation.panel.historyEntry": "History entry",
+  "activation.panel.assetCount": "{{count}} bundle assets",
+  "activation.panel.placementCount": "{{count}} placements",
   "activation.panel.empty": "No activation packages have been prepared for this export yet.",
   "activation.panel.downloadManifest": "Download manifest",
   "activation.panel.readiness.ready": "Ready",
@@ -522,6 +560,16 @@ export const en = {
   "activation.issue.exportNotReady": "The export is not ready yet.",
   "activation.issue.exportAssetMissing":
     "The rendered export asset is missing.",
+  "activation.issue.projectMissing":
+    "The project lineage for this export could not be resolved.",
+  "activation.issue.renderBatchMissing":
+    "The review batch for this export could not be found.",
+  "activation.issue.renderBatchNotFinalized":
+    "The review batch is not finalized yet.",
+  "activation.issue.canonicalExportMissing":
+    "This project does not have a canonical export selected yet.",
+  "activation.issue.exportNotCanonical":
+    "This export is not the current canonical winner.",
   "activation.issue.exportNotFinalized":
     "Only the finalized canonical export can be prepared.",
   "promotion.eligibility.finalizedCanonicalOnly":
@@ -973,6 +1021,9 @@ export const en = {
     "No exports yet. Render a project to start building export history.",
   "exports.dashboard.eyebrow": "Project exports",
   "exports.dashboard.unknownProject": "Unknown project",
+  "exports.page.title": "Multi-format export management",
+  "exports.page.description":
+    "Review all project exports, jump to the latest file per format, and manage downloadable outputs from one place.",
   "exports.dashboard.generatedCount": {
     one: "{{count}} export generated",
     other: "{{count}} exports generated"

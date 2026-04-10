@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react"
+import { fireEvent, render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { getMessages } from "@/lib/i18n/catalog"
 import { createTranslator } from "@/lib/i18n/translator"
@@ -31,6 +31,25 @@ describe("CreativePerformanceIngestionPanel", () => {
 
     expect(screen.getByRole("button", { name: /Record creative performance/i })).toBeEnabled()
     expect(screen.getByDisplayValue("Project · default · 9:16")).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Add row/i })).toBeEnabled()
+  })
+
+  it("supports adding another performance row", async () => {
+    const ui = await CreativePerformanceIngestionPanel({
+      exportOptions: [
+        {
+          id: "export-1",
+          label: "Project · default · 9:16"
+        }
+      ],
+      ingestionEnabled: true
+    })
+
+    render(ui)
+
+    fireEvent.click(screen.getByRole("button", { name: /Add row/i }))
+
+    expect(screen.getByText("Row 2")).toBeInTheDocument()
   })
 
   it("shows the upgrade state when ingestion is disabled", async () => {

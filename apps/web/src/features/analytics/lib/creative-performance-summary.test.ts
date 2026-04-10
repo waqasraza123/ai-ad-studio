@@ -67,5 +67,8 @@ describe("buildCreativePerformanceSummary", () => {
     expect(summary.byHook[0]?.label).toBe("Glow in one pass")
     expect(summary.byCallToAction.map((row) => row.label)).toEqual(["Shop now", "Start today"])
     expect(summary.byAspectRatio[0]?.label).toBe("9:16")
+    expect(summary.byBrandTone[0]?.label).toBe("Premium")
+    expect(summary.byTargetAudience[0]?.label).toBe("Skincare buyers")
+    expect(summary.byOfferText[0]?.label).toBe("20 percent off")
   })
 })

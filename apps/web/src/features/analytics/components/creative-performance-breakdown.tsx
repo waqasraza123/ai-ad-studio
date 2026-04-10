@@ -129,7 +129,7 @@ export async function CreativePerformanceBreakdown({
   const { t } = await getServerI18n()
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-4 xl:grid-cols-2 2xl:grid-cols-3">
       <TopExportsTable projectsById={projectsById} rows={summary.topExports} />
       <BreakdownTable
         title={t("analytics.creative.byHook")}
@@ -142,6 +142,18 @@ export async function CreativePerformanceBreakdown({
       <BreakdownTable
         title={t("analytics.creative.byAspectRatio")}
         rows={summary.byAspectRatio}
+      />
+      <BreakdownTable
+        title={t("analytics.creative.byBrandTone")}
+        rows={summary.byBrandTone}
+      />
+      <BreakdownTable
+        title={t("analytics.creative.byTargetAudience")}
+        rows={summary.byTargetAudience}
+      />
+      <BreakdownTable
+        title={t("analytics.creative.byOfferText")}
+        rows={summary.byOfferText}
       />
     </div>
   )

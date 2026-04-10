@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation"
 import { PublicPageHeader } from "@/components/i18n/public-page-header"
+import { PublicPageFrame } from "@/components/layout/page-frame"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { getServerI18n } from "@/lib/i18n/server"
@@ -103,9 +104,9 @@ export default async function PublicBatchReviewPage({
     context.response_status === "approved" || context.response_status === "rejected"
 
   return (
-    <main className="theme-page-shell min-h-screen px-4 py-10 text-[var(--foreground)] sm:px-6 lg:px-8">
+    <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
       <PublicPageHeader />
-      <div className="mx-auto max-w-7xl space-y-6">
+      <PublicPageFrame variant="wide" className="space-y-6">
         {formErrorMessage ? (
           <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
             {formErrorMessage}
@@ -229,7 +230,7 @@ export default async function PublicBatchReviewPage({
           token={token}
         />
         <PublicBatchReviewComments comments={comments} exportLabels={exportLabels} />
-      </div>
+      </PublicPageFrame>
     </main>
   )
 }

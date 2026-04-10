@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { AuthPanel } from "@/components/auth/auth-panel"
 import { ConfigurationRequired } from "@/components/auth/configuration-required"
+import { PublicPageFrame } from "@/components/layout/page-frame"
 import { LandingTopBar } from "@/components/marketing/landing-top-bar"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { getServerI18n } from "@/lib/i18n/server"
@@ -32,12 +33,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     return (
       <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
         <LandingTopBar />
-        <div className="px-4 py-10 sm:px-6 lg:px-8">
+        <PublicPageFrame variant="wide">
           <ConfigurationRequired
             title={t("auth.configuration.title")}
             description={t("auth.configuration.description")}
           />
-        </div>
+        </PublicPageFrame>
       </main>
     )
   }
@@ -56,16 +57,14 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   return (
     <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
       <LandingTopBar />
-      <div className="px-4 py-10 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-6xl">
-          <AuthPanel
-            errorMessage={errorMessage ?? undefined}
-            infoMessage={infoMessage ?? undefined}
-            defaultSignInEmail={defaultEmail}
-            defaultSignInPassword={defaultPassword}
-          />
-        </div>
-      </div>
+      <PublicPageFrame variant="wide">
+        <AuthPanel
+          errorMessage={errorMessage ?? undefined}
+          infoMessage={infoMessage ?? undefined}
+          defaultSignInEmail={defaultEmail}
+          defaultSignInPassword={defaultPassword}
+        />
+      </PublicPageFrame>
     </main>
   )
 }

@@ -93,7 +93,7 @@ export async function ExportsDashboard({
               </div>
             </div>
 
-            <div className="mt-6 grid gap-4 xl:grid-cols-3">
+            <div className="mt-6 grid gap-4 xl:grid-cols-3 2xl:grid-cols-4">
               {projectExports.map((exportRecord) => (
                 <ExportCard
                   key={exportRecord.id}

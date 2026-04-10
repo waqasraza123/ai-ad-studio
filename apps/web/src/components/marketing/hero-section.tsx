@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { Button } from "@/components/primitives/button"
 import { getServerI18n } from "@/lib/i18n/server"
 import { HeroPreview } from "./hero-preview"
@@ -21,8 +22,8 @@ export async function HeroSection({ featuredSampleCount }: HeroSectionProps) {
       : ""
 
   return (
-    <section className="theme-marketing-subtle-grid relative overflow-hidden px-4 pb-24 pt-12 sm:px-6 lg:px-8 lg:pb-32 lg:pt-16">
-      <div className="mx-auto max-w-7xl relative">
+    <section className="theme-marketing-subtle-grid relative overflow-hidden pb-24 pt-12 lg:pb-32 lg:pt-16">
+      <PublicSectionFrame className="relative">
         <div className="grid gap-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center">
           <div className="max-w-2xl">
             <div className="theme-accent-pill inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm">
@@ -99,7 +100,7 @@ export async function HeroSection({ featuredSampleCount }: HeroSectionProps) {
 
           <HeroPreview />
         </div>
-      </div>
+      </PublicSectionFrame>
     </section>
   )
 }

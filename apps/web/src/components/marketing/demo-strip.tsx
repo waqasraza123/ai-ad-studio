@@ -4,6 +4,7 @@ import {
   ScanSearch,
   WandSparkles
 } from "lucide-react"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getServerI18n } from "@/lib/i18n/server"
 
@@ -33,8 +34,8 @@ export async function WorkflowStrip() {
   ]
 
   return (
-    <section id="workflow" className="px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section id="workflow" className="py-24">
+      <PublicSectionFrame>
         <div className="grid gap-10 lg:grid-cols-[0.62fr_1.38fr] lg:items-start">
           <div className="max-w-md">
             <p className="theme-marketing-eyebrow">{t("marketing.workflow.eyebrow")}</p>
@@ -70,7 +71,7 @@ export async function WorkflowStrip() {
             })}
           </div>
         </div>
-      </div>
+      </PublicSectionFrame>
     </section>
   )
 }

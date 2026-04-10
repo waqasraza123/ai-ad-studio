@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowRight, ArrowUpRight } from "lucide-react"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { getServerI18n } from "@/lib/i18n/server"
 
 export async function FaqCtaSection() {
@@ -24,8 +25,8 @@ export async function FaqCtaSection() {
   ]
 
   return (
-    <section id="faq" className="px-4 pb-28 pt-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-10">
+    <section id="faq" className="pb-28 pt-8">
+      <PublicSectionFrame className="space-y-10">
         <div className="grid gap-10 lg:grid-cols-[0.62fr_1.38fr]">
           <div className="max-w-md">
             <p className="theme-marketing-eyebrow">{t("marketing.faq.eyebrow")}</p>
@@ -80,7 +81,7 @@ export async function FaqCtaSection() {
             </div>
           </div>
         </div>
-      </div>
+      </PublicSectionFrame>
     </section>
   )
 }

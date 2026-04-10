@@ -108,7 +108,7 @@ export async function BillingPlanPanel({
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+      <div className="mt-6 grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm text-slate-400">Monthly plan</p>
           <p className="mt-2 text-2xl font-semibold text-white">
@@ -216,7 +216,7 @@ export async function BillingPlanPanel({
         ) : null}
       </div>
 
-      <div className="mt-8 grid gap-4 xl:grid-cols-4">
+      <div className="mt-8 grid gap-4 xl:grid-cols-2 2xl:grid-cols-4">
         {billingPlans.map((plan) => {
           const isCurrent = plan.code === currentPlan.code
           const canUpgrade = plan.code !== "free" && !isCurrent

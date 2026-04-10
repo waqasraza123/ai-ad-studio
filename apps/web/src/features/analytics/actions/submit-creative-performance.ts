@@ -7,8 +7,8 @@ import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getBillingGateDecision } from "@/server/billing/billing-service"
 import {
   CreativePerformanceError,
-  ingestManualCreativePerformance,
-  parseManualCreativePerformanceInput
+  ingestManualCreativePerformanceBatch,
+  parseManualCreativePerformanceBatchInput
 } from "@/server/creative-performance/creative-performance-service"
 
 const analyticsPath = "/dashboard/analytics"
@@ -30,25 +30,30 @@ export async function submitCreativePerformanceAction(formData: FormData) {
   }
 
   try {
-    const input = parseManualCreativePerformanceInput({
-      activationPackageId: formData.get("activation_package_id"),
-      channel: formData.get("channel"),
-      clicks: formData.get("clicks"),
-      conversionValueUsd: formData.get("conversion_value_usd"),
-      conversions: formData.get("conversions"),
-      exportId: formData.get("export_id"),
+    const input = parseManualCreativePerformanceBatchInput({
+      activationPackageIds: formData.getAll("activation_package_id"),
+      channels: formData.getAll("row_channel"),
+      clicks: formData.getAll("row_clicks"),
+      conversionValueUsd: formData.getAll("row_conversion_value_usd"),
+      conversions: formData.getAll("row_conversions"),
+      exportIds: formData.getAll("row_export_id"),
       externalAccountLabel: formData.get("external_account_label"),
-      impressions: formData.get("impressions"),
-      metricDate: formData.get("metric_date"),
+      impressions: formData.getAll("row_impressions"),
+      metricDates: formData.getAll("row_metric_date"),
       notes: formData.get("notes"),
       operatorLabel: null,
       ownerId: user.id,
       source: "manual_owner",
-      spendUsd: formData.get("spend_usd"),
+      spendUsd: formData.getAll("row_spend_usd"),
       submittedByUserId: user.id
     })
 
-    await ingestManualCreativePerformance(input)
+    const records = await ingestManualCreativePerformanceBatch(input)
+
+    revalidatePath(analyticsPath)
+    redirect(
+      `${analyticsPath}?creative_performance=recorded&creative_performance_count=${records.length}`
+    )
   } catch (error) {
     if (error instanceof CreativePerformanceError) {
       redirectWithFormError(analyticsPath, error.code)
@@ -57,6 +62,5 @@ export async function submitCreativePerformanceAction(formData: FormData) {
     redirectWithFormError(analyticsPath, "creative_performance_invalid")
   }
 
-  revalidatePath(analyticsPath)
-  redirect(`${analyticsPath}?creative_performance=recorded`)
+  redirectWithFormError(analyticsPath, "creative_performance_invalid")
 }

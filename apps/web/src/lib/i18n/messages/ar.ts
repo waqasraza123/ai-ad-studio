@@ -206,11 +206,26 @@ export const ar: AppMessageCatalog = {
   "projects.new.title": "أنشئ أول تدفق عمل فعلي للمشروع",
   "projects.new.description":
     "تنشئ هذه المرحلة العمود الفقري الحقيقي للمشروع. ابدأ باسم المشروع ثم أكمل إلى الموجز المحفوظ وتدفق إدخال الأصول.",
+  "projects.new.formEyebrow": "إعداد المشروع",
+  "projects.new.formTitle": "سمِّ مساحة العمل وابدأ التدفق",
+  "projects.new.formDescription":
+    "يجب أن تبقى الخطوة الأولى خفيفة. سمِّ المشروع وأنشئ مساحة العمل ثم انتقل مباشرة إلى أسطح الموجز المحفوظ وإدخال الأصول.",
   "projects.new.projectName": "اسم المشروع",
   "projects.new.placeholder": "إطلاق سيروم فاخر",
   "projects.new.pending": "جارٍ إنشاء المشروع…",
   "projects.new.action": "إنشاء مشروع",
   "projects.new.redirectHint": "سيتم تحويلك إلى مساحة عمل تفاصيل المشروع.",
+  "projects.new.nextEyebrow": "ما الذي يحدث بعد ذلك",
+  "projects.new.nextTitle": "تفتح مساحة العمل على تدفق الإنتاج الكامل",
+  "projects.new.stepOneTitle": "احفظ الموجز",
+  "projects.new.stepOneDescription":
+    "سجّل العرض والجمهور والدعوة إلى الإجراء ونبرة العلامة حتى يبدأ توليد المفاهيم من مدخلات دائمة بدلًا من ملاحظات عابرة.",
+  "projects.new.stepTwoTitle": "أدخل الأصول المصدرية",
+  "projects.new.stepTwoDescription":
+    "ارفع صور المنتج والمدخلات الأخرى قبل توليد المعاينات حتى تمتلك أسطح المفاهيم والإخراج المواد الصحيحة للعمل عليها.",
+  "projects.new.stepThreeTitle": "اتبع التدفق المقيّد",
+  "projects.new.stepThreeDescription":
+    "من المفاهيم إلى المعاينات ثم الإخراج والمراجعة والمخرجات النهائية، تحافظ مساحة العمل على مسار إنتاج منظم وقابل للتدقيق.",
   "projects.brief.eyebrow": "موجز المشروع",
   "projects.brief.title": "احفظ المدخلات التي ستقود توليد المفاهيم",
   "projects.brief.productName": "اسم المنتج",
@@ -311,6 +326,9 @@ export const ar: AppMessageCatalog = {
   "analytics.creative.byHook": "أفضل الخطافات",
   "analytics.creative.byCallToAction": "أفضل الدعوات إلى الإجراء",
   "analytics.creative.byAspectRatio": "أفضل نسب الأبعاد",
+  "analytics.creative.byBrandTone": "أفضل نبرات العلامة",
+  "analytics.creative.byTargetAudience": "أفضل الجماهير المستهدفة",
+  "analytics.creative.byOfferText": "أفضل العروض",
   "analytics.creative.recordCount": "{{count}} سجلات",
   "analytics.creative.overview.impressions": "مرات الظهور",
   "analytics.creative.overview.clicks": "النقرات",
@@ -324,6 +342,14 @@ export const ar: AppMessageCatalog = {
     "خطتك الحالية لا تشمل إدخال أداء الإبداع. قم بالترقية من الفوترة والخطة.",
   "analytics.creative.ingestion.empty":
     "أنشئ مخرجات أولًا ثم أدخل نتائج حملاتها هنا.",
+  "analytics.creative.ingestion.sharedContext": "سياق الدفعة",
+  "analytics.creative.ingestion.rowsTitle": "صفوف الأداء",
+  "analytics.creative.ingestion.rowsDescription":
+    "أرسل نتائج عدة مخرجات في دفعة واحدة مع الحفاظ على اسم الحساب والملاحظات المشتركة.",
+  "analytics.creative.ingestion.rowLabelPrefix": "الصف",
+  "analytics.creative.ingestion.addRow": "إضافة صف",
+  "analytics.creative.ingestion.removeRow": "إزالة الصف",
+  "analytics.creative.ingestion.metricDate": "تاريخ القياس",
   "analytics.creative.ingestion.impressions": "مرات الظهور",
   "analytics.creative.ingestion.clicks": "النقرات",
   "analytics.creative.ingestion.spend": "الإنفاق (USD)",
@@ -335,6 +361,8 @@ export const ar: AppMessageCatalog = {
   "analytics.creative.ingestion.submit": "تسجيل أداء الإبداع",
   "analytics.creative.ingestion.success":
     "تم تسجيل أداء الإبداع بنجاح.",
+  "analytics.creative.ingestion.successCount":
+    "تم تسجيل {{count}} صفوف من أداء الإبداع بنجاح.",
   "notifications.overview.total": "إجمالي الإشعارات",
   "notifications.overview.unread": "غير المقروءة",
   "notifications.overview.warnings": "التحذيرات",
@@ -497,7 +525,17 @@ export const ar: AppMessageCatalog = {
     "ابنِ ملفًا موحدًا وملف أصول وحمولة خاصة بالقناة للتحضير الداخلي.",
   "activation.panel.pending": "جارٍ إعداد الحزمة…",
   "activation.panel.prepareAction": "إعداد حزمة {{value}}",
+  "activation.panel.readinessCheck": "فحص الجاهزية",
+  "activation.panel.readySummary":
+    "هذا المخرج جاهز لإعداد حزمة التفعيل عبر القنوات المدعومة.",
+  "activation.panel.blockedSummary":
+    "لا يزال هذا المخرج يحتاج إلى معالجة عناصر الجاهزية قبل إعداد حزمة جديدة.",
   "activation.panel.history": "سجل الحزم",
+  "activation.panel.historySummary": "{{count}} لقطات حزم",
+  "activation.panel.currentPackage": "الحزمة الحالية",
+  "activation.panel.historyEntry": "إدخال سابق",
+  "activation.panel.assetCount": "{{count}} عناصر أصول",
+  "activation.panel.placementCount": "{{count}} مواضع",
   "activation.panel.empty": "لم يتم إعداد أي حزم تفعيل لهذا المخرج بعد.",
   "activation.panel.downloadManifest": "تنزيل ملف البيانات",
   "activation.panel.readiness.ready": "جاهزة",
@@ -512,6 +550,15 @@ export const ar: AppMessageCatalog = {
   "activation.channel.internalHandoff": "تسليم داخلي",
   "activation.issue.exportNotReady": "المخرج ليس جاهزًا بعد.",
   "activation.issue.exportAssetMissing": "ملف المخرج النهائي غير موجود.",
+  "activation.issue.projectMissing": "تعذر تحديد سلسلة المشروع الخاصة بهذا المخرج.",
+  "activation.issue.renderBatchMissing":
+    "تعذر العثور على دفعة المراجعة الخاصة بهذا المخرج.",
+  "activation.issue.renderBatchNotFinalized":
+    "دفعة المراجعة لم تُنهَ بعد.",
+  "activation.issue.canonicalExportMissing":
+    "لا يوجد مخرج معتمد محدد لهذا المشروع حتى الآن.",
+  "activation.issue.exportNotCanonical":
+    "هذا المخرج ليس النسخة المعتمدة الحالية.",
   "activation.issue.exportNotFinalized":
     "لا يمكن الإعداد إلا للمخرج النهائي المعتمد.",
   "promotion.eligibility.finalizedCanonicalOnly":
@@ -962,6 +1009,9 @@ export const ar: AppMessageCatalog = {
     "لا توجد مخرجات بعد. نفّذ إخراجًا لمشروع لكي تبدأ ببناء سجل المخرجات.",
   "exports.dashboard.eyebrow": "مخرجات المشروع",
   "exports.dashboard.unknownProject": "مشروع غير معروف",
+  "exports.page.title": "إدارة المخرجات متعددة التنسيقات",
+  "exports.page.description":
+    "راجع جميع مخرجات المشروع، وانتقل إلى أحدث ملف لكل تنسيق، وأدر الملفات القابلة للتنزيل من مكان واحد.",
   "exports.dashboard.generatedCount": {
     one: "تم توليد {{count}} مخرج",
     other: "تم توليد {{count}} مخرج"

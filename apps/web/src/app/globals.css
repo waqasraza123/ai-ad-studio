@@ -29,6 +29,15 @@
   --button-secondary-foreground: #22151a;
   --button-ghost-foreground: #755a58;
   --button-ghost-hover-foreground: #22151a;
+  --layout-app-shell-max-width: 120rem;
+  --layout-app-expanded-max-width: 90rem;
+  --layout-readable-max-width: 72rem;
+  --layout-public-wide-max-width: 88rem;
+  --layout-public-readable-max-width: 72rem;
+  --layout-page-gutter: clamp(1rem, 0.45rem + 1.5vw, 2.5rem);
+  --layout-shell-block-padding: clamp(1rem, 0.4rem + 1vw, 2rem);
+  --layout-page-block-padding: clamp(1.5rem, 0.75rem + 1.6vw, 2.75rem);
+  --layout-intro-max-width: 52rem;
 }
 
 * {
@@ -126,6 +135,48 @@ html[dir="rtl"] .theme-directional-icon {
   transition:
     background 320ms ease,
     color 220ms ease;
+}
+
+.theme-app-shell-frame {
+  width: min(100%, var(--layout-app-shell-max-width));
+  margin-inline: auto;
+  padding-inline: var(--layout-page-gutter);
+  padding-block: var(--layout-shell-block-padding);
+}
+
+.theme-app-page-frame {
+  width: 100%;
+  min-width: 0;
+}
+
+.theme-app-page-frame-expanded {
+  max-inline-size: min(100%, var(--layout-app-expanded-max-width));
+  margin-inline: auto;
+}
+
+.theme-app-page-frame-readable {
+  max-inline-size: min(100%, var(--layout-readable-max-width));
+  margin-inline: auto;
+}
+
+.theme-public-page-frame,
+.theme-public-section-frame {
+  width: min(100%, var(--layout-public-wide-max-width));
+  margin-inline: auto;
+  padding-inline: var(--layout-page-gutter);
+}
+
+.theme-public-page-frame {
+  padding-block: var(--layout-page-block-padding);
+}
+
+.theme-public-page-frame-readable,
+.theme-public-section-frame-readable {
+  max-inline-size: min(100%, var(--layout-public-readable-max-width));
+}
+
+.theme-page-intro-copy {
+  max-inline-size: var(--layout-intro-max-width);
 }
 
 .theme-sidebar-shell,

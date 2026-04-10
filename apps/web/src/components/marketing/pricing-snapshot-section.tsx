@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { getServerI18n } from "@/lib/i18n/server"
 import type { HomepagePricingPlan } from "./homepage-data"
 
@@ -12,8 +13,8 @@ export async function PricingSnapshotSection({ plans }: PricingSnapshotSectionPr
   const { t } = await getServerI18n()
 
   return (
-    <section id="plans" className="px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section id="plans" className="py-24">
+      <PublicSectionFrame>
         <div className="max-w-2xl">
           <p className="theme-marketing-eyebrow">{t("marketing.pricing.eyebrow")}</p>
           <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
@@ -92,7 +93,7 @@ export async function PricingSnapshotSection({ plans }: PricingSnapshotSectionPr
             </span>
           </Link>
         </div>
-      </div>
+      </PublicSectionFrame>
     </section>
   )
 }

@@ -71,7 +71,7 @@ export async function ProjectList({
   }
 
   return (
-    <div className="grid gap-4 xl:grid-cols-2">
+    <div className="grid gap-4 xl:grid-cols-3 2xl:grid-cols-4">
       {projects.map((project) => (
         <Link key={project.id} href={project.href}>
           <SurfaceCard className="h-full p-6 transition hover:border-white/20 hover:bg-white/[0.06]">

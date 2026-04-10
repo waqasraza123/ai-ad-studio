@@ -5,6 +5,7 @@ import { signOut } from "@/app/(app)/actions"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
 import { DashboardSidebarNav } from "@/components/layout/dashboard-sidebar-nav"
+import { AppPageFrame } from "@/components/layout/page-frame"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
 import { ThemeColorModeSwitch } from "@/components/theme/theme-color-mode-switch"
@@ -21,7 +22,7 @@ export async function AppShell({ children, userEmail }: AppShellProps) {
 
   return (
     <div className="theme-page-shell min-h-screen text-[var(--foreground)]">
-      <div className="mx-auto grid min-h-screen max-w-[1600px] grid-cols-1 gap-6 px-4 py-4 lg:grid-cols-[280px_minmax(0,1fr)] lg:px-6 lg:py-6">
+      <div className="theme-app-shell-frame grid min-h-screen grid-cols-1 gap-5 lg:grid-cols-[304px_minmax(0,1fr)] xl:gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
         <aside className="theme-sidebar-shell rounded-[1.75rem] border p-5 backdrop-blur-xl">
           <div className="flex items-center justify-between">
             <Link
@@ -70,7 +71,7 @@ export async function AppShell({ children, userEmail }: AppShellProps) {
           />
         </aside>
 
-        <div className="theme-main-shell flex min-h-full flex-col rounded-[1.75rem] border backdrop-blur-xl">
+        <div className="theme-main-shell flex min-h-full min-w-0 flex-col rounded-[1.75rem] border backdrop-blur-xl">
           <header className="flex items-center justify-between border-b border-[var(--border)] px-5 py-4 lg:px-8">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
@@ -110,7 +111,9 @@ export async function AppShell({ children, userEmail }: AppShellProps) {
             </div>
           </header>
 
-          <main className="flex-1 p-5 lg:p-8">{children}</main>
+          <main className="flex-1 p-5 lg:p-8 2xl:p-10">
+            <AppPageFrame>{children}</AppPageFrame>
+          </main>
         </div>
       </div>
     </div>

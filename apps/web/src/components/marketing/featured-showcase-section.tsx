@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { ArrowUpRight, GalleryVerticalEnd } from "lucide-react"
+import { PublicSectionFrame } from "@/components/layout/page-frame"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getServerI18n } from "@/lib/i18n/server"
 import type { HomepageFeaturedShowcaseItem } from "./homepage-data"
@@ -67,8 +68,8 @@ export async function FeaturedShowcaseSection({
     : fallbackCards
 
   return (
-    <section id="samples" className="px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
+    <section id="samples" className="py-24">
+      <PublicSectionFrame>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
             <p className="theme-marketing-eyebrow">{t("marketing.showcase.eyebrow")}</p>
@@ -150,7 +151,7 @@ export async function FeaturedShowcaseSection({
             </SurfaceCard>
           ))}
         </div>
-      </div>
+      </PublicSectionFrame>
     </section>
   )
 }
