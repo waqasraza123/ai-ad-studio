@@ -14,7 +14,7 @@ export async function ProjectUsageBreakdown({
   projectsById,
   usageEvents
 }: ProjectUsageBreakdownProps) {
-  const { formatCurrency, formatNumber } = await getServerI18n()
+  const { formatCurrency, formatNumber, t } = await getServerI18n()
   const rows = Array.from(
     usageEvents.reduce((map, event) => {
       const current = map.get(event.project_id) ?? {
@@ -33,7 +33,7 @@ export async function ProjectUsageBreakdown({
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Project usage
+        {t("analytics.projectBreakdown.eyebrow")}
       </p>
 
       <div className="mt-5 space-y-3">
@@ -49,10 +49,13 @@ export async function ProjectUsageBreakdown({
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <p className="text-sm font-medium text-white">
-                    {project?.name ?? "Unknown project"}
+                    {project?.name ?? t("common.words.unknownProject")}
                   </p>
                   <p className="mt-1 text-sm text-slate-400">
-                    {formatNumber(row.events)} usage event{row.events === 1 ? "" : "s"}
+                    {t("analytics.projectBreakdown.events", {
+                      count: row.events,
+                      value: formatNumber(row.events)
+                    })}
                   </p>
                 </div>
 

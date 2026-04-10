@@ -2,6 +2,7 @@
 
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 
 type ExportMediaFrameProps = {
@@ -15,6 +16,7 @@ export function ExportMediaFrame({
   previewDataUrl,
   videoSrc
 }: ExportMediaFrameProps) {
+  const { t } = useI18n()
   const [phase, setPhase] = useState<"loading" | "ready" | "error">(
     videoSrc ? "loading" : "ready"
   )
@@ -22,7 +24,7 @@ export function ExportMediaFrame({
   if (!videoSrc && !previewDataUrl) {
     return (
       <div className="grid aspect-video place-items-center text-sm text-slate-400">
-        Export preview not available yet
+        {t("media.exportFrame.unavailable")}
       </div>
     )
   }
@@ -30,7 +32,7 @@ export function ExportMediaFrame({
   if (!videoSrc && previewDataUrl) {
     return (
       <img
-        alt={`${projectName} export preview`}
+        alt={t("media.exportFrame.previewAlt", { project: projectName })}
         className="aspect-video w-full object-cover"
         decoding="async"
         loading="lazy"
@@ -45,14 +47,14 @@ export function ExportMediaFrame({
         <div className="absolute inset-0 z-10 grid place-items-center bg-slate-950/80">
           <Loader2
             className="h-9 w-9 animate-spin text-amber-200/85"
-            aria-label="Loading video"
+            aria-label={t("media.exportFrame.loading")}
           />
         </div>
       ) : null}
 
       {phase === "error" ? (
         <div className="absolute inset-0 z-10 grid place-items-center bg-slate-950/90 px-6 text-center text-sm text-rose-100">
-          Could not load the video preview. Use the download action if available.
+          {t("media.exportFrame.error")}
         </div>
       ) : null}
 

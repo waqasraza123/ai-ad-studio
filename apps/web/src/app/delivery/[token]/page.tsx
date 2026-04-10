@@ -116,21 +116,21 @@ export default async function PublicDeliveryPage({
 
           <div className="mt-6 grid gap-4 md:grid-cols-4">
             <div className="rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4">
-              <p className="text-sm text-emerald-100">Approved</p>
+              <p className="text-sm text-emerald-100">{t("common.status.approved")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
                 {workspace.approval_summary.approved_count}
               </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-rose-400/20 bg-rose-500/10 p-4">
-              <p className="text-sm text-rose-100">Rejected</p>
+              <p className="text-sm text-rose-100">{t("common.status.rejected")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
                 {workspace.approval_summary.rejected_count}
               </p>
             </div>
 
             <div className="rounded-[1.5rem] border border-amber-400/20 bg-amber-500/10 p-4">
-              <p className="text-sm text-amber-100">Pending</p>
+              <p className="text-sm text-amber-100">{t("common.status.pending")}</p>
               <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
                 {workspace.approval_summary.pending_count}
               </p>
@@ -147,22 +147,26 @@ export default async function PublicDeliveryPage({
 
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Approval summary
+            {t("public.delivery.approvalSummary")}
           </p>
           <div className="mt-4 grid gap-4 md:grid-cols-2">
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Review note</p>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {t("public.delivery.reviewNote")}
+              </p>
               <p className="mt-2 text-sm leading-7 text-[var(--foreground)]">
                 {workspace.approval_summary.review_note ??
-                  "No review note recorded."}
+                  t("public.delivery.noReviewNote")}
               </p>
             </div>
 
             <div className="theme-soft-panel rounded-[1.5rem] border p-4">
-              <p className="text-sm text-[var(--muted-foreground)]">Final decision</p>
+              <p className="text-sm text-[var(--muted-foreground)]">
+                {t("public.delivery.finalDecision")}
+              </p>
               <p className="mt-2 text-sm leading-7 text-[var(--foreground)]">
                 {workspace.approval_summary.finalization_note ??
-                  "No final decision note recorded."}
+                  t("public.delivery.noFinalDecisionNote")}
               </p>
             </div>
           </div>
@@ -170,19 +174,21 @@ export default async function PublicDeliveryPage({
 
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Receipt status
+            {t("public.delivery.receiptStatus")}
           </p>
 
           {activitySummary.acknowledgedAt ? (
             <div className="mt-4 rounded-[1.5rem] border border-emerald-400/20 bg-emerald-500/10 p-4 text-sm text-emerald-100">
-              Receipt acknowledged{" "}
+              {t("public.delivery.receiptAcknowledged")}{" "}
               {formatTimestamp(
                 formatDateTime,
                 activitySummary.acknowledgedAt,
                 t("common.status.pending")
               )}
               {activitySummary.acknowledgedBy
-                ? ` by ${activitySummary.acknowledgedBy}.`
+                ? t("public.delivery.receiptAcknowledgedBy", {
+                    value: activitySummary.acknowledgedBy
+                  })
                 : "."}
               {activitySummary.acknowledgementNote
                 ? ` ${activitySummary.acknowledgementNote}`
@@ -225,7 +231,7 @@ export default async function PublicDeliveryPage({
 
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Handoff notes
+            {t("public.delivery.handoffNotes")}
           </p>
           <p className="mt-4 text-sm leading-8 text-[var(--soft-foreground)]">
             {workspace.handoff_notes}
@@ -234,7 +240,7 @@ export default async function PublicDeliveryPage({
 
         <section className="theme-surface-card rounded-[2rem] border p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-            Downloadable assets
+            {t("public.delivery.downloadableAssets")}
           </p>
 
           <div className="mt-6 grid gap-6 xl:grid-cols-2">
@@ -274,7 +280,7 @@ export default async function PublicDeliveryPage({
                     />
                   ) : (
                     <div className="theme-soft-panel flex h-72 items-center justify-center rounded-[1.5rem] border text-sm text-[var(--muted-foreground)]">
-                      Preview unavailable
+                      {t("public.showcase.previewUnavailable")}
                     </div>
                   )}
 
@@ -289,7 +295,7 @@ export default async function PublicDeliveryPage({
                         </span>
                         {isCanonical ? (
                           <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100">
-                            Canonical
+                            {t("public.delivery.canonical")}
                           </span>
                         ) : null}
                       </>
@@ -302,7 +308,7 @@ export default async function PublicDeliveryPage({
                         className="theme-runtime-secondary-button inline-flex h-11 items-center justify-center rounded-full border px-5 text-sm font-medium transition"
                         href={`/delivery/${token}/download/${exportRecord.id}`}
                       >
-                        Download asset
+                        {t("public.delivery.downloadAsset")}
                       </a>
                     ) : null}
                   </div>

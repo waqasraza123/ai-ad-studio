@@ -49,6 +49,7 @@ import { listRenderBatchesByProjectIdForOwner } from "@/server/render-batches/re
 import { listRenderPacksByOwner } from "@/server/render-packs/render-pack-repository"
 import { listTemplatesByOwner } from "@/server/templates/template-repository"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type ProjectDetailPageProps = {
   params: Promise<{
@@ -70,21 +71,15 @@ function readSearchParam(
   return value
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
 export default async function ProjectDetailPage({
   params,
   searchParams
 }: ProjectDetailPageProps) {
+  const { formatDate, t } = await getServerI18n()
   const { projectId } = await params
   const resolvedSearchParams = await searchParams
   const errorCode = readSearchParam(resolvedSearchParams, "error")
-  const formErrorMessage = getFormErrorMessage(errorCode)
+  const formErrorMessage = getFormErrorMessage(errorCode, t)
 
   const user = await getAuthenticatedUser()
 
@@ -136,6 +131,7 @@ export default async function ProjectDetailPage({
 
   const summary = toProjectDetailSummary({
     assets,
+    formatDate: (value) => formatDate(value),
     project,
     projectInput
   })
@@ -238,59 +234,56 @@ export default async function ProjectDetailPage({
 
       {workspaceHasActiveAsyncWork ? (
         <p className="rounded-[1.25rem] border border-amber-400/15 bg-amber-500/[0.06] px-4 py-3 text-xs leading-relaxed text-amber-100/85">
-          Background work is running or your latest export is still processing. This page
-          refreshes every few seconds until things settle — no need to hammer refresh.
+          {t("projects.detail.processingNotice")}
         </p>
       ) : null}
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <SurfaceCard className="p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-            Project detail
+            {t("projects.detail.eyebrow")}
           </p>
           <h2 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
             {summary.projectName}
           </h2>
           <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-400">
-            This page now includes reusable branded templates, expanded brand kits,
-            approval gates, export management, platform-specific render packs,
-            and controlled A/B variation batches.
+            {t("projects.detail.description")}
           </p>
         </SurfaceCard>
 
         <SurfaceCard className="p-6">
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-            Project summary
+            {t("projects.summary.eyebrow")}
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">Status</p>
+              <p className="text-sm text-slate-400">{t("projects.summary.status")}</p>
               <p className="mt-2 text-lg font-medium text-white">
                 {summary.projectStatus}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">Assets</p>
+              <p className="text-sm text-slate-400">{t("projects.summary.assets")}</p>
               <p className="mt-2 text-lg font-medium text-white">
                 {summary.assetCount}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">Template</p>
+              <p className="text-sm text-slate-400">{t("projects.summary.template")}</p>
               <p className="mt-2 text-lg font-medium text-white">
-                {currentTemplate?.name ?? "None"}
+                {currentTemplate?.name ?? t("projects.summary.none")}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">Brand kit</p>
+              <p className="text-sm text-slate-400">{t("projects.summary.brandKit")}</p>
               <p className="mt-2 text-lg font-medium text-white">
-                {currentBrandKit?.name ?? "None"}
+                {currentBrandKit?.name ?? t("projects.summary.none")}
               </p>
             </div>
           </div>
 
           <p className="mt-5 text-sm text-slate-400">
-            Created {summary.createdAtLabel}
+            {t("common.words.created", { value: summary.createdAtLabel })}
           </p>
         </SurfaceCard>
       </section>
@@ -351,7 +344,7 @@ export default async function ProjectDetailPage({
 
       {latestExport ? (
         <ExportSummary
-          createdAtLabel={formatTimestamp(latestExport.created_at)}
+          createdAtLabel={formatDate(latestExport.created_at)}
           downloadHref={latestVideoSrc}
           projectName={project.name}
           previewDataUrl={latestPreviewDataUrl}

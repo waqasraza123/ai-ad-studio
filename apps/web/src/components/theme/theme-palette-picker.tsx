@@ -1,10 +1,16 @@
 "use client"
 
 import { Orbit, PaintBucket } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
+import {
+  getThemePaletteDescriptionKey,
+  getThemePaletteLabelKey
+} from "./theme-palette-config"
 import { useThemePalette } from "./theme-palette-provider"
 
 export function ThemePalettePicker() {
+  const { t } = useI18n()
   const {
     activePalette,
     colorMode,
@@ -28,18 +34,26 @@ export function ThemePalettePicker() {
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-              Theme palette
+              {t("theme.palette.eyebrow")}
             </p>
             <span className="theme-status-pill rounded-full border px-2.5 py-1 text-[10px] uppercase tracking-[0.24em]">
-              {paletteMode === "auto" ? "Auto cycling" : "Pinned"}
+              {paletteMode === "auto"
+                ? t("theme.palette.auto")
+                : t("theme.palette.pinned")}
             </span>
           </div>
 
           <p className="mt-2 text-sm font-medium text-[var(--foreground)]">
-            {activePalette.label}
+            {t(getThemePaletteLabelKey(activePalette.id))}
           </p>
           <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
-            {activePalette.description} Currently tuned for {colorMode} mode.
+            {t(getThemePaletteDescriptionKey(activePalette.id))}{" "}
+            {t("theme.palette.currentMode", {
+              value:
+                colorMode === "dark"
+                  ? t("common.theme.dark")
+                  : t("common.theme.light")
+            })}
           </p>
         </div>
       </div>
@@ -52,7 +66,9 @@ export function ThemePalettePicker() {
             <button
               key={palette.id}
               type="button"
-              aria-label={`Switch site palette to ${palette.label}`}
+              aria-label={t("theme.palette.switchAria", {
+                value: t(getThemePaletteLabelKey(palette.id))
+              })}
               aria-pressed={isSelected}
               onClick={() => selectPalette(palette.id)}
               className={cn(
@@ -66,7 +82,9 @@ export function ThemePalettePicker() {
                   background: `linear-gradient(135deg, ${palette.swatch[0]}, ${palette.swatch[1]} 55%, ${palette.swatch[2]})`
                 }}
               />
-              <span className="sr-only">{palette.label}</span>
+              <span className="sr-only">
+                {t(getThemePaletteLabelKey(palette.id))}
+              </span>
             </button>
           )
         })}
@@ -74,7 +92,7 @@ export function ThemePalettePicker() {
 
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-          Palette controls accent family. Top-bar switch controls light and dark.
+          {t("theme.palette.helper")}
         </p>
 
         <button
@@ -82,7 +100,7 @@ export function ThemePalettePicker() {
           onClick={resumeAuto}
           className="theme-inline-secondary-button inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium"
         >
-          Resume auto
+          {t("theme.palette.resumeAuto")}
         </button>
       </div>
     </section>

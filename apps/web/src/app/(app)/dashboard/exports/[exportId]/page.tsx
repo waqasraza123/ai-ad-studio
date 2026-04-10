@@ -29,6 +29,8 @@ import { getShareCampaignByExportIdForOwner } from "@/server/share-campaigns/sha
 import { getShowcaseItemByExportIdForOwner } from "@/server/showcase/showcase-repository"
 import { getPublicEnvironment } from "@/lib/env"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
+import { getServerI18n } from "@/lib/i18n/server"
+import type { Translator } from "@/lib/i18n/translator"
 
 type ExportDetailPageProps = {
   params: Promise<{
@@ -50,34 +52,38 @@ function readSearchParam(
   return value
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
+function formatTimestamp(
+  value: string,
+  formatDateTime: Translator["formatDateTime"]
+) {
+  return formatDateTime(value, {
     dateStyle: "medium",
     timeStyle: "short"
-  }).format(new Date(value))
+  })
 }
 
-function renderMetadataValue(metadata: Record<string, unknown>, key: string) {
+function renderMetadataValue(
+  metadata: Record<string, unknown>,
+  key: string,
+  notAvailableLabel: string
+) {
   const value = metadata[key]
 
   if (typeof value === "string" || typeof value === "number") {
     return String(value)
   }
 
-  return "n/a"
-}
-
-function formatUsd(value: number) {
-  return `$${value.toFixed(4)}`
+  return notAvailableLabel
 }
 
 export default async function ExportDetailPage({
   params,
   searchParams
 }: ExportDetailPageProps) {
+  const { formatCurrency, formatDateTime, t } = await getServerI18n()
   const { exportId } = await params
   const sp = await searchParams
-  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"))
+  const formErrorMessage = getFormErrorMessage(readSearchParam(sp, "error"), t)
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -194,7 +200,7 @@ export default async function ExportDetailPage({
       ) : null}
 
       <ExportSummary
-        createdAtLabel={formatTimestamp(exportRecord.created_at)}
+        createdAtLabel={formatTimestamp(exportRecord.created_at, formatDateTime)}
         downloadHref={videoSrc}
         projectName={project.name}
         previewDataUrl={previewDataUrl}
@@ -204,76 +210,87 @@ export default async function ExportDetailPage({
 
       <div className="grid gap-4 md:grid-cols-6">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Selected concept</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.selectedConcept")}</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {concept?.title ?? "Unknown concept"}
+            {concept?.title ?? t("exports.detail.unknownConcept")}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Variant</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.variant")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {exportRecord.variant_key}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Preset</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.preset")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {exportRecord.platform_preset}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Aspect ratio</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.aspectRatio")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {exportRecord.aspect_ratio}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Voiceover</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.voiceover")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {voiceoverAsset
               ? `${Math.round((voiceoverAsset.duration_ms ?? 0) / 1000)}s`
-              : "Not found"}
+              : t("exports.detail.notFound")}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Estimated cost</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.estimatedCost")}</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {formatUsd(exportCost)}
+            {formatCurrency(exportCost, "USD", {
+              maximumFractionDigits: 4,
+              minimumFractionDigits: 4
+            })}
           </p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Artifact mode</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.artifactMode")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {typeof exportAsset?.metadata.renderMode === "string"
               ? exportAsset.metadata.renderMode
-              : "unknown"}
+              : t("exports.detail.unknown")}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Scene count</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.sceneCount")}</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {renderMetadataValue(exportRecord.render_metadata, "sceneCount")}
+            {renderMetadataValue(
+              exportRecord.render_metadata,
+              "sceneCount",
+              t("exports.detail.notAvailable")
+            )}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Caption cues</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.captionCues")}</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {renderMetadataValue(exportRecord.render_metadata, "captionCueCount")}
+            {renderMetadataValue(
+              exportRecord.render_metadata,
+              "captionCueCount",
+              t("exports.detail.notAvailable")
+            )}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Video specs</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.videoSpecs")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {exportAsset?.width ?? 0} × {exportAsset?.height ?? 0} ·{" "}
             {Math.round((exportAsset?.duration_ms ?? 0) / 1000)}s
@@ -283,9 +300,9 @@ export default async function ExportDetailPage({
 
       {concept ? (
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-          <p className="text-sm text-slate-400">Safety notes</p>
+          <p className="text-sm text-slate-400">{t("exports.detail.safetyNotes")}</p>
           <p className="mt-2 text-sm leading-7 text-white">
-            {concept.safety_notes ?? "No additional safety notes were recorded."}
+            {concept.safety_notes ?? t("exports.detail.noSafetyNotes")}
           </p>
         </div>
       ) : null}

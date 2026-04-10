@@ -1,3 +1,5 @@
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
+
 export type PromotionEligibilityResult =
   | {
       eligible: true
@@ -7,7 +9,7 @@ export type PromotionEligibilityResult =
     }
   | {
       eligible: false
-      reason: string
+      reason: AppMessageKey
     }
 
 type EvaluatePromotionEligibilityInput = {
@@ -29,28 +31,28 @@ export function evaluatePromotionEligibility(
   if (!input.batchId) {
     return {
       eligible: false,
-      reason: "Only finalized canonical exports can be promoted publicly."
+      reason: "promotion.eligibility.finalizedCanonicalOnly"
     }
   }
 
   if (!input.batchProjectId || !input.batchJobId) {
     return {
       eligible: false,
-      reason: "The review batch for this export was not found."
+      reason: "promotion.eligibility.batchNotFound"
     }
   }
 
   if (!input.projectId) {
     return {
       eligible: false,
-      reason: "The project for this export was not found."
+      reason: "promotion.eligibility.projectNotFound"
     }
   }
 
   if (input.batchProjectId !== input.exportProjectId) {
     return {
       eligible: false,
-      reason: "The review batch for this export does not belong to this project."
+      reason: "promotion.eligibility.batchProjectMismatch"
     }
   }
 
@@ -61,21 +63,21 @@ export function evaluatePromotionEligibility(
   ) {
     return {
       eligible: false,
-      reason: "Finalize the reviewed winner before promoting it publicly."
+      reason: "promotion.eligibility.finalizeWinnerFirst"
     }
   }
 
   if (input.batchFinalizedExportId !== input.exportId) {
     return {
       eligible: false,
-      reason: "Only the finalized canonical export can be promoted publicly."
+      reason: "promotion.eligibility.notFinalizedCanonical"
     }
   }
 
   if (input.projectCanonicalExportId !== input.exportId) {
     return {
       eligible: false,
-      reason: "Only the current canonical export can be promoted publicly."
+      reason: "promotion.eligibility.notCurrentCanonical"
     }
   }
 

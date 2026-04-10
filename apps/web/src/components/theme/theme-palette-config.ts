@@ -1,11 +1,10 @@
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
+
 export type ThemePaletteMode = "auto" | "manual"
 export type ThemeColorMode = "dark" | "light"
 
 export type ThemePalette = {
   id: string
-  label: string
-  shortLabel: string
-  description: string
   swatch: [string, string, string]
   darkCssVariables: Record<string, string>
   lightCssVariables: Record<string, string>
@@ -117,9 +116,6 @@ function buildLightCssVariables(input: {
 export const themePalettes: ThemePalette[] = [
   {
     id: "theme-ember-magma",
-    label: "Ember Magma",
-    shortLabel: "Ember",
-    description: "Orange heat and pink flare over obsidian glass.",
     swatch: ["#ff7a18", "#ff3366", "#ffd166"],
     darkCssVariables: buildDarkCssVariables({
       accentRgb: "255 170 95",
@@ -160,9 +156,6 @@ export const themePalettes: ThemePalette[] = [
   },
   {
     id: "theme-electric-cyan",
-    label: "Electric Cyan",
-    shortLabel: "Cyan",
-    description: "Neon cyan and aqua over deep midnight navy.",
     swatch: ["#06b6d4", "#22d3ee", "#67e8f9"],
     darkCssVariables: buildDarkCssVariables({
       accentRgb: "103 232 249",
@@ -203,9 +196,6 @@ export const themePalettes: ThemePalette[] = [
   },
   {
     id: "theme-acid-lime",
-    label: "Acid Lime",
-    shortLabel: "Lime",
-    description: "High-voltage chartreuse on dark carbon.",
     swatch: ["#84cc16", "#d9f99d", "#bef264"],
     darkCssVariables: buildDarkCssVariables({
       accentRgb: "217 249 157",
@@ -246,9 +236,6 @@ export const themePalettes: ThemePalette[] = [
   },
   {
     id: "theme-crimson-fuchsia",
-    label: "Crimson Fuchsia",
-    shortLabel: "Crimson",
-    description: "Hot magenta and crimson with luxe dark contrast.",
     swatch: ["#e11d48", "#ec4899", "#fb7185"],
     darkCssVariables: buildDarkCssVariables({
       accentRgb: "251 113 133",
@@ -289,9 +276,6 @@ export const themePalettes: ThemePalette[] = [
   },
   {
     id: "theme-cobalt-violet",
-    label: "Cobalt Violet",
-    shortLabel: "Cobalt",
-    description: "Cobalt blue punched with electric violet.",
     swatch: ["#2563eb", "#8b5cf6", "#60a5fa"],
     darkCssVariables: buildDarkCssVariables({
       accentRgb: "96 165 250",
@@ -334,4 +318,36 @@ export const themePalettes: ThemePalette[] = [
 
 export function findThemePaletteById(id: string | null | undefined) {
   return themePalettes.find((palette) => palette.id === id) ?? themePalettes[0]!
+}
+
+export function getThemePaletteLabelKey(id: ThemePalette["id"]): AppMessageKey {
+  switch (id) {
+    case "theme-electric-cyan":
+      return "theme.palette.name.electricCyan"
+    case "theme-acid-lime":
+      return "theme.palette.name.acidLime"
+    case "theme-crimson-fuchsia":
+      return "theme.palette.name.crimsonFuchsia"
+    case "theme-cobalt-violet":
+      return "theme.palette.name.cobaltViolet"
+    default:
+      return "theme.palette.name.emberMagma"
+  }
+}
+
+export function getThemePaletteDescriptionKey(
+  id: ThemePalette["id"]
+): AppMessageKey {
+  switch (id) {
+    case "theme-electric-cyan":
+      return "theme.palette.description.electricCyan"
+    case "theme-acid-lime":
+      return "theme.palette.description.acidLime"
+    case "theme-crimson-fuchsia":
+      return "theme.palette.description.crimsonFuchsia"
+    case "theme-cobalt-violet":
+      return "theme.palette.description.cobaltViolet"
+    default:
+      return "theme.palette.description.emberMagma"
+  }
 }

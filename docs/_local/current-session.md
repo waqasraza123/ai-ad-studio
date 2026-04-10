@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Finish verification and any final spot-audit cleanup after the Arabic translation and RTL completion sweep across `apps/web`.
+Finish the remaining Arabic/RTL spot-audit cleanup across lower-traffic dashboard/public chrome and verify the web app build is clean.
 
 ## Last Completed Step
 
-Completed the remaining delivery dashboard Arabic/RTL pass: localized the delivery route shell, overdue/follow-up/support/investigation panels, focused workspace summary, reminder follow-up forms, and workspace list; expanded the typed delivery catalog in both locales; and removed the remaining physical-direction classes in the delivery support path.
+Completed a broader lower-traffic Arabic/RTL cleanup pass: localized export detail, delivery workspace management, share/showcase/campaign panels, delivery activity timeline, analytics and notifications overview cards, approval gate, template/brand-kit settings, theme palette picker, and project summary chrome; normalized promotion eligibility reasons into typed i18n keys; and verified `apps/web` with `build` and `typecheck`.
 
 ## Current Step
 
-Run broader browser/manual spot checks on the now-complete Arabic/RTL delivery and shared dashboard surfaces, then do a final grep-driven sweep for any leftover hardcoded English in lower-traffic delivery/public components.
+Run manual Arabic/RTL QA on the main dashboard routes and public token routes, then decide whether to do one more pass on deeper helper/config sources such as concept-state mappers, render preset metadata, and delivery activity helper text that still feed some English into UI state.
 
 ## Scope Boundaries
 
@@ -25,10 +25,10 @@ Run broader browser/manual spot checks on the now-complete Arabic/RTL delivery a
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/features/delivery/**/*`
-- `apps/web/src/features/renders/**/*`
-- `apps/web/src/components/**/*`
-- `apps/web/src/lib/i18n/messages/*`
+- `apps/web/src/features/concepts/mappers/*`
+- `apps/web/src/features/renders/lib/*`
+- `apps/web/src/features/delivery/lib/*`
+- `apps/web/src/app/(app)/dashboard/projects/[projectId]/page.tsx`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
@@ -50,8 +50,8 @@ Run broader browser/manual spot checks on the now-complete Arabic/RTL delivery a
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
 - `rg -n "text-right|text-left|ml-|mr-|left-|right-" apps/web/src/features/delivery apps/web/src/features/renders apps/web/src/components`
+- `rg -n '"[A-Z][^"]* [A-Za-z][^"]*"' apps/web/src/app apps/web/src/components apps/web/src/features --glob '!**/*.test.*' --glob '!**/messages/*'`
 - rerun the seeded browser suite once Supabase connectivity is available
-- grep for leftover hardcoded English or physical-direction classes after the final spot-audit
 
 ## Lookup Notes
 
@@ -63,4 +63,4 @@ Run broader browser/manual spot checks on the now-complete Arabic/RTL delivery a
 
 ## Expected Result
 
-`apps/web` should now present professional Arabic copy and natural RTL layout across the shared public/dashboard surfaces plus the dense delivery-support dashboard flows, leaving only smaller lower-traffic spot-audit cleanup if any English leakage remains.
+`apps/web` should now be clean across the shared public/dashboard chrome and the lower-traffic export/share/showcase/delivery management surfaces in both English and Arabic, with any remaining English leakage isolated to deeper helper/config-derived status text rather than the major route shells or shared panels.

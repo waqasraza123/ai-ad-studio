@@ -18,19 +18,19 @@ function uniqueProjects(events: UsageEventRecord[]) {
 }
 
 export async function AnalyticsOverview({ usageEvents }: AnalyticsOverviewProps) {
-  const { formatCurrency, formatNumber } = await getServerI18n()
+  const { formatCurrency, formatNumber, t } = await getServerI18n()
 
   return (
     <section className="grid gap-4 md:grid-cols-4">
       <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-        <p className="text-sm text-slate-400">Usage events</p>
+        <p className="text-sm text-slate-400">{t("analytics.overview.usageEvents")}</p>
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatNumber(usageEvents.length)}
         </p>
       </div>
 
       <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-        <p className="text-sm text-slate-400">Estimated total cost</p>
+        <p className="text-sm text-slate-400">{t("analytics.overview.estimatedTotalCost")}</p>
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatCurrency(sumEstimatedCost(usageEvents), "USD", {
             maximumFractionDigits: 4,
@@ -40,7 +40,7 @@ export async function AnalyticsOverview({ usageEvents }: AnalyticsOverviewProps)
       </div>
 
       <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-        <p className="text-sm text-slate-400">Tracked units</p>
+        <p className="text-sm text-slate-400">{t("analytics.overview.trackedUnits")}</p>
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatNumber(sumUnits(usageEvents), {
             maximumFractionDigits: 2,
@@ -50,7 +50,7 @@ export async function AnalyticsOverview({ usageEvents }: AnalyticsOverviewProps)
       </div>
 
       <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
-        <p className="text-sm text-slate-400">Projects with usage</p>
+        <p className="text-sm text-slate-400">{t("analytics.overview.projectsWithUsage")}</p>
         <p className="mt-2 text-2xl font-semibold text-white">
           {formatNumber(uniqueProjects(usageEvents))}
         </p>

@@ -8,7 +8,7 @@ import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listProjectsByOwner } from "@/server/projects/project-repository"
 
 export default async function DashboardPage() {
-  const { t } = await getServerI18n()
+  const { formatDate, t } = await getServerI18n()
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -20,7 +20,9 @@ export default async function DashboardPage() {
 
   try {
     const projects = await listProjectsByOwner(user.id)
-    viewModels = projects.map(toProjectCardViewModel)
+    viewModels = projects.map((project) =>
+      toProjectCardViewModel(project, (value) => formatDate(value))
+    )
   } catch (error) {
     projectsLoadFailed = true
 
