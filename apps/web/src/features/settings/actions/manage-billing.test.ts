@@ -181,6 +181,7 @@ describe("manage billing actions", () => {
       stripeSubscriptionItemId: "si_123"
     })
     expect(createStripeCheckoutSession).not.toHaveBeenCalled()
+    expect(revalidatePath).toHaveBeenCalledWith("/dashboard/settings/billing")
     expect(revalidatePath).toHaveBeenCalledWith("/dashboard/settings")
   })
 
@@ -208,7 +209,7 @@ describe("manage billing actions", () => {
 
     await expectRedirect(
       changeSubscriptionPlanAction("growth"),
-      "/dashboard/settings?error=billing_plan_change_unavailable"
+      "/dashboard/settings/billing?error=billing_plan_change_unavailable"
     )
 
     expect(updateStripeSubscriptionPlan).not.toHaveBeenCalled()
@@ -228,7 +229,7 @@ describe("manage billing actions", () => {
 
     await expectRedirect(
       openBillingPortalAction(),
-      "/dashboard/settings?error=billing_portal_unavailable"
+      "/dashboard/settings/billing?error=billing_portal_unavailable"
     )
 
     expect(createStripeBillingPortalSession).not.toHaveBeenCalled()

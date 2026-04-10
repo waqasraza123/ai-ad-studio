@@ -76,6 +76,21 @@ export const en = {
   "header.app.authNotConfigured": "Auth not configured",
   "header.app.signOut": "Sign out",
   "header.app.signingOut": "Signing out…",
+  "header.app.nav.workspace": "Workspace",
+  "header.app.nav.production": "Production",
+  "header.app.nav.operations": "Operations",
+  "header.app.nav.publishing": "Publishing",
+  "header.app.nav.administration": "Administration",
+  "header.app.nav.dashboard": "Dashboard",
+  "header.app.nav.newProject": "New project",
+  "header.app.nav.concepts": "Concepts",
+  "header.app.nav.exports": "Exports",
+  "header.app.nav.analytics": "Analytics",
+  "header.app.nav.delivery": "Delivery",
+  "header.app.nav.notifications": "Notifications",
+  "header.app.nav.showcase": "Showcase",
+  "header.app.nav.campaigns": "Campaigns",
+  "header.app.nav.settings": "Settings",
   "public.header.backHome": "Back home",
   "public.header.dashboard": "Dashboard",
   "auth.title": "Authentication",
@@ -165,6 +180,22 @@ export const en = {
   "dashboard.home.providerTitle": "Runway is the fastest hosted path",
   "dashboard.home.providerDescription":
     "Use the API & GPU setup entry in the sidebar to compare Runway, hybrid, and local HTTP modes before running previews or motion jobs.",
+  "dashboard.admin.eyebrow": "Workspace administration",
+  "dashboard.admin.title": "Keep billing, limits, and brand defaults in sync",
+  "dashboard.admin.description":
+    "Settings is now the home for commercial controls, operator safety caps, and the shared brand system that project templates inherit.",
+  "dashboard.admin.openSettings": "Open settings",
+  "dashboard.admin.unavailable":
+    "Workspace administration details could not be loaded right now. Open Settings to retry.",
+  "dashboard.admin.planLabel": "Plan",
+  "dashboard.admin.guardrailsLabel": "Guardrails",
+  "dashboard.admin.brandLabel": "Brand kit",
+  "dashboard.admin.guardrailsSummary":
+    "Preview {{preview}} • Render {{render}}",
+  "dashboard.admin.brandSummary":
+    "Heading {{heading}} • Body {{body}}",
+  "dashboard.admin.brandUnavailable":
+    "Default brand kit details are unavailable right now.",
   "projects.list.unavailableTitle": "Projects are temporarily unavailable",
   "projects.list.unavailableDescription":
     "We could not load your projects right now. This usually means a temporary backend or database issue. You can still create a new project and refresh this page again in a moment.",
@@ -540,6 +571,42 @@ export const en = {
   "brandKit.settings.letterSpacing": "Letter spacing",
   "brandKit.settings.pending": "Saving…",
   "brandKit.settings.save": "Save brand kit tokens",
+  "settings.section.eyebrow": "Settings",
+  "settings.section.title": "Workspace administration",
+  "settings.section.description":
+    "Review commercial access, operating limits, and the default brand system from one clean administration surface.",
+  "settings.nav.label": "Settings sections",
+  "settings.nav.overview": "Overview",
+  "settings.nav.billing": "Billing",
+  "settings.nav.guardrails": "Guardrails",
+  "settings.nav.brand": "Brand kit",
+  "settings.overview.billing.description":
+    "Monitor your subscription state, billing period, checkout readiness, and plan capacity from one dedicated page.",
+  "settings.overview.billing.statusReady": "Billing actions ready",
+  "settings.overview.billing.statusLimited": "Needs attention",
+  "settings.overview.billing.monthlyPrice": "Monthly price",
+  "settings.overview.billing.currentPeriodEnd":
+    "Current billing period ends {{value}}",
+  "settings.overview.billing.storageCap": "Storage cap {{value}}",
+  "settings.overview.billing.openAction": "Open billing",
+  "settings.overview.guardrails.title": "Budget and concurrency caps",
+  "settings.overview.guardrails.description":
+    "Set personal ceilings that can only tighten your active subscription entitlements.",
+  "settings.overview.guardrails.totalBudget": "Monthly total budget",
+  "settings.overview.guardrails.providerBudgets":
+    "OpenAI {{openai}} • Runway {{runway}}",
+  "settings.overview.guardrails.concurrency":
+    "Preview {{preview}} • Render {{render}}",
+  "settings.overview.guardrails.openAction": "Open guardrails",
+  "settings.overview.brand.description":
+    "Keep the default palette and typography ready for project templates and future exports.",
+  "settings.overview.brand.unavailable": "Default brand kit unavailable",
+  "settings.overview.brand.palette": "Palette {{value}}",
+  "settings.overview.brand.typography":
+    "Heading {{heading}} • Body {{body}}",
+  "settings.overview.brand.openAction": "Open brand kit",
+  "settings.brand.unavailable":
+    "A default brand kit is not available for this workspace right now.",
   "settings.billing.feedback.success":
     "Checkout started successfully. Complete payment in Stripe to activate the selected plan.",
   "settings.billing.feedback.cancelled":

@@ -13,7 +13,7 @@ function readString(formData: FormData, key: string, fallback: string) {
 
 export async function updateBrandKitAction(brandKitId: string, formData: FormData) {
   const user = await getAuthenticatedUser()
-  const path = "/dashboard/settings"
+  const path = "/dashboard/settings/brand"
 
   if (!user) {
     throw new Error("Authentication is required")
@@ -59,5 +59,6 @@ export async function updateBrandKitAction(brandKitId: string, formData: FormDat
   })
 
   revalidatePath(path)
+  revalidatePath("/dashboard/settings")
   revalidatePath("/dashboard")
 }

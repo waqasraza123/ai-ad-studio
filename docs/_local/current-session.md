@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Hotfix the billing catalog schema drift that broke the public homepage pricing query, then return to the activation + feedback follow-up work.
+Redesign the dashboard settings area into a real workspace-administration surface, then return to the activation + feedback follow-up work.
 
 ## Last Completed Step
 
-Diagnosed the public homepage billing failure to remote Supabase schema drift: the linked project was missing `supabase/migrations/202604101200_phase_34_activation_feedback_foundation.sql`, so `billing_plans.allow_activation_packages` and the related creative-performance capability columns did not exist. Added the idempotent repair migration `supabase/migrations/202604101830_phase_34_billing_plan_catalog_repair.sql`, pushed both pending migrations with `supabase db push --linked`, verified that anon and service-role `billing_plans` reads now succeed for `free`, `starter`, `growth`, and `scale`, hardened the web app so homepage pricing degrades cleanly instead of 500ing, billing catalog failures are classified (`schema_drift` vs `query_failed`), `/api/health` now includes `billingPlanCatalogReady`, runtime smoke now checks the homepage route directly, and the dashboard billing cards now expose explicit current/downgrade-only/unavailable states instead of looking silently clickable.
+Redesigned the dashboard settings IA into a multi-page administration surface: the app shell sidebar now uses a shared, route-aware dashboard navigation with first-class `Settings`, `Analytics`, `Delivery`, `Notifications`, `Showcase`, and `Campaigns` entries; `/dashboard/settings` is now an overview hub; dedicated `/dashboard/settings/billing`, `/dashboard/settings/guardrails`, and `/dashboard/settings/brand` routes reuse the existing billing, guardrails, and brand-kit functionality under a shared settings layout and sub-navigation; billing Stripe return URLs and server-action redirect/revalidation targets now land on the billing subpage while brand-kit and guardrail mutations revalidate their dedicated pages plus the overview; and `/dashboard` now includes a compact workspace-administration panel that links into the new settings section. Verified with targeted settings/layout Vitest suites, `pnpm --filter @ai-ad-studio/web typecheck`, and `pnpm --filter @ai-ad-studio/web build`.
 
 ## Current Step
 
-The billing schema drift is fixed on the linked remote and the homepage/health surfaces are hardened against future billing-catalog failures. The next implementation step is to resume the activation + feedback follow-up slice: richer activation readiness/history handling, multi-row manual performance ingestion, and more detailed creative breakdowns by audience, offer, and tone.
+The dashboard settings architecture is now split and navigable. The next implementation step is to resume the activation + feedback follow-up slice: richer activation readiness/history handling, multi-row manual performance ingestion, and more detailed creative breakdowns by audience, offer, and tone.
 
 ## Scope Boundaries
 
@@ -47,6 +47,9 @@ The billing schema drift is fixed on the linked remote and the homepage/health s
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/billing/billing-plan-catalog.test.ts src/server/billing/runtime-readiness.test.ts src/app/api/health/route.test.ts src/server/billing/purchase-availability.test.ts`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/components/marketing/pricing-snapshot-section.test.tsx src/app/page.test.tsx`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings/components/billing-plan-panel.test.tsx`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings src/components/layout`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/features/settings/actions`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/lib/env.test.ts`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/activation/activation-service.test.ts src/server/creative-performance/creative-performance-service.test.ts src/features/analytics/lib/creative-performance-summary.test.ts`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/activation/components/activation-package-panel.test.tsx src/features/analytics/components/creative-performance-ingestion-panel.test.tsx`
 - `pnpm --filter @ai-ad-studio/web typecheck`

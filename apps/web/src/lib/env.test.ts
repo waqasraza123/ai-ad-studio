@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest"
 import {
+  getServerEnvironment,
   getWebRuntimeReadiness,
   getWebRuntimeStatus
 } from "./env"
@@ -61,5 +62,39 @@ describe("getWebRuntimeStatus", () => {
         supabaseAuthConfigured: true
       })
     ).toBe("degraded")
+  })
+})
+
+describe("getServerEnvironment", () => {
+  it("treats blank optional server values as undefined", () => {
+    expect(getServerEnvironment({
+      SUPABASE_SERVICE_ROLE_KEY: "",
+      R2_ACCOUNT_ID: "",
+      R2_ACCESS_KEY_ID: "",
+      R2_SECRET_ACCESS_KEY: "",
+      R2_BUCKET_NAME: "",
+      STRIPE_SECRET_KEY: "",
+      STRIPE_WEBHOOK_SECRET: "",
+      STRIPE_BILLING_PORTAL_CONFIGURATION_ID: "",
+      STRIPE_PRICE_STARTER_MONTHLY: "",
+      STRIPE_PRICE_GROWTH_MONTHLY: "",
+      STRIPE_PRICE_SCALE_MONTHLY: "",
+      BILLING_OPERATOR_SECRET: "",
+      CREATIVE_PERFORMANCE_OPERATOR_SECRET: ""
+    })).toEqual({
+      SUPABASE_SERVICE_ROLE_KEY: undefined,
+      R2_ACCOUNT_ID: undefined,
+      R2_ACCESS_KEY_ID: undefined,
+      R2_SECRET_ACCESS_KEY: undefined,
+      R2_BUCKET_NAME: undefined,
+      STRIPE_SECRET_KEY: undefined,
+      STRIPE_WEBHOOK_SECRET: undefined,
+      STRIPE_BILLING_PORTAL_CONFIGURATION_ID: undefined,
+      STRIPE_PRICE_STARTER_MONTHLY: undefined,
+      STRIPE_PRICE_GROWTH_MONTHLY: undefined,
+      STRIPE_PRICE_SCALE_MONTHLY: undefined,
+      BILLING_OPERATOR_SECRET: undefined,
+      CREATIVE_PERFORMANCE_OPERATOR_SECRET: undefined
+    })
   })
 })

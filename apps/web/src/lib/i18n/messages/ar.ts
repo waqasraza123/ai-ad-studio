@@ -75,6 +75,21 @@ export const ar: AppMessageCatalog = {
   "header.app.authNotConfigured": "المصادقة غير مهيأة",
   "header.app.signOut": "تسجيل الخروج",
   "header.app.signingOut": "جارٍ تسجيل الخروج…",
+  "header.app.nav.workspace": "مساحة العمل",
+  "header.app.nav.production": "الإنتاج",
+  "header.app.nav.operations": "العمليات",
+  "header.app.nav.publishing": "النشر",
+  "header.app.nav.administration": "الإدارة",
+  "header.app.nav.dashboard": "لوحة التحكم",
+  "header.app.nav.newProject": "مشروع جديد",
+  "header.app.nav.concepts": "المفاهيم",
+  "header.app.nav.exports": "المخرجات",
+  "header.app.nav.analytics": "التحليلات",
+  "header.app.nav.delivery": "التسليم",
+  "header.app.nav.notifications": "الإشعارات",
+  "header.app.nav.showcase": "المعرض",
+  "header.app.nav.campaigns": "الحملات",
+  "header.app.nav.settings": "الإعدادات",
   "public.header.backHome": "العودة للرئيسية",
   "public.header.dashboard": "لوحة التحكم",
   "auth.title": "المصادقة",
@@ -162,6 +177,22 @@ export const ar: AppMessageCatalog = {
   "dashboard.home.providerTitle": "Runway هو أسرع مسار مستضاف",
   "dashboard.home.providerDescription":
     "استخدم مدخل إعداد API وGPU في الشريط الجانبي لمقارنة Runway والمسارات الهجينة والمحلية قبل تشغيل المعاينات أو وظائف الحركة.",
+  "dashboard.admin.eyebrow": "إدارة مساحة العمل",
+  "dashboard.admin.title": "أبقِ الفوترة والحدود وافتراضات العلامة متسقة",
+  "dashboard.admin.description":
+    "أصبحت الإعدادات هي موضع التحكم التجاري وحدود الأمان التشغيلية ونظام العلامة الافتراضي الذي ترثه قوالب المشاريع.",
+  "dashboard.admin.openSettings": "فتح الإعدادات",
+  "dashboard.admin.unavailable":
+    "تعذر تحميل تفاصيل إدارة مساحة العمل الآن. افتح الإعدادات لإعادة المحاولة.",
+  "dashboard.admin.planLabel": "الخطة",
+  "dashboard.admin.guardrailsLabel": "الحدود",
+  "dashboard.admin.brandLabel": "مجموعة العلامة",
+  "dashboard.admin.guardrailsSummary":
+    "المعاينة {{preview}} • الإخراج {{render}}",
+  "dashboard.admin.brandSummary":
+    "العنوان {{heading}} • المتن {{body}}",
+  "dashboard.admin.brandUnavailable":
+    "تفاصيل مجموعة العلامة الافتراضية غير متاحة الآن.",
   "projects.list.unavailableTitle": "المشاريع غير متاحة مؤقتًا",
   "projects.list.unavailableDescription":
     "تعذر تحميل مشاريعك الآن. يحدث ذلك غالبًا بسبب مشكلة مؤقتة في الواجهة الخلفية أو قاعدة البيانات. ما زال بإمكانك إنشاء مشروع جديد ثم تحديث الصفحة بعد لحظات.",
@@ -530,6 +561,42 @@ export const ar: AppMessageCatalog = {
   "brandKit.settings.letterSpacing": "تباعد الحروف",
   "brandKit.settings.pending": "جارٍ الحفظ…",
   "brandKit.settings.save": "حفظ رموز مجموعة العلامة",
+  "settings.section.eyebrow": "الإعدادات",
+  "settings.section.title": "إدارة مساحة العمل",
+  "settings.section.description":
+    "راجع الوصول التجاري والحدود التشغيلية ونظام العلامة الافتراضي من سطح إدارة واحد وواضح.",
+  "settings.nav.label": "أقسام الإعدادات",
+  "settings.nav.overview": "نظرة عامة",
+  "settings.nav.billing": "الفوترة",
+  "settings.nav.guardrails": "الحدود",
+  "settings.nav.brand": "مجموعة العلامة",
+  "settings.overview.billing.description":
+    "تابع حالة الاشتراك وفترة الفوترة وجهوزية الدفع وسعة الخطة من صفحة مخصصة واحدة.",
+  "settings.overview.billing.statusReady": "إجراءات الفوترة جاهزة",
+  "settings.overview.billing.statusLimited": "تحتاج متابعة",
+  "settings.overview.billing.monthlyPrice": "السعر الشهري",
+  "settings.overview.billing.currentPeriodEnd":
+    "تنتهي فترة الفوترة الحالية في {{value}}",
+  "settings.overview.billing.storageCap": "حد التخزين {{value}}",
+  "settings.overview.billing.openAction": "فتح الفوترة",
+  "settings.overview.guardrails.title": "حدود الميزانية والتوازي",
+  "settings.overview.guardrails.description":
+    "اضبط حدودًا شخصية لا يمكنها إلا تشديد ما تسمح به الخطة النشطة.",
+  "settings.overview.guardrails.totalBudget": "إجمالي الميزانية الشهرية",
+  "settings.overview.guardrails.providerBudgets":
+    "OpenAI {{openai}} • Runway {{runway}}",
+  "settings.overview.guardrails.concurrency":
+    "المعاينة {{preview}} • الإخراج {{render}}",
+  "settings.overview.guardrails.openAction": "فتح الحدود",
+  "settings.overview.brand.description":
+    "أبقِ لوحة الألوان والطباعة الافتراضية جاهزة لقوالب المشاريع والمخرجات المستقبلية.",
+  "settings.overview.brand.unavailable": "مجموعة العلامة الافتراضية غير متاحة",
+  "settings.overview.brand.palette": "لوحة الألوان {{value}}",
+  "settings.overview.brand.typography":
+    "العنوان {{heading}} • المتن {{body}}",
+  "settings.overview.brand.openAction": "فتح مجموعة العلامة",
+  "settings.brand.unavailable":
+    "مجموعة العلامة الافتراضية غير متاحة لهذه المساحة حاليًا.",
   "settings.billing.feedback.success":
     "تم بدء عملية الدفع بنجاح. أكمل الدفع في Stripe لتفعيل الخطة المختارة.",
   "settings.billing.feedback.cancelled":

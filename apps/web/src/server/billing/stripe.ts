@@ -140,11 +140,11 @@ export async function createStripeCheckoutSession(input: {
   params.set("mode", "subscription")
   params.set(
     "success_url",
-    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=success`
+    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?billing=success`
   )
   params.set(
     "cancel_url",
-    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=cancelled`
+    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?billing=cancelled`
   )
   params.append("payment_method_types[]", "card")
   params.append("payment_method_types[]", "crypto")
@@ -194,7 +194,7 @@ export async function createStripeBillingPortalSession(input: {
   params.set("customer", input.customerId)
   params.set(
     "return_url",
-    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings?billing=portal`
+    `${publicEnvironment.NEXT_PUBLIC_APP_URL}/dashboard/settings/billing?billing=portal`
   )
 
   if (environment.STRIPE_BILLING_PORTAL_CONFIGURATION_ID) {

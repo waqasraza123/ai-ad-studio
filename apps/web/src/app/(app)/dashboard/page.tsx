@@ -2,10 +2,14 @@ import { PlusSquare } from "lucide-react"
 import Link from "next/link"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { ProjectList } from "@/features/projects/components/project-list"
+import { WorkspaceAdministrationPanel } from "@/features/settings/components/workspace-administration-panel"
 import { toProjectCardViewModel } from "@/features/projects/mappers/project-view-model"
 import { getServerI18n } from "@/lib/i18n/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getEffectiveOwnerLimits } from "@/server/billing/billing-service"
+import { getDefaultBrandKitForOwner } from "@/server/brand-kits/brand-kit-repository"
 import { listProjectsByOwner } from "@/server/projects/project-repository"
+import { getOwnerGuardrails } from "@/server/settings/owner-guardrails-repository"
 
 export default async function DashboardPage() {
   const { formatDate, t } = await getServerI18n()
@@ -17,6 +21,10 @@ export default async function DashboardPage() {
 
   let projectsLoadFailed = false
   let viewModels: ReturnType<typeof toProjectCardViewModel>[] = []
+  let administrationUnavailable = false
+  let brandKit = null
+  let guardrails = null
+  let billingLimits = null
 
   try {
     const projects = await listProjectsByOwner(user.id)
@@ -27,6 +35,21 @@ export default async function DashboardPage() {
     projectsLoadFailed = true
 
     console.error("DashboardPage failed to load projects", {
+      error,
+      ownerId: user.id
+    })
+  }
+
+  try {
+    ;[brandKit, guardrails, billingLimits] = await Promise.all([
+      getDefaultBrandKitForOwner(user.id),
+      getOwnerGuardrails(user.id),
+      getEffectiveOwnerLimits(user.id)
+    ])
+  } catch (error) {
+    administrationUnavailable = true
+
+    console.error("DashboardPage failed to load workspace administration", {
       error,
       ownerId: user.id
     })
@@ -65,6 +88,13 @@ export default async function DashboardPage() {
           />
         </div>
       </section>
+
+      <WorkspaceAdministrationPanel
+        brandKit={brandKit}
+        guardrails={guardrails}
+        limits={billingLimits}
+        unavailable={administrationUnavailable}
+      />
 
       <ProjectList
         projects={viewModels}

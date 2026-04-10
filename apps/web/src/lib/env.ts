@@ -2,6 +2,15 @@ import { z } from "zod"
 
 type EnvironmentLike = Readonly<Record<string, string | undefined>>
 
+function normalizeOptionalString(value: string | undefined) {
+  if (typeof value !== "string") {
+    return undefined
+  }
+
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : undefined
+}
+
 const publicEnvironmentSchema = z.object({
   NEXT_PUBLIC_APP_NAME: z.string().min(1).default("AI Ad Studio"),
   NEXT_PUBLIC_APP_URL: z.string().url().default("http://localhost:3000"),
@@ -78,22 +87,36 @@ export function getPublicEnvironment() {
   })
 }
 
-export function getServerEnvironment() {
+export function getServerEnvironment(
+  env: EnvironmentLike = process.env
+) {
   return serverEnvironmentSchema.parse({
-    SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY,
-    R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
-    R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
-    R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
-    R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
-    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
-    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    SUPABASE_SERVICE_ROLE_KEY: normalizeOptionalString(
+      env.SUPABASE_SERVICE_ROLE_KEY
+    ),
+    R2_ACCOUNT_ID: normalizeOptionalString(env.R2_ACCOUNT_ID),
+    R2_ACCESS_KEY_ID: normalizeOptionalString(env.R2_ACCESS_KEY_ID),
+    R2_SECRET_ACCESS_KEY: normalizeOptionalString(env.R2_SECRET_ACCESS_KEY),
+    R2_BUCKET_NAME: normalizeOptionalString(env.R2_BUCKET_NAME),
+    STRIPE_SECRET_KEY: normalizeOptionalString(env.STRIPE_SECRET_KEY),
+    STRIPE_WEBHOOK_SECRET: normalizeOptionalString(
+      env.STRIPE_WEBHOOK_SECRET
+    ),
     STRIPE_BILLING_PORTAL_CONFIGURATION_ID:
-      process.env.STRIPE_BILLING_PORTAL_CONFIGURATION_ID,
-    STRIPE_PRICE_STARTER_MONTHLY: process.env.STRIPE_PRICE_STARTER_MONTHLY,
-    STRIPE_PRICE_GROWTH_MONTHLY: process.env.STRIPE_PRICE_GROWTH_MONTHLY,
-    STRIPE_PRICE_SCALE_MONTHLY: process.env.STRIPE_PRICE_SCALE_MONTHLY,
-    BILLING_OPERATOR_SECRET: process.env.BILLING_OPERATOR_SECRET,
+      normalizeOptionalString(env.STRIPE_BILLING_PORTAL_CONFIGURATION_ID),
+    STRIPE_PRICE_STARTER_MONTHLY: normalizeOptionalString(
+      env.STRIPE_PRICE_STARTER_MONTHLY
+    ),
+    STRIPE_PRICE_GROWTH_MONTHLY: normalizeOptionalString(
+      env.STRIPE_PRICE_GROWTH_MONTHLY
+    ),
+    STRIPE_PRICE_SCALE_MONTHLY: normalizeOptionalString(
+      env.STRIPE_PRICE_SCALE_MONTHLY
+    ),
+    BILLING_OPERATOR_SECRET: normalizeOptionalString(
+      env.BILLING_OPERATOR_SECRET
+    ),
     CREATIVE_PERFORMANCE_OPERATOR_SECRET:
-      process.env.CREATIVE_PERFORMANCE_OPERATOR_SECRET
+      normalizeOptionalString(env.CREATIVE_PERFORMANCE_OPERATOR_SECRET)
   })
 }

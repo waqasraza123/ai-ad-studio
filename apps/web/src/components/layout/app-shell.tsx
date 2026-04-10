@@ -1,15 +1,15 @@
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { LayoutDashboard, LogOut, PlusSquare, Sparkles, Video } from "lucide-react"
+import { LogOut } from "lucide-react"
 import { signOut } from "@/app/(app)/actions"
 import { RunwayBrandPanel } from "@/components/branding/runway-brand-panel"
 import { LanguageSwitcher } from "@/components/i18n/language-switcher"
+import { DashboardSidebarNav } from "@/components/layout/dashboard-sidebar-nav"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { RuntimeSetupLauncher } from "@/components/runtime/runtime-setup-launcher"
 import { ThemeColorModeSwitch } from "@/components/theme/theme-color-mode-switch"
 import { getServerI18n } from "@/lib/i18n/server"
 import { ThemePalettePicker } from "@/components/theme/theme-palette-picker"
-import { cn } from "@/lib/utils"
 
 type AppShellProps = {
   children: ReactNode
@@ -18,28 +18,6 @@ type AppShellProps = {
 
 export async function AppShell({ children, userEmail }: AppShellProps) {
   const { t } = await getServerI18n()
-  const navigationItems = [
-    {
-      href: "/dashboard",
-      icon: LayoutDashboard,
-      label: t("header.app.studio")
-    },
-    {
-      href: "/dashboard/projects/new",
-      icon: PlusSquare,
-      label: t("dashboard.home.newProject")
-    },
-    {
-      href: "/dashboard/concepts",
-      icon: Sparkles,
-      label: t("concepts.dashboard.eyebrow")
-    },
-    {
-      href: "/dashboard/exports",
-      icon: Video,
-      label: "Exports"
-    }
-  ]
 
   return (
     <div className="theme-page-shell min-h-screen text-[var(--foreground)]">
@@ -66,24 +44,7 @@ export async function AppShell({ children, userEmail }: AppShellProps) {
             </p>
           </div>
 
-          <nav className="mt-8 flex flex-col gap-2">
-            {navigationItems.map((item) => {
-              const Icon = item.icon
-
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={cn(
-                    "group flex items-center gap-3 rounded-2xl border border-transparent px-4 py-3 text-sm text-[var(--muted-foreground)] transition hover:border-[var(--border)] hover:bg-[var(--background-strong)] hover:text-[var(--foreground)]"
-                  )}
-                >
-                  <Icon className="h-4 w-4 text-[var(--muted-foreground)] transition group-hover:text-[rgb(var(--accent-rgb))]" />
-                  <span>{item.label}</span>
-                </Link>
-              )
-            })}
-          </nav>
+          <DashboardSidebarNav />
 
           <ThemePalettePicker />
           <RuntimeSetupLauncher context="dashboard" triggerLabel={t("runtime.apiGpuSetup")} />

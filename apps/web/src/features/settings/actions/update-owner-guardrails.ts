@@ -64,5 +64,6 @@ export async function updateOwnerGuardrailsAction(formData: FormData) {
   })
 
   revalidatePath("/dashboard/settings")
+  revalidatePath("/dashboard/settings/guardrails")
   revalidatePath("/dashboard")
 }

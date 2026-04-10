@@ -23,6 +23,9 @@ import {
 } from "@/server/billing/stripe"
 import type { BillingPlanCode, OwnerSubscriptionStatus } from "@/server/database/types"
 
+const billingSettingsPath = "/dashboard/settings/billing"
+const settingsOverviewPath = "/dashboard/settings"
+
 function mapStripeSubscriptionStatus(status: string | undefined): OwnerSubscriptionStatus {
   if (
     status === "trialing" ||
@@ -48,7 +51,12 @@ function unixToIso(value: number | undefined, fallback: string) {
 }
 
 function settingsErrorRedirect(code: string): never {
-  redirect(`/dashboard/settings?error=${encodeURIComponent(code)}`)
+  redirect(`${billingSettingsPath}?error=${encodeURIComponent(code)}`)
+}
+
+function revalidateSettingsBillingRoutes() {
+  revalidatePath(billingSettingsPath)
+  revalidatePath(settingsOverviewPath)
 }
 
 async function requireBillingUser() {
@@ -127,7 +135,7 @@ export async function changeSubscriptionPlanAction(planCode: BillingPlanCode) {
     }
 
     await syncBillingUsageRollup(user.id)
-    revalidatePath("/dashboard/settings")
+    revalidateSettingsBillingRoutes()
     return
   }
 
@@ -272,7 +280,7 @@ export async function cancelSubscriptionAction() {
     settingsErrorRedirect("billing_plan_change_failed")
   }
 
-  revalidatePath("/dashboard/settings")
+  revalidateSettingsBillingRoutes()
 }
 
 export async function reactivateSubscriptionAction() {
@@ -325,5 +333,5 @@ export async function reactivateSubscriptionAction() {
     settingsErrorRedirect("billing_plan_change_failed")
   }
 
-  revalidatePath("/dashboard/settings")
+  revalidateSettingsBillingRoutes()
 }
