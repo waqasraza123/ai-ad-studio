@@ -1,6 +1,12 @@
 # AI Ad Studio
 
 <p>
+  <strong>Languages:</strong>
+  <code>English</code>
+  <code>العربية</code>
+</p>
+
+<p>
   <a href="https://runwayml.com/">
     <img src="apps/web/public/brand/runway-icon.png" alt="Runway logo" width="72" />
   </a>
@@ -34,6 +40,7 @@ The current local-model matrix is:
 
 ## Screenshots
 
+![alt text](.github/screenshots/image.png)
 ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.35 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.43 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.03 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.34 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.45 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.54 AM.png>)
 
 ![Dashboard overview](.github/screenshots/Screenshot%202026-03-18%20at%205.02.25%E2%80%AFPM.png)

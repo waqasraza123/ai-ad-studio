@@ -560,6 +560,14 @@ export const en = {
   "settings.billing.purchase.switchPill": "Switch plan",
   "settings.billing.purchase.fullCardHint":
     "Click anywhere on this plan card to continue.",
+  "settings.billing.purchase.currentPill": "Current plan",
+  "settings.billing.purchase.currentHint":
+    "You are already on this plan. Choose another paid plan to change billing.",
+  "settings.billing.purchase.downgradeOnlyPill": "Downgrade only",
+  "settings.billing.purchase.downgradeOnlyHint":
+    "Return to Free by canceling the current paid subscription at period end.",
+  "settings.billing.purchase.unavailablePill": "Temporarily unavailable",
+  "settings.billing.purchase.unavailableAction": "Unavailable",
   "settings.billing.purchase.checkoutAction": "Choose {{value}}",
   "settings.billing.purchase.switchAction": "Switch to {{value}}",
   "billing_checkout_unavailable":

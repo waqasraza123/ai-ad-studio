@@ -42,6 +42,29 @@ function usageLabel(input: {
   return `${input.current} / ${input.cap}`
 }
 
+function PlanDetails({ plan }: { plan: BillingPlanRecord }) {
+  return (
+    <div className="mt-4 space-y-2 text-sm text-slate-300">
+      <p>{plan.included_active_projects} active projects</p>
+      <p>{plan.included_concept_runs} concept runs / month</p>
+      <p>{plan.included_preview_generations} previews / month</p>
+      <p>{plan.included_render_batches} render batches / month</p>
+      <p>{plan.included_final_exports} final exports / month</p>
+      <p>{formatStorage(plan.included_storage_bytes)} storage</p>
+      <p>
+        {plan.max_concurrent_preview_jobs} preview jobs •{" "}
+        {plan.max_concurrent_render_jobs} render jobs
+      </p>
+      <p>{plan.watermark_exports ? "Watermarked exports" : "No export watermark"}</p>
+      <p>
+        {plan.allow_external_batch_reviews
+          ? "External review included"
+          : "External review locked"}
+      </p>
+    </div>
+  )
+}
+
 export async function BillingPlanPanel({
   billingEvents,
   billingPlans,
@@ -197,7 +220,18 @@ export async function BillingPlanPanel({
         {billingPlans.map((plan) => {
           const isCurrent = plan.code === currentPlan.code
           const canUpgrade = plan.code !== "free" && !isCurrent
+          const downgradeOnly = plan.code === "free" && currentPlan.code !== "free"
           const changeAction = changeSubscriptionPlanAction.bind(null, plan.code)
+          const actionPillLabel = stripeManaged
+            ? t("settings.billing.purchase.switchPill")
+            : t("settings.billing.purchase.checkoutPill")
+          const actionLabel = stripeManaged
+            ? t("settings.billing.purchase.switchAction", {
+                value: plan.display_name
+              })
+            : t("settings.billing.purchase.checkoutAction", {
+                value: plan.display_name
+              })
 
           if (canUpgrade) {
             return (
@@ -219,6 +253,7 @@ export async function BillingPlanPanel({
                       ? "cursor-pointer border-white/10 bg-white/[0.04] hover:border-amber-300/35 hover:bg-white/[0.06] focus-visible:border-amber-300/35"
                       : "cursor-not-allowed border-white/10 bg-white/[0.02]"
                   )}
+                  title={!purchaseAvailable ? purchaseUnavailableMessage : undefined}
                 >
                   <div className="flex w-full items-center justify-between gap-3">
                     <div>
@@ -231,46 +266,44 @@ export async function BillingPlanPanel({
                           : `${formatUsd(plan.monthly_price_usd)}/mo`}
                       </p>
                     </div>
-                    <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-200">
-                      {stripeManaged
-                        ? t("settings.billing.purchase.switchPill")
-                        : t("settings.billing.purchase.checkoutPill")}
+                    <span
+                      className={cn(
+                        "rounded-full border px-3 py-1 text-xs",
+                        purchaseAvailable
+                          ? "border-white/10 bg-white/[0.05] text-slate-200"
+                          : "border-amber-400/20 bg-amber-500/10 text-amber-100"
+                      )}
+                    >
+                      {purchaseAvailable
+                        ? actionPillLabel
+                        : t("settings.billing.purchase.unavailablePill")}
                     </span>
                   </div>
 
-                  <div className="mt-4 space-y-2 text-sm text-slate-300">
-                    <p>{plan.included_active_projects} active projects</p>
-                    <p>{plan.included_concept_runs} concept runs / month</p>
-                    <p>{plan.included_preview_generations} previews / month</p>
-                    <p>{plan.included_render_batches} render batches / month</p>
-                    <p>{plan.included_final_exports} final exports / month</p>
-                    <p>{formatStorage(plan.included_storage_bytes)} storage</p>
-                    <p>
-                      {plan.max_concurrent_preview_jobs} preview jobs •{" "}
-                      {plan.max_concurrent_render_jobs} render jobs
-                    </p>
-                    <p>{plan.watermark_exports ? "Watermarked exports" : "No export watermark"}</p>
-                    <p>
-                      {plan.allow_external_batch_reviews
-                        ? "External review included"
-                        : "External review locked"}
-                    </p>
-                  </div>
+                  <PlanDetails plan={plan} />
 
                   <div className="mt-5 flex w-full items-center justify-between gap-3">
-                    <span className="text-xs text-slate-400">
+                    <span
+                      className={cn(
+                        "text-xs",
+                        purchaseAvailable ? "text-slate-400" : "text-amber-100"
+                      )}
+                    >
                       {purchaseAvailable
                         ? t("settings.billing.purchase.fullCardHint")
                         : purchaseUnavailableMessage}
                     </span>
-                    <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-4 py-2 text-sm font-medium text-amber-100">
-                      {stripeManaged
-                        ? t("settings.billing.purchase.switchAction", {
-                            value: plan.display_name
-                          })
-                        : t("settings.billing.purchase.checkoutAction", {
-                            value: plan.display_name
-                          })}
+                    <span
+                      className={cn(
+                        "rounded-full border px-4 py-2 text-sm font-medium",
+                        purchaseAvailable
+                          ? "border-amber-400/20 bg-amber-500/10 text-amber-100"
+                          : "border-white/10 bg-white/[0.04] text-slate-300"
+                      )}
+                    >
+                      {purchaseAvailable
+                        ? actionLabel
+                        : t("settings.billing.purchase.unavailableAction")}
                     </span>
                   </div>
                 </FormSubmitButton>
@@ -298,35 +331,35 @@ export async function BillingPlanPanel({
                       : `${formatUsd(plan.monthly_price_usd)}/mo`}
                   </p>
                 </div>
-                {isCurrent ? (
-                  <span className="rounded-full border border-amber-300/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">
-                    Current
-                  </span>
-                ) : null}
+                <span
+                  className={cn(
+                    "rounded-full border px-3 py-1 text-xs",
+                    isCurrent
+                      ? "border-amber-300/20 bg-amber-400/10 text-amber-100"
+                      : downgradeOnly
+                        ? "border-white/10 bg-white/[0.05] text-slate-200"
+                        : "border-white/10 bg-white/[0.05] text-slate-200"
+                  )}
+                >
+                  {isCurrent
+                    ? t("settings.billing.purchase.currentPill")
+                    : downgradeOnly
+                      ? t("settings.billing.purchase.downgradeOnlyPill")
+                      : actionPillLabel}
+                </span>
               </div>
 
-              <div className="mt-4 space-y-2 text-sm text-slate-300">
-                <p>{plan.included_active_projects} active projects</p>
-                <p>{plan.included_concept_runs} concept runs / month</p>
-                <p>{plan.included_preview_generations} previews / month</p>
-                <p>{plan.included_render_batches} render batches / month</p>
-                <p>{plan.included_final_exports} final exports / month</p>
-                <p>{formatStorage(plan.included_storage_bytes)} storage</p>
-                <p>
-                  {plan.max_concurrent_preview_jobs} preview jobs •{" "}
-                  {plan.max_concurrent_render_jobs} render jobs
-                </p>
-                <p>{plan.watermark_exports ? "Watermarked exports" : "No export watermark"}</p>
-                <p>
-                  {plan.allow_external_batch_reviews
-                    ? "External review included"
-                    : "External review locked"}
-                </p>
-              </div>
+              <PlanDetails plan={plan} />
 
-              {!canUpgrade && plan.code === "free" && currentPlan.code !== "free" ? (
-                <p className="mt-5 text-xs text-slate-500">
-                  Return to Free by canceling the paid subscription at period end.
+              {isCurrent ? (
+                <p className="mt-5 text-xs text-amber-100">
+                  {t("settings.billing.purchase.currentHint")}
+                </p>
+              ) : null}
+
+              {downgradeOnly ? (
+                <p className="mt-5 text-xs text-slate-400">
+                  {t("settings.billing.purchase.downgradeOnlyHint")}
                 </p>
               ) : null}
             </div>

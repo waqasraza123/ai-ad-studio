@@ -550,6 +550,14 @@ export const ar: AppMessageCatalog = {
   "settings.billing.purchase.switchPill": "تبديل الخطة",
   "settings.billing.purchase.fullCardHint":
     "انقر في أي مكان داخل بطاقة الخطة للمتابعة.",
+  "settings.billing.purchase.currentPill": "الخطة الحالية",
+  "settings.billing.purchase.currentHint":
+    "أنت تستخدم هذه الخطة بالفعل. اختر خطة مدفوعة أخرى لتغيير الفوترة.",
+  "settings.billing.purchase.downgradeOnlyPill": "خفض فقط",
+  "settings.billing.purchase.downgradeOnlyHint":
+    "للعودة إلى الخطة المجانية، ألغِ الخطة المدفوعة الحالية أولًا عند نهاية الفترة.",
+  "settings.billing.purchase.unavailablePill": "غير متاح مؤقتًا",
+  "settings.billing.purchase.unavailableAction": "غير متاح",
   "settings.billing.purchase.checkoutAction": "اختيار {{value}}",
   "settings.billing.purchase.switchAction": "التبديل إلى {{value}}",
   "billing_checkout_unavailable":

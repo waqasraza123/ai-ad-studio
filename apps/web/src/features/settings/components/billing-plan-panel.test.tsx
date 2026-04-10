@@ -227,12 +227,18 @@ describe("BillingPlanPanel", () => {
 
     expect(container.querySelectorAll("form")).toHaveLength(2)
     expect(screen.queryByRole("button", { name: /Choose Free/i })).toBeNull()
-    expect(screen.getByText("Current")).toBeInTheDocument()
+    expect(screen.getByText("Current plan")).toBeInTheDocument()
     expect(
       screen.getByText(
-        "Return to Free by canceling the paid subscription at period end."
+        "You are already on this plan. Choose another paid plan to change billing."
       )
     ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "Return to Free by canceling the current paid subscription at period end."
+      )
+    ).toBeInTheDocument()
+    expect(screen.getByText("Downgrade only")).toBeInTheDocument()
   })
 
   it("disables paid plan purchase surfaces when checkout is unavailable", async () => {
@@ -256,9 +262,13 @@ describe("BillingPlanPanel", () => {
         "Paid plan checkout is unavailable right now. Check Stripe billing runtime and try again."
       ).length
     ).toBeGreaterThan(0)
-    expect(screen.getByRole("button", { name: /Choose Starter/i })).toBeDisabled()
-    expect(screen.getByRole("button", { name: /Choose Growth/i })).toBeDisabled()
-    expect(screen.getByRole("button", { name: /Choose Scale/i })).toBeDisabled()
+    expect(
+      screen.getAllByText("Temporarily unavailable").length
+    ).toBeGreaterThan(0)
+    expect(screen.getAllByText("Unavailable").length).toBeGreaterThan(0)
+    expect(screen.getByRole("button", { name: /Starter/i })).toBeDisabled()
+    expect(screen.getByRole("button", { name: /Growth/i })).toBeDisabled()
+    expect(screen.getByRole("button", { name: /Scale/i })).toBeDisabled()
   })
 
   it("disables portal controls when the billing portal is unavailable", async () => {

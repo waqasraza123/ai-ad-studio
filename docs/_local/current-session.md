@@ -10,7 +10,7 @@ Hotfix the billing catalog schema drift that broke the public homepage pricing q
 
 ## Last Completed Step
 
-Diagnosed the public homepage billing failure to remote Supabase schema drift: the linked project was missing `supabase/migrations/202604101200_phase_34_activation_feedback_foundation.sql`, so `billing_plans.allow_activation_packages` and the related creative-performance capability columns did not exist. Added the idempotent repair migration `supabase/migrations/202604101830_phase_34_billing_plan_catalog_repair.sql`, pushed both pending migrations with `supabase db push --linked`, verified that anon and service-role `billing_plans` reads now succeed for `free`, `starter`, `growth`, and `scale`, then hardened the web app so homepage pricing degrades cleanly instead of 500ing, billing catalog failures are classified (`schema_drift` vs `query_failed`), `/api/health` now includes `billingPlanCatalogReady`, and runtime smoke now checks the homepage route directly.
+Diagnosed the public homepage billing failure to remote Supabase schema drift: the linked project was missing `supabase/migrations/202604101200_phase_34_activation_feedback_foundation.sql`, so `billing_plans.allow_activation_packages` and the related creative-performance capability columns did not exist. Added the idempotent repair migration `supabase/migrations/202604101830_phase_34_billing_plan_catalog_repair.sql`, pushed both pending migrations with `supabase db push --linked`, verified that anon and service-role `billing_plans` reads now succeed for `free`, `starter`, `growth`, and `scale`, hardened the web app so homepage pricing degrades cleanly instead of 500ing, billing catalog failures are classified (`schema_drift` vs `query_failed`), `/api/health` now includes `billingPlanCatalogReady`, runtime smoke now checks the homepage route directly, and the dashboard billing cards now expose explicit current/downgrade-only/unavailable states instead of looking silently clickable.
 
 ## Current Step
 
@@ -46,6 +46,7 @@ The billing schema drift is fixed on the linked remote and the homepage/health s
 
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/billing/billing-plan-catalog.test.ts src/server/billing/runtime-readiness.test.ts src/app/api/health/route.test.ts src/server/billing/purchase-availability.test.ts`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/components/marketing/pricing-snapshot-section.test.tsx src/app/page.test.tsx`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings/components/billing-plan-panel.test.tsx`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/activation/activation-service.test.ts src/server/creative-performance/creative-performance-service.test.ts src/features/analytics/lib/creative-performance-summary.test.ts`
 - `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/activation/components/activation-package-panel.test.tsx src/features/analytics/components/creative-performance-ingestion-panel.test.tsx`
 - `pnpm --filter @ai-ad-studio/web typecheck`
