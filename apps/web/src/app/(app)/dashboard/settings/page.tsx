@@ -1,6 +1,7 @@
 import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { BrandKitSettingsForm } from "@/features/brand-kits/components/brand-kit-settings-form"
 import { BillingPlanPanel } from "@/features/settings/components/billing-plan-panel"
+import { getBillingFeedbackMessageKey } from "@/features/settings/lib/billing-feedback"
 import { OwnerGuardrailsForm } from "@/features/settings/components/owner-guardrails-form"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
@@ -8,16 +9,20 @@ import {
   listBillingEventsByOwner,
   listBillingPlans
 } from "@/server/billing/billing-service"
+import { getBillingPurchaseAvailability } from "@/server/billing/purchase-availability"
 import { listBrandKitsByOwner } from "@/server/brand-kits/brand-kit-repository"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getOwnerGuardrails } from "@/server/settings/owner-guardrails-repository"
 
 type SettingsPageProps = {
   searchParams: Promise<{
+    billing?: string
     error?: string
   }>
 }
 
 export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const { t } = await getServerI18n()
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -25,14 +30,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   }
 
   const resolvedSearchParams = await searchParams
-  const formErrorMessage = getFormErrorMessage(resolvedSearchParams.error)
+  const formErrorMessage = getFormErrorMessage(resolvedSearchParams.error, t)
+  const billingFeedbackKey = getBillingFeedbackMessageKey(
+    resolvedSearchParams.billing
+  )
 
-  const [guardrails, brandKits, billingPlans, billingEvents, billingLimits] = await Promise.all([
+  const [guardrails, brandKits, billingPlans, billingEvents, billingLimits, purchaseAvailability] = await Promise.all([
     getOwnerGuardrails(user.id),
     listBrandKitsByOwner(user.id),
     listBillingPlans(),
     listBillingEventsByOwner(user.id, { limit: 12 }),
-    getEffectiveOwnerLimits(user.id)
+    getEffectiveOwnerLimits(user.id),
+    getBillingPurchaseAvailability()
   ])
 
   const defaultBrandKit = brandKits.find((kit) => kit.is_default) ?? brandKits[0] ?? null
@@ -42,6 +51,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       {formErrorMessage ? (
         <div className="rounded-[1.5rem] border border-rose-400/25 bg-rose-500/10 px-4 py-3 text-sm text-rose-100">
           {formErrorMessage}
+        </div>
+      ) : null}
+      {billingFeedbackKey ? (
+        <div className="rounded-[1.5rem] border border-emerald-400/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+          {t(billingFeedbackKey)}
         </div>
       ) : null}
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
@@ -61,6 +75,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
         billingEvents={billingEvents}
         billingPlans={billingPlans}
         limits={billingLimits}
+        purchaseAvailability={purchaseAvailability}
       />
       <OwnerGuardrailsForm guardrails={guardrails} />
       {defaultBrandKit ? <BrandKitSettingsForm brandKit={defaultBrandKit} /> : null}

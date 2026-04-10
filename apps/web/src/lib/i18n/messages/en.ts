@@ -470,6 +470,34 @@ export const en = {
   "brandKit.settings.letterSpacing": "Letter spacing",
   "brandKit.settings.pending": "Saving…",
   "brandKit.settings.save": "Save brand kit tokens",
+  "settings.billing.feedback.success":
+    "Checkout started successfully. Complete payment in Stripe to activate the selected plan.",
+  "settings.billing.feedback.cancelled":
+    "Checkout was cancelled before payment was completed.",
+  "settings.billing.feedback.portal":
+    "Returned from the billing portal.",
+  "settings.billing.unavailable.checkout":
+    "Paid plan checkout is unavailable right now. Check Stripe billing runtime and try again.",
+  "settings.billing.unavailable.planChange":
+    "Paid plan changes are unavailable right now. Check Stripe pricing/runtime configuration and try again.",
+  "settings.billing.unavailable.portal":
+    "Billing portal actions are unavailable right now. Check Stripe billing runtime and try again.",
+  "settings.billing.portal.action": "Manage payment method",
+  "settings.billing.portal.pending": "Opening portal…",
+  "settings.billing.purchase.checkoutPending": "Opening checkout…",
+  "settings.billing.purchase.switchPending": "Switching plan…",
+  "settings.billing.purchase.checkoutPill": "Checkout",
+  "settings.billing.purchase.switchPill": "Switch plan",
+  "settings.billing.purchase.fullCardHint":
+    "Click anywhere on this plan card to continue.",
+  "settings.billing.purchase.checkoutAction": "Choose {{value}}",
+  "settings.billing.purchase.switchAction": "Switch to {{value}}",
+  "billing_checkout_unavailable":
+    "Checkout is not configured right now. Add Stripe billing settings and try again.",
+  "billing_plan_change_unavailable":
+    "Plan changes are not available right now. Check Stripe billing setup and try again.",
+  "billing_portal_unavailable":
+    "Billing portal is not available for this account yet.",
   "theme.palette.eyebrow": "Theme palette",
   "theme.palette.auto": "Auto cycling",
   "theme.palette.pinned": "Pinned",

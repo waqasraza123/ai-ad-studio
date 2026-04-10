@@ -6,15 +6,15 @@
 
 ## Current Objective
 
-Finish the remaining Arabic/RTL spot-audit cleanup across lower-traffic dashboard/public chrome and verify the web app build is clean.
+Stabilize self-serve billing in `/dashboard/settings` so paid plans are actually purchasable and billing actions fail clearly when Stripe runtime is unavailable.
 
 ## Last Completed Step
 
-Completed a broader lower-traffic Arabic/RTL cleanup pass: localized export detail, delivery workspace management, share/showcase/campaign panels, delivery activity timeline, analytics and notifications overview cards, approval gate, template/brand-kit settings, theme palette picker, and project summary chrome; normalized promotion eligibility reasons into typed i18n keys; and verified `apps/web` with `build` and `typecheck`.
+Fixed the broken plan-purchase interaction in `apps/web`: paid plans now submit from the full card surface instead of only a small nested CTA button; settings now loads a cached billing purchase-availability helper and disables checkout/plan-change/portal actions when Stripe runtime is degraded; settings also shows explicit `billing=success|cancelled|portal` feedback banners. Added focused unit/component coverage for purchase availability, billing feedback mapping, manage-billing actions, and the billing plan panel.
 
 ## Current Step
 
-Run manual Arabic/RTL QA on the main dashboard routes and public token routes, then decide whether to do one more pass on deeper helper/config sources such as concept-state mappers, render preset metadata, and delivery activity helper text that still feed some English into UI state.
+Manual QA the billing panel on `/dashboard/settings` against a real Stripe-configured environment: click a paid card, confirm Checkout opens, confirm current/free cards stay non-actionable, and validate disabled purchase/portal states when billing runtime is intentionally degraded.
 
 ## Scope Boundaries
 
@@ -22,13 +22,14 @@ Run manual Arabic/RTL QA on the main dashboard routes and public token routes, t
 - Self-serve billing uses Stripe; manual stablecoin settlement is operator-only.
 - `owner_guardrails` remain editable only as tighter personal caps beneath plan entitlements.
 - Public campaign/delivery/showcase creation is gated by plan access; existing public items now use a 30-day downgrade-access check at read time.
+- Settings purchase availability is cached server-side for a short TTL; UI gating is preventive only and server actions remain the final guard.
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/features/concepts/mappers/*`
-- `apps/web/src/features/renders/lib/*`
-- `apps/web/src/features/delivery/lib/*`
-- `apps/web/src/app/(app)/dashboard/projects/[projectId]/page.tsx`
+- `apps/web/src/features/settings/components/billing-plan-panel.tsx`
+- `apps/web/src/features/settings/actions/manage-billing.ts`
+- `apps/web/src/app/(app)/dashboard/settings/page.tsx`
+- `apps/web/src/server/billing/purchase-availability.ts`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
@@ -42,25 +43,20 @@ Run manual Arabic/RTL QA on the main dashboard routes and public token routes, t
 
 ## Verification Commands
 
-- `pnpm --filter @ai-ad-studio/web test:e2e:setup`
-- `pnpm --filter @ai-ad-studio/web test:e2e:smoke`
-- `pnpm --filter @ai-ad-studio/web test:unit -- src/components/marketing/homepage-data.test.ts src/lib/i18n/catalog.test.ts`
-- `pnpm --filter @ai-ad-studio/web test:e2e:public`
-- `pnpm --filter @ai-ad-studio/web test:e2e:dashboard`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/billing/purchase-availability.test.ts src/features/settings/lib/billing-feedback.test.ts src/features/settings/actions/manage-billing.test.ts`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings/components/billing-plan-panel.test.tsx`
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- `rg -n "text-right|text-left|ml-|mr-|left-|right-" apps/web/src/features/delivery apps/web/src/features/renders apps/web/src/components`
-- `rg -n '"[A-Z][^"]* [A-Za-z][^"]*"' apps/web/src/app apps/web/src/components apps/web/src/features --glob '!**/*.test.*' --glob '!**/messages/*'`
-- rerun the seeded browser suite once Supabase connectivity is available
+- manual QA on `/dashboard/settings` with Stripe runtime both healthy and degraded
 
 ## Lookup Notes
 
-- Web i18n catalogs: `apps/web/src/lib/i18n/messages/*`
-- Shared runtime UI: `apps/web/src/components/runtime/*`
-- Marketing homepage sections: `apps/web/src/components/marketing/*`
-- Delivery support surfaces: `apps/web/src/features/delivery/**/*`
-- Debug views: `apps/web/src/features/debug/**/*`
+- Billing settings UI: `apps/web/src/features/settings/components/billing-plan-panel.tsx`
+- Billing server actions: `apps/web/src/features/settings/actions/manage-billing.ts`
+- Cached billing readiness helper: `apps/web/src/server/billing/purchase-availability.ts`
+- Settings route feedback wiring: `apps/web/src/app/(app)/dashboard/settings/page.tsx`
+- Billing feedback mapping: `apps/web/src/features/settings/lib/billing-feedback.ts`
 
 ## Expected Result
 
-`apps/web` should now be clean across the shared public/dashboard chrome and the lower-traffic export/share/showcase/delivery management surfaces in both English and Arabic, with any remaining English leakage isolated to deeper helper/config-derived status text rather than the major route shells or shared panels.
+Paid plan cards in `/dashboard/settings` should be clickable across the full card surface, keyboard-submittable, and visibly disabled when checkout or portal runtime is unavailable. Checkout/plan-change failures should no longer look like silent no-ops.

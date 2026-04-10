@@ -461,6 +461,34 @@ export const ar: AppMessageCatalog = {
   "brandKit.settings.letterSpacing": "تباعد الحروف",
   "brandKit.settings.pending": "جارٍ الحفظ…",
   "brandKit.settings.save": "حفظ رموز مجموعة العلامة",
+  "settings.billing.feedback.success":
+    "تم بدء عملية الدفع بنجاح. أكمل الدفع في Stripe لتفعيل الخطة المختارة.",
+  "settings.billing.feedback.cancelled":
+    "تم إلغاء عملية الدفع قبل اكتمال السداد.",
+  "settings.billing.feedback.portal":
+    "تمت العودة من بوابة الفوترة.",
+  "settings.billing.unavailable.checkout":
+    "الدفع للخطة المدفوعة غير متاح الآن. تحقق من جاهزية Stripe وحاول مرة أخرى.",
+  "settings.billing.unavailable.planChange":
+    "تبديل الخطط المدفوعة غير متاح الآن. تحقق من إعدادات Stripe والأسعار وحاول مرة أخرى.",
+  "settings.billing.unavailable.portal":
+    "إجراءات بوابة الفوترة غير متاحة الآن. تحقق من جاهزية Stripe وحاول مرة أخرى.",
+  "settings.billing.portal.action": "إدارة وسيلة الدفع",
+  "settings.billing.portal.pending": "جارٍ فتح البوابة…",
+  "settings.billing.purchase.checkoutPending": "جارٍ فتح صفحة الدفع…",
+  "settings.billing.purchase.switchPending": "جارٍ تبديل الخطة…",
+  "settings.billing.purchase.checkoutPill": "الدفع",
+  "settings.billing.purchase.switchPill": "تبديل الخطة",
+  "settings.billing.purchase.fullCardHint":
+    "انقر في أي مكان داخل بطاقة الخطة للمتابعة.",
+  "settings.billing.purchase.checkoutAction": "اختيار {{value}}",
+  "settings.billing.purchase.switchAction": "التبديل إلى {{value}}",
+  "billing_checkout_unavailable":
+    "صفحة الدفع غير مهيأة الآن. أضف إعدادات Stripe الخاصة بالفوترة ثم حاول مرة أخرى.",
+  "billing_plan_change_unavailable":
+    "تبديل الخطط غير متاح الآن. تحقق من إعدادات Stripe الخاصة بالفوترة ثم حاول مرة أخرى.",
+  "billing_portal_unavailable":
+    "بوابة الفوترة غير متاحة لهذا الحساب بعد.",
   "theme.palette.eyebrow": "لوحة الألوان",
   "theme.palette.auto": "تدوير تلقائي",
   "theme.palette.pinned": "مثبتة",

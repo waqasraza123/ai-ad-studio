@@ -77,6 +77,8 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
     "Generation is currently blocked by your billing state. Review Billing and plan.",
   billing_checkout_unavailable:
     "Checkout is not configured right now. Add Stripe billing settings and try again.",
+  billing_plan_change_unavailable:
+    "Plan changes are not available right now. Check Stripe billing setup and try again.",
   billing_portal_unavailable:
     "Billing portal is not available for this account yet.",
   billing_plan_change_failed:

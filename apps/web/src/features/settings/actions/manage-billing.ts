@@ -13,6 +13,7 @@ import {
   upsertOwnerBillingAccount,
   upsertOwnerSubscription
 } from "@/server/billing/billing-service"
+import { getBillingPurchaseAvailability } from "@/server/billing/purchase-availability"
 import {
   cancelStripeSubscriptionAtPeriodEnd,
   createStripeBillingPortalSession,
@@ -67,16 +68,21 @@ export async function changeSubscriptionPlanAction(planCode: BillingPlanCode) {
     settingsErrorRedirect("billing_plan_change_unsupported")
   }
 
-  const [account, subscription, plan] = await Promise.all([
+  const [account, subscription, plan, availability] = await Promise.all([
     ensureOwnerBillingAccount(user.id),
     getOwnerSubscription(user.id),
-    getBillingPlanByCode(planCode)
+    getBillingPlanByCode(planCode),
+    getBillingPurchaseAvailability()
   ])
 
   if (
     subscription.stripe_subscription_id &&
     subscription.stripe_subscription_item_id
   ) {
+    if (!availability.planChangeAvailable) {
+      settingsErrorRedirect("billing_plan_change_unavailable")
+    }
+
     try {
       const stripeSubscription = await updateStripeSubscriptionPlan({
         planCode: plan.code as Extract<BillingPlanCode, "starter" | "growth" | "scale">,
@@ -126,6 +132,10 @@ export async function changeSubscriptionPlanAction(planCode: BillingPlanCode) {
   }
 
   let sessionUrl: string | null = null
+
+  if (!availability.checkoutAvailable) {
+    settingsErrorRedirect("billing_checkout_unavailable")
+  }
 
   try {
     const session = await createStripeCheckoutSession({
@@ -182,7 +192,14 @@ export async function changeSubscriptionPlanAction(planCode: BillingPlanCode) {
 
 export async function openBillingPortalAction() {
   const user = await requireBillingUser()
-  const account = await getOwnerBillingAccount(user.id)
+  const [account, availability] = await Promise.all([
+    getOwnerBillingAccount(user.id),
+    getBillingPurchaseAvailability()
+  ])
+
+  if (!availability.portalAvailable) {
+    settingsErrorRedirect("billing_portal_unavailable")
+  }
 
   if (!account.stripe_customer_id) {
     settingsErrorRedirect("billing_portal_unavailable")
