@@ -1,3 +1,5 @@
+import { getServerI18n } from "@/lib/i18n/server"
+
 type PublicBatchReviewCommentsProps = {
   comments: Array<{
     comment_id: string
@@ -10,30 +12,24 @@ type PublicBatchReviewCommentsProps = {
   exportLabels: Map<string, string>
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
-export function PublicBatchReviewComments({
+export async function PublicBatchReviewComments({
   comments,
   exportLabels
 }: PublicBatchReviewCommentsProps) {
+  const { formatDateTime, t } = await getServerI18n()
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Review activity
+        {t("public.review.comments.eyebrow")}
       </p>
       <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
-        Comments and decisions
+        {t("public.review.comments.title")}
       </h2>
 
       <div className="mt-6 space-y-3">
         {comments.length === 0 ? (
           <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-slate-400">
-            No comments yet.
+            {t("public.review.comments.empty")}
           </div>
         ) : (
           comments.map((comment) => (
@@ -49,13 +45,18 @@ export function PublicBatchReviewComments({
                   </span>
                 ) : null}
                 <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-                  {comment.export_id ? exportLabels.get(comment.export_id) ?? "Export" : "Batch-wide"}
+                  {comment.export_id
+                    ? exportLabels.get(comment.export_id) ?? t("public.review.comments.export")
+                    : t("public.review.comments.batchWide")}
                 </span>
               </div>
 
               <p className="mt-3 text-sm leading-7 text-slate-200">{comment.body}</p>
               <p className="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-                {formatTimestamp(comment.created_at)}
+                {formatDateTime(comment.created_at, {
+                  dateStyle: "medium",
+                  timeStyle: "short"
+                })}
               </p>
             </div>
           ))

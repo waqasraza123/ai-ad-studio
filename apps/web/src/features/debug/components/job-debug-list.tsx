@@ -1,5 +1,6 @@
 import Link from "next/link"
 import type { JobRecord, ProjectRecord } from "@/server/database/types"
+import { getServerI18n } from "@/lib/i18n/server"
 import { JobStatusBadge } from "./job-status-badge"
 
 type JobDebugListProps = {
@@ -7,18 +8,12 @@ type JobDebugListProps = {
   projectsById: Map<string, ProjectRecord>
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
-export function JobDebugList({ jobs, projectsById }: JobDebugListProps) {
+export async function JobDebugList({ jobs, projectsById }: JobDebugListProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (jobs.length === 0) {
     return (
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-sm text-slate-400">
-        No jobs yet.
+        {t("debug.jobs.empty")}
       </div>
     )
   }
@@ -41,16 +36,22 @@ export function JobDebugList({ jobs, projectsById }: JobDebugListProps) {
                   <JobStatusBadge status={job.status} />
                 </div>
                 <p className="mt-2 text-sm text-slate-400">
-                  {project?.name ?? "Unknown project"}
+                  {project?.name ?? t("debug.jobs.unknownProject")}
                 </p>
                 <p className="mt-1 text-xs uppercase tracking-[0.2em] text-slate-500">
-                  {formatTimestamp(job.created_at)}
+                  {formatDateTime(job.created_at, {
+                    dateStyle: "medium",
+                    timeStyle: "short"
+                  })}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
                 <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-                  attempts {job.attempts}/{job.max_attempts}
+                  {t("debug.jobs.attempts", {
+                    current: job.attempts,
+                    max: job.max_attempts
+                  })}
                 </span>
                 {job.provider ? (
                   <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">

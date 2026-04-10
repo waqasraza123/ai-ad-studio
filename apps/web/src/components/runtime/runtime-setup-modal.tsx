@@ -21,6 +21,7 @@ import {
   TerminalSquare,
   X
 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 import type {
   RuntimeModeDefinition,
@@ -29,7 +30,6 @@ import type {
 import {
   machineRecommendations,
   RUNTIME_SETUP_GUIDE_URL,
-  runwayUpgradeSteps,
   runtimeModeDefinitions,
   workerEnvExportLines
 } from "./runtime-setup-content"
@@ -72,6 +72,7 @@ export function RuntimeSetupModal({
   context,
   triggerRef
 }: RuntimeSetupModalProps) {
+  const { t } = useI18n()
   const shouldReduceMotion = useReducedMotion()
   const [mounted, setMounted] = useState(false)
   const [selectedModeId, setSelectedModeId] = useState<
@@ -186,9 +187,16 @@ export function RuntimeSetupModal({
     context === "homepage"
       ? {
           href: "/dashboard",
-          label: "Enter dashboard"
+          label: t("runtime.modal.enterDashboard")
         }
       : null
+
+  const runwayUpgradeStepsLocalized = [
+    t("runtime.runwayUpgrade.stepOne"),
+    t("runtime.runwayUpgrade.stepTwo"),
+    t("runtime.runwayUpgrade.stepThree"),
+    t("runtime.runwayUpgrade.stepFour")
+  ]
 
   return createPortal(
     <AnimatePresence>
@@ -241,10 +249,10 @@ export function RuntimeSetupModal({
             <div className="relative flex items-center justify-between border-b border-[var(--border)] px-5 py-4 sm:px-6 lg:px-8">
               <div className="min-w-0">
                 <p className="text-[11px] uppercase tracking-[0.28em] text-[rgb(var(--accent-tertiary-rgb))]">
-                  Runtime setup
+                  {t("runtime.modal.title")}
                 </p>
                 <p className="mt-1 text-sm text-[var(--muted-foreground)]">
-                  API, GPU, and env guidance for the current supported provider paths
+                  {t("runtime.modal.description")}
                 </p>
               </div>
 
@@ -253,14 +261,14 @@ export function RuntimeSetupModal({
                 type="button"
                 onClick={() => onOpenChange(false)}
                 className="theme-runtime-secondary-button theme-focus-ring inline-flex h-11 w-11 items-center justify-center rounded-full border transition"
-                aria-label="Close runtime setup modal"
+                aria-label={t("runtime.modal.close")}
               >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="grid min-h-0 flex-1 gap-0 lg:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-              <div className="overflow-y-auto border-b border-[var(--border)] px-5 py-5 sm:px-6 lg:border-b-0 lg:border-r lg:px-8 lg:py-7">
+              <div className="overflow-y-auto border-b border-[var(--border)] px-5 py-5 sm:px-6 lg:border-b-0 lg:px-8 lg:py-7 lg:[border-inline-end:1px_solid_var(--border)]">
                 <motion.div
                   initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -268,23 +276,20 @@ export function RuntimeSetupModal({
                 >
                   <div className="inline-flex items-center gap-2 rounded-full border border-[rgb(var(--primary-rgb)_/_0.22)] bg-[rgb(var(--primary-rgb)_/_0.1)] px-4 py-2 text-sm text-[rgb(var(--accent-tertiary-rgb))]">
                     <Sparkles className="h-4 w-4" />
-                    <span>Connect the right runtime to unlock full ad generation</span>
+                    <span>{t("runtime.modal.heroPill")}</span>
                   </div>
 
                   <h2
                     id={titleId}
                     className="mt-6 max-w-xl text-4xl font-semibold tracking-[-0.05em] text-[var(--foreground)] sm:text-[2.85rem]"
                   >
-                    Choose the fastest path to full previews, motion, and delivery.
+                    {t("runtime.modal.heroTitle")}
                   </h2>
                   <p
                     id={descriptionId}
                     className="mt-5 max-w-2xl text-sm leading-7 text-[var(--soft-foreground)] sm:text-[15px]"
                   >
-                    AI Ad Studio can run in hosted, hybrid, or local modes. Today the
-                    supported runtime paths are Runway, local HTTP inference, and mock
-                    preview mode. If you are on an Intel MacBook Pro, treat hosted
-                    Runway as the supported full-capability path.
+                    {t("runtime.modal.heroDescription")}
                   </p>
                 </motion.div>
 
@@ -310,10 +315,26 @@ export function RuntimeSetupModal({
                             <Icon className="h-5 w-5" />
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-[var(--foreground)]">{item.label}</p>
-                            <p className="mt-1 text-sm text-[var(--soft-foreground)]">{item.summary}</p>
+                            <p className="text-sm font-medium text-[var(--foreground)]">
+                              {item.id === "hosted"
+                                ? t("runtime.machine.hosted.label")
+                                : item.id === "hybrid"
+                                  ? t("runtime.machine.hybrid.label")
+                                  : t("runtime.machine.local.label")}
+                            </p>
+                            <p className="mt-1 text-sm text-[var(--soft-foreground)]">
+                              {item.id === "hosted"
+                                ? t("runtime.machine.hosted.summary")
+                                : item.id === "hybrid"
+                                  ? t("runtime.machine.hybrid.summary")
+                                  : t("runtime.machine.local.summary")}
+                            </p>
                             <p className="mt-2 text-sm leading-6 text-[var(--muted-foreground)]">
-                              {item.detail}
+                              {item.id === "hosted"
+                                ? t("runtime.machine.hosted.detail")
+                                : item.id === "hybrid"
+                                  ? t("runtime.machine.hybrid.detail")
+                                  : t("runtime.machine.local.detail")}
                             </p>
                           </div>
                         </div>
@@ -337,18 +358,16 @@ export function RuntimeSetupModal({
                     </div>
                     <div>
                       <p className="text-sm font-medium text-[var(--foreground)]">
-                        What changes after buying Runway
+                        {t("runtime.runwayUpgrade.title")}
                       </p>
                       <p className="mt-2 text-sm leading-6 text-[var(--soft-foreground)]">
-                        Buying Runway changes your env setup, not the product workflow.
-                        Add your key, keep previews on Runway, and decide whether scene
-                        video stays hosted or moves to a supported local sidecar.
+                        {t("runtime.runwayUpgrade.description")}
                       </p>
                     </div>
                   </div>
 
                   <ol className="mt-4 space-y-3">
-                    {runwayUpgradeSteps.map((step, index) => (
+                    {runwayUpgradeStepsLocalized.map((step, index) => (
                       <li key={step} className="flex items-start gap-3 text-sm text-[var(--soft-foreground)]">
                         <span className="mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--background-strong)] text-xs font-semibold text-[var(--foreground)]">
                           {index + 1}
@@ -370,7 +389,7 @@ export function RuntimeSetupModal({
                 >
                   <div className="flex items-center gap-2 text-sm text-[var(--foreground)]">
                     <TerminalSquare className="h-4 w-4 text-[rgb(var(--accent-rgb))]" />
-                    <span>After editing `.env.local`, export it before starting the worker.</span>
+                    <span>{t("runtime.modal.workerExportLabel")}</span>
                   </div>
 
                   <div className="theme-runtime-code-block mt-4 overflow-hidden rounded-[1.2rem] border">
@@ -378,8 +397,8 @@ export function RuntimeSetupModal({
                       <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
                       <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
                       <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                      <span className="ml-3 text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-                        shell session
+                      <span className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)] [margin-inline-start:0.75rem]">
+                        {t("runtime.modal.shellSession")}
                       </span>
                     </div>
                     <pre className="overflow-x-auto px-4 py-4 text-sm leading-7 text-[var(--soft-foreground)]">
@@ -398,10 +417,10 @@ export function RuntimeSetupModal({
                     <div className="flex items-center justify-between gap-3">
                       <div>
                       <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--muted-foreground)]">
-                        Supported runtime modes
+                        {t("runtime.modal.supportedModesEyebrow")}
                       </p>
                       <h3 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-                        Edit `.env.local` with the mode you actually want to test.
+                        {t("runtime.modal.supportedModesTitle")}
                       </h3>
                     </div>
                   </div>
@@ -417,7 +436,7 @@ export function RuntimeSetupModal({
                           type="button"
                           onClick={() => setSelectedModeId(mode.id)}
                           className={cn(
-                            "theme-focus-ring group relative overflow-hidden rounded-[1.6rem] border p-4 text-left transition",
+                            "theme-focus-ring theme-text-start group relative overflow-hidden rounded-[1.6rem] border p-4 transition",
                             isSelected
                               ? "border-[rgb(var(--primary-rgb)_/_0.3)] bg-[linear-gradient(180deg,rgb(var(--primary-rgb)_/_0.16),color-mix(in_srgb,var(--background-strong)_70%,transparent))] shadow-[0_20px_48px_rgb(var(--primary-rgb)_/_0.14)]"
                               : "theme-runtime-soft-panel hover:border-[var(--border-strong)] hover:bg-[var(--background-strong)]",
@@ -447,25 +466,59 @@ export function RuntimeSetupModal({
                                     : "border-[var(--border)] bg-[var(--background-soft)] text-[var(--muted-foreground)]"
                               )}
                             >
-                              {mode.eyebrow}
+                              {mode.id === "runway"
+                                ? t("runtime.modes.runway.eyebrow")
+                                : mode.id === "hybrid"
+                                  ? t("runtime.modes.hybrid.eyebrow")
+                                  : mode.id === "local"
+                                    ? t("runtime.modes.local.eyebrow")
+                                    : t("runtime.modes.mock.eyebrow")}
                             </span>
                           </div>
 
                           <div className="mt-4">
-                            <p className="text-sm font-medium text-[var(--foreground)]">{mode.label}</p>
-                            <p className="mt-1 text-sm text-[var(--soft-foreground)]">{mode.summary}</p>
+                            <p className="text-sm font-medium text-[var(--foreground)]">
+                              {mode.id === "runway"
+                                ? t("runtime.modes.runway.label")
+                                : mode.id === "hybrid"
+                                  ? t("runtime.modes.hybrid.label")
+                                  : mode.id === "local"
+                                    ? t("runtime.modes.local.label")
+                                    : t("runtime.modes.mock.label")}
+                            </p>
+                            <p className="mt-1 text-sm text-[var(--soft-foreground)]">
+                              {mode.id === "runway"
+                                ? t("runtime.modes.runway.summary")
+                                : mode.id === "hybrid"
+                                  ? t("runtime.modes.hybrid.summary")
+                                  : mode.id === "local"
+                                    ? t("runtime.modes.local.summary")
+                                    : t("runtime.modes.mock.summary")}
+                            </p>
                             <p className="mt-3 text-sm leading-6 text-[var(--muted-foreground)]">
-                              {mode.detail}
+                              {mode.id === "runway"
+                                ? t("runtime.modes.runway.detail")
+                                : mode.id === "hybrid"
+                                  ? t("runtime.modes.hybrid.detail")
+                                  : mode.id === "local"
+                                    ? t("runtime.modes.local.detail")
+                                    : t("runtime.modes.mock.detail")}
                             </p>
                           </div>
 
                           <div className="mt-4 flex items-center justify-between gap-3 border-t border-[var(--border)] pt-3">
                             <span className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-                              {mode.compatibility}
+                              {mode.id === "runway"
+                                ? t("runtime.modes.runway.compatibility")
+                                : mode.id === "hybrid"
+                                  ? t("runtime.modes.hybrid.compatibility")
+                                  : mode.id === "local"
+                                    ? t("runtime.modes.local.compatibility")
+                                    : t("runtime.modes.mock.compatibility")}
                             </span>
                             <span className="inline-flex items-center gap-1.5 text-xs font-medium text-[rgb(var(--accent-tertiary-rgb))]">
-                              Open config
-                              <ChevronRight className="h-3.5 w-3.5" />
+                              {t("runtime.modal.openConfig")}
+                              <ChevronRight className="theme-directional-icon h-3.5 w-3.5" />
                             </span>
                           </div>
                         </motion.button>
@@ -487,13 +540,25 @@ export function RuntimeSetupModal({
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div>
                         <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-                          Edit your `.env.local`
+                          {t("runtime.modal.editEnv")}
                         </p>
                         <h4 className="mt-2 text-2xl font-semibold tracking-[-0.03em] text-[var(--foreground)]">
-                          {selectedMode.label}
+                          {selectedMode.id === "runway"
+                            ? t("runtime.modes.runway.label")
+                            : selectedMode.id === "hybrid"
+                              ? t("runtime.modes.hybrid.label")
+                              : selectedMode.id === "local"
+                                ? t("runtime.modes.local.label")
+                                : t("runtime.modes.mock.label")}
                         </h4>
                         <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--soft-foreground)]">
-                          {selectedMode.highlight}
+                          {selectedMode.id === "runway"
+                            ? t("runtime.modes.runway.highlight")
+                            : selectedMode.id === "hybrid"
+                              ? t("runtime.modes.hybrid.highlight")
+                              : selectedMode.id === "local"
+                                ? t("runtime.modes.local.highlight")
+                                : t("runtime.modes.mock.highlight")}
                         </p>
                       </div>
 
@@ -504,26 +569,28 @@ export function RuntimeSetupModal({
                       >
                         <Copy className="h-4 w-4" />
                         <span>
-                          {copiedModeId === selectedMode.id ? "Copied" : "Copy env block"}
+                          {copiedModeId === selectedMode.id
+                            ? t("runtime.modal.copied")
+                            : t("runtime.modal.copyEnvBlock")}
                         </span>
                       </button>
                     </div>
                   </div>
 
                   <div className="grid min-h-0 flex-1 gap-0 xl:grid-cols-[minmax(0,1fr)_280px]">
-                    <div className="min-h-0 border-b border-[var(--border)] px-5 py-5 xl:border-b-0 xl:border-r">
+                    <div className="min-h-0 border-b border-[var(--border)] px-5 py-5 xl:border-b-0 xl:[border-inline-end:1px_solid_var(--border)]">
                       <div className="theme-runtime-code-block h-full overflow-hidden rounded-[1.4rem] border">
                         <div className="theme-runtime-code-header flex items-center justify-between border-b px-4 py-3">
                           <div className="flex items-center gap-2">
                             <span className="h-2.5 w-2.5 rounded-full bg-rose-400/80" />
                             <span className="h-2.5 w-2.5 rounded-full bg-amber-300/80" />
                             <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/80" />
-                            <span className="ml-2 text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
+                            <span className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)] [margin-inline-start:0.5rem]">
                               .env.local
                             </span>
                           </div>
                           <span className="text-xs text-[var(--muted-foreground)]">
-                            Current support only
+                            {t("runtime.modal.currentSupportOnly")}
                           </span>
                         </div>
                         <pre className="h-full overflow-auto px-4 py-4 text-sm leading-7 text-[var(--soft-foreground)]">
@@ -534,10 +601,25 @@ export function RuntimeSetupModal({
 
                     <div className="px-5 py-5">
                       <p className="text-[11px] uppercase tracking-[0.24em] text-[var(--muted-foreground)]">
-                        Why this mode
+                        {t("runtime.modal.whyThisMode")}
                       </p>
                       <ul className="mt-4 space-y-3">
-                        {selectedMode.notes.map((note) => (
+                        {[
+                          selectedMode.id === "runway"
+                            ? t("runtime.modes.runway.noteOne")
+                            : selectedMode.id === "hybrid"
+                              ? t("runtime.modes.hybrid.noteOne")
+                              : selectedMode.id === "local"
+                                ? t("runtime.modes.local.noteOne")
+                                : t("runtime.modes.mock.noteOne"),
+                          selectedMode.id === "runway"
+                            ? t("runtime.modes.runway.noteTwo")
+                            : selectedMode.id === "hybrid"
+                              ? t("runtime.modes.hybrid.noteTwo")
+                              : selectedMode.id === "local"
+                                ? t("runtime.modes.local.noteTwo")
+                                : t("runtime.modes.mock.noteTwo")
+                        ].map((note) => (
                           <li key={note} className="flex items-start gap-3 text-sm text-[var(--soft-foreground)]">
                             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[rgb(var(--accent-rgb))]" />
                             <span className="leading-6">{note}</span>
@@ -557,8 +639,7 @@ export function RuntimeSetupModal({
                     delay: shouldReduceMotion ? 0 : 0.2
                   }}
                 >
-                  Additional provider adapters may be added later; today the supported
-                  runtime paths are Runway, local HTTP inference, and mock preview mode.
+                  {t("runtime.modal.additionalSupportNote")}
                 </motion.div>
               </div>
             </div>
@@ -566,8 +647,7 @@ export function RuntimeSetupModal({
             <div className="relative border-t border-[var(--border)] bg-[color-mix(in_srgb,var(--background-deep)_84%,transparent)] px-5 py-4 backdrop-blur-xl sm:px-6 lg:px-8">
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                 <div className="max-w-2xl text-sm text-[var(--muted-foreground)]">
-                  Choose a mode, update `.env.local`, then export it into the worker shell
-                  before running jobs.
+                  {t("runtime.modal.footerDescription")}
                 </div>
 
                 <div className="flex flex-col gap-3 sm:flex-row">
@@ -578,7 +658,7 @@ export function RuntimeSetupModal({
                       className="theme-runtime-primary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium transition"
                     >
                       <span>{primaryAction.label}</span>
-                      <ArrowUpRight className="h-4 w-4" />
+                      <ArrowUpRight className="theme-directional-icon h-4 w-4" />
                     </Link>
                   ) : (
                     <button
@@ -586,8 +666,8 @@ export function RuntimeSetupModal({
                       onClick={() => onOpenChange(false)}
                       className="theme-runtime-primary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium transition"
                     >
-                      <span>Back to workspace</span>
-                      <ArrowUpRight className="h-4 w-4" />
+                      <span>{t("runtime.modal.backToWorkspace")}</span>
+                      <ArrowUpRight className="theme-directional-icon h-4 w-4" />
                     </button>
                   )}
 
@@ -598,7 +678,7 @@ export function RuntimeSetupModal({
                     onClick={() => onOpenChange(false)}
                     className="theme-runtime-secondary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium transition"
                   >
-                    <span>View setup guide</span>
+                    <span>{t("runtime.modal.viewGuide")}</span>
                     <ExternalLink className="h-4 w-4" />
                   </a>
 
@@ -607,7 +687,7 @@ export function RuntimeSetupModal({
                     onClick={() => onOpenChange(false)}
                     className="theme-runtime-ghost-button inline-flex h-12 items-center justify-center rounded-full border bg-transparent px-5 text-sm font-medium transition"
                   >
-                    Dismiss
+                    {t("runtime.modal.dismiss")}
                   </button>
                 </div>
               </div>

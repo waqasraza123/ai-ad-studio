@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { ArrowUpRight, GalleryVerticalEnd } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { getServerI18n } from "@/lib/i18n/server"
 import type { HomepageFeaturedShowcaseItem } from "./homepage-data"
 
 type FeaturedShowcaseSectionProps = {
@@ -15,35 +16,45 @@ type ShowcaseSectionCard = {
   title: string
 }
 
-const fallbackCards: ShowcaseSectionCard[] = [
-  {
-    href: null,
-    imageUrl: null,
-    summary: "Cinematic premium reveal pacing for a flagship product drop.",
-    tags: ["9:16", "Launch creative", "Premium Cinematic"],
-    title: "Flagship launch preview"
-  },
-  {
-    href: null,
-    imageUrl: null,
-    summary:
-      "Fast offer-led motion designed for a promo campaign and CTA-heavy rollout.",
-    tags: ["1:1", "Promo push", "Fast Offer Ad"],
-    title: "Offer-focused campaign cut"
-  },
-  {
-    href: null,
-    imageUrl: null,
-    summary:
-      "A calmer product story layout for brands that want cleaner composition and softer motion.",
-    tags: ["16:9", "Brand story", "Minimal Modern"],
-    title: "Minimal product story"
-  }
-]
-
-export function FeaturedShowcaseSection({
+export async function FeaturedShowcaseSection({
   items
 }: FeaturedShowcaseSectionProps) {
+  const { t } = await getServerI18n()
+  const fallbackCards: ShowcaseSectionCard[] = [
+    {
+      href: null,
+      imageUrl: null,
+      summary: t("marketing.showcase.fallback.one.summary"),
+      tags: [
+        t("marketing.showcase.fallback.one.tagOne"),
+        t("marketing.showcase.fallback.one.tagTwo"),
+        t("marketing.showcase.fallback.one.tagThree")
+      ],
+      title: t("marketing.showcase.fallback.one.title")
+    },
+    {
+      href: null,
+      imageUrl: null,
+      summary: t("marketing.showcase.fallback.two.summary"),
+      tags: [
+        t("marketing.showcase.fallback.two.tagOne"),
+        t("marketing.showcase.fallback.two.tagTwo"),
+        t("marketing.showcase.fallback.two.tagThree")
+      ],
+      title: t("marketing.showcase.fallback.two.title")
+    },
+    {
+      href: null,
+      imageUrl: null,
+      summary: t("marketing.showcase.fallback.three.summary"),
+      tags: [
+        t("marketing.showcase.fallback.three.tagOne"),
+        t("marketing.showcase.fallback.three.tagTwo"),
+        t("marketing.showcase.fallback.three.tagThree")
+      ],
+      title: t("marketing.showcase.fallback.three.title")
+    }
+  ]
   const hasItems = items.length > 0
   const cards: ShowcaseSectionCard[] = hasItems
     ? items.map((item) => ({
@@ -60,24 +71,21 @@ export function FeaturedShowcaseSection({
       <div className="mx-auto max-w-7xl">
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="theme-marketing-eyebrow">Samples</p>
+            <p className="theme-marketing-eyebrow">{t("marketing.showcase.eyebrow")}</p>
             <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
-              Real output proof, not placeholder product claims
+              {t("marketing.showcase.title")}
             </h2>
             <p className="theme-marketing-copy mt-4">
-              The homepage should be backed by real showcase output whenever it
-              exists. When it does not, the section still holds the layout with
-              designed sample placeholders rather than fake testimonials or
-              invented case studies.
+              {t("marketing.showcase.description")}
             </p>
           </div>
 
           <Link
             href="/showcase"
-            className="theme-inline-secondary-button inline-flex h-12 items-center justify-center rounded-full border px-5 text-sm font-medium"
+            className="theme-inline-secondary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-5 text-sm font-medium"
           >
-            Explore full showcase
-            <ArrowUpRight className="ml-2 h-4 w-4" />
+            {t("marketing.showcase.exploreFull")}
+            <ArrowUpRight className="theme-directional-icon h-4 w-4" />
           </Link>
         </div>
 
@@ -130,13 +138,12 @@ export function FeaturedShowcaseSection({
                     href={item.href}
                     className="theme-marketing-link mt-5 inline-flex items-center gap-2 text-sm font-medium"
                   >
-                    View in showcase
-                    <ArrowUpRight className="h-4 w-4" />
+                    {t("marketing.showcase.viewInShowcase")}
+                    <ArrowUpRight className="theme-directional-icon h-4 w-4" />
                   </Link>
                 ) : (
                   <p className="mt-5 text-sm text-[var(--soft-foreground)]">
-                    Publish approved winners to populate this proof layer
-                    automatically.
+                    {t("marketing.showcase.publishNote")}
                   </p>
                 )}
               </div>

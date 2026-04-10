@@ -1,6 +1,8 @@
 import type { DeliveryReminderMismatchLifecycleFilter } from "./delivery-reminder-mismatch-lifecycle-filter"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import {
-  getDeliveryReminderMismatchLifecycleFilterLabel
+  getDeliveryReminderMismatchLifecycleFilterLabel,
+  getDeliveryReminderMismatchLifecycleFilterLabelKey
 } from "./delivery-reminder-mismatch-lifecycle-filter"
 import type { DeliveryReminderSupportFilter } from "./delivery-reminder-support-filter"
 import {
@@ -8,12 +10,19 @@ import {
   buildDeliveryWorkspaceFollowUpAnchorId
 } from "./delivery-reminder-support-links"
 import {
-  getDeliveryReminderSupportFilterLabel
+  getDeliveryReminderSupportFilterLabel,
+  getDeliveryReminderSupportFilterLabelKey
 } from "./delivery-reminder-support-filter"
 import type { DeliverySupportActivityFilter } from "./delivery-support-activity-filter"
 import {
-  getDeliverySupportActivityFilterLabel
+  getDeliverySupportActivityFilterLabel,
+  getDeliverySupportActivityFilterLabelKey
 } from "./delivery-support-activity-filter"
+
+type Translate = (
+  key: AppMessageKey,
+  values?: Record<string, string | number | null | undefined>
+) => string
 
 export type DeliveryInvestigationViewState = {
   activity: string | null
@@ -177,45 +186,84 @@ export function hasPinnedDeliveryInvestigationContext(
 }
 
 export function summarizeDeliveryInvestigationViewState(
-  state: DeliveryInvestigationViewState
+  state: DeliveryInvestigationViewState,
+  t?: Translate
 ) {
   const labels: string[] = []
 
   if (state.supportActivityFilter !== "all") {
     labels.push(
-      `Support activity: ${getDeliverySupportActivityFilterLabel(
-        state.supportActivityFilter
-      )}`
+      t
+        ? t("delivery.investigationView.summary.supportActivity", {
+            value: t(
+              getDeliverySupportActivityFilterLabelKey(
+                state.supportActivityFilter
+              )
+            )
+          })
+        : `Support activity: ${getDeliverySupportActivityFilterLabel(
+            state.supportActivityFilter
+          )}`
     )
   }
 
   if (state.reminderMismatchLifecycleFilter !== "all") {
     labels.push(
-      `Mismatch lifecycle: ${getDeliveryReminderMismatchLifecycleFilterLabel(
-        state.reminderMismatchLifecycleFilter
-      )}`
+      t
+        ? t("delivery.investigationView.summary.mismatchLifecycle", {
+            value: t(
+              getDeliveryReminderMismatchLifecycleFilterLabelKey(
+                state.reminderMismatchLifecycleFilter
+              )
+            )
+          })
+        : `Mismatch lifecycle: ${getDeliveryReminderMismatchLifecycleFilterLabel(
+            state.reminderMismatchLifecycleFilter
+          )}`
     )
   }
 
   if (state.reminderSupportFilter !== "all") {
     labels.push(
-      `Reminder support: ${getDeliveryReminderSupportFilterLabel(
-        state.reminderSupportFilter
-      )}`
+      t
+        ? t("delivery.investigationView.summary.reminderSupport", {
+            value: t(
+              getDeliveryReminderSupportFilterLabelKey(
+                state.reminderSupportFilter
+              )
+            )
+          })
+        : `Reminder support: ${getDeliveryReminderSupportFilterLabel(
+            state.reminderSupportFilter
+          )}`
     )
   }
 
   if (state.focusWorkspaceId) {
-    labels.push(`Focused workspace: ${state.focusWorkspaceId}`)
+    labels.push(
+      t
+        ? t("delivery.investigationView.summary.focusedWorkspace", {
+            value: state.focusWorkspaceId
+          })
+        : `Focused workspace: ${state.focusWorkspaceId}`
+    )
   }
 
   if (state.focusFollowUpForm) {
-    labels.push("Focused follow-up form")
+    labels.push(
+      t
+        ? t("delivery.investigationView.summary.focusedFollowUpForm")
+        : "Focused follow-up form"
+    )
   }
 
   if (state.focusReminderNotificationId) {
     labels.push(
-      `Focused reminder: ${state.focusReminderNotificationId}`
+      t
+        ? t("delivery.investigationView.summary.focusedReminder", {
+            value: state.focusReminderNotificationId
+          })
+        : `Focused reminder: ${state.focusReminderNotificationId}`
     )
   }
 

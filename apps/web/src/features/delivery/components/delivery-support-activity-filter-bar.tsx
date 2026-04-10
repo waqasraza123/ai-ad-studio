@@ -5,10 +5,11 @@ import {
   buildDeliverySupportActivityFilterHref
 } from "@/features/delivery/lib/delivery-reminder-support-links"
 import {
-  getDeliverySupportActivityFilterLabel,
+  getDeliverySupportActivityFilterLabelKey,
   type DeliverySupportActivityFilter,
   type DeliverySupportActivityFilterSummary
 } from "@/features/delivery/lib/delivery-support-activity-filter"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type DeliverySupportActivityFilterBarProps = {
   activeFilter: DeliverySupportActivityFilter
@@ -45,26 +46,27 @@ function getFilterClasses(isActive: boolean) {
     : "border-white/10 bg-white/[0.03] text-slate-300 hover:border-white/20 hover:bg-white/[0.05]"
 }
 
-export function DeliverySupportActivityFilterBar({
+export async function DeliverySupportActivityFilterBar({
   activeFilter,
   currentDashboardSearchParams,
   summary
 }: DeliverySupportActivityFilterBarProps) {
+  const { t } = await getServerI18n()
+
   return (
     <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-sm font-medium text-white">
-            Support-originated workspace activity
+            {t("delivery.supportActivity.title")}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            Filter workspace timelines to reminder repairs, failed reminder
-            repairs, or support handoff notes.
+            {t("delivery.supportActivity.description")}
           </p>
         </div>
 
         <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-slate-300">
-          {summary.allCount} support events in current dashboard scope
+          {t("delivery.supportActivity.count", { count: summary.allCount })}
         </div>
       </div>
 
@@ -98,7 +100,7 @@ export function DeliverySupportActivityFilterBar({
                 supportActivityFilter: filterOption.value
               })}
             >
-              <span>{getDeliverySupportActivityFilterLabel(filterOption.value)}</span>
+              <span>{t(getDeliverySupportActivityFilterLabelKey(filterOption.value))}</span>
               <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5">
                 {count}
               </span>

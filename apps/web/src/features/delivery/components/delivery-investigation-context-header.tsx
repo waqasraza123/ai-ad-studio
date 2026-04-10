@@ -1,4 +1,5 @@
 import type { DeliveryInvestigationContextSummary } from "@/features/delivery/lib/delivery-investigation-context-summary"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type DeliveryInvestigationContextHeaderProps = {
   summary: DeliveryInvestigationContextSummary
@@ -31,9 +32,10 @@ function getToneClasses(tone: DeliveryInvestigationContextSummary["tone"]) {
   }
 }
 
-export function DeliveryInvestigationContextHeader({
+export async function DeliveryInvestigationContextHeader({
   summary
 }: DeliveryInvestigationContextHeaderProps) {
+  const { t } = await getServerI18n()
   const toneClasses = getToneClasses(summary.tone)
 
   return (
@@ -41,7 +43,7 @@ export function DeliveryInvestigationContextHeader({
       className={`rounded-[1.5rem] border p-4 ${toneClasses.card}`}
     >
       <p className={`text-sm uppercase tracking-[0.22em] ${toneClasses.eyebrow}`}>
-        Why this view matters
+        {t("delivery.investigationContext.eyebrow")}
       </p>
 
       <h2 className="mt-2 text-xl font-semibold text-white">

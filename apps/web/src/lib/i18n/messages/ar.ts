@@ -43,6 +43,8 @@ export const ar: AppMessageCatalog = {
   "common.words.project": "المشروع",
   "common.words.created": "أُنشئ {{value}}",
   "common.words.updated": "آخر تحديث {{value}}",
+  "common.words.notSet": "غير محدد",
+  "common.words.unknownProject": "مشروع غير معروف",
   "common.count.projects": { one: "{{count}} مشروع", other: "{{count}} مشروع" },
   "common.count.itemsShown": { one: "{{count}} معروض", other: "{{count}} معروض" },
   "header.marketing.workflow": "سير العمل",
@@ -107,7 +109,7 @@ export const ar: AppMessageCatalog = {
   "marketing.hero.title":
     "حوّل مدخلات المنتج إلى مخرجات إعلانية جاهزة للحملة عبر سير عمل استوديو منضبط",
   "marketing.hero.description":
-    "يساعد AI Ad Studio فرق التسويق على الانتقال من الموجز وأصول المنتج إلى المفاهيم والمعاينات والمخرجات النهائية وأس surfaces التسليم العامة دون الانجراف إلى محرر مفتوح.",
+    "يساعد AI Ad Studio فرق التسويق على الانتقال من الموجز وأصول المنتج إلى المفاهيم والمعاينات والمخرجات النهائية وأسطح التسليم العامة دون الانجراف إلى محرر مفتوح.",
   "marketing.hero.outcomeWorkflow": "سير عمل إعلاني منضبط",
   "marketing.hero.outcomeReview": "مراجعة قبل الإخراج النهائي",
   "marketing.hero.outcomeDelivery": "جاهز للنشر والتسليم",
@@ -145,7 +147,7 @@ export const ar: AppMessageCatalog = {
     "يفترض سير العمل وجود أصول وعروض ودعوات لاتخاذ إجراء وأنماط مستندة إلى قوالب بدل الاستكشاف الإبداعي غير المقيد.",
   "marketing.feature.teams.title": "مصمم للفرق الاحترافية",
   "marketing.feature.teams.description":
-    "يعزز الموقع العام ولوحة التحكم وأس surfaces النشر قصة منتج واحدة: مخرجات إعلانية أكثر اتساقًا وتحكمًا تشغيليًا أنظف.",
+    "يعزز الموقع العام ولوحة التحكم وأسطح النشر قصة منتج واحدة: مخرجات إعلانية أكثر اتساقًا وتحكمًا تشغيليًا أنظف.",
   "dashboard.home.eyebrow": "لوحة التحكم",
   "dashboard.home.title": "أصبحت مساحة عمل المشروع جاهزة",
   "dashboard.home.description":
@@ -296,6 +298,773 @@ export const ar: AppMessageCatalog = {
   "runtime.modal.description":
     "إرشادات API وGPU ومتغيرات البيئة لمسارات المزود المدعومة حاليًا",
   "runtime.modal.close": "إغلاق نافذة إعداد بيئة التشغيل",
+  "header.app.signedInFallback": "تم تسجيل الدخول",
+  "marketing.heroPreview.system": "نظام الاستوديو",
+  "marketing.heroPreview.systemDescription":
+    "تنتقل الحزمة المعتمدة نفسها عبر النشر والتسليم.",
+  "marketing.heroPreview.reviewFirst": "المراجعة أولًا",
+  "marketing.heroPreview.canonicalExport": "المخرج المعتمد",
+  "marketing.heroPreview.canonicalWinner": "الفائز المعتمد",
+  "marketing.heroPreview.readyToPublish": "جاهز للنشر",
+  "marketing.heroPreview.packageTitle": "حزمة الحملة المعتمدة",
+  "marketing.heroPreview.packageDescription":
+    "ينتقل فائز واحد إلى المعرض والتسليم من دون تغيير.",
+  "marketing.heroPreview.lockedDescription":
+    "تم تثبيت الفائز عبر النشر والتسليم.",
+  "marketing.heroPreview.packageMeta.formats": "المقاسات",
+  "marketing.heroPreview.packageMeta.formatsValue": "9:16، 1:1، 16:9",
+  "marketing.heroPreview.packageMeta.review": "المراجعة",
+  "marketing.heroPreview.packageMeta.reviewValue": "المالك + مراجع خارجي",
+  "marketing.heroPreview.packageMeta.surfaces": "الأسطح",
+  "marketing.heroPreview.packageMeta.surfacesValue": "المعرض + التسليم",
+  "marketing.heroPreview.checkpoints": "نقاط التحقق الأساسية",
+  "marketing.heroPreview.stepsCount": "3 خطوات",
+  "marketing.heroPreview.steps.brief.label": "الموجز",
+  "marketing.heroPreview.steps.brief.title": "ثبّت الطلب",
+  "marketing.heroPreview.steps.brief.detail":
+    "يتم تحديد الأهداف والأصول والقيود بوضوح.",
+  "marketing.heroPreview.steps.review.label": "المراجعة",
+  "marketing.heroPreview.steps.review.title": "اختر الفائز",
+  "marketing.heroPreview.steps.review.detail":
+    "تعتمد الفرق اللقطات الجاهزة للمعاينة.",
+  "marketing.heroPreview.steps.publish.label": "النشر",
+  "marketing.heroPreview.steps.publish.title": "أطلق المخرج المعتمد",
+  "marketing.heroPreview.steps.publish.detail":
+    "يبقى المعرض والتسليم متطابقين.",
+  "marketing.workflow.eyebrow": "سير العمل",
+  "marketing.workflow.title": "مسار احترافي من الموجز إلى المخرج المعتمد",
+  "marketing.workflow.description":
+    "يجب أن يوضح الموقع شكل المنتج مباشرة: هذا نظام منضبط لتوليد الإعلانات لفرق التسويق، وليس مساحة تحرير عامة بلا حدود.",
+  "marketing.workflow.steps.brief.title": "صُغ موجز الحملة",
+  "marketing.workflow.steps.brief.description":
+    "اجمع مدخلات المنتج والعرض والدعوة لاتخاذ إجراء والاتجاه البصري في موجز إعلاني واحد منضبط.",
+  "marketing.workflow.steps.generate.title": "ولّد اتجاهات قابلة للاعتماد",
+  "marketing.workflow.steps.generate.description":
+    "أنشئ مفاهيم منضبطة بخطافات ونصوص واتجاه بصري بدل الانجراف الإبداعي المفتوح.",
+  "marketing.workflow.steps.review.title": "راجع قبل أن تنفق",
+  "marketing.workflow.steps.review.description":
+    "افحص المعاينات المصقولة أولًا لكي تختار الفرق الفائز قبل الإخراج النهائي.",
+  "marketing.workflow.steps.publish.title": "انشر وسلّم",
+  "marketing.workflow.steps.publish.description":
+    "انقل المخرج الفائز إلى الحملة والمعرض والتسليم مع أعمال يدوية أقل.",
+  "marketing.showcase.eyebrow": "النماذج",
+  "marketing.showcase.title": "دليل مخرجات حقيقي، لا وعودًا تسويقية شكلية",
+  "marketing.showcase.description":
+    "يجب أن يستند الموقع إلى مخرجات حقيقية من المعرض كلما توفرت. وعندما لا تتوفر، يبقى القسم محافظًا على هيكله عبر نماذج مصممة بدل شهادات زائفة أو دراسات حالة مخترعة.",
+  "marketing.showcase.exploreFull": "استكشف المعرض كاملًا",
+  "marketing.showcase.viewInShowcase": "اعرضه في المعرض",
+  "marketing.showcase.publishNote":
+    "انشر الفائزين المعتمدين لملء طبقة الإثبات هذه تلقائيًا.",
+  "marketing.showcase.fallback.one.title": "معاينة إطلاق رئيسية",
+  "marketing.showcase.fallback.one.summary":
+    "إيقاع سينمائي فاخر للكشف عن منتج رئيسي عند الإطلاق.",
+  "marketing.showcase.fallback.one.tagOne": "9:16",
+  "marketing.showcase.fallback.one.tagTwo": "إبداع الإطلاق",
+  "marketing.showcase.fallback.one.tagThree": "سينمائي فاخر",
+  "marketing.showcase.fallback.two.title": "نسخة حملة تركّز على العرض",
+  "marketing.showcase.fallback.two.summary":
+    "حركة سريعة تقودها قيمة العرض ومصممة لحملة ترويجية ذات دعوات واضحة لاتخاذ إجراء.",
+  "marketing.showcase.fallback.two.tagOne": "1:1",
+  "marketing.showcase.fallback.two.tagTwo": "دفعة ترويجية",
+  "marketing.showcase.fallback.two.tagThree": "إعلان يقوده العرض",
+  "marketing.showcase.fallback.three.title": "قصة منتج بسيطة",
+  "marketing.showcase.fallback.three.summary":
+    "طرح أكثر هدوءًا لقصة المنتج للعلامات التي تريد تركيبًا أنظف وحركة ألين.",
+  "marketing.showcase.fallback.three.tagOne": "16:9",
+  "marketing.showcase.fallback.three.tagTwo": "قصة علامة",
+  "marketing.showcase.fallback.three.tagThree": "بساطة حديثة",
+  "marketing.pricing.eyebrow": "الخطط",
+  "marketing.pricing.title": "لقطة موجزة للتسعير مبنية على بيانات الخطط الحية",
+  "marketing.pricing.description":
+    "يجب أن يساعد الموقع الفرق على فهم شكل القيمة بسرعة من دون أن يتحول إلى تجربة إعدادات فوترة كاملة.",
+  "marketing.pricing.recommended": "موصى بها",
+  "marketing.pricing.workflowEyebrow": "ابدأ من سير العمل",
+  "marketing.pricing.workflowTitle":
+    "يجب أن يخدم التسعير قصة المنتج، لا أن يحل محلها.",
+  "marketing.pricing.enterDashboard": "الدخول إلى اللوحة",
+  "marketing.pricing.free": "مجانية",
+  "marketing.pricing.perMonth": "/شهريًا",
+  "marketing.pricing.conceptsPerMonth": "{{count}} مفهوم / شهريًا",
+  "marketing.pricing.previewsPerMonth": "{{count}} معاينة / شهريًا",
+  "marketing.pricing.rendersPerMonth": "{{count}} دفعة إخراج / شهريًا",
+  "marketing.pricing.exportsPerMonth": "{{count}} مخرج / شهريًا",
+  "marketing.pricing.publishing.full": "نشر المعرض والحملات والتسليم",
+  "marketing.pricing.publishing.delivery": "يشمل نشر التسليم",
+  "marketing.pricing.publishing.limited": "نشر عام محدود",
+  "marketing.pricing.publishing.internal": "سير عمل داخلي فقط",
+  "marketing.faq.eyebrow": "الأسئلة الشائعة",
+  "marketing.faq.title": "يجب الرد على الاعتراضات الرئيسية داخل الصفحة نفسها",
+  "marketing.faq.finalCtaEyebrow": "الدعوة النهائية",
+  "marketing.faq.finalCtaTitle":
+    "انتقل من موجز المنتج إلى مخرج إعلاني معتمد من دون تحويل سير العمل إلى فوضى",
+  "marketing.faq.finalCtaDescription":
+    "ينتهي الموقع الآن عند النقطة الصحيحة: مسار واضح إلى المنتج وسطح إثبات للفرق التي تريد فحص جودة المخرجات أولًا.",
+  "marketing.faq.enterDashboard": "الدخول إلى اللوحة",
+  "marketing.faq.browseShowcase": "استعراض المعرض",
+  "marketing.faq.questions.ads.question": "ما نوع الإعلانات التي ينشئها هذا المنتج؟",
+  "marketing.faq.questions.ads.answer":
+    "صُمم AI Ad Studio لإعلانات تسويق المنتجات: توليد المفاهيم، ومراجعة المعاينات، والمخرجات النهائية، وأسطح التسليم العامة.",
+  "marketing.faq.questions.editor.question": "هل هذا محرر عام متعدد الأغراض؟",
+  "marketing.faq.questions.editor.answer":
+    "لا. سير العمل مقصود أن يكون منضبطًا حتى تتحرك الفرق عبر مسار قابل للتكرار بدل إدارة محرر مفتوح على صفحة فارغة.",
+  "marketing.faq.questions.review.question":
+    "هل يمكن للفرق مراجعة المخرجات قبل الإخراج النهائي؟",
+  "marketing.faq.questions.review.answer":
+    "نعم. يتضمن سير العمل نقاط تحقق للمعاينة حتى تتمكن الفرق من مقارنة المخرجات قبل الالتزام بالإخراج النهائي.",
+  "marketing.faq.questions.surfaces.question":
+    "ما الأسطح العامة المتاحة بعد الاعتماد؟",
+  "marketing.faq.questions.surfaces.answer":
+    "يمكن نقل الفائزين المعتمدين إلى المعرض والحملات والتسليم وروابط المشاركة الأخف وفق ما تسمح به الخطة.",
+  "runtime.launcher.sidebarEyebrow": "مساعدة الإعداد",
+  "runtime.modes.runway.label": "Runway فقط",
+  "runtime.modes.runway.eyebrow": "موصى به",
+  "runtime.modes.runway.summary": "المسار المستضاف الكامل والمتميز",
+  "runtime.modes.runway.detail":
+    "استخدم Runway لكل من معاينات الصور وتوليد الفيديو المشهدي عندما تريد أسرع مسار مدعوم إلى تجربة الاستوديو المقصودة.",
+  "runtime.modes.runway.highlight":
+    "أفضل مسار كامل الإمكانات على أجهزة Intel Mac وغيرها من البيئات التي لا تحتوي على GPU مناسب.",
+  "runtime.modes.runway.compatibility": "مسار مستضاف",
+  "runtime.modes.runway.noteOne":
+    "اشترِ خطة Runway API ثم أضف RUNWAYML_API_SECRET إلى .env.local.",
+  "runtime.modes.runway.noteTwo":
+    "اترك المزودين مضبوطين على runway للحصول على أنظف إعداد مستضاف.",
+  "runtime.modes.hybrid.label": "هجين",
+  "runtime.modes.hybrid.eyebrow": "متقدم",
+  "runtime.modes.hybrid.summary": "معاينات Runway + فيديو مشهدي محلي",
+  "runtime.modes.hybrid.detail":
+    "أبقِ المعاينات على Runway مع توجيه توليد الفيديو المشهدي إلى sidecar محلي عبر HTTP للحصول على مسار مختلط أقل كلفة.",
+  "runtime.modes.hybrid.highlight":
+    "أقل مسار خطورة للتحقق من GPU عندما تصبح لديك بيئة Linux + NVIDIA مدعومة.",
+  "runtime.modes.hybrid.compatibility": "مستضاف + محلي",
+  "runtime.modes.hybrid.noteOne":
+    "اشترِ Runway وأضف RUNWAYML_API_SECRET ثم بدّل SCENE_VIDEO_PROVIDER فقط إلى local_http.",
+  "runtime.modes.hybrid.noteTwo":
+    "شغّل sidecar الاستدلال المحلي على بيئة Linux + NVIDIA عملية.",
+  "runtime.modes.local.label": "محلي بالكامل",
+  "runtime.modes.local.eyebrow": "للمستخدم المتقدم",
+  "runtime.modes.local.summary": "حزمة محلية كاملة تعتمد على العتاد",
+  "runtime.modes.local.detail":
+    "استخدم sidecar المحلي لكل من المعاينات والفيديو المشهدي عندما تكون أنت من يدير Python وCUDA والنماذج وبيئة GPU من البداية إلى النهاية.",
+  "runtime.modes.local.highlight":
+    "عملي فقط على عتاد Linux + NVIDIA المدعوم من أجل توليد الفيديو المشهدي الكامل.",
+  "runtime.modes.local.compatibility": "GPU محلي",
+  "runtime.modes.local.noteOne":
+    "اختر LOCAL_IMAGE_MODEL وLOCAL_VIDEO_MODEL وفق طبقة GPU المتوفرة لديك فعليًا.",
+  "runtime.modes.local.noteTwo":
+    "تعامل مع الفيديو المشهدي على CPU فقط أو Intel Mac على أنه غير عملي وليس هدفًا مدعومًا.",
+  "runtime.modes.mock.label": "وضع تطوير خفيف",
+  "runtime.modes.mock.eyebrow": "ثانوي",
+  "runtime.modes.mock.summary": "معاينات وهمية + فيديو مشهدي محلي",
+  "runtime.modes.mock.detail":
+    "استخدم توليد المعاينات الوهمية عندما تريد اختبار أجزاء من سير العمل من دون دفع تكلفة المعاينات المستضافة.",
+  "runtime.modes.mock.highlight":
+    "مفيد لتطوير الواجهة وتدفقات الوظائف، وليس لإثبات جودة المخرجات الاحترافية.",
+  "runtime.modes.mock.compatibility": "تطوير/اختبار",
+  "runtime.modes.mock.noteOne":
+    "الوضع الوهمي أداة لسير العمل وليس مسار إخراج بجودة إنتاجية.",
+  "runtime.modes.mock.noteTwo":
+    "قد تُضاف محولات مزودين أخرى لاحقًا، لكن المسارات المدعومة اليوم هي Runway والاستدلال المحلي عبر HTTP ووضع المعاينة الوهمي.",
+  "runtime.machine.hosted.label": "مستضاف / موصى به",
+  "runtime.machine.hosted.summary":
+    "اشتراك Runway مدفوع لكل من المعاينات والفيديو المشهدي.",
+  "runtime.machine.hosted.detail":
+    "أسرع مسار كامل الإمكانات من دون الاعتماد على GPU محلي.",
+  "runtime.machine.hybrid.label": "هجين / متقدم",
+  "runtime.machine.hybrid.summary":
+    "معاينات Runway مع sidecar محلي للفيديو المشهدي.",
+  "runtime.machine.hybrid.detail":
+    "أفضل إعداد مختلط عندما يتوفر لديك صندوق GPU بعيد ومدعوم.",
+  "runtime.machine.local.label": "محلي / تجريبي",
+  "runtime.machine.local.summary":
+    "يتطلب Linux + NVIDIA لتوليد فيديو محلي عملي كامل.",
+  "runtime.machine.local.detail":
+    "تعامل مع أجهزة Intel Mac والأجهزة المعتمدة على CPU فقط كخيارات معاينة أو وضع وهمي أو مسارات غير مدعومة للفيديو المشهدي.",
+  "runtime.runwayUpgrade.title": "ما الذي يتغير بعد شراء Runway",
+  "runtime.runwayUpgrade.description":
+    "شراء Runway يغيّر إعداد البيئة، لا سير عمل المنتج. أضف المفتاح، وأبقِ المعاينات على Runway، ثم قرر ما إذا كان الفيديو المشهدي سيبقى مستضافًا أو سينتقل إلى sidecar محلي مدعوم.",
+  "runtime.runwayUpgrade.stepOne":
+    "اشترِ خطة Runway API وأنشئ مفتاحًا سريًا.",
+  "runtime.runwayUpgrade.stepTwo":
+    "أضف RUNWAYML_API_SECRET إلى .env.local.",
+  "runtime.runwayUpgrade.stepThree":
+    "اضبط PREVIEW_PROVIDER=runway ثم قرر ما إذا كان SCENE_VIDEO_PROVIDER سيبقى runway أو سيتحول إلى local_http للوضع الهجين.",
+  "runtime.runwayUpgrade.stepFour":
+    "عدّل RUNWAY_IMAGE_MODEL أو RUNWAY_VIDEO_MODEL إذا أردت اختبار نموذج مستضاف مختلف.",
+  "runtime.modal.heroPill":
+    "اربط بيئة التشغيل المناسبة لفتح التوليد الإعلاني الكامل",
+  "runtime.modal.heroTitle":
+    "اختر أسرع مسار إلى المعاينات الكاملة والحركة والتسليم.",
+  "runtime.modal.heroDescription":
+    "يمكن لـ AI Ad Studio العمل بأوضاع مستضافة أو هجينة أو محلية. المسارات المدعومة اليوم هي Runway والاستدلال المحلي عبر HTTP ووضع المعاينة الوهمي. إذا كنت تعمل على Intel MacBook Pro فاعتبر Runway المستضاف هو المسار المدعوم كامل الإمكانات.",
+  "runtime.modal.workerExportLabel":
+    "بعد تعديل `.env.local`، صدّره قبل تشغيل العامل.",
+  "runtime.modal.shellSession": "جلسة طرفية",
+  "runtime.modal.supportedModesEyebrow": "أوضاع التشغيل المدعومة",
+  "runtime.modal.supportedModesTitle":
+    "عدّل `.env.local` وفق الوضع الذي تريد اختباره فعليًا.",
+  "runtime.modal.openConfig": "فتح الإعداد",
+  "runtime.modal.editEnv": "عدّل `.env.local` لديك",
+  "runtime.modal.copyEnvBlock": "نسخ كتلة البيئة",
+  "runtime.modal.copied": "تم النسخ",
+  "runtime.modal.currentSupportOnly": "الدعم الحالي فقط",
+  "runtime.modal.whyThisMode": "لماذا هذا الوضع",
+  "runtime.modal.additionalSupportNote":
+    "قد تُضاف محولات مزودين أخرى لاحقًا، لكن المسارات المدعومة اليوم هي Runway والاستدلال المحلي عبر HTTP ووضع المعاينة الوهمي.",
+  "runtime.modal.footerDescription":
+    "اختر وضعًا، وعدّل `.env.local`، ثم صدّره إلى جلسة العامل قبل تشغيل الوظائف.",
+  "runtime.modal.backToWorkspace": "العودة إلى مساحة العمل",
+  "runtime.modal.enterDashboard": "الدخول إلى اللوحة",
+  "runtime.modal.viewGuide": "عرض دليل الإعداد",
+  "runtime.modal.dismiss": "إغلاق",
+  "debug.jobs.eyebrow": "وظائف التصحيح",
+  "debug.jobs.title": "الوظائف الفاشلة وآثار التنفيذ وعناصر إعادة المحاولة",
+  "debug.jobs.description":
+    "افحص كل وظيفة غير متزامنة، وادخل إلى آثار الحمولة، وأعد محاولة التشغيل الفاشل بأمان.",
+  "debug.jobs.empty": "لا توجد وظائف بعد.",
+  "debug.jobs.unknownProject": "مشروع غير معروف",
+  "debug.jobs.attempts": "المحاولات {{current}}/{{max}}",
+  "debug.jobs.traceTimeline": "الخط الزمني للآثار",
+  "debug.jobs.traceHeading": "آثار الوظيفة على مستوى الخطوات",
+  "debug.jobs.traceEmpty": "لم تُسجَّل آثار لهذه الوظيفة بعد.",
+  "debug.jobs.detail.description":
+    "افحص الحمولات وبيانات المزود وتوقيتات الطابور والأخطاء، واستخدم عناصر التحكم الآمنة للإلغاء أو إعادة المحاولة.",
+  "debug.jobs.detail.openProject": "فتح المشروع",
+  "debug.jobs.detail.cancelling": "جارٍ الإلغاء…",
+  "debug.jobs.detail.cancel": "إلغاء الوظيفة",
+  "debug.jobs.detail.retrying": "جارٍ إعادة المحاولة…",
+  "debug.jobs.detail.retry": "إعادة المحاولة",
+  "debug.jobs.detail.attempts": "المحاولات",
+  "debug.jobs.detail.started": "بدأت",
+  "debug.jobs.detail.finished": "انتهت",
+  "debug.jobs.detail.nextAttempt": "المحاولة التالية",
+  "debug.jobs.detail.cancelRequested": "تم طلب الإلغاء",
+  "debug.jobs.detail.providerJobId": "معرّف وظيفة المزود",
+  "debug.jobs.detail.payload": "الحمولة",
+  "debug.jobs.detail.result": "النتيجة",
+  "debug.jobs.detail.error": "الخطأ",
+  "debug.jobs.detail.notAvailable": "غير متاح",
+  "debug.jobs.status.queued": "في الطابور",
+  "debug.jobs.status.running": "قيد التشغيل",
+  "debug.jobs.status.waiting_provider": "بانتظار المزود",
+  "debug.jobs.status.succeeded": "نجحت",
+  "debug.jobs.status.failed": "فشلت",
+  "debug.jobs.status.cancelled": "أُلغيت",
+  "exports.status.queued": "في الطابور، بانتظار عامل الإخراج",
+  "exports.status.rendering": "جارٍ الإخراج، ويتم تركيب الإعلان",
+  "exports.status.ready": "جاهز، اكتمل المخرج",
+  "exports.status.failed": "فشل، راجع الوظائف أو أعد المحاولة",
+  "exports.summary.eyebrow": "تفاصيل المخرج",
+  "exports.summary.status": "الحالة",
+  "exports.summary.checkingUpdates": "جارٍ التحقق من التحديثات…",
+  "exports.summary.created": "أُنشئ",
+  "exports.summary.openVideoAsset": "فتح أصل الفيديو",
+  "exports.dashboard.empty":
+    "لا توجد مخرجات بعد. نفّذ إخراجًا لمشروع لكي تبدأ ببناء سجل المخرجات.",
+  "exports.dashboard.eyebrow": "مخرجات المشروع",
+  "exports.dashboard.unknownProject": "مشروع غير معروف",
+  "exports.dashboard.generatedCount": {
+    one: "تم توليد {{count}} مخرج",
+    other: "تم توليد {{count}} مخرج"
+  },
+  "exports.dashboard.latestAspectRatio": "أحدث {{value}}",
+  "notifications.empty": "لا توجد إشعارات بعد.",
+  "notifications.read": "مقروء",
+  "notifications.unread": "غير مقروء",
+  "notifications.open": "فتح",
+  "notifications.updating": "جارٍ التحديث…",
+  "notifications.markRead": "وضع علامة مقروء",
+  "notifications.severity.info": "معلومة",
+  "notifications.severity.success": "نجاح",
+  "notifications.severity.warning": "تحذير",
+  "notifications.severity.error": "خطأ",
+  "public.review.comments.eyebrow": "نشاط المراجعة",
+  "public.review.comments.title": "التعليقات والقرارات",
+  "public.review.comments.empty": "لا توجد تعليقات بعد.",
+  "public.review.comments.export": "مخرج",
+  "public.review.comments.batchWide": "على مستوى الدفعة",
+  "public.review.grid.empty":
+    "لا توجد مخرجات متاحة لهذا الرابط الخاص بالمراجعة بعد.",
+  "public.review.grid.previewUnavailable": "المعاينة غير متاحة",
+  "public.review.grid.currentWinner": "الفائز الداخلي الحالي",
+  "public.review.grid.locked":
+    "تم قفل التعليقات لأن هذه المراجعة مغلقة.",
+  "public.review.grid.yourName": "اسمك",
+  "public.review.grid.commentPlaceholder": "علّق على هذا المخرج",
+  "public.review.grid.posting": "جارٍ نشر التعليق…",
+  "public.review.grid.commentAction": "التعليق على هذا المخرج",
+  "campaigns.list.empty": "لا توجد حملات مشاركة بعد.",
+  "campaigns.list.unknownProject": "مشروع غير معروف",
+  "campaigns.list.openPublicPage": "فتح الصفحة العامة",
+  "campaigns.list.openExport": "فتح المخرج",
+  "projects.exports.eyebrow": "مخرجات المشروع",
+  "projects.exports.title": "سجل المخرجات واختصارات المقاسات",
+  "projects.exports.empty":
+    "لا توجد مخرجات لهذا المشروع بعد. نفّذ إخراجًا للمشروع لإنشاء مخرجات قابلة للتنزيل.",
+  "projects.exports.latestAspectRatio": "أحدث {{value}}",
+  "renders.reviewGrid.empty": "لم يتم العثور على مخرجات لهذه الدفعة بعد.",
+  "renders.reviewGrid.previewUnavailable": "المعاينة غير متاحة",
+  "renders.reviewGrid.canonicalExport": "المخرج المعتمد",
+  "renders.reviewGrid.winner": "الفائز",
+  "renders.reviewGrid.locked":
+    "تم قفل اختيار الفائز لأن هذه الدفعة جرى اعتمادها نهائيًا.",
+  "renders.reviewGrid.openExport": "فتح المخرج",
+  "renders.reviewGrid.notePlaceholder": "ملاحظة القرار لهذه الدفعة",
+  "renders.reviewGrid.saving": "جارٍ الحفظ…",
+  "renders.reviewGrid.saveWinnerNote": "حفظ ملاحظة الفائز",
+  "renders.reviewGrid.selectWinner": "اختيار كفائز",
+  "renders.reviewSummary.eyebrow": "مراجعة الدفعة",
+  "renders.reviewSummary.title": "قارن المخرجات واختر الفائز",
+  "renders.reviewSummary.description":
+    "راجع جميع مخرجات هذه الدفعة المنضبطة جنبًا إلى جنب، واحفظ ملاحظة القرار، وحدد مخرجًا واحدًا كفائز.",
+  "renders.reviewSummary.backToProject": "العودة إلى المشروع",
+  "renders.reviewSummary.project": "المشروع",
+  "renders.reviewSummary.status": "الحالة",
+  "renders.reviewSummary.preset": "الإعداد المسبق",
+  "renders.reviewSummary.outputs": "المخرجات",
+  "renders.reviewSummary.reviewed": "تمت المراجعة",
+  "renders.reviewSummary.currentWinner": "الفائز الحالي",
+  "renders.reviewSummary.noWinner": "لم يتم اختيار فائز بعد",
+  "renders.reviewSummary.canonicalExport": "المخرج المعتمد",
+  "renders.reviewSummary.notFinalized": "لم يُعتمد نهائيًا",
+  "renders.reviewSummary.approved": "مقبول",
+  "renders.reviewSummary.rejected": "مرفوض",
+  "renders.reviewSummary.pendingLinks": "روابط معلقة",
+  "renders.reviewSummary.decisionNote": "ملاحظة القرار",
+  "renders.reviewSummary.noDecisionNote": "لا توجد ملاحظة قرار بعد.",
+  "renders.reviewSummary.finalDecision": "القرار النهائي",
+  "renders.reviewSummary.notFinalizedNote": "لم تُعتمد الدفعة نهائيًا بعد.",
+  "renders.reviewSummary.finalized": "اعتمدت {{value}}",
+  "renders.reviewSummary.closedLinks": "الروابط المغلقة {{count}}",
+  "renders.batchPanel.eyebrow": "دفعة التنويعات",
+  "renders.batchPanel.title": "تشغيل إخراج A/B منضبط",
+  "renders.batchPanel.description":
+    "ولّد عدة تنويعات منضبطة من المفهوم المحدد ضمن تشغيل إخراج واحد معتمد.",
+  "renders.batchPanel.selectedConcept": "المفهوم المحدد",
+  "renders.batchPanel.selectConceptFirst": "اختر مفهومًا أولًا",
+  "renders.batchPanel.platformPreset": "الإعداد المسبق للمنصة",
+  "renders.batchPanel.aspectRatios": "نِسَب الأبعاد",
+  "renders.batchPanel.controlledVariants": "التنويعات المنضبطة",
+  "renders.batchPanel.variant.default": "الافتراضي",
+  "renders.batchPanel.variant.captionHeavy": "تركيز أعلى على النص",
+  "renders.batchPanel.variant.ctaHeavy": "تركيز أعلى على الدعوة للإجراء",
+  "renders.batchPanel.starting": "جارٍ بدء الدفعة…",
+  "renders.batchPanel.startAction": "بدء دفعة التنويعات",
+  "renders.batchPanel.empty": "لا توجد دفعات إخراج بعد.",
+  "renders.batchPanel.winnerSelected": "تم اختيار الفائز",
+  "renders.batchPanel.canonicalLocked": "تم قفل المخرج المعتمد",
+  "renders.batchPanel.exportsCount": "المخرجات {{count}}",
+  "renders.batchPanel.finalized": "اعتمدت {{value}}",
+  "renders.batchPanel.openReview": "فتح المراجعة",
+  "renders.links.eyebrow": "المراجعون الخارجيون",
+  "renders.links.title": "روابط مراجعة العميل",
+  "renders.links.description":
+    "ادعُ العملاء أو أصحاب المصلحة لمراجعة هذه الدفعة عبر رابط عام يتيح القبول أو الرفض أو التعليق.",
+  "renders.links.reviewerName": "اسم المراجع",
+  "renders.links.reviewerEmail": "بريد المراجع الإلكتروني",
+  "renders.links.reviewerRole": "دور المراجع",
+  "renders.links.message": "الرسالة",
+  "renders.links.client": "عميل",
+  "renders.links.stakeholder": "صاحب مصلحة",
+  "renders.links.internalReviewer": "مراجع داخلي",
+  "renders.links.messageDefault":
+    "يرجى مراجعة مخرجات الدفعة وترك قرارك.",
+  "renders.links.creating": "جارٍ إنشاء الرابط…",
+  "renders.links.create": "إنشاء رابط مراجعة",
+  "renders.links.finalizedFrozen":
+    "هذه الدفعة معتمدة نهائيًا. تم تجميد المراجعة الخارجية ولم يعد بالإمكان إنشاء روابط مراجعة جديدة.",
+  "renders.links.empty": "لا توجد روابط مراجعة خارجية بعد.",
+  "renders.links.noEmail": "لم يتم توفير بريد إلكتروني",
+  "renders.links.created": "أُنشئ {{value}}",
+  "renders.links.responded": "تم الرد {{value}}",
+  "renders.links.open": "فتح رابط المراجعة",
+  "renders.links.revoking": "جارٍ الإلغاء…",
+  "renders.links.revoke": "إلغاء الرابط",
+  "renders.commentsPanel.eyebrow": "نشاط المراجعة",
+  "renders.commentsPanel.title": "التعليقات والقرارات الخارجية",
+  "renders.commentsPanel.empty": "لا يوجد نشاط مراجعة خارجي بعد.",
+  "renders.commentsPanel.batchWide": "على مستوى الدفعة",
+  "renders.commentsPanel.unknownExport": "مخرج غير معروف",
+  "renders.finalize.eyebrow": "القرار النهائي",
+  "renders.finalize.lockedTitle": "تم قفل المخرج المعتمد",
+  "renders.finalize.lockedDescription":
+    "هذه الدفعة معتمدة نهائيًا. جُمّدت المراجعة الخارجية وأصبح المخرج المعتمد هو الأصل المستخدم في النشر العام مستقبلًا.",
+  "renders.finalize.finalizedExport": "المخرج المعتمد نهائيًا",
+  "renders.finalize.unknownExport": "مخرج غير معروف",
+  "renders.finalize.finalizedAt": "تم الاعتماد في",
+  "renders.finalize.reviewState": "حالة المراجعة",
+  "renders.finalize.locked": "مقفلة",
+  "renders.finalize.note": "ملاحظة الاعتماد النهائي",
+  "renders.finalize.noNote": "لم تتم إضافة ملاحظة اعتماد نهائي.",
+  "renders.finalize.openCanonical": "فتح المخرج المعتمد",
+  "renders.finalize.title": "قفل الفائز الذي تمت مراجعته",
+  "renders.finalize.description":
+    "اعتماد هذه الدفعة نهائيًا يجمّد المراجعة العامة ويضع المخرج الفائز باعتباره الأصل المعتمد للحملات والمعرض.",
+  "renders.finalize.selectedWinner": "الفائز المحدد",
+  "renders.finalize.chooseWinnerFirst": "اختر فائزًا أولًا",
+  "renders.finalize.placeholder":
+    "سبب اعتبار هذا المخرج القرار المعتمد النهائي",
+  "renders.finalize.pending": "جارٍ الاعتماد النهائي…",
+  "renders.finalize.action": "اعتماد المخرج المعتمد نهائيًا",
+  "delivery.followUp.none": "لا توجد متابعة من المالك",
+  "delivery.followUp.needs_follow_up": "تحتاج إلى متابعة",
+  "delivery.followUp.reminder_scheduled": "تمت جدولة التذكير",
+  "delivery.followUp.waiting_on_client": "بانتظار العميل",
+  "delivery.followUp.resolved": "تم الحل",
+  "delivery.reminderBucket.none": "لا يوجد تاريخ تذكير",
+  "delivery.reminderBucket.overdue": "متأخر",
+  "delivery.reminderBucket.due_today": "مستحق اليوم",
+  "delivery.reminderBucket.upcoming": "قادم",
+  "delivery.reminderSupportFilter.all": "كل الحالات الحديثة",
+  "delivery.reminderSupportFilter.checkpoint_mismatch": "اختلافات نقاط التحقق",
+  "delivery.reminderSupportFilter.workspace_missing": "مساحات مفقودة",
+  "delivery.reminderSupportFilter.overdue": "تذكيرات متأخرة",
+  "delivery.supportActivityFilter.all": "كل أحداث الدعم",
+  "delivery.supportActivityFilter.reminder_repairs": "إصلاحات التذكير",
+  "delivery.supportActivityFilter.failed_reminder_repairs":
+    "إصلاحات التذكير الفاشلة",
+  "delivery.supportActivityFilter.support_handoff_notes":
+    "ملاحظات تسليم الدعم",
+  "delivery.mismatch.filter.all": "كل مراحل دورة الاختلاف",
+  "delivery.mismatch.filter.unresolved": "اختلافات غير محلولة",
+  "delivery.mismatch.filter.resolved": "اختلافات محلولة",
+  "delivery.mismatch.filter.failed_reopen_attempts":
+    "محاولات إعادة فتح فاشلة",
+  "delivery.page.eyebrow": "التسليم",
+  "delivery.page.title": "مساحات تسليم العملاء المعتمدة نهائيًا",
+  "delivery.page.description":
+    "صفحات التسليم متاحة فقط للمخرجات المعتمدة نهائيًا بوصفها الأصول المرجعية.",
+  "delivery.page.focusedReminderVisible":
+    "تم تمييز سياق اختلاف التذكير داخل نموذج المتابعة الخاص بمساحة العمل أدناه.",
+  "delivery.page.focusedReminderHidden":
+    "مساحة العمل المرتبطة باختلاف التذكير غير ظاهرة ضمن فلاتر التسليم الحالية.",
+  "delivery.page.focusedWorkspaceVisible":
+    "تم تمييز مساحة العمل المفتوحة من دعم التذكير داخل قائمة مساحات التسليم أدناه.",
+  "delivery.page.focusedWorkspaceHidden":
+    "مساحة العمل المفتوحة من دعم التذكير غير ظاهرة ضمن فلاتر التسليم الحالية.",
+  "delivery.page.emptyLifecycle":
+    "لا يوجد نشاط لمساحات العمل يطابق فلتر دورة اختلافات التذكير الحالي ضمن نطاق دعم التسليم الحالي.",
+  "delivery.page.emptySupportAll":
+    "لا يظهر أي نشاط لمساحات العمل صادر عن فريق الدعم ضمن فلاتر التسليم الحالية.",
+  "delivery.page.emptySupportFiltered":
+    "لا يوجد نشاط لمساحات العمل يطابق فلتر نشاط الدعم الحالي ضمن فلاتر التسليم الحالية.",
+  "delivery.dashboardSummary.eyebrow": "مؤشرات التسليم",
+  "delivery.dashboardSummary.title": "نظرة عامة على التسليم من جانب المالك",
+  "delivery.dashboardSummary.description":
+    "مقاييس تسليم ثابتة مشتقة من أحداث نشاط مساحات العمل عبر {{count}} مساحة عمل.",
+  "delivery.dashboardSummary.activeWorkspaces": "مساحات العمل النشطة",
+  "delivery.dashboardSummary.acknowledged": "تم الإقرار",
+  "delivery.dashboardSummary.needsFollowUp": "تحتاج إلى متابعة",
+  "delivery.dashboardSummary.totalDownloads": "إجمالي التنزيلات",
+  "delivery.overdue.eyebrow": "تذكيرات متأخرة",
+  "delivery.overdue.title": "متابعة التسليم التي تتطلب اهتمامًا فوريًا",
+  "delivery.overdue.description":
+    "مساحات العمل التي جرى جدولة تذكير لها وتجاوز تاريخ متابعتها بالفعل.",
+  "delivery.overdue.count": "{{count}} متأخر",
+  "delivery.overdue.empty": "لا توجد متابعة تسليم متأخرة حاليًا.",
+  "delivery.overdue.nextOwnerContext": "سياق الإجراء التالي للمالك",
+  "delivery.overdue.due": "الاستحقاق {{value}}",
+  "delivery.overdue.latestActivity": "آخر نشاط {{value}}",
+  "delivery.overdue.followUpUpdated": "تم تحديث المتابعة {{value}}",
+  "delivery.overdue.openCanonical": "فتح المخرج المرجعي",
+  "delivery.overdue.openDelivery": "فتح صفحة التسليم",
+  "delivery.queue.eyebrow": "قائمة المتابعة",
+  "delivery.queue.title": "متابعة التسليم غير المحسومة",
+  "delivery.queue.description":
+    "مساحات التسليم النشطة التي ما زالت تحتاج إلى انتباه المالك، مرتبة حسب أولوية التذكير ثم أحدث نشاط للعميل.",
+  "delivery.queue.count": "{{count}} في القائمة",
+  "delivery.queue.overdue": "متأخر {{count}}",
+  "delivery.queue.dueToday": "مستحق اليوم {{count}}",
+  "delivery.queue.upcoming": "قادم {{count}}",
+  "delivery.queue.empty": "لا توجد متابعة تسليم غير محسومة حاليًا.",
+  "delivery.queue.nextOwnerContext": "سياق الإجراء التالي للمالك",
+  "delivery.queue.latestActivity": "آخر نشاط {{value}}",
+  "delivery.queue.viewed": "آخر مشاهدة {{value}}",
+  "delivery.queue.downloads": "التنزيلات {{count}}",
+  "delivery.queue.followUpUpdated": "تم تحديث المتابعة {{value}}",
+  "delivery.queue.reminderDue": "استحقاق التذكير {{value}}",
+  "delivery.queue.openCanonical": "فتح المخرج المرجعي",
+  "delivery.queue.openDelivery": "فتح صفحة التسليم",
+  "delivery.support.eyebrow": "عرض الدعم الداخلي",
+  "delivery.support.title": "أحدث إشعارات تذكير التسليم",
+  "delivery.support.description":
+    "قارن آخر إشعار تذكير بالحالة الحالية لنقطة التحقق في مساحة العمل.",
+  "delivery.support.shown": "{{count}} معروض",
+  "delivery.support.totalRecent": "{{count}} إجمالي حديث",
+  "delivery.support.inSync": "{{count}} متطابق",
+  "delivery.support.resolved": "{{count}} محلول",
+  "delivery.support.mismatch": "{{count}} اختلاف",
+  "delivery.support.missingWorkspace": "{{count}} مساحة مفقودة",
+  "delivery.support.showingAll": "يتم عرض جميع إشعارات التذكير الحديثة.",
+  "delivery.support.showingOnly": "يتم عرض {{value}} فقط.",
+  "delivery.support.noRecent": "لا توجد إشعارات تذكير تسليم حديثة بعد.",
+  "delivery.support.noMatch":
+    "لا توجد إشعارات تذكير تطابق الفلتر الحالي: {{value}}.",
+  "delivery.support.notificationCard": "إشعار التذكير",
+  "delivery.support.currentCheckpointCard": "نقطة التحقق الحالية لمساحة العمل",
+  "delivery.support.kind": "النوع",
+  "delivery.support.reminderDueOn": "موعد استحقاق التذكير",
+  "delivery.support.workspaceId": "معرّف مساحة العمل",
+  "delivery.support.openWorkspace": "فتح مساحة العمل في لوحة التسليم",
+  "delivery.support.openFollowUp": "فتح نموذج المتابعة مع سياق التذكير",
+  "delivery.support.followUpDueOn": "موعد استحقاق المتابعة",
+  "delivery.support.lastNotificationBucket": "آخر فئة إشعار",
+  "delivery.support.lastNotificationDate": "تاريخ آخر إشعار",
+  "delivery.support.workspaceNotFound":
+    "تعذر العثور على مساحة العمل المشار إليها في هذا الإشعار ضمن قائمة مساحات التسليم الحالية.",
+  "delivery.support.checkpointState.inSync": "نقطة التحقق متطابقة",
+  "delivery.support.checkpointState.resolved": "تم حل الاختلاف",
+  "delivery.support.checkpointState.mismatch": "اختلاف في نقطة التحقق",
+  "delivery.support.checkpointState.workspaceMissing":
+    "مساحة العمل مفقودة",
+  "delivery.supportActivity.title": "نشاط مساحات العمل الصادر عن الدعم",
+  "delivery.supportActivity.description":
+    "صفِّ الجداول الزمنية لمساحات العمل بحسب إصلاحات التذكير أو إصلاحات التذكير الفاشلة أو ملاحظات تسليم الدعم.",
+  "delivery.supportActivity.count":
+    "{{count}} حدث دعم ضمن نطاق اللوحة الحالي",
+  "delivery.supportOps.title": "لقطة لعمليات الدعم",
+  "delivery.supportOps.description":
+    "تعكس الأعداد أدناه فلاتر التسليم الحالية وفلتر نشاط الدعم النشط:",
+  "delivery.supportOps.visibleWorkspaces": "{{count}} مساحة عمل ظاهرة",
+  "delivery.supportOps.visibleScope.title": "نطاق الدعم الظاهر",
+  "delivery.supportOps.visibleScope.description":
+    "مساحات العمل الظاهرة حاليًا ضمن نطاق نشاط الدعم النشط.",
+  "delivery.supportOps.failedRepairs.title": "إصلاحات تذكير فاشلة",
+  "delivery.supportOps.failedRepairs.description":
+    "مساحات العمل الظاهرة التي تحتوي على حدث واحد على الأقل لإصلاح تذكير فاشل.",
+  "delivery.supportOps.handoffNotes.title": "ملاحظات تسليم الدعم",
+  "delivery.supportOps.handoffNotes.description":
+    "مساحات العمل الظاهرة التي تحتوي على ملاحظة تسليم دعم حديثة واحدة على الأقل.",
+  "delivery.supportOps.unresolved.title": "اختلافات غير محلولة",
+  "delivery.supportOps.unresolved.description":
+    "مساحات العمل الظاهرة التي ما زالت تحتوي على اختلافات غير محلولة في نقاط تحقق التذكير.",
+  "delivery.mismatch.title": "دورة اختلافات التذكير",
+  "delivery.mismatch.description":
+    "تعكس الأعداد أدناه نطاق التسليم الحالي وفلتر نشاط الدعم النشط:",
+  "delivery.mismatch.visibleWorkspaces": "{{count}} مساحة عمل ظاهرة",
+  "delivery.mismatch.unresolved.title": "اختلافات غير محلولة",
+  "delivery.mismatch.unresolved.description":
+    "سجلات دعم التذكير الظاهرة التي ما زالت تُعامل كاختلافات غير محلولة.",
+  "delivery.mismatch.resolved.title": "اختلافات محلولة",
+  "delivery.mismatch.resolved.description":
+    "سجلات دعم التذكير الظاهرة التي تم تعليمها بالفعل على أنها محلولة.",
+  "delivery.mismatch.reopened.title": "اختلافات أعيد فتحها",
+  "delivery.mismatch.reopened.description":
+    "مدخلات دورة إعادة فتح الاختلاف الظاهرة التي نجحت.",
+  "delivery.mismatch.failedReopen.title": "محاولات إعادة فتح فاشلة",
+  "delivery.mismatch.failedReopen.description":
+    "مدخلات دورة إعادة فتح الاختلاف الظاهرة التي فشلت.",
+  "delivery.workspaceList.controlsEyebrow": "عناصر التحكم العامة",
+  "delivery.workspaceList.controlsDescription":
+    "راجع مساحات التسليم بحسب الحالة الحالية أو نشاط الاستلام أو حداثة آخر نشاط.",
+  "delivery.workspaceList.status.all": "الكل",
+  "delivery.workspaceList.status.active": "نشطة",
+  "delivery.workspaceList.status.archived": "مؤرشفة",
+  "delivery.workspaceList.activity.all": "كل النشاط",
+  "delivery.workspaceList.activity.needsFollowUp": "تحتاج إلى متابعة",
+  "delivery.workspaceList.activity.acknowledged": "تم الإقرار",
+  "delivery.workspaceList.activity.viewedOnly": "تمت المشاهدة فقط",
+  "delivery.workspaceList.activity.downloaded": "تم التنزيل",
+  "delivery.workspaceList.sort.latestActivity": "أحدث نشاط",
+  "delivery.workspaceList.sort.newest": "الأحدث إنشاءً",
+  "delivery.workspaceList.showingSummary":
+    "يتم عرض {{shown}} من أصل {{total}} مساحة تسليم.",
+  "delivery.workspaceList.showMore": "إظهار {{count}} إضافية",
+  "delivery.workspaceList.showAll": "إظهار الكل",
+  "delivery.workspaceList.collapse": "طيّ القائمة",
+  "delivery.workspaceList.empty":
+    "لا توجد مساحات تسليم تطابق الفلاتر الحالية.",
+  "delivery.workspaceList.focusedFromSupport": "محددة من دعم التذكير",
+  "delivery.workspaceList.activityExcerptLabel": "ملخص النشاط",
+  "delivery.workspaceList.activityExcerpt.acknowledgedBy":
+    "تم الإقرار بواسطة {{value}}.",
+  "delivery.workspaceList.activityExcerpt.acknowledged":
+    "تم الإقرار من المستلم.",
+  "delivery.workspaceList.activityExcerpt.downloadedOnce":
+    "تم التنزيل مرة واحدة. بانتظار الإقرار.",
+  "delivery.workspaceList.activityExcerpt.downloadedMany":
+    "تم التنزيل {{count}} مرات. بانتظار الإقرار.",
+  "delivery.workspaceList.activityExcerpt.viewed":
+    "تمت المشاهدة من المستلم. بانتظار الإقرار.",
+  "delivery.workspaceList.activityExcerpt.delivered":
+    "تم التسليم. بانتظار أول نشاط من المستلم.",
+  "delivery.workspaceList.activityExcerpt.none":
+    "لا يوجد نشاط من المستلم بعد.",
+  "delivery.workspaceList.recipientHint":
+    "تم رصد نشاط من المستلم لكن هذه المساحة لم تُقَر بعد. أضف حالة متابعة أو ملاحظة لتتبع الإجراء التالي من المالك.",
+  "delivery.workspaceList.followUpFocused":
+    "تم تركيز نموذج المتابعة من اختلاف التذكير",
+  "delivery.workspaceList.ownerFollowUp": "متابعة المالك",
+  "delivery.workspaceList.followUpState": "حالة المتابعة",
+  "delivery.workspaceList.reminderDate": "تاريخ التذكير",
+  "delivery.workspaceList.ownerNote": "ملاحظة المالك",
+  "delivery.workspaceList.ownerNotePlaceholder":
+    "أضف الإجراء التالي للمالك أو ملاحظة التواصل أو سياق التذكير",
+  "delivery.workspaceList.saveFollowUp": "حفظ المتابعة",
+  "delivery.workspaceList.saving": "جارٍ الحفظ…",
+  "delivery.workspaceList.updated": "تم التحديث {{value}}",
+  "delivery.workspaceList.due": "الاستحقاق {{value}}",
+  "delivery.workspaceList.delivered": "تم التسليم",
+  "delivery.workspaceList.viewed": "تمت المشاهدة",
+  "delivery.workspaceList.downloaded": "تم التنزيل",
+  "delivery.workspaceList.last": "آخر مرة {{value}}",
+  "delivery.workspaceList.acknowledged": "تم الإقرار",
+  "delivery.workspaceList.noRecipientLabel": "لا توجد تسمية للمستلم",
+  "delivery.workspaceList.created":
+    "تم الإنشاء {{created}} · آخر نشاط {{latest}}",
+  "delivery.workspaceList.openCanonical": "فتح المخرج المرجعي",
+  "delivery.workspaceList.openDelivery": "فتح صفحة التسليم",
+  "delivery.followUpContext.title": "سياق التذكير",
+  "delivery.followUpContext.reminderDueOn": "موعد استحقاق التذكير",
+  "delivery.followUpContext.notificationId": "معرّف الإشعار",
+  "delivery.followUpContext.formDescription":
+    "تم تركيز نموذج المتابعة هذا من صف اختلاف نقطة تحقق التذكير. يمكنك إصلاح جدولة التذكير هنا من دون مغادرة عرض مساحة العمل الحالي.",
+  "delivery.followUpContext.resolvedBanner":
+    "هذا الاختلاف في التذكير مُعلَّم حاليًا على أنه محلول ضمن سياق هذا الإشعار.",
+  "delivery.followUpContext.reopenNoteLabel":
+    "ملاحظة اختيارية لإعادة فتح الاختلاف",
+  "delivery.followUpContext.reopenNotePlaceholder":
+    "سياق اختياري يوضح سبب إعادة فتح الاختلاف الذي تم حله.",
+  "delivery.followUpContext.reopenAction": "إعادة فتح الاختلاف",
+  "delivery.followUpContext.resolutionNoteLabel":
+    "ملاحظة اختيارية لحل الاختلاف",
+  "delivery.followUpContext.resolutionNotePlaceholder":
+    "سياق اختياري يوضح سبب اعتبار هذا الاختلاف محلولًا.",
+  "delivery.followUpContext.resolveAction": "تعليم الاختلاف على أنه محلول",
+  "delivery.followUpContext.rescheduleTomorrow": "إعادة الجدولة للغد",
+  "delivery.followUpContext.clearReasonLabel": "سبب إلغاء جدولة التذكير",
+  "delivery.followUpContext.clearReasonPlaceholder":
+    "اشرح سبب إلغاء جدولة التذكير.",
+  "delivery.followUpContext.clearReasonHelp":
+    "هذا السبب مطلوب وسيُكتب ضمن سجل تدقيق نشاط التسليم.",
+  "delivery.followUpContext.clearAction": "إلغاء جدولة التذكير",
+  "delivery.repairOutcome.action.rescheduleTomorrow":
+    "أعيدت الجدولة للغد",
+  "delivery.repairOutcome.action.clearReminderScheduling":
+    "ألغيت جدولة التذكير",
+  "delivery.repairOutcome.success":
+    "{{action}} لمساحة العمل {{workspace}}.",
+  "delivery.repairOutcome.successWithNote":
+    "{{action}} لمساحة العمل {{workspace}}. تم حفظ ملاحظة تسليم الدعم في الجدول الزمني للنشاط.",
+  "delivery.repairOutcome.error.reasonRequired":
+    "إلغاء جدولة التذكير يتطلب سببًا صريحًا من المشغّل.",
+  "delivery.repairOutcome.error.reasonTooLong":
+    "يجب ألا يتجاوز سبب الإلغاء {{count}} حرفًا.",
+  "delivery.repairOutcome.error.handoffNoteTooLong":
+    "يجب ألا تتجاوز ملاحظة تسليم الدعم {{count}} حرفًا.",
+  "delivery.repairOutcome.error.generic":
+    "تعذر إكمال {{action}} لمساحة العمل {{workspace}}.",
+  "delivery.focusedStatus.title": "حالة مساحة العمل المركّزة",
+  "delivery.focusedStatus.description":
+    "لقطة للحالة الحالية لمساحة العمل المثبتة في عرض التحقيق هذا.",
+  "delivery.focusedStatus.followUpStatus": "حالة المتابعة",
+  "delivery.focusedStatus.followUpDueDate": "موعد استحقاق المتابعة",
+  "delivery.focusedStatus.lastCheckpoint": "آخر نقطة تحقق للتذكير",
+  "delivery.focusedStatus.latestSupportEvent": "أحدث حدث دعم",
+  "delivery.focusedStatus.noReminderCheckpoint":
+    "لا توجد نقطة تحقق للتذكير",
+  "delivery.focusedStatus.unknownCheckpoint": "نقطة تحقق غير معروفة",
+  "delivery.focusedStatus.checkpointWithDate": "{{bucket}} في {{date}}",
+  "delivery.focusedStatus.checkpointDateOnly": "تاريخ نقطة التحقق {{date}}",
+  "delivery.focusedStatus.resolvedReminderMismatch":
+    "تم حل اختلاف التذكير",
+  "delivery.focusedStatus.supportHandoffNote": "ملاحظة تسليم دعم",
+  "delivery.focusedStatus.failedReminderRepair": "إصلاح تذكير فاشل",
+  "delivery.focusedStatus.reminderRepair": "إصلاح تذكير",
+  "delivery.focusedStatus.noSupportEvent": "لا يوجد حدث دعم",
+  "delivery.investigationView.title": "عرض التحقيق",
+  "delivery.investigationView.description":
+    "احفظ أو شارك حالة تحقيق الدعم هذه كما هي عبر رابط واحد للوحة التسليم.",
+  "delivery.investigationView.open": "فتح العرض القابل للمشاركة",
+  "delivery.investigationView.copy": "نسخ الرابط القابل للمشاركة",
+  "delivery.investigationView.copied": "تم نسخ الرابط",
+  "delivery.investigationView.clear": "إزالة التثبيت الحالي",
+  "delivery.investigationView.empty":
+    "لا يوجد سياق تحقيق مثبت بعد. طبّق فلاتر الدعم أو ركّز على مساحة عمل لتوليد عرض تحقيق قابل للمشاركة.",
+  "delivery.investigationView.summary.supportActivity":
+    "نشاط الدعم: {{value}}",
+  "delivery.investigationView.summary.mismatchLifecycle":
+    "دورة الاختلاف: {{value}}",
+  "delivery.investigationView.summary.reminderSupport":
+    "دعم التذكير: {{value}}",
+  "delivery.investigationView.summary.focusedWorkspace":
+    "مساحة العمل المركزة: {{value}}",
+  "delivery.investigationView.summary.focusedFollowUpForm":
+    "نموذج المتابعة المركّز",
+  "delivery.investigationView.summary.focusedReminder":
+    "التذكير المركّز: {{value}}",
+  "delivery.investigationContext.eyebrow": "سبب أهمية هذا العرض",
+  "delivery.investigationContext.bucket.dueToday": "مستحق اليوم",
+  "delivery.investigationContext.bucket.overdue": "متأخر",
+  "delivery.investigationContext.bucket.unspecified": "فئة غير محددة",
+  "delivery.investigationContext.bucketDescription.dueToday":
+    "استحقاق اليوم",
+  "delivery.investigationContext.bucketDescription.overdue": "التأخير",
+  "delivery.investigationContext.bucketDescription.unspecified":
+    "سياق غير محدد",
+  "delivery.investigationContext.noRecordedCheckpoint":
+    "لا توجد نقطة تحقق تذكير مسجلة",
+  "delivery.investigationContext.checkpoint.withDate":
+    "{{bucket}} في {{date}}",
+  "delivery.investigationContext.checkpoint.withNoDate":
+    "{{bucket}} من دون تاريخ لنقطة التحقق",
+  "delivery.investigationContext.checkpoint.unknownBucket":
+    "فئة غير معروفة في {{date}}",
+  "delivery.investigationContext.followUp.unknown": "غير معروف",
+  "delivery.investigationContext.followUp.withDate":
+    "{{status}} في {{date}}",
+  "delivery.investigationContext.failedRepair.reasonRequired":
+    "لأن إلغاء جدولة التذكير تطلب سببًا صريحًا من المشغّل",
+  "delivery.investigationContext.failedRepair.reasonTooLong":
+    "لأن سبب الإلغاء تجاوز الطول المسموح",
+  "delivery.investigationContext.failedRepair.disallowedWording":
+    "لأن الصياغة المرسلة لم تكن مسموحة",
+  "delivery.investigationContext.failedRepair.unchanged":
+    "وأبقت حالة المتابعة دون تغيير",
+  "delivery.investigationContext.failedRepair.badge":
+    "إصلاح تذكير فاشل",
+  "delivery.investigationContext.failedRepair.title":
+    "سبب أهمية هذا العرض: {{workspace}} تحتوي على إصلاح تذكير فاشل",
+  "delivery.investigationContext.failedRepair.description":
+    "آخر محاولة إصلاح من فريق الدعم لمساحة العمل {{workspace}} حاولت {{action}} من سياق تذكير {{bucket}} {{reason}}. حالة المتابعة الحالية هي {{status}}.",
+  "delivery.investigationContext.resolved.badge": "اختلاف محلول",
+  "delivery.investigationContext.resolved.title":
+    "سبب أهمية هذا العرض: {{workspace}} تحتوي على اختلاف تذكير محلول",
+  "delivery.investigationContext.resolved.description":
+    "تم تعليم إشعار التذكير المركّز لمساحة العمل {{workspace}} على أنه محلول من داخل عرض مساحة العمل. حالة المتابعة الحالية هي {{status}}.",
+  "delivery.investigationContext.unresolved.badge": "اختلاف غير محلول",
+  "delivery.investigationContext.unresolved.title":
+    "سبب أهمية هذا العرض: ما زال لدى {{workspace}} اختلاف تذكير غير محلول",
+  "delivery.investigationContext.unresolved.description":
+    "ما زال إشعار التذكير المركّز لمساحة العمل {{workspace}} غير متطابق مع نقطة التحقق الحالية للمساحة. أُرسل التذكير ضمن سياق {{bucket}}، لكن مساحة العمل تعرض الآن {{checkpoint}}. حالة المتابعة الحالية هي {{status}}.",
+  "delivery.investigationContext.notificationBadge": "الإشعار {{id}}",
+  "delivery.investigationStale.eyebrow": "تحذير سياق التحقيق",
+  "delivery.investigationStale.keepFilters":
+    "الإبقاء على الفلاتر وإزالة التركيز",
+  "delivery.investigationStale.reset": "إعادة الضبط إلى نطاق التسليم الأساسي",
+  "delivery.investigationStale.followUp.badge":
+    "سياق متابعة قديم",
+  "delivery.investigationStale.followUp.title":
+    "سياق المتابعة المركّز خارج النطاق الظاهر الحالي للدعم",
+  "delivery.investigationStale.followUp.description":
+    "لا يزال عرض التحقيق مثبتًا على نموذج متابعة مركّز، لكن تلك المساحة لم تعد ظاهرة في نطاق الدعم الحالي. أبقِ الفلاتر الحالية وأزل التركيز القديم، أو أعد الضبط إلى نطاق التسليم الأساسي.",
+  "delivery.investigationStale.reminder.badge":
+    "سياق تذكير قديم",
+  "delivery.investigationStale.reminder.title":
+    "التذكير المركّز خارج النطاق الظاهر الحالي لدعم التذكير",
+  "delivery.investigationStale.reminder.description":
+    "لا يزال عرض التحقيق مثبتًا على إشعار تذكير، لكن ذلك التذكير لم يعد ظاهرًا ضمن نطاق دعم التذكير الحالي. يحدث هذا عادةً بعد تغيير فلاتر دعم التذكير أو فلاتر نشاط الدعم.",
+  "delivery.investigationStale.workspace.badge":
+    "تركيز مساحة عمل قديم",
+  "delivery.investigationStale.workspace.title":
+    "مساحة العمل المركّزة خارج النطاق الظاهر الحالي لنشاط الدعم",
+  "delivery.investigationStale.workspace.description":
+    "لا يزال عرض التحقيق مثبتًا على مساحة عمل لم تعد ظاهرة ضمن نطاق نشاط الدعم الحالي. أبقِ الفلاتر الحالية وأزل التركيز القديم، أو أعد الضبط إلى نطاق التسليم الأساسي.",
+  "delivery.investigationStale.workspaceBadge":
+    "مساحة العمل {{value}}",
+  "delivery.investigationStale.missingWorkspaceBadge":
+    "تركيز مساحة العمل مفقود",
+  "delivery.investigationStale.reminderIdBadge":
+    "التذكير {{value}}",
   "auth_unconfigured": "المصادقة غير مهيأة بعد.",
   "auth_credentials_required": "البريد الإلكتروني وكلمة المرور مطلوبان.",
   "auth_sign_in_failed": "تعذر تسجيل الدخول باستخدام بيانات الاعتماد هذه.",

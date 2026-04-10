@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getServerI18n } from "@/lib/i18n/server"
 import type {
   ProjectRecord,
   ShareCampaignRecord
@@ -17,21 +18,15 @@ function statusClasses(status: ShareCampaignRecord["status"]) {
   return "border-white/10 bg-white/[0.05] text-slate-300"
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
-export function ShareCampaignList({
+export async function ShareCampaignList({
   campaigns,
   projectsById
 }: ShareCampaignListProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (campaigns.length === 0) {
     return (
       <div className="rounded-[2rem] border border-dashed border-white/10 bg-white/[0.03] p-8 text-sm text-slate-400">
-        No share campaigns yet.
+        {t("campaigns.list.empty")}
       </div>
     )
   }
@@ -56,11 +51,14 @@ export function ShareCampaignList({
                 </div>
 
                 <p className="mt-2 text-sm text-slate-300">
-                  {project?.name ?? "Unknown project"}
+                  {project?.name ?? t("campaigns.list.unknownProject")}
                 </p>
                 <p className="mt-3 text-sm leading-7 text-slate-300">{campaign.message}</p>
                 <p className="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-                  {formatTimestamp(campaign.created_at)}
+                  {formatDateTime(campaign.created_at, {
+                    dateStyle: "medium",
+                    timeStyle: "short"
+                  })}
                 </p>
               </div>
 
@@ -69,13 +67,13 @@ export function ShareCampaignList({
                   href={`/campaign/${campaign.token}`}
                   className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                 >
-                  Open public page
+                  {t("campaigns.list.openPublicPage")}
                 </Link>
                 <Link
                   href={`/dashboard/exports/${campaign.export_id}`}
                   className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                 >
-                  Open export
+                  {t("campaigns.list.openExport")}
                 </Link>
               </div>
             </div>

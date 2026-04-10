@@ -1,4 +1,5 @@
 import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 export type DeliveryReminderSupportFilter =
   | "all"
@@ -43,6 +44,24 @@ export function getDeliveryReminderSupportFilterLabel(
   }
 
   return "All recent"
+}
+
+export function getDeliveryReminderSupportFilterLabelKey(
+  filter: DeliveryReminderSupportFilter
+): AppMessageKey {
+  if (filter === "checkpoint_mismatch") {
+    return "delivery.reminderSupportFilter.checkpoint_mismatch"
+  }
+
+  if (filter === "workspace_missing") {
+    return "delivery.reminderSupportFilter.workspace_missing"
+  }
+
+  if (filter === "overdue") {
+    return "delivery.reminderSupportFilter.overdue"
+  }
+
+  return "delivery.reminderSupportFilter.all"
 }
 
 export function filterDeliveryReminderSupportRecords(

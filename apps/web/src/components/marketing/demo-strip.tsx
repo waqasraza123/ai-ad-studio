@@ -5,48 +5,44 @@ import {
   WandSparkles
 } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import { getServerI18n } from "@/lib/i18n/server"
 
-const workflowSteps = [
-  {
-    icon: ScanSearch,
-    title: "Frame the campaign brief",
-    description:
-      "Bring product inputs, offer, CTA, and visual direction into one controlled ad brief."
-  },
-  {
-    icon: WandSparkles,
-    title: "Generate viable directions",
-    description:
-      "Produce constrained concepts with hooks, scripts, and visual direction instead of open-ended creative drift."
-  },
-  {
-    icon: LayoutTemplate,
-    title: "Review before you spend",
-    description:
-      "Screen polished previews first so teams can pick a winner before final rendering."
-  },
-  {
-    icon: Clapperboard,
-    title: "Publish and hand off",
-    description:
-      "Promote the winning export into campaign, showcase, and delivery surfaces with less manual cleanup."
-  }
-]
+export async function WorkflowStrip() {
+  const { t } = await getServerI18n()
+  const workflowSteps = [
+    {
+      icon: ScanSearch,
+      title: t("marketing.workflow.steps.brief.title"),
+      description: t("marketing.workflow.steps.brief.description")
+    },
+    {
+      icon: WandSparkles,
+      title: t("marketing.workflow.steps.generate.title"),
+      description: t("marketing.workflow.steps.generate.description")
+    },
+    {
+      icon: LayoutTemplate,
+      title: t("marketing.workflow.steps.review.title"),
+      description: t("marketing.workflow.steps.review.description")
+    },
+    {
+      icon: Clapperboard,
+      title: t("marketing.workflow.steps.publish.title"),
+      description: t("marketing.workflow.steps.publish.description")
+    }
+  ]
 
-export function WorkflowStrip() {
   return (
     <section id="workflow" className="px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="grid gap-10 lg:grid-cols-[0.62fr_1.38fr] lg:items-start">
           <div className="max-w-md">
-            <p className="theme-marketing-eyebrow">Workflow</p>
+            <p className="theme-marketing-eyebrow">{t("marketing.workflow.eyebrow")}</p>
             <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
-              A professional path from brief to approved output
+              {t("marketing.workflow.title")}
             </h2>
             <p className="theme-marketing-copy mt-4">
-              The homepage should make the product shape obvious: this is a
-              constrained ad-generation system for marketing teams, not a
-              general-purpose editing canvas.
+              {t("marketing.workflow.description")}
             </p>
           </div>
 

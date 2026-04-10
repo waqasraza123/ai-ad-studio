@@ -3,6 +3,7 @@ import type {
   DeliveryFollowUpStatus,
   DeliveryReminderBucket
 } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 export function normalizeDeliveryWorkspaceFollowUpStatus(
   value: string | null | undefined
@@ -39,6 +40,28 @@ export function getDeliveryWorkspaceFollowUpLabel(
   }
 
   return "No owner follow-up"
+}
+
+export function getDeliveryWorkspaceFollowUpLabelKey(
+  status: DeliveryFollowUpStatus
+): AppMessageKey {
+  if (status === "needs_follow_up") {
+    return "delivery.followUp.needs_follow_up"
+  }
+
+  if (status === "reminder_scheduled") {
+    return "delivery.followUp.reminder_scheduled"
+  }
+
+  if (status === "waiting_on_client") {
+    return "delivery.followUp.waiting_on_client"
+  }
+
+  if (status === "resolved") {
+    return "delivery.followUp.resolved"
+  }
+
+  return "delivery.followUp.none"
 }
 
 export function getDeliveryWorkspaceFollowUpClasses(
@@ -133,6 +156,24 @@ export function getDeliveryWorkspaceReminderBucketLabel(
   }
 
   return "No reminder date"
+}
+
+export function getDeliveryWorkspaceReminderBucketLabelKey(
+  bucket: DeliveryReminderBucket
+): AppMessageKey {
+  if (bucket === "overdue") {
+    return "delivery.reminderBucket.overdue"
+  }
+
+  if (bucket === "due_today") {
+    return "delivery.reminderBucket.due_today"
+  }
+
+  if (bucket === "upcoming") {
+    return "delivery.reminderBucket.upcoming"
+  }
+
+  return "delivery.reminderBucket.none"
 }
 
 export function getDeliveryWorkspaceReminderBucketClasses(

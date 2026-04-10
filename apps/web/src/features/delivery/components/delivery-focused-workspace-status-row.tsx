@@ -1,4 +1,5 @@
 import type { DeliveryFocusedWorkspaceStatusSummary } from "@/features/delivery/lib/delivery-focused-workspace-status"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type DeliveryFocusedWorkspaceStatusRowProps = {
   summary: DeliveryFocusedWorkspaceStatusSummary
@@ -20,19 +21,20 @@ function StatusItem(input: {
   )
 }
 
-export function DeliveryFocusedWorkspaceStatusRow({
+export async function DeliveryFocusedWorkspaceStatusRow({
   summary
 }: DeliveryFocusedWorkspaceStatusRowProps) {
+  const { t } = await getServerI18n()
+
   return (
     <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-sm font-medium text-white">
-            Focused workspace status
+            {t("delivery.focusedStatus.title")}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            Current state snapshot for the workspace pinned in this investigation
-            view.
+            {t("delivery.focusedStatus.description")}
           </p>
         </div>
 
@@ -43,19 +45,19 @@ export function DeliveryFocusedWorkspaceStatusRow({
 
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
         <StatusItem
-          label="Follow-up status"
+          label={t("delivery.focusedStatus.followUpStatus")}
           value={summary.followUpStatusLabel}
         />
         <StatusItem
-          label="Follow-up due date"
+          label={t("delivery.focusedStatus.followUpDueDate")}
           value={summary.followUpDueOnLabel}
         />
         <StatusItem
-          label="Last reminder checkpoint"
+          label={t("delivery.focusedStatus.lastCheckpoint")}
           value={summary.reminderCheckpointLabel}
         />
         <StatusItem
-          label="Latest support event"
+          label={t("delivery.focusedStatus.latestSupportEvent")}
           value={summary.latestSupportEventLabel}
         />
       </div>

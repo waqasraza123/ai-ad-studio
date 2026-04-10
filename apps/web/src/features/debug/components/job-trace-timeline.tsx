@@ -1,21 +1,16 @@
 import type { JobTraceRecord } from "@/server/database/types"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type JobTraceTimelineProps = {
   traces: JobTraceRecord[]
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
-export function JobTraceTimeline({ traces }: JobTraceTimelineProps) {
+export async function JobTraceTimeline({ traces }: JobTraceTimelineProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (traces.length === 0) {
     return (
       <div className="rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.03] p-4 text-sm text-slate-400">
-        No trace entries recorded for this job yet.
+        {t("debug.jobs.traceEmpty")}
       </div>
     )
   }
@@ -34,7 +29,12 @@ export function JobTraceTimeline({ traces }: JobTraceTimelineProps) {
                 {trace.trace_type}
               </p>
             </div>
-            <p className="text-xs text-slate-400">{formatTimestamp(trace.created_at)}</p>
+            <p className="text-xs text-slate-400">
+              {formatDateTime(trace.created_at, {
+                dateStyle: "medium",
+                timeStyle: "short"
+              })}
+            </p>
           </div>
 
           <pre className="mt-4 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-200">

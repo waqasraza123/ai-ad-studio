@@ -3,30 +3,25 @@ import type { JobRecord } from "@/server/database/types"
 import { cancelJobAction } from "@/features/debug/actions/cancel-job"
 import { retryJobAction } from "@/features/debug/actions/retry-job"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
+import { getServerI18n } from "@/lib/i18n/server"
 import { JobStatusBadge } from "./job-status-badge"
 
 type JobDebugDetailProps = {
   job: JobRecord
 }
 
-function formatTimestamp(value: string | null) {
-  if (!value) {
-    return "n/a"
-  }
-
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
-export function JobDebugDetail({ job }: JobDebugDetailProps) {
+export async function JobDebugDetail({ job }: JobDebugDetailProps) {
+  const { formatDateTime, t } = await getServerI18n()
   const retryAction = retryJobAction.bind(null, job.id)
   const cancelAction = cancelJobAction.bind(null, job.id)
   const canCancel =
     job.status === "queued" ||
     job.status === "running" ||
     job.status === "waiting_provider"
+  const formatTimestamp = (value: string | null) =>
+    value
+      ? formatDateTime(value, { dateStyle: "medium", timeStyle: "short" })
+      : t("debug.jobs.detail.notAvailable")
 
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
@@ -39,7 +34,7 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
             <JobStatusBadge status={job.status} />
           </div>
           <p className="mt-3 text-sm leading-7 text-slate-400">
-            Inspect payloads, provider metadata, queue timing, errors, and use safe controls for cancellation or retry.
+            {t("debug.jobs.detail.description")}
           </p>
         </div>
 
@@ -48,7 +43,7 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
             href={`/dashboard/projects/${job.project_id}`}
             className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
           >
-            Open project
+            {t("debug.jobs.detail.openProject")}
           </Link>
 
           {canCancel ? (
@@ -58,15 +53,20 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
                 defaultValue="Cancelled from debug UI"
                 className="hidden"
               />
-              <FormSubmitButton variant="secondary" pendingLabel="Cancelling…">
-                Cancel job
+              <FormSubmitButton
+                variant="secondary"
+                pendingLabel={t("debug.jobs.detail.cancelling")}
+              >
+                {t("debug.jobs.detail.cancel")}
               </FormSubmitButton>
             </form>
           ) : null}
 
           {job.status === "failed" || job.status === "cancelled" ? (
             <form action={retryAction}>
-              <FormSubmitButton pendingLabel="Retrying…">Retry job</FormSubmitButton>
+              <FormSubmitButton pendingLabel={t("debug.jobs.detail.retrying")}>
+                {t("debug.jobs.detail.retry")}
+              </FormSubmitButton>
             </form>
           ) : null}
         </div>
@@ -74,28 +74,28 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
 
       <div className="mt-6 grid gap-4 md:grid-cols-4">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Attempts</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.attempts")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {job.attempts}/{job.max_attempts}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Started</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.started")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {formatTimestamp(job.started_at)}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Finished</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.finished")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {formatTimestamp(job.finished_at)}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Next attempt</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.nextAttempt")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {formatTimestamp(job.next_attempt_at)}
           </p>
@@ -104,40 +104,40 @@ export function JobDebugDetail({ job }: JobDebugDetailProps) {
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Cancel requested</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.cancelRequested")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {formatTimestamp(job.cancel_requested_at)}
           </p>
           <p className="mt-2 text-sm text-slate-400">
-            {job.cancel_reason ?? "n/a"}
+            {job.cancel_reason ?? t("debug.jobs.detail.notAvailable")}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Provider job id</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.providerJobId")}</p>
           <p className="mt-2 break-all text-sm font-medium text-white">
-            {job.provider_job_id ?? "n/a"}
+            {job.provider_job_id ?? t("debug.jobs.detail.notAvailable")}
           </p>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-3">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Payload</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.payload")}</p>
           <pre className="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-200">
 {JSON.stringify(job.payload, null, 2)}
           </pre>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Result</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.result")}</p>
           <pre className="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-200">
 {JSON.stringify(job.result, null, 2)}
           </pre>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Error</p>
+          <p className="text-sm text-slate-400">{t("debug.jobs.detail.error")}</p>
           <pre className="mt-3 overflow-x-auto rounded-2xl border border-white/10 bg-black/20 p-4 text-xs leading-6 text-slate-200">
 {JSON.stringify(job.error, null, 2)}
           </pre>

@@ -68,6 +68,7 @@ import { buildDeliveryInvestigationStaleContextSummary } from "@/features/delive
 import { buildDeliveryFocusedWorkspaceStatusSummary } from "@/features/delivery/lib/delivery-focused-workspace-status"
 import { normalizeDeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 import { resolveDeliveryWorkspaceVisibleCount } from "@/features/delivery/lib/delivery-workspace-list-window"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type DeliveryPageProps = {
   searchParams: Promise<{
@@ -95,6 +96,7 @@ export default async function DeliveryPage({
   searchParams
 }: DeliveryPageProps) {
   const user = await getAuthenticatedUser()
+  const { formatDate, t } = await getServerI18n()
 
   if (!user) {
     return null
@@ -250,7 +252,8 @@ export default async function DeliveryPage({
   const investigationContextSummary = buildDeliveryInvestigationContextSummary({
     focusedReminderSupportRecord,
     focusWorkspaceId: focusedInvestigationWorkspaceId,
-    overviewRecords: lifecycleScopedSupportScope.overviewRecords
+    overviewRecords: lifecycleScopedSupportScope.overviewRecords,
+    t
   })
 
   const investigationStaleContextSummary =
@@ -259,15 +262,18 @@ export default async function DeliveryPage({
       focusReminderNotificationId: focusReminderNotificationId ?? null,
       focusWorkspaceId: focusedInvestigationWorkspaceId,
       reminderSupportRecords: lifecycleScopedSupportScope.reminderSupportRecords,
-      overviewRecords: lifecycleScopedSupportScope.overviewRecords
+      overviewRecords: lifecycleScopedSupportScope.overviewRecords,
+      t
     })
 
   const focusedWorkspaceStatusSummary =
     investigationStaleContextSummary
       ? null
-      : buildDeliveryFocusedWorkspaceStatusSummary({
+        : buildDeliveryFocusedWorkspaceStatusSummary({
           focusWorkspaceId: focusedInvestigationWorkspaceId,
-          overviewRecords: lifecycleScopedSupportScope.overviewRecords
+          overviewRecords: lifecycleScopedSupportScope.overviewRecords,
+          formatDate,
+          t
         })
 
   const focusedFollowUpFormIsVisible = focusFollowUpFormWorkspaceId
@@ -305,13 +311,13 @@ export default async function DeliveryPage({
       ) : null}
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
         <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-          Delivery
+          {t("delivery.page.eyebrow")}
         </p>
         <h1 className="mt-3 text-3xl font-semibold tracking-[-0.03em] text-white">
-          Finalized client delivery workspaces
+          {t("delivery.page.title")}
         </h1>
         <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-          Delivery pages are only available for finalized canonical exports.
+          {t("delivery.page.description")}
         </p>
       </section>
 
@@ -416,8 +422,8 @@ export default async function DeliveryPage({
           }`}
         >
           {focusedFollowUpFormIsVisible
-            ? "Reminder mismatch context is highlighted inside the workspace follow-up form below."
-            : "The reminder mismatch workspace is not visible under the current delivery filters."}
+            ? t("delivery.page.focusedReminderVisible")
+            : t("delivery.page.focusedReminderHidden")}
         </div>
       ) : focusWorkspaceId ? (
         <div
@@ -428,18 +434,18 @@ export default async function DeliveryPage({
           }`}
         >
           {focusedWorkspaceIsVisible
-            ? "The workspace opened from reminder support is highlighted in the delivery workspace list below."
-            : "The workspace opened from reminder support is not visible under the current delivery filters."}
+            ? t("delivery.page.focusedWorkspaceVisible")
+            : t("delivery.page.focusedWorkspaceHidden")}
         </div>
       ) : null}
 
       {lifecycleScopedSupportScope.overviewRecords.length === 0 ? (
         <div className="rounded-[1.25rem] border border-dashed border-white/10 bg-white/[0.03] px-4 py-6 text-sm text-slate-400">
           {activeReminderMismatchLifecycleFilter !== "all"
-            ? "No workspace activity matches the current reminder mismatch lifecycle filter under the current delivery support scope."
+            ? t("delivery.page.emptyLifecycle")
             : activeSupportActivityFilter === "all"
-              ? "No support-originated workspace activity is visible under the current delivery filters."
-              : "No workspace activity matches the current support activity filter under the current delivery filters."}
+              ? t("delivery.page.emptySupportAll")
+              : t("delivery.page.emptySupportFiltered")}
         </div>
       ) : null}
 

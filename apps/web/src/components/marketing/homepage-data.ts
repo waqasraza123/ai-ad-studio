@@ -3,6 +3,8 @@ import type {
   BillingPlanRecord,
   ShowcaseItemRecord
 } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
+import type { TranslationValues } from "@/lib/i18n/translator"
 
 type ShowcaseGalleryItem = ShowcaseItemRecord & {
   aspect_ratio?: string | null
@@ -31,28 +33,43 @@ export type HomepagePricingPlan = {
   rendersLabel: string
 }
 
-function formatPriceLabel(monthlyPriceUsd: number) {
-  return monthlyPriceUsd === 0 ? "Free" : `$${monthlyPriceUsd}/mo`
+type HomepageI18n = {
+  formatCurrency: (
+    value: number,
+    currency?: string,
+    options?: Intl.NumberFormatOptions
+  ) => string
+  t: (key: AppMessageKey, values?: TranslationValues) => string
 }
 
-function buildPublishingLabel(plan: BillingPlanRecord) {
+function formatPriceLabel(monthlyPriceUsd: number, i18n: HomepageI18n) {
+  if (monthlyPriceUsd === 0) {
+    return i18n.t("marketing.pricing.free")
+  }
+
+  return `${i18n.formatCurrency(monthlyPriceUsd, "USD", {
+    maximumFractionDigits: 0
+  })}${i18n.t("marketing.pricing.perMonth")}`
+}
+
+function buildPublishingLabel(plan: BillingPlanRecord, i18n: HomepageI18n) {
   if (
     plan.allow_public_showcase &&
     plan.allow_share_campaigns &&
     plan.allow_delivery_workspaces
   ) {
-    return "Showcase, campaign, and delivery publishing"
+    return i18n.t("marketing.pricing.publishing.full")
   }
 
   if (plan.allow_delivery_workspaces) {
-    return "Delivery publishing included"
+    return i18n.t("marketing.pricing.publishing.delivery")
   }
 
   if (plan.allow_public_showcase || plan.allow_share_campaigns) {
-    return "Limited public publishing"
+    return i18n.t("marketing.pricing.publishing.limited")
   }
 
-  return "Internal workflow only"
+  return i18n.t("marketing.pricing.publishing.internal")
 }
 
 function compactTagList(values: Array<string | null | undefined>) {
@@ -84,18 +101,27 @@ export function mapHomepageFeaturedShowcaseItems(
 }
 
 export function mapHomepagePricingPlans(
-  plans: BillingPlanRecord[]
+  plans: BillingPlanRecord[],
+  i18n: HomepageI18n
 ): HomepagePricingPlan[] {
   return [...plans]
     .sort((left, right) => left.sort_order - right.sort_order)
     .map((plan) => ({
       code: plan.code,
-      conceptsLabel: `${plan.included_concept_runs} concepts / month`,
-      exportsLabel: `${plan.included_final_exports} exports / month`,
+      conceptsLabel: i18n.t("marketing.pricing.conceptsPerMonth", {
+        count: plan.included_concept_runs
+      }),
+      exportsLabel: i18n.t("marketing.pricing.exportsPerMonth", {
+        count: plan.included_final_exports
+      }),
       name: plan.display_name,
-      previewsLabel: `${plan.included_preview_generations} previews / month`,
-      priceLabel: formatPriceLabel(plan.monthly_price_usd),
-      publishingLabel: buildPublishingLabel(plan),
-      rendersLabel: `${plan.included_render_batches} render batches / month`
+      previewsLabel: i18n.t("marketing.pricing.previewsPerMonth", {
+        count: plan.included_preview_generations
+      }),
+      priceLabel: formatPriceLabel(plan.monthly_price_usd, i18n),
+      publishingLabel: buildPublishingLabel(plan, i18n),
+      rendersLabel: i18n.t("marketing.pricing.rendersPerMonth", {
+        count: plan.included_render_batches
+      })
     }))
 }

@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { JobDebugDetail } from "@/features/debug/components/job-debug-detail"
 import { JobTraceTimeline } from "@/features/debug/components/job-trace-timeline"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import {
   getJobByIdForOwner,
@@ -21,6 +22,7 @@ export default async function DebugJobDetailPage({
   params,
   searchParams
 }: DebugJobDetailPageProps) {
+  const { t } = await getServerI18n()
   const { jobId } = await params
   const resolvedSearchParams = await searchParams
   const user = await getAuthenticatedUser()
@@ -51,10 +53,10 @@ export default async function DebugJobDetailPage({
 
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6">
         <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-          Trace timeline
+          {t("debug.jobs.traceTimeline")}
         </p>
         <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
-          Step-level job traces
+          {t("debug.jobs.traceHeading")}
         </h2>
         <div className="mt-6">
           <JobTraceTimeline traces={traces} />

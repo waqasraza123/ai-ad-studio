@@ -7,6 +7,10 @@ import {
   mapHomepageFeaturedShowcaseItems,
   mapHomepagePricingPlans
 } from "./homepage-data"
+import { createTranslator } from "@/lib/i18n/translator"
+import { en } from "@/lib/i18n/messages/en"
+
+const i18n = createTranslator("en", en)
 
 function buildShowcaseItem(
   overrides: Partial<ShowcaseItemRecord> & {
@@ -146,39 +150,42 @@ describe("mapHomepageFeaturedShowcaseItems", () => {
 
 describe("mapHomepagePricingPlans", () => {
   it("sorts plans by sort order and builds concise pricing labels", () => {
-    const result = mapHomepagePricingPlans([
-      buildPlan({
-        allow_delivery_workspaces: true,
-        allow_public_showcase: true,
-        allow_share_campaigns: true,
-        code: "growth",
-        display_name: "Growth",
-        included_final_exports: 12,
-        included_preview_generations: 60,
-        included_render_batches: 24,
-        monthly_price_usd: 99,
-        sort_order: 2
-      }),
-      buildPlan({
-        code: "free",
-        display_name: "Free",
-        included_final_exports: 1,
-        included_preview_generations: 3,
-        included_render_batches: 1,
-        monthly_price_usd: 0,
-        sort_order: 0
-      }),
-      buildPlan({
-        allow_delivery_workspaces: true,
-        code: "starter",
-        display_name: "Starter",
-        included_final_exports: 4,
-        included_preview_generations: 20,
-        included_render_batches: 8,
-        monthly_price_usd: 39,
-        sort_order: 1
-      })
-    ])
+    const result = mapHomepagePricingPlans(
+      [
+        buildPlan({
+          allow_delivery_workspaces: true,
+          allow_public_showcase: true,
+          allow_share_campaigns: true,
+          code: "growth",
+          display_name: "Growth",
+          included_final_exports: 12,
+          included_preview_generations: 60,
+          included_render_batches: 24,
+          monthly_price_usd: 99,
+          sort_order: 2
+        }),
+        buildPlan({
+          code: "free",
+          display_name: "Free",
+          included_final_exports: 1,
+          included_preview_generations: 3,
+          included_render_batches: 1,
+          monthly_price_usd: 0,
+          sort_order: 0
+        }),
+        buildPlan({
+          allow_delivery_workspaces: true,
+          code: "starter",
+          display_name: "Starter",
+          included_final_exports: 4,
+          included_preview_generations: 20,
+          included_render_batches: 8,
+          monthly_price_usd: 39,
+          sort_order: 1
+        })
+      ],
+      i18n
+    )
 
     expect(result).toEqual([
       {

@@ -1,4 +1,5 @@
 import { ExportCard } from "./export-card"
+import { getServerI18n } from "@/lib/i18n/server"
 import type {
   ExportAspectRatio,
   ExportRecord,
@@ -10,13 +11,6 @@ import type {
 type ExportsDashboardProps = {
   exports: ExportRecord[]
   projectsById: Map<string, ProjectRecord>
-}
-
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
 }
 
 function groupByProject(exports: ExportRecord[]) {
@@ -43,14 +37,15 @@ function getLatestPerFormat(exports: ExportRecord[]) {
   return latest
 }
 
-export function ExportsDashboard({
+export async function ExportsDashboard({
   exports,
   projectsById
 }: ExportsDashboardProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (exports.length === 0) {
     return (
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-sm text-slate-400">
-        No exports yet. Render a project to start building export history.
+        {t("exports.dashboard.empty")}
       </div>
     )
   }
@@ -71,14 +66,15 @@ export function ExportsDashboard({
             <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-                  Project exports
+                  {t("exports.dashboard.eyebrow")}
                 </p>
                 <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
-                  {project?.name ?? "Unknown project"}
+                  {project?.name ?? t("exports.dashboard.unknownProject")}
                 </h2>
                 <p className="mt-3 text-sm text-slate-400">
-                  {projectExports.length} export
-                  {projectExports.length === 1 ? "" : "s"} generated
+                  {t("exports.dashboard.generatedCount", {
+                    count: projectExports.length
+                  })}
                 </p>
               </div>
 
@@ -89,7 +85,9 @@ export function ExportsDashboard({
                     className="inline-flex h-10 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-4 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
                     href={`/dashboard/exports/${exportRecord.id}`}
                   >
-                    Latest {exportRecord.aspect_ratio}
+                    {t("exports.dashboard.latestAspectRatio", {
+                      value: exportRecord.aspect_ratio
+                    })}
                   </a>
                 ))}
               </div>
@@ -100,10 +98,13 @@ export function ExportsDashboard({
                 <ExportCard
                   key={exportRecord.id}
                   aspectRatio={exportRecord.aspect_ratio as ExportAspectRatio}
-                  createdAtLabel={formatTimestamp(exportRecord.created_at)}
+                  createdAtLabel={formatDateTime(exportRecord.created_at, {
+                    dateStyle: "medium",
+                    timeStyle: "short"
+                  })}
                   exportId={exportRecord.id}
                   platformPreset={exportRecord.platform_preset as PlatformPresetKey}
-                  projectName={project?.name ?? "Unknown project"}
+                  projectName={project?.name ?? t("exports.dashboard.unknownProject")}
                   variantKey={exportRecord.variant_key as RenderVariantKey}
                 />
               ))}

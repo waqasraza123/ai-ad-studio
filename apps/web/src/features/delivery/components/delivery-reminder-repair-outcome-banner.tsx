@@ -1,13 +1,15 @@
 import type { DeliveryReminderRepairOutcome } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
 import { getDeliveryReminderRepairOutcomeMessage } from "@/features/delivery/lib/delivery-reminder-repair-outcome"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type DeliveryReminderRepairOutcomeBannerProps = {
   outcome: DeliveryReminderRepairOutcome
 }
 
-export function DeliveryReminderRepairOutcomeBanner({
+export async function DeliveryReminderRepairOutcomeBanner({
   outcome
 }: DeliveryReminderRepairOutcomeBannerProps) {
+  const { t } = await getServerI18n()
   const isSuccess = outcome.status === "success"
 
   return (
@@ -18,7 +20,7 @@ export function DeliveryReminderRepairOutcomeBanner({
           : "border-rose-400/30 bg-rose-500/10 text-rose-100"
       }`}
     >
-      {getDeliveryReminderRepairOutcomeMessage(outcome)}
+      {getDeliveryReminderRepairOutcomeMessage(outcome, t)}
     </div>
   )
 }

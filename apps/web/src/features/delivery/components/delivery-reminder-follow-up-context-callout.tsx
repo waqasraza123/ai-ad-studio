@@ -26,8 +26,10 @@ import {
 } from "@/features/delivery/lib/delivery-reminder-mismatch-resolution"
 import {
   getDeliveryWorkspaceReminderBucketClasses,
-  getDeliveryWorkspaceReminderBucketLabel
+  getDeliveryWorkspaceReminderBucketLabelKey
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
+import { getServerI18n } from "@/lib/i18n/server"
+import type { Translator } from "@/lib/i18n/translator"
 
 type DeliveryReminderFollowUpContextCalloutProps = {
   activeReminderSupportFilter: DeliveryReminderSupportFilter
@@ -37,21 +39,34 @@ type DeliveryReminderFollowUpContextCalloutProps = {
   repairOutcome?: DeliveryReminderRepairOutcome | null
 }
 
-function formatDate(value: string | null) {
-  return value ?? "—"
+function formatDate(
+  value: string | null,
+  formatDateValue: Translator["formatDate"],
+  notSetLabel: string
+) {
+  return value ? formatDateValue(`${value}T00:00:00Z`) : notSetLabel
 }
 
-function formatDateTime(value: string) {
-  return value.replace("T", " ").replace(".000Z", "Z")
+function formatDateTime(
+  value: string,
+  formatDateTimeValue: Translator["formatDateTime"]
+) {
+  return formatDateTimeValue(value, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  })
 }
 
-export function DeliveryReminderFollowUpContextCallout({
+export async function DeliveryReminderFollowUpContextCallout({
   activeReminderSupportFilter,
   activeSupportActivityFilter,
   currentFollowUpNote,
   record,
   repairOutcome = null
 }: DeliveryReminderFollowUpContextCalloutProps) {
+  const { formatDate: formatDateValue, formatDateTime: formatDateTimeValue, t } =
+    await getServerI18n()
+
   if (!record.workspaceId) {
     return null
   }
@@ -74,17 +89,17 @@ export function DeliveryReminderFollowUpContextCallout({
     <div className="rounded-[1.25rem] border border-amber-400/30 bg-amber-500/10 p-4 text-amber-50">
       <div className="flex flex-wrap items-center gap-2">
         <span className="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-xs font-medium text-amber-100">
-          Reminder context
+          {t("delivery.followUpContext.title")}
         </span>
         <span
           className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceReminderBucketClasses(
             record.reminderBucket
           )}`}
         >
-          {getDeliveryWorkspaceReminderBucketLabel(record.reminderBucket)}
+          {t(getDeliveryWorkspaceReminderBucketLabelKey(record.reminderBucket))}
         </span>
         <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-xs text-slate-200">
-          {formatDateTime(record.notificationCreatedAt)}
+          {formatDateTime(record.notificationCreatedAt, formatDateTimeValue)}
         </span>
       </div>
 
@@ -97,12 +112,24 @@ export function DeliveryReminderFollowUpContextCallout({
 
       <dl className="mt-4 grid gap-3 text-sm text-amber-50/90 md:grid-cols-2">
         <div className="flex items-center justify-between gap-4">
-          <dt className="text-amber-100/70">Reminder due on</dt>
-          <dd className="text-right">{formatDate(record.notificationFollowUpDueOn)}</dd>
+          <dt className="text-amber-100/70">
+            {t("delivery.followUpContext.reminderDueOn")}
+          </dt>
+          <dd className="theme-text-end">
+            {formatDate(
+              record.notificationFollowUpDueOn,
+              formatDateValue,
+              t("common.words.notSet")
+            )}
+          </dd>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <dt className="text-amber-100/70">Notification id</dt>
-          <dd className="text-right font-mono text-xs">{record.notificationId}</dd>
+          <dt className="text-amber-100/70">
+            {t("delivery.followUpContext.notificationId")}
+          </dt>
+          <dd className="theme-text-end font-mono text-xs ltr-content">
+            {record.notificationId}
+          </dd>
         </div>
       </dl>
 
@@ -114,14 +141,12 @@ export function DeliveryReminderFollowUpContextCallout({
               : "border-rose-400/30 bg-rose-500/10 text-rose-100"
           }`}
         >
-          {getDeliveryReminderRepairOutcomeMessage(matchingRepairOutcome)}
+          {getDeliveryReminderRepairOutcomeMessage(matchingRepairOutcome, t)}
         </div>
       ) : null}
 
       <p className="mt-4 text-sm text-amber-50/90">
-        This follow-up form is focused from a reminder checkpoint mismatch row.
-        You can repair reminder scheduling here without leaving the current
-        workspace view.
+        {t("delivery.followUpContext.formDescription")}
       </p>
 
       {record.checkpointState === "resolved" ? (
@@ -143,8 +168,7 @@ export function DeliveryReminderFollowUpContextCallout({
     <input name="returnToHref" type="hidden" value={returnToHref} />
 
     <div className="rounded-[1rem] border border-cyan-400/30 bg-cyan-500/10 px-3 py-3 text-sm text-cyan-100">
-      This reminder mismatch is currently marked as resolved for this
-      notification context.
+      {t("delivery.followUpContext.resolvedBanner")}
     </div>
 
     <div className="mt-4 space-y-2">
@@ -152,14 +176,14 @@ export function DeliveryReminderFollowUpContextCallout({
         className="block text-sm font-medium text-white"
         htmlFor={`${record.notificationId}-mismatch-reopen-note`}
       >
-        Optional mismatch reopen note
+        {t("delivery.followUpContext.reopenNoteLabel")}
       </label>
       <textarea
         className="min-h-[88px] w-full rounded-[1rem] border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40 focus:bg-white/[0.06]"
         id={`${record.notificationId}-mismatch-reopen-note`}
         maxLength={deliveryReminderMismatchReopenNoteMaxLength}
         name={deliveryReminderMismatchReopenNoteFieldName}
-        placeholder="Optional context explaining why the resolved mismatch should be reopened."
+        placeholder={t("delivery.followUpContext.reopenNotePlaceholder")}
       />
     </div>
 
@@ -168,7 +192,7 @@ export function DeliveryReminderFollowUpContextCallout({
         className="inline-flex items-center rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-xs font-medium text-amber-200 transition hover:border-amber-300/40 hover:bg-amber-500/15"
         type="submit"
       >
-        Reopen mismatch
+        {t("delivery.followUpContext.reopenAction")}
       </button>
     </div>
   </form>
@@ -195,14 +219,14 @@ export function DeliveryReminderFollowUpContextCallout({
               className="block text-sm font-medium text-white"
               htmlFor={`${record.notificationId}-mismatch-resolution-note`}
             >
-              Optional mismatch resolution note
+              {t("delivery.followUpContext.resolutionNoteLabel")}
             </label>
             <textarea
               className="min-h-[88px] w-full rounded-[1rem] border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-cyan-300/40 focus:bg-white/[0.06]"
               id={`${record.notificationId}-mismatch-resolution-note`}
               maxLength={deliveryReminderMismatchResolutionNoteMaxLength}
               name={deliveryReminderMismatchResolutionNoteFieldName}
-              placeholder="Optional context explaining why this mismatch is considered resolved."
+              placeholder={t("delivery.followUpContext.resolutionNotePlaceholder")}
             />
           </div>
 
@@ -211,7 +235,7 @@ export function DeliveryReminderFollowUpContextCallout({
               className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15"
               type="submit"
             >
-              Mark mismatch as resolved
+              {t("delivery.followUpContext.resolveAction")}
             </button>
           </div>
         </form>
@@ -241,7 +265,7 @@ export function DeliveryReminderFollowUpContextCallout({
 
         <DeliveryReminderRepairActionButton
           className="inline-flex items-center rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-xs font-medium text-cyan-200 transition hover:border-cyan-300/40 hover:bg-cyan-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-          label="Reschedule for tomorrow"
+          label={t("delivery.followUpContext.rescheduleTomorrow")}
           value="reschedule_tomorrow"
         />
       </form>
@@ -273,26 +297,25 @@ export function DeliveryReminderFollowUpContextCallout({
             className="block text-sm font-medium text-white"
             htmlFor={`${record.notificationId}-clear-reason`}
           >
-            Reason for clearing reminder scheduling
+            {t("delivery.followUpContext.clearReasonLabel")}
           </label>
           <textarea
             className="min-h-[96px] w-full rounded-[1rem] border border-white/10 bg-white/[0.04] px-3 py-2 text-sm text-white outline-none transition placeholder:text-slate-500 focus:border-amber-300/40 focus:bg-white/[0.06]"
             id={`${record.notificationId}-clear-reason`}
             maxLength={deliveryReminderClearReasonMaxLength}
             name={deliveryReminderClearReasonFieldName}
-            placeholder="Explain why reminder scheduling should be cleared."
+            placeholder={t("delivery.followUpContext.clearReasonPlaceholder")}
             required
           />
           <p className="text-xs text-amber-100/70">
-            This reason is required and will be written into the delivery
-            activity audit trail.
+            {t("delivery.followUpContext.clearReasonHelp")}
           </p>
         </div>
 
         <div className="mt-3 flex flex-wrap gap-2">
           <DeliveryReminderRepairActionButton
             className="inline-flex items-center rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-xs font-medium text-rose-200 transition hover:border-rose-300/40 hover:bg-rose-500/15 disabled:cursor-not-allowed disabled:opacity-60"
-            label="Clear reminder scheduling"
+            label={t("delivery.followUpContext.clearAction")}
             value="clear_reminder_scheduling"
           />
         </div>

@@ -1,12 +1,13 @@
 import Link from "next/link"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { getPublicEnvironment } from "@/lib/env"
+import { getServerI18n } from "@/lib/i18n/server"
 import { updateDeliveryWorkspaceFollowUpAction } from "@/features/delivery/actions/manage-delivery-workspace-follow-up"
 import {
   getDeliveryWorkspaceFollowUpClasses,
-  getDeliveryWorkspaceFollowUpLabel,
+  getDeliveryWorkspaceFollowUpLabelKey,
   getDeliveryWorkspaceReminderBucketClasses,
-  getDeliveryWorkspaceReminderBucketLabel,
+  getDeliveryWorkspaceReminderBucketLabelKey,
   resolveDeliveryWorkspaceReminderBucket
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
 import type {
@@ -33,6 +34,7 @@ import {
   DEFAULT_DELIVERY_WORKSPACE_VISIBLE_COUNT,
   getNextDeliveryWorkspaceVisibleCount
 } from "@/features/delivery/lib/delivery-workspace-list-window"
+import type { Translator } from "@/lib/i18n/translator"
 
 type DeliveryWorkspaceListProps = {
   activeReminderSupportFilter?: DeliveryReminderSupportFilter
@@ -86,25 +88,100 @@ function filterClasses(isSelected: boolean) {
   return "border-white/10 bg-white/[0.05] text-slate-300"
 }
 
-function formatTimestamp(value: string | null) {
+function formatTimestamp(
+  value: string | null,
+  formatDateTimeValue: Translator["formatDateTime"],
+  notSetLabel: string
+) {
   if (!value) {
-    return "Not yet"
+    return notSetLabel
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return formatDateTimeValue(value, {
     dateStyle: "medium",
     timeStyle: "short"
-  }).format(new Date(value))
+  })
 }
 
-function formatDate(value: string | null) {
+function formatDate(
+  value: string | null,
+  formatDateValue: Translator["formatDate"],
+  notSetLabel: string
+) {
   if (!value) {
-    return "Not set"
+    return notSetLabel
   }
 
-  return new Intl.DateTimeFormat("en", {
+  return formatDateValue(`${value}T00:00:00Z`, {
     dateStyle: "medium"
-  }).format(new Date(`${value}T00:00:00Z`))
+  })
+}
+
+function getStatusLabelKey(
+  status: DeliveryWorkspaceOverviewRecord["workspace"]["status"]
+) {
+  return status === "active"
+    ? ("delivery.workspaceList.status.active" as const)
+    : ("delivery.workspaceList.status.archived" as const)
+}
+
+function getActivityFilterLabelKey(filter: DeliveryWorkspaceQuickFilter) {
+  if (filter === "needs_follow_up") {
+    return "delivery.workspaceList.activity.needsFollowUp" as const
+  }
+
+  if (filter === "acknowledged") {
+    return "delivery.workspaceList.activity.acknowledged" as const
+  }
+
+  if (filter === "viewed_only") {
+    return "delivery.workspaceList.activity.viewedOnly" as const
+  }
+
+  if (filter === "downloaded") {
+    return "delivery.workspaceList.activity.downloaded" as const
+  }
+
+  return "delivery.workspaceList.activity.all" as const
+}
+
+function getSortLabelKey(sort: DeliveryWorkspaceSortKey) {
+  return sort === "newest"
+    ? ("delivery.workspaceList.sort.newest" as const)
+    : ("delivery.workspaceList.sort.latestActivity" as const)
+}
+
+function getActivityExcerpt(
+  overviewRecord: DeliveryWorkspaceOverviewRecord,
+  t: Translator["t"]
+) {
+  const activitySummary = overviewRecord.activitySummary
+
+  if (activitySummary.acknowledgedAt) {
+    return activitySummary.acknowledgedBy
+      ? t("delivery.workspaceList.activityExcerpt.acknowledgedBy", {
+          value: activitySummary.acknowledgedBy
+        })
+      : t("delivery.workspaceList.activityExcerpt.acknowledged")
+  }
+
+  if (activitySummary.downloadCount > 0) {
+    return activitySummary.downloadCount === 1
+      ? t("delivery.workspaceList.activityExcerpt.downloadedOnce")
+      : t("delivery.workspaceList.activityExcerpt.downloadedMany", {
+          count: activitySummary.downloadCount
+        })
+  }
+
+  if (activitySummary.lastViewedAt) {
+    return t("delivery.workspaceList.activityExcerpt.viewed")
+  }
+
+  if (activitySummary.deliveredAt) {
+    return t("delivery.workspaceList.activityExcerpt.delivered")
+  }
+
+  return t("delivery.workspaceList.activityExcerpt.none")
 }
 
 function buildDeliveryDashboardHref(input: {
@@ -214,7 +291,7 @@ function buildDeliveryWorkspaceListHref(input: {
     : "/dashboard/delivery"
 }
 
-export function DeliveryWorkspaceList({
+export async function DeliveryWorkspaceList({
   activeReminderSupportFilter = "all",
   activeSupportActivityFilter = "all",
   currentDashboardSearchParams,
@@ -231,6 +308,9 @@ export function DeliveryWorkspaceList({
   workspaceOverviews
 }: DeliveryWorkspaceListProps) {
   const environment = getPublicEnvironment()
+  const { formatDate: formatDateValue, formatDateTime: formatDateTimeValue, t } =
+    await getServerI18n()
+  const notSetLabel = t("common.words.notSet")
   const showingAllWorkspaces = workspaceOverviews.length >= totalWorkspaceCount
   const nextVisibleCount = getNextDeliveryWorkspaceVisibleCount({
     currentCount: workspaceOverviews.length,
@@ -243,11 +323,10 @@ export function DeliveryWorkspaceList({
         <div className="flex flex-col gap-4">
           <div>
             <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-              Overview controls
+              {t("delivery.workspaceList.controlsEyebrow")}
             </p>
             <p className="mt-2 text-sm leading-7 text-slate-300">
-              Review delivery workspaces by current status, receipt activity, or
-              latest activity recency.
+              {t("delivery.workspaceList.controlsDescription")}
             </p>
           </div>
 
@@ -262,7 +341,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedStatusFilter === "all")}`}
               >
-                All
+                {t("delivery.workspaceList.status.all")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -273,7 +352,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedStatusFilter === "active")}`}
               >
-                Active
+                {t("delivery.workspaceList.status.active")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -284,7 +363,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedStatusFilter === "archived")}`}
               >
-                Archived
+                {t("delivery.workspaceList.status.archived")}
               </Link>
             </div>
 
@@ -298,7 +377,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "all")}`}
               >
-                All activity
+                {t("delivery.workspaceList.activity.all")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -309,7 +388,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "needs_follow_up")}`}
               >
-                Needs follow-up
+                {t("delivery.workspaceList.activity.needsFollowUp")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -320,7 +399,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "acknowledged")}`}
               >
-                Acknowledged
+                {t("delivery.workspaceList.activity.acknowledged")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -331,7 +410,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "viewed_only")}`}
               >
-                Viewed only
+                {t("delivery.workspaceList.activity.viewedOnly")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -342,7 +421,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedActivityFilter === "downloaded")}`}
               >
-                Downloaded
+                {t("delivery.workspaceList.activity.downloaded")}
               </Link>
             </div>
 
@@ -356,7 +435,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedSortKey === "latest_activity")}`}
               >
-                Latest activity
+                {t("delivery.workspaceList.sort.latestActivity")}
               </Link>
               <Link
                 href={buildDeliveryDashboardHref({
@@ -367,7 +446,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className={`inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium transition hover:bg-white/[0.08] ${filterClasses(selectedSortKey === "newest")}`}
               >
-                Newest
+                {t("delivery.workspaceList.sort.newest")}
               </Link>
             </div>
           </div>
@@ -378,9 +457,10 @@ export function DeliveryWorkspaceList({
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] px-4 py-3">
           <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
             <p className="text-sm text-slate-300">
-              Showing <span className="font-medium text-white">{workspaceOverviews.length}</span>{" "}
-              of <span className="font-medium text-white">{totalWorkspaceCount}</span>{" "}
-              delivery workspaces.
+              {t("delivery.workspaceList.showingSummary", {
+                shown: workspaceOverviews.length,
+                total: totalWorkspaceCount
+              })}
             </p>
 
             {!showingAllWorkspaces ? (
@@ -392,7 +472,9 @@ export function DeliveryWorkspaceList({
                   })}
                   className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                 >
-                  Show {nextVisibleCount - workspaceOverviews.length} more
+                  {t("delivery.workspaceList.showMore", {
+                    count: nextVisibleCount - workspaceOverviews.length
+                  })}
                 </Link>
                 <Link
                   href={buildDeliveryWorkspaceListHref({
@@ -401,7 +483,7 @@ export function DeliveryWorkspaceList({
                   })}
                   className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                 >
-                  Show all
+                  {t("delivery.workspaceList.showAll")}
                 </Link>
               </div>
             ) : currentDashboardSearchParams.workspaceLimit &&
@@ -414,7 +496,7 @@ export function DeliveryWorkspaceList({
                 })}
                 className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
               >
-                Collapse list
+                {t("delivery.workspaceList.collapse")}
               </Link>
             ) : null}
           </div>
@@ -423,7 +505,7 @@ export function DeliveryWorkspaceList({
 
       {workspaceOverviews.length === 0 ? (
         <div className="rounded-[2rem] border border-dashed border-white/10 bg-white/[0.03] p-8 text-sm text-slate-400">
-          No delivery workspaces match the current filters.
+          {t("delivery.workspaceList.empty")}
         </div>
       ) : (
         workspaceOverviews.map((overviewRecord) => {
@@ -475,30 +557,30 @@ export function DeliveryWorkspaceList({
                     <p className="text-sm font-medium text-white">{workspace.title}</p>
                     {workspace.id === focusWorkspaceId ? (
                       <span className="inline-flex rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1 text-xs font-medium text-cyan-200">
-                        Focused from reminder support
+                        {t("delivery.workspaceList.focusedFromSupport")}
                       </span>
                     ) : null}
                     <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(workspace.status)}`}>
-                      {workspace.status}
+                      {t(getStatusLabelKey(workspace.status))}
                     </span>
                     {workspace.follow_up_status !== "none" ? (
                       <span
                         className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceFollowUpClasses(workspace.follow_up_status)}`}
                       >
-                        {getDeliveryWorkspaceFollowUpLabel(workspace.follow_up_status)}
+                        {t(getDeliveryWorkspaceFollowUpLabelKey(workspace.follow_up_status))}
                       </span>
                     ) : null}
                     {reminderBucket !== "none" ? (
                       <span
                         className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceReminderBucketClasses(reminderBucket)}`}
                       >
-                        {getDeliveryWorkspaceReminderBucketLabel(reminderBucket)}
+                        {t(getDeliveryWorkspaceReminderBucketLabelKey(reminderBucket))}
                       </span>
                     ) : null}
                   </div>
 
                   <p className="mt-2 text-sm text-slate-300">
-                    {project?.name ?? "Unknown project"}
+                    {project?.name ?? t("common.words.unknownProject")}
                   </p>
                   <p className="mt-3 text-sm leading-7 text-slate-300">
                     {workspace.summary}
@@ -506,10 +588,10 @@ export function DeliveryWorkspaceList({
 
                   <div className="mt-4 rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-4">
                     <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                      Activity excerpt
+                      {t("delivery.workspaceList.activityExcerptLabel")}
                     </p>
                     <p className="mt-2 text-sm leading-7 text-white">
-                      {activityExcerpt}
+                      {getActivityExcerpt(overviewRecord, t)}
                     </p>
                     {activitySummary.acknowledgementNote ? (
                       <p className="mt-2 text-sm leading-7 text-slate-300">
@@ -520,9 +602,7 @@ export function DeliveryWorkspaceList({
 
                   {showFollowUpHint ? (
                     <div className="mt-4 rounded-[1.25rem] border border-amber-400/20 bg-amber-500/10 p-4 text-sm text-amber-100">
-                      Recipient activity was detected but this workspace has not been
-                      acknowledged yet. Add a follow-up state or note to track the
-                      next owner action.
+                      {t("delivery.workspaceList.recipientHint")}
                     </div>
                   ) : null}
 
@@ -549,32 +629,34 @@ export function DeliveryWorkspaceList({
                     {isFollowUpFormFocused ? (
                       <div className="mb-4">
                         <span className="inline-flex rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1 text-xs font-medium text-amber-200">
-                          Follow-up form focused from reminder mismatch
+                          {t("delivery.workspaceList.followUpFocused")}
                         </span>
                       </div>
                     ) : null}
 
                     <div className="flex flex-wrap items-center gap-2">
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                        Owner follow-up
+                        {t("delivery.workspaceList.ownerFollowUp")}
                       </p>
                       <span
                         className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceFollowUpClasses(workspace.follow_up_status)}`}
                       >
-                        {getDeliveryWorkspaceFollowUpLabel(workspace.follow_up_status)}
+                        {t(getDeliveryWorkspaceFollowUpLabelKey(workspace.follow_up_status))}
                       </span>
                       {reminderBucket !== "none" ? (
                         <span
                           className={`rounded-full border px-3 py-1 text-xs ${getDeliveryWorkspaceReminderBucketClasses(reminderBucket)}`}
                         >
-                          {getDeliveryWorkspaceReminderBucketLabel(reminderBucket)}
+                          {t(getDeliveryWorkspaceReminderBucketLabelKey(reminderBucket))}
                         </span>
                       ) : null}
                     </div>
 
                     <form action={followUpAction} className="mt-4 space-y-4">
                       <label className="grid gap-2">
-                        <span className="text-sm text-slate-300">Follow-up state</span>
+                        <span className="text-sm text-slate-300">
+                          {t("delivery.workspaceList.followUpState")}
+                        </span>
                         <select
                           className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
                           defaultValue={workspace.follow_up_status}
@@ -582,14 +664,16 @@ export function DeliveryWorkspaceList({
                         >
                           {followUpStatuses.map((status) => (
                             <option key={status} value={status}>
-                              {getDeliveryWorkspaceFollowUpLabel(status)}
+                              {t(getDeliveryWorkspaceFollowUpLabelKey(status))}
                             </option>
                           ))}
                         </select>
                       </label>
 
                       <label className="grid gap-2">
-                        <span className="text-sm text-slate-300">Reminder date</span>
+                        <span className="text-sm text-slate-300">
+                          {t("delivery.workspaceList.reminderDate")}
+                        </span>
                         <input
                           className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-indigo-300/40"
                           defaultValue={workspace.follow_up_due_on ?? ""}
@@ -599,22 +683,38 @@ export function DeliveryWorkspaceList({
                       </label>
 
                       <label className="grid gap-2">
-                        <span className="text-sm text-slate-300">Owner note</span>
+                        <span className="text-sm text-slate-300">
+                          {t("delivery.workspaceList.ownerNote")}
+                        </span>
                         <textarea
                           className="min-h-24 rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
                           defaultValue={workspace.follow_up_note ?? ""}
                           name="follow_up_note"
-                          placeholder="Add the next owner action, outreach note, or reminder context"
+                          placeholder={t("delivery.workspaceList.ownerNotePlaceholder")}
                         />
                       </label>
 
                       <div className="flex flex-wrap items-center gap-3">
-                        <FormSubmitButton pendingLabel="Saving…">Save follow-up</FormSubmitButton>
+                        <FormSubmitButton pendingLabel={t("delivery.workspaceList.saving")}>
+                          {t("delivery.workspaceList.saveFollowUp")}
+                        </FormSubmitButton>
                         <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                          updated {formatTimestamp(workspace.follow_up_updated_at)}
+                          {t("delivery.workspaceList.updated", {
+                            value: formatTimestamp(
+                              workspace.follow_up_updated_at,
+                              formatDateTimeValue,
+                              notSetLabel
+                            )
+                          })}
                         </p>
                         <p className="text-xs uppercase tracking-[0.2em] text-slate-500">
-                          due {formatDate(workspace.follow_up_due_on)}
+                          {t("delivery.workspaceList.due", {
+                            value: formatDate(
+                              workspace.follow_up_due_on,
+                              formatDateValue,
+                              notSetLabel
+                            )
+                          })}
                         </p>
                       </div>
                     </form>
@@ -623,50 +723,79 @@ export function DeliveryWorkspaceList({
                   <div className="mt-4 grid gap-3 md:grid-cols-4">
                     <div className="rounded-[1.25rem] border border-emerald-400/20 bg-emerald-500/10 p-3">
                       <p className="text-xs uppercase tracking-[0.2em] text-emerald-100">
-                        Delivered
+                        {t("delivery.workspaceList.delivered")}
                       </p>
                       <p className="mt-2 text-sm font-medium text-white">
-                        {formatTimestamp(activitySummary.deliveredAt)}
+                        {formatTimestamp(
+                          activitySummary.deliveredAt,
+                          formatDateTimeValue,
+                          notSetLabel
+                        )}
                       </p>
                     </div>
 
                     <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-3">
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                        Viewed
+                        {t("delivery.workspaceList.viewed")}
                       </p>
                       <p className="mt-2 text-sm font-medium text-white">
-                        {formatTimestamp(activitySummary.lastViewedAt)}
+                        {formatTimestamp(
+                          activitySummary.lastViewedAt,
+                          formatDateTimeValue,
+                          notSetLabel
+                        )}
                       </p>
                     </div>
 
                     <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.04] p-3">
                       <p className="text-xs uppercase tracking-[0.2em] text-slate-400">
-                        Downloaded
+                        {t("delivery.workspaceList.downloaded")}
                       </p>
                       <p className="mt-2 text-sm font-medium text-white">
                         {activitySummary.downloadCount}
                       </p>
                       <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
-                        last {formatTimestamp(activitySummary.lastDownloadedAt)}
+                        {t("delivery.workspaceList.last", {
+                          value: formatTimestamp(
+                            activitySummary.lastDownloadedAt,
+                            formatDateTimeValue,
+                            notSetLabel
+                          )
+                        })}
                       </p>
                     </div>
 
                     <div className="rounded-[1.25rem] border border-indigo-400/20 bg-indigo-500/10 p-3">
                       <p className="text-xs uppercase tracking-[0.2em] text-indigo-100">
-                        Acknowledged
+                        {t("delivery.workspaceList.acknowledged")}
                       </p>
                       <p className="mt-2 text-sm font-medium text-white">
-                        {formatTimestamp(activitySummary.acknowledgedAt)}
+                        {formatTimestamp(
+                          activitySummary.acknowledgedAt,
+                          formatDateTimeValue,
+                          notSetLabel
+                        )}
                       </p>
                       <p className="mt-2 text-xs uppercase tracking-[0.2em] text-slate-500">
-                        {activitySummary.acknowledgedBy ?? "No recipient label"}
+                        {activitySummary.acknowledgedBy ??
+                          t("delivery.workspaceList.noRecipientLabel")}
                       </p>
                     </div>
                   </div>
 
                   <p className="mt-4 text-xs uppercase tracking-[0.2em] text-slate-500">
-                    created {formatTimestamp(workspace.created_at)} · latest activity{" "}
-                    {formatTimestamp(latestActivityAt)}
+                    {t("delivery.workspaceList.created", {
+                      created: formatTimestamp(
+                        workspace.created_at,
+                        formatDateTimeValue,
+                        notSetLabel
+                      ),
+                      latest: formatTimestamp(
+                        latestActivityAt,
+                        formatDateTimeValue,
+                        notSetLabel
+                      )
+                    })}
                   </p>
                 </div>
 
@@ -675,14 +804,14 @@ export function DeliveryWorkspaceList({
                     href={`/dashboard/exports/${workspace.canonical_export_id}`}
                     className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                   >
-                    Open canonical export
+                    {t("delivery.workspaceList.openCanonical")}
                   </Link>
                   {workspace.status === "active" ? (
                     <a
                       href={publicUrl}
                       className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                     >
-                      Open delivery page
+                      {t("delivery.workspaceList.openDelivery")}
                     </a>
                   ) : null}
                 </div>

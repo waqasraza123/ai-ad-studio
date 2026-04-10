@@ -2,16 +2,10 @@ import Link from "next/link"
 import { markNotificationReadAction } from "@/features/notifications/actions/mark-notification-read"
 import type { NotificationRecord } from "@/server/database/types"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type NotificationListProps = {
   notifications: NotificationRecord[]
-}
-
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
 }
 
 function severityClasses(severity: NotificationRecord["severity"]) {
@@ -30,11 +24,12 @@ function severityClasses(severity: NotificationRecord["severity"]) {
   return "border-white/10 bg-white/[0.05] text-slate-300"
 }
 
-export function NotificationList({ notifications }: NotificationListProps) {
+export async function NotificationList({ notifications }: NotificationListProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (notifications.length === 0) {
     return (
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-sm text-slate-400">
-        No notifications yet.
+        {t("notifications.empty")}
       </div>
     )
   }
@@ -56,15 +51,21 @@ export function NotificationList({ notifications }: NotificationListProps) {
                   <span
                     className={`rounded-full border px-3 py-1 text-xs ${severityClasses(notification.severity)}`}
                   >
-                    {notification.severity}
+                    {notification.severity === "success"
+                      ? t("notifications.severity.success")
+                      : notification.severity === "warning"
+                        ? t("notifications.severity.warning")
+                        : notification.severity === "error"
+                          ? t("notifications.severity.error")
+                          : t("notifications.severity.info")}
                   </span>
                   {notification.read_at ? (
                     <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-                      read
+                      {t("notifications.read")}
                     </span>
                   ) : (
                     <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-                      unread
+                      {t("notifications.unread")}
                     </span>
                   )}
                 </div>
@@ -74,7 +75,10 @@ export function NotificationList({ notifications }: NotificationListProps) {
                 </p>
 
                 <p className="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-                  {formatTimestamp(notification.created_at)}
+                  {formatDateTime(notification.created_at, {
+                    dateStyle: "medium",
+                    timeStyle: "short"
+                  })}
                 </p>
               </div>
 
@@ -84,14 +88,17 @@ export function NotificationList({ notifications }: NotificationListProps) {
                     href={notification.action_url}
                     className="inline-flex h-10 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-4 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                   >
-                    Open
+                    {t("notifications.open")}
                   </Link>
                 ) : null}
 
                 {!notification.read_at ? (
                   <form action={markReadAction}>
-                    <FormSubmitButton variant="secondary" pendingLabel="Updating…">
-                      Mark as read
+                    <FormSubmitButton
+                      variant="secondary"
+                      pendingLabel={t("notifications.updating")}
+                    >
+                      {t("notifications.markRead")}
                     </FormSubmitButton>
                   </form>
                 ) : null}

@@ -7,6 +7,7 @@ import {
 import {
   isDeliveryReminderMismatchResolutionActivityMetadata
 } from "./delivery-reminder-mismatch-resolution"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 export type DeliverySupportActivityFilter =
   | "all"
@@ -58,6 +59,24 @@ export function getDeliverySupportActivityFilterLabel(
   }
 
   return "All support events"
+}
+
+export function getDeliverySupportActivityFilterLabelKey(
+  filter: DeliverySupportActivityFilter
+): AppMessageKey {
+  if (filter === "reminder_repairs") {
+    return "delivery.supportActivityFilter.reminder_repairs"
+  }
+
+  if (filter === "failed_reminder_repairs") {
+    return "delivery.supportActivityFilter.failed_reminder_repairs"
+  }
+
+  if (filter === "support_handoff_notes") {
+    return "delivery.supportActivityFilter.support_handoff_notes"
+  }
+
+  return "delivery.supportActivityFilter.all"
 }
 
 type FilterableActivityRecord = {

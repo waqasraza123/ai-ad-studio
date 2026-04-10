@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic"
 import { useEffect, useRef, useState } from "react"
 import { Cpu, Settings2 } from "lucide-react"
+import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 import type { RuntimeSetupContext } from "./runtime-setup-content"
 import { RUNTIME_SETUP_DISMISSAL_KEY } from "./runtime-setup-content"
@@ -29,14 +30,18 @@ type RuntimeSetupLauncherProps = {
 export function RuntimeSetupLauncher({
   context,
   autoOpenOnFirstVisit = false,
-  triggerLabel = context === "homepage" ? "Runtime setup" : "API & GPU setup",
+  triggerLabel,
   triggerVariant = context === "homepage" ? "topbar" : "sidebar",
   showTrigger = true
 }: RuntimeSetupLauncherProps) {
+  const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const [hasMountedModal, setHasMountedModal] = useState(false)
   const [hydrated, setHydrated] = useState(false)
   const triggerRef = useRef<HTMLButtonElement>(null)
+  const resolvedTriggerLabel =
+    triggerLabel ??
+    (context === "homepage" ? t("runtime.setup") : t("runtime.apiGpuSetup"))
 
   function openModal() {
     setHasMountedModal(true)
@@ -97,7 +102,7 @@ export function RuntimeSetupLauncher({
             type="button"
             onClick={openModal}
             className={cn(
-              "theme-palette-panel theme-focus-ring group mt-6 w-full rounded-[1.35rem] border p-4 text-left transition"
+              "theme-palette-panel theme-focus-ring group mt-6 w-full rounded-[1.35rem] border p-4 theme-text-start transition"
             )}
           >
             <div className="flex items-start gap-3">
@@ -106,14 +111,13 @@ export function RuntimeSetupLauncher({
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xs uppercase tracking-[0.22em] text-[var(--muted-foreground)]">
-                  Setup help
+                  {t("runtime.launcher.sidebarEyebrow")}
                 </p>
                 <p className="mt-1 text-sm font-medium text-[var(--foreground)]">
-                  {triggerLabel}
+                  {resolvedTriggerLabel}
                 </p>
                 <p className="mt-1 text-sm leading-6 text-[var(--muted-foreground)]">
-                  See the recommended API path, local GPU requirements, and ready-to-use
-                  `.env.local` blocks.
+                  {t("runtime.launcherDescription")}
                 </p>
               </div>
             </div>
@@ -126,7 +130,7 @@ export function RuntimeSetupLauncher({
             onClick={openModal}
           >
             <Settings2 className="h-4 w-4" />
-            <span>{triggerLabel}</span>
+            <span>{resolvedTriggerLabel}</span>
           </button>
         )
       ) : null}

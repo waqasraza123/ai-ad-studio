@@ -1,5 +1,6 @@
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { selectRenderBatchWinnerAction } from "@/features/renders/actions/select-render-batch-winner"
+import { getServerI18n } from "@/lib/i18n/server"
 import type {
   AssetRecord,
   ExportRecord,
@@ -10,13 +11,6 @@ type RenderBatchReviewGridProps = {
   assetsById: Map<string, AssetRecord>
   batch: RenderBatchRecord
   exports: ExportRecord[]
-}
-
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
 }
 
 function variantLabel(exportRecord: ExportRecord) {
@@ -33,15 +27,16 @@ function variantLabel(exportRecord: ExportRecord) {
   return exportRecord.variant_key
 }
 
-export function RenderBatchReviewGrid({
+export async function RenderBatchReviewGrid({
   assetsById,
   batch,
   exports
 }: RenderBatchReviewGridProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (exports.length === 0) {
     return (
       <div className="rounded-[2rem] border border-dashed border-white/10 bg-white/[0.03] p-8 text-sm text-slate-400">
-        No exports found for this batch yet.
+        {t("renders.reviewGrid.empty")}
       </div>
     )
   }
@@ -91,7 +86,9 @@ export function RenderBatchReviewGrid({
                 />
               ) : previewDataUrl ? (
                 <img
-                  alt={String(exportRecord.render_metadata.templateName ?? "Batch export preview")}
+                  alt={String(
+                    exportRecord.render_metadata.templateName ?? t("public.review.comments.export")
+                  )}
                   className="h-72 w-full rounded-[1.5rem] object-cover"
                   decoding="async"
                   loading="lazy"
@@ -99,17 +96,17 @@ export function RenderBatchReviewGrid({
                 />
               ) : (
                 <div className="flex h-72 items-center justify-center rounded-[1.5rem] bg-white/[0.04] text-sm text-slate-400">
-                  Preview unavailable
+                  {t("renders.reviewGrid.previewUnavailable")}
                 </div>
               )}
 
               {isCanonical ? (
-                <div className="absolute left-4 top-4 rounded-full border border-emerald-400/20 bg-emerald-500/90 px-3 py-1 text-xs font-medium text-white">
-                  Canonical export
+                <div className="absolute top-4 rounded-full border border-emerald-400/20 bg-emerald-500/90 px-3 py-1 text-xs font-medium text-white [inset-inline-start:1rem]">
+                  {t("renders.reviewGrid.canonicalExport")}
                 </div>
               ) : isWinner ? (
-                <div className="absolute left-4 top-4 rounded-full border border-indigo-400/20 bg-indigo-500/90 px-3 py-1 text-xs font-medium text-white">
-                  Winner
+                <div className="absolute top-4 rounded-full border border-indigo-400/20 bg-indigo-500/90 px-3 py-1 text-xs font-medium text-white [inset-inline-start:1rem]">
+                  {t("renders.reviewGrid.winner")}
                 </div>
               ) : null}
             </div>
@@ -127,19 +124,22 @@ export function RenderBatchReviewGrid({
             </div>
 
             <p className="mt-4 text-xs uppercase tracking-[0.2em] text-slate-500">
-              {formatTimestamp(exportRecord.created_at)}
+              {formatDateTime(exportRecord.created_at, {
+                dateStyle: "medium",
+                timeStyle: "short"
+              })}
             </p>
 
             {batch.is_finalized ? (
               <div className="mt-4 space-y-4">
                 <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
-                  Winner selection is locked because this batch has been finalized.
+                  {t("renders.reviewGrid.locked")}
                 </div>
                 <a
                   href={`/dashboard/exports/${exportRecord.id}`}
                   className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                 >
-                  Open export
+                  {t("renders.reviewGrid.openExport")}
                 </a>
               </div>
             ) : (
@@ -148,17 +148,19 @@ export function RenderBatchReviewGrid({
                   className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
                   defaultValue={isWinner ? batch.review_note ?? "" : ""}
                   name="review_note"
-                  placeholder="Decision note for this batch"
+                  placeholder={t("renders.reviewGrid.notePlaceholder")}
                 />
                 <div className="flex flex-wrap gap-2">
-                  <FormSubmitButton pendingLabel="Saving…">
-                    {isWinner ? "Save winner note" : "Select as winner"}
+                  <FormSubmitButton pendingLabel={t("renders.reviewGrid.saving")}>
+                    {isWinner
+                      ? t("renders.reviewGrid.saveWinnerNote")
+                      : t("renders.reviewGrid.selectWinner")}
                   </FormSubmitButton>
                   <a
                     href={`/dashboard/exports/${exportRecord.id}`}
                     className="inline-flex h-11 items-center justify-center rounded-full border border-white/10 bg-white/[0.05] px-5 text-sm font-medium text-slate-100 transition hover:bg-white/[0.08]"
                   >
-                    Open export
+                    {t("renders.reviewGrid.openExport")}
                   </a>
                 </div>
               </form>

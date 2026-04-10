@@ -1,9 +1,9 @@
 import Link from "next/link"
 import {
   getDeliveryWorkspaceFollowUpClasses,
-  getDeliveryWorkspaceFollowUpLabel,
+  getDeliveryWorkspaceFollowUpLabelKey,
   getDeliveryWorkspaceReminderBucketClasses,
-  getDeliveryWorkspaceReminderBucketLabel
+  getDeliveryWorkspaceReminderBucketLabelKey
 } from "@/features/delivery/lib/delivery-workspace-follow-up"
 import type {
   DeliveryReminderSupportRecord,
@@ -11,7 +11,7 @@ import type {
 } from "@/features/delivery/lib/delivery-reminder-support"
 import type { DeliveryReminderMismatchLifecycleFilter } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-filter"
 import {
-  getDeliveryReminderSupportFilterLabel,
+  getDeliveryReminderSupportFilterLabelKey,
   type DeliveryReminderSupportFilter
 } from "@/features/delivery/lib/delivery-reminder-support-filter"
 import type { DeliverySupportActivityFilter } from "@/features/delivery/lib/delivery-support-activity-filter"
@@ -20,6 +20,8 @@ import {
   buildDeliveryReminderFollowUpFormHref,
   buildDeliveryReminderSupportFilterHref
 } from "@/features/delivery/lib/delivery-reminder-support-links"
+import { getServerI18n } from "@/lib/i18n/server"
+import type { Translator } from "@/lib/i18n/translator"
 
 type DeliveryReminderSupportPanelProps = {
   activeFilter: DeliveryReminderSupportFilter
@@ -38,12 +40,22 @@ type DeliveryReminderSupportPanelProps = {
   summary: DeliveryReminderSupportSummary
 }
 
-function formatDateTime(value: string) {
-  return value.replace("T", " ").replace(".000Z", "Z")
+function formatDateTime(
+  value: string,
+  formatDateTimeValue: Translator["formatDateTime"]
+) {
+  return formatDateTimeValue(value, {
+    dateStyle: "medium",
+    timeStyle: "short"
+  })
 }
 
-function formatDate(value: string | null) {
-  return value ?? "—"
+function formatDate(
+  value: string | null,
+  formatDateValue: Translator["formatDate"],
+  notSetLabel: string
+) {
+  return value ? formatDateValue(`${value}T00:00:00Z`) : notSetLabel
 }
 
 function getCheckpointStateClasses(
@@ -82,6 +94,24 @@ function getCheckpointStateLabel(
   return "Workspace missing"
 }
 
+function getCheckpointStateLabelKey(
+  checkpointState: DeliveryReminderSupportRecord["checkpointState"]
+) {
+  if (checkpointState === "in_sync") {
+    return "delivery.support.checkpointState.inSync" as const
+  }
+
+  if (checkpointState === "resolved") {
+    return "delivery.support.checkpointState.resolved" as const
+  }
+
+  if (checkpointState === "checkpoint_mismatch") {
+    return "delivery.support.checkpointState.mismatch" as const
+  }
+
+  return "delivery.support.checkpointState.workspaceMissing" as const
+}
+
 function getFilterClasses(isActive: boolean) {
   return isActive
     ? "border-cyan-400/30 bg-cyan-500/10 text-cyan-200"
@@ -102,49 +132,58 @@ const reminderSupportFilters: {
   { countKey: "overdueCount", value: "overdue" }
 ]
 
-export function DeliveryReminderSupportPanel({
+export async function DeliveryReminderSupportPanel({
   activeFilter,
   currentDashboardSearchParams,
   overallSummary,
   records,
   summary
 }: DeliveryReminderSupportPanelProps) {
+  const { formatDate: formatDateValue, formatDateTime: formatDateTimeValue, t } =
+    await getServerI18n()
+  const notSetLabel = t("common.words.notSet")
+
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="space-y-2">
           <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-            Internal support view
+            {t("delivery.support.eyebrow")}
           </p>
           <div>
             <h2 className="text-2xl font-semibold text-white">
-              Recent delivery reminder notifications
+              {t("delivery.support.title")}
             </h2>
             <p className="mt-1 text-sm text-slate-400">
-              Compare the last reminder notification with the current workspace
-              checkpoint state.
+              {t("delivery.support.description")}
             </p>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-2 text-xs text-slate-200">
           <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-            {summary.totalCount} shown
+            {t("delivery.support.shown", { count: summary.totalCount })}
           </span>
           <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5">
-            {overallSummary.totalCount} total recent
+            {t("delivery.support.totalRecent", {
+              count: overallSummary.totalCount
+            })}
           </span>
           <span className="rounded-full border border-emerald-400/30 bg-emerald-500/10 px-3 py-1.5 text-emerald-200">
-            {summary.inSyncCount} in sync
+            {t("delivery.support.inSync", { count: summary.inSyncCount })}
           </span>
           <span className="rounded-full border border-cyan-400/30 bg-cyan-500/10 px-3 py-1.5 text-cyan-200">
-            {summary.resolvedCount} resolved
+            {t("delivery.support.resolved", { count: summary.resolvedCount })}
           </span>
           <span className="rounded-full border border-amber-400/30 bg-amber-500/10 px-3 py-1.5 text-amber-200">
-            {summary.checkpointMismatchCount} mismatch
+            {t("delivery.support.mismatch", {
+              count: summary.checkpointMismatchCount
+            })}
           </span>
           <span className="rounded-full border border-rose-400/30 bg-rose-500/10 px-3 py-1.5 text-rose-200">
-            {summary.workspaceMissingCount} missing workspace
+            {t("delivery.support.missingWorkspace", {
+              count: summary.workspaceMissingCount
+            })}
           </span>
         </div>
       </div>
@@ -178,7 +217,7 @@ export function DeliveryReminderSupportPanel({
                   currentDashboardSearchParams.supportActivityFilter ?? null
               })}
             >
-              <span>{getDeliveryReminderSupportFilterLabel(filterOption.value)}</span>
+              <span>{t(getDeliveryReminderSupportFilterLabelKey(filterOption.value))}</span>
               <span className="rounded-full border border-white/10 bg-black/10 px-2 py-0.5">
                 {count}
               </span>
@@ -189,19 +228,23 @@ export function DeliveryReminderSupportPanel({
 
       <div className="mt-4 text-sm text-slate-400">
         {activeFilter === "all"
-          ? "Showing all recent reminder notifications."
-          : `Showing only ${getDeliveryReminderSupportFilterLabel(
-              activeFilter
-            ).toLowerCase()}.`}
+          ? t("delivery.support.showingAll")
+          : t("delivery.support.showingOnly", {
+              value: t(
+                getDeliveryReminderSupportFilterLabelKey(activeFilter)
+              ).toLowerCase()
+            })}
       </div>
 
       {records.length === 0 ? (
         <div className="mt-6 rounded-[1.5rem] border border-dashed border-white/10 bg-white/[0.03] p-6 text-sm text-slate-400">
           {activeFilter === "all"
-            ? "No recent delivery reminder notifications yet."
-            : `No reminder notifications match the current filter: ${getDeliveryReminderSupportFilterLabel(
-                activeFilter
-              ).toLowerCase()}.`}
+            ? t("delivery.support.noRecent")
+            : t("delivery.support.noMatch", {
+                value: t(
+                  getDeliveryReminderSupportFilterLabelKey(activeFilter)
+                ).toLowerCase()
+              })}
         </div>
       ) : (
         <div className="mt-6 space-y-4">
@@ -216,24 +259,24 @@ export function DeliveryReminderSupportPanel({
                     record.reminderBucket
                   )}`}
                 >
-                  {getDeliveryWorkspaceReminderBucketLabel(record.reminderBucket)}
+                  {t(getDeliveryWorkspaceReminderBucketLabelKey(record.reminderBucket))}
                 </span>
                 <span
                   className={`rounded-full border px-3 py-1 text-xs ${getCheckpointStateClasses(
                     record.checkpointState
                   )}`}
                 >
-                  {getCheckpointStateLabel(record.checkpointState)}
+                  {t(getCheckpointStateLabelKey(record.checkpointState))}
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-                  {formatDateTime(record.notificationCreatedAt)}
+                  {formatDateTime(record.notificationCreatedAt, formatDateTimeValue)}
                 </span>
               </div>
 
               <div className="grid gap-4 xl:grid-cols-2">
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
                   <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                    Reminder notification
+                    {t("delivery.support.notificationCard")}
                   </p>
                   <h3 className="mt-2 text-base font-semibold text-white">
                     {record.notificationTitle}
@@ -244,19 +287,25 @@ export function DeliveryReminderSupportPanel({
 
                   <dl className="mt-4 grid gap-3 text-sm text-slate-300">
                     <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Kind</dt>
-                      <dd className="text-right">{record.notificationKind}</dd>
+                      <dt className="text-slate-500">{t("delivery.support.kind")}</dt>
+                      <dd className="theme-text-end">{record.notificationKind}</dd>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Reminder due on</dt>
-                      <dd className="text-right">
-                        {formatDate(record.notificationFollowUpDueOn)}
+                      <dt className="text-slate-500">
+                        {t("delivery.support.reminderDueOn")}
+                      </dt>
+                      <dd className="theme-text-end">
+                        {formatDate(
+                          record.notificationFollowUpDueOn,
+                          formatDateValue,
+                          notSetLabel
+                        )}
                       </dd>
                     </div>
                     <div className="flex items-center justify-between gap-4">
-                      <dt className="text-slate-500">Workspace id</dt>
-                      <dd className="text-right font-mono text-xs">
-                        {record.workspaceId ?? "—"}
+                      <dt className="text-slate-500">{t("delivery.support.workspaceId")}</dt>
+                      <dd className="theme-text-end font-mono text-xs ltr-content">
+                        {record.workspaceId ?? notSetLabel}
                       </dd>
                     </div>
                   </dl>
@@ -274,7 +323,7 @@ export function DeliveryReminderSupportPanel({
                             currentDashboardSearchParams.supportActivityFilter ?? null
                         })}
                       >
-                        Open workspace in delivery dashboard
+                        {t("delivery.support.openWorkspace")}
                       </Link>
                     ) : null}
 
@@ -292,7 +341,7 @@ export function DeliveryReminderSupportPanel({
                           workspaceId: record.workspaceId
                         })}
                       >
-                        Open follow-up form with reminder context
+                        {t("delivery.support.openFollowUp")}
                       </Link>
                     ) : null}
                   </div>
@@ -300,7 +349,7 @@ export function DeliveryReminderSupportPanel({
 
                 <div className="rounded-[1.25rem] border border-white/10 bg-white/[0.03] p-4">
                   <p className="text-xs uppercase tracking-[0.22em] text-slate-500">
-                    Current workspace checkpoint
+                    {t("delivery.support.currentCheckpointCard")}
                   </p>
 
                   {record.workspaceTitle ? (
@@ -315,43 +364,58 @@ export function DeliveryReminderSupportPanel({
                             record.workspaceFollowUpStatus ?? "none"
                           )}`}
                         >
-                          {getDeliveryWorkspaceFollowUpLabel(
-                            record.workspaceFollowUpStatus ?? "none"
+                          {t(
+                            getDeliveryWorkspaceFollowUpLabelKey(
+                              record.workspaceFollowUpStatus ?? "none"
+                            )
                           )}
                         </span>
                       </div>
 
                       <dl className="mt-4 grid gap-3 text-sm text-slate-300">
                         <div className="flex items-center justify-between gap-4">
-                          <dt className="text-slate-500">Follow-up due on</dt>
-                          <dd className="text-right">
-                            {formatDate(record.workspaceFollowUpDueOn)}
+                          <dt className="text-slate-500">
+                            {t("delivery.support.followUpDueOn")}
+                          </dt>
+                          <dd className="theme-text-end">
+                            {formatDate(
+                              record.workspaceFollowUpDueOn,
+                              formatDateValue,
+                              notSetLabel
+                            )}
                           </dd>
                         </div>
                         <div className="flex items-center justify-between gap-4">
                           <dt className="text-slate-500">
-                            Last notification bucket
+                            {t("delivery.support.lastNotificationBucket")}
                           </dt>
-                          <dd className="text-right">
+                          <dd className="theme-text-end">
                             {record.workspaceLastNotificationBucket
-                              ? getDeliveryWorkspaceReminderBucketLabel(
-                                  record.workspaceLastNotificationBucket
+                              ? t(
+                                  getDeliveryWorkspaceReminderBucketLabelKey(
+                                    record.workspaceLastNotificationBucket
+                                  )
                                 )
-                              : "—"}
+                              : notSetLabel}
                           </dd>
                         </div>
                         <div className="flex items-center justify-between gap-4">
-                          <dt className="text-slate-500">Last notification date</dt>
-                          <dd className="text-right">
-                            {formatDate(record.workspaceLastNotificationDate)}
+                          <dt className="text-slate-500">
+                            {t("delivery.support.lastNotificationDate")}
+                          </dt>
+                          <dd className="theme-text-end">
+                            {formatDate(
+                              record.workspaceLastNotificationDate,
+                              formatDateValue,
+                              notSetLabel
+                            )}
                           </dd>
                         </div>
                       </dl>
                     </>
                   ) : (
                     <div className="mt-3 rounded-[1rem] border border-rose-400/20 bg-rose-500/10 p-4 text-sm text-rose-200">
-                      The workspace referenced by this notification could not be
-                      resolved from the current delivery workspace list.
+                      {t("delivery.support.workspaceNotFound")}
                     </div>
                   )}
                 </div>

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useI18n } from "@/lib/i18n/provider"
 
 type DeliveryInvestigationViewCopyButtonProps = {
   className: string
@@ -12,6 +13,7 @@ export function DeliveryInvestigationViewCopyButton({
   href
 }: DeliveryInvestigationViewCopyButtonProps) {
   const [copied, setCopied] = useState(false)
+  const { t } = useI18n()
 
   async function handleClick() {
     const absoluteHref = `${window.location.origin}${href}`
@@ -26,7 +28,9 @@ export function DeliveryInvestigationViewCopyButton({
 
   return (
     <button className={className} onClick={handleClick} type="button">
-      {copied ? "Copied link" : "Copy shareable link"}
+      {copied
+        ? t("delivery.investigationView.copied")
+        : t("delivery.investigationView.copy")}
     </button>
   )
 }

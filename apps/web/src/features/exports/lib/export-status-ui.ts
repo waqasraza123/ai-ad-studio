@@ -1,4 +1,5 @@
 import type { ExportRecord } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 export type ExportWorkflowStatus = ExportRecord["status"]
 
@@ -6,17 +7,19 @@ export function exportStatusIsInProgress(status: ExportWorkflowStatus) {
   return status === "queued" || status === "rendering"
 }
 
-export function formatExportStatusLabel(status: ExportWorkflowStatus) {
+export function getExportStatusLabelKey(
+  status: ExportWorkflowStatus
+): AppMessageKey {
   switch (status) {
     case "queued":
-      return "Queued — waiting for the render worker"
+      return "exports.status.queued"
     case "rendering":
-      return "Rendering — composing your ad"
+      return "exports.status.rendering"
     case "ready":
-      return "Ready — export complete"
+      return "exports.status.ready"
     case "failed":
-      return "Failed — check jobs or retry"
+      return "exports.status.failed"
     default:
-      return status
+      return "exports.status.ready"
   }
 }

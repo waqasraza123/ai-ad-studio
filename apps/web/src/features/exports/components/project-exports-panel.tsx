@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { getServerI18n } from "@/lib/i18n/server"
 import type {
   ExportAspectRatio,
   ExportRecord
@@ -7,13 +8,6 @@ import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type ProjectExportsPanelProps = {
   exports: ExportRecord[]
-}
-
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
 }
 
 function getLatestByAspectRatio(exports: ExportRecord[]) {
@@ -28,21 +22,22 @@ function getLatestByAspectRatio(exports: ExportRecord[]) {
   return latest
 }
 
-export function ProjectExportsPanel({ exports }: ProjectExportsPanelProps) {
+export async function ProjectExportsPanel({ exports }: ProjectExportsPanelProps) {
+  const { formatDateTime, t } = await getServerI18n()
   const latestByAspectRatio = getLatestByAspectRatio(exports)
 
   return (
     <SurfaceCard className="p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Project exports
+        {t("projects.exports.eyebrow")}
       </p>
       <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
-        Export history and format shortcuts
+        {t("projects.exports.title")}
       </h2>
 
       {exports.length === 0 ? (
         <div className="mt-6 rounded-2xl border border-dashed border-white/10 bg-white/[0.03] p-5 text-sm text-slate-400">
-          No exports for this project yet. Render the project to create downloadable outputs.
+          {t("projects.exports.empty")}
         </div>
       ) : (
         <div className="mt-6 space-y-5">
@@ -53,7 +48,9 @@ export function ProjectExportsPanel({ exports }: ProjectExportsPanelProps) {
                 href={`/dashboard/exports/${exportRecord.id}`}
                 className="inline-flex h-10 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-4 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
               >
-                Latest {exportRecord.aspect_ratio}
+                {t("projects.exports.latestAspectRatio", {
+                  value: exportRecord.aspect_ratio
+                })}
               </Link>
             ))}
           </div>
@@ -71,7 +68,10 @@ export function ProjectExportsPanel({ exports }: ProjectExportsPanelProps) {
                       {exportRecord.aspect_ratio} · {exportRecord.platform_preset}
                     </p>
                     <p className="mt-1 text-sm text-slate-400">
-                      {formatTimestamp(exportRecord.created_at)}
+                      {formatDateTime(exportRecord.created_at, {
+                        dateStyle: "medium",
+                        timeStyle: "short"
+                      })}
                     </p>
                   </div>
 

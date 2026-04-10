@@ -1,5 +1,6 @@
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { submitPublicBatchReviewCommentAction } from "@/features/renders/actions/public-batch-review"
+import { getServerI18n } from "@/lib/i18n/server"
 import type { PublicBatchReviewExport } from "@/server/database/types"
 
 type PublicBatchReviewGridProps = {
@@ -8,22 +9,16 @@ type PublicBatchReviewGridProps = {
   token: string
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
-export function PublicBatchReviewGrid({
+export async function PublicBatchReviewGrid({
   exports,
   isReadOnly,
   token
 }: PublicBatchReviewGridProps) {
+  const { formatDateTime, t } = await getServerI18n()
   if (exports.length === 0) {
     return (
       <div className="rounded-[2rem] border border-dashed border-white/10 bg-white/[0.03] p-8 text-sm text-slate-400">
-        No exports are available for this review link yet.
+        {t("public.review.grid.empty")}
       </div>
     )
   }
@@ -57,7 +52,7 @@ export function PublicBatchReviewGrid({
               />
             ) : (
               <div className="flex h-72 items-center justify-center rounded-[1.5rem] bg-white/[0.04] text-sm text-slate-400">
-                Preview unavailable
+                {t("public.review.grid.previewUnavailable")}
               </div>
             )}
 
@@ -73,33 +68,36 @@ export function PublicBatchReviewGrid({
               </span>
               {exportItem.is_winner ? (
                 <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100">
-                  Current internal winner
+                  {t("public.review.grid.currentWinner")}
                 </span>
               ) : null}
             </div>
 
             <p className="mt-3 text-xs uppercase tracking-[0.2em] text-slate-500">
-              {formatTimestamp(exportItem.created_at)}
+              {formatDateTime(exportItem.created_at, {
+                dateStyle: "medium",
+                timeStyle: "short"
+              })}
             </p>
 
             {isReadOnly ? (
               <div className="mt-4 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4 text-sm text-slate-300">
-                Comments are locked because this review is closed.
+                {t("public.review.grid.locked")}
               </div>
             ) : (
               <form action={action} className="mt-4 space-y-4">
                 <input
                   className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-indigo-300/40"
                   name="author_label"
-                  placeholder="Your name"
+                  placeholder={t("public.review.grid.yourName")}
                 />
                 <textarea
                   className="min-h-28 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-white outline-none transition focus:border-indigo-300/40"
                   name="body"
-                  placeholder="Comment on this export"
+                  placeholder={t("public.review.grid.commentPlaceholder")}
                 />
-                <FormSubmitButton pendingLabel="Posting comment…">
-                  Comment on this output
+                <FormSubmitButton pendingLabel={t("public.review.grid.posting")}>
+                  {t("public.review.grid.commentAction")}
                 </FormSubmitButton>
               </form>
             )}

@@ -1,6 +1,7 @@
 import type { DeliveryReminderRepairAction } from "./delivery-reminder-repair"
 import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
 import { MODEST_WORDING_ERROR_MESSAGE } from "../../../lib/modest-wording/index"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import {
   deliveryReminderClearReasonMaxLength,
   type DeliveryReminderClearReasonValidationError
@@ -35,6 +36,11 @@ export type DeliveryReminderRepairOutcome = {
   status: DeliveryReminderRepairStatus
   workspaceId: string
 }
+
+type Translate = (
+  key: AppMessageKey,
+  values?: Record<string, string | number | null | undefined>
+) => string
 
 function normalizeNonEmptyString(value: string | null | undefined) {
   if (typeof value !== "string") {
@@ -194,36 +200,72 @@ export function getDeliveryReminderRepairActionLabel(
   return "Cleared reminder scheduling"
 }
 
-export function getDeliveryReminderRepairOutcomeMessage(
-  outcome: DeliveryReminderRepairOutcome
+export function getDeliveryReminderRepairActionLabelKey(
+  action: DeliveryReminderRepairAction
 ) {
+  if (action === "reschedule_tomorrow") {
+    return "delivery.repairOutcome.action.rescheduleTomorrow" as const
+  }
+
+  return "delivery.repairOutcome.action.clearReminderScheduling" as const
+}
+
+export function getDeliveryReminderRepairOutcomeMessage(
+  outcome: DeliveryReminderRepairOutcome,
+  t?: Translate
+) {
+  const actionLabel = t
+    ? t(getDeliveryReminderRepairActionLabelKey(outcome.action))
+    : getDeliveryReminderRepairActionLabel(outcome.action)
+
   if (outcome.status === "success") {
-    const baseMessage = `${getDeliveryReminderRepairActionLabel(
-      outcome.action
-    )} for workspace ${outcome.workspaceId}.`
+    const baseMessage = t
+      ? t("delivery.repairOutcome.success", {
+          action: actionLabel,
+          workspace: outcome.workspaceId
+        })
+      : `${actionLabel} for workspace ${outcome.workspaceId}.`
 
     return outcome.noteSaved
-      ? `${baseMessage} Support handoff note saved to the activity timeline.`
+      ? t
+        ? t("delivery.repairOutcome.successWithNote", {
+            action: actionLabel,
+            workspace: outcome.workspaceId
+          })
+        : `${baseMessage} Support handoff note saved to the activity timeline.`
       : baseMessage
   }
 
   if (outcome.errorCode === "reason_required") {
-    return "Clear reminder scheduling requires an explicit operator reason."
+    return t
+      ? t("delivery.repairOutcome.error.reasonRequired")
+      : "Clear reminder scheduling requires an explicit operator reason."
   }
 
   if (outcome.errorCode === "reason_too_long") {
-    return `Clear reason must be ${deliveryReminderClearReasonMaxLength} characters or fewer.`
+    return t
+      ? t("delivery.repairOutcome.error.reasonTooLong", {
+          count: deliveryReminderClearReasonMaxLength
+        })
+      : `Clear reason must be ${deliveryReminderClearReasonMaxLength} characters or fewer.`
   }
 
   if (outcome.errorCode === "handoff_note_too_long") {
-    return `Support handoff note must be ${deliveryReminderSupportHandoffNoteMaxLength} characters or fewer.`
+    return t
+      ? t("delivery.repairOutcome.error.handoffNoteTooLong", {
+          count: deliveryReminderSupportHandoffNoteMaxLength
+        })
+      : `Support handoff note must be ${deliveryReminderSupportHandoffNoteMaxLength} characters or fewer.`
   }
 
   if (outcome.errorCode === "disallowed_wording") {
     return MODEST_WORDING_ERROR_MESSAGE
   }
 
-  return `Could not complete ${getDeliveryReminderRepairActionLabel(
-    outcome.action
-  ).toLowerCase()} for workspace ${outcome.workspaceId}.`
+  return t
+    ? t("delivery.repairOutcome.error.generic", {
+        action: actionLabel.toLowerCase(),
+        workspace: outcome.workspaceId
+      })
+    : `Could not complete ${actionLabel.toLowerCase()} for workspace ${outcome.workspaceId}.`
 }

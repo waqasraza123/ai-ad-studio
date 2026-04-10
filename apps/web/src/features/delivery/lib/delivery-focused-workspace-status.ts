@@ -1,7 +1,11 @@
 import type { DeliveryFollowUpStatus } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import {
   getDeliveryWorkspaceFollowUpLabel,
+  getDeliveryWorkspaceFollowUpLabelKey,
   getDeliveryWorkspaceReminderBucketLabel
+  ,
+  getDeliveryWorkspaceReminderBucketLabelKey
 } from "./delivery-workspace-follow-up"
 import {
   isDeliveryReminderRepairActivityMetadata
@@ -44,6 +48,11 @@ export type DeliveryFocusedWorkspaceStatusSummary = {
   workspaceTitle: string
 }
 
+type Translate = (
+  key: AppMessageKey,
+  values?: Record<string, string | number | null | undefined>
+) => string
+
 function getActivityEntries<TActivity extends FocusedWorkspaceActivityRecord>(
   record: DeliveryFocusedWorkspaceOverviewRecord<TActivity>
 ) {
@@ -65,57 +74,86 @@ function formatNullableDate(value: string | null) {
 function getReminderCheckpointLabel(input: {
   bucket: string | null
   date: string | null
+  t?: Translate
 }) {
   if (!input.bucket && !input.date) {
-    return "No reminder checkpoint"
+    return input.t
+      ? input.t("delivery.focusedStatus.noReminderCheckpoint")
+      : "No reminder checkpoint"
   }
 
   const bucketLabel =
     input.bucket === "due_today" || input.bucket === "overdue"
-      ? getDeliveryWorkspaceReminderBucketLabel(input.bucket)
-      : input.bucket ?? "Unknown checkpoint"
+      ? input.t
+        ? input.t(getDeliveryWorkspaceReminderBucketLabelKey(input.bucket))
+        : getDeliveryWorkspaceReminderBucketLabel(input.bucket)
+      : input.bucket ??
+        (input.t
+          ? input.t("delivery.focusedStatus.unknownCheckpoint")
+          : "Unknown checkpoint")
 
   if (input.bucket && input.date) {
-    return `${bucketLabel} on ${input.date}`
+    return input.t
+      ? input.t("delivery.focusedStatus.checkpointWithDate", {
+          bucket: bucketLabel,
+          date: input.date
+        })
+      : `${bucketLabel} on ${input.date}`
   }
 
   if (input.bucket) {
     return bucketLabel
   }
 
-  return `Checkpoint date ${input.date}`
+  return input.t
+    ? input.t("delivery.focusedStatus.checkpointDateOnly", {
+        date: input.date
+      })
+    : `Checkpoint date ${input.date}`
 }
 
-function getSupportEventLabel(activity: FocusedWorkspaceActivityRecord) {
+function getSupportEventLabel(
+  activity: FocusedWorkspaceActivityRecord,
+  t?: Translate
+) {
   if (isDeliveryReminderMismatchResolutionActivityMetadata(activity.metadata)) {
-    return "Resolved reminder mismatch"
+    return t
+      ? t("delivery.focusedStatus.resolvedReminderMismatch")
+      : "Resolved reminder mismatch"
   }
 
   if (isDeliveryReminderSupportNoteActivityMetadata(activity.metadata)) {
-    return "Support handoff note"
+    return t
+      ? t("delivery.focusedStatus.supportHandoffNote")
+      : "Support handoff note"
   }
 
   if (isDeliveryReminderRepairActivityMetadata(activity.metadata)) {
     return activity.metadata.repairOutcome === "error"
-      ? "Failed reminder repair"
-      : "Reminder repair"
+      ? t
+        ? t("delivery.focusedStatus.failedReminderRepair")
+        : "Failed reminder repair"
+      : t
+        ? t("delivery.focusedStatus.reminderRepair")
+        : "Reminder repair"
   }
 
   return null
 }
 
 function findLatestSupportEventLabel(
-  activityEntries: FocusedWorkspaceActivityRecord[]
+  activityEntries: FocusedWorkspaceActivityRecord[],
+  t?: Translate
 ) {
   for (const activityEntry of activityEntries) {
-    const label = getSupportEventLabel(activityEntry)
+    const label = getSupportEventLabel(activityEntry, t)
 
     if (label) {
       return label
     }
   }
 
-  return "No support event"
+  return t ? t("delivery.focusedStatus.noSupportEvent") : "No support event"
 }
 
 export function buildDeliveryFocusedWorkspaceStatusSummary<
@@ -125,6 +163,8 @@ export function buildDeliveryFocusedWorkspaceStatusSummary<
 >(input: {
   focusWorkspaceId: string | null
   overviewRecords: TRecord[]
+  t?: Translate
+  formatDate?: (value: Date | number | string) => string
 }): DeliveryFocusedWorkspaceStatusSummary | null {
   if (!input.focusWorkspaceId) {
     return null
@@ -140,19 +180,33 @@ export function buildDeliveryFocusedWorkspaceStatusSummary<
   }
 
   return {
-    followUpDueOnLabel: formatNullableDate(
-      focusedOverviewRecord.workspace.follow_up_due_on
-    ),
-    followUpStatusLabel: getDeliveryWorkspaceFollowUpLabel(
-      focusedOverviewRecord.workspace.follow_up_status ?? "none"
-    ),
+    followUpDueOnLabel: focusedOverviewRecord.workspace.follow_up_due_on
+      ? input.formatDate
+        ? input.formatDate(
+            `${focusedOverviewRecord.workspace.follow_up_due_on}T00:00:00Z`
+          )
+        : focusedOverviewRecord.workspace.follow_up_due_on
+      : input.t
+        ? input.t("common.words.notSet")
+        : formatNullableDate(focusedOverviewRecord.workspace.follow_up_due_on),
+    followUpStatusLabel: input.t
+      ? input.t(
+          getDeliveryWorkspaceFollowUpLabelKey(
+            focusedOverviewRecord.workspace.follow_up_status ?? "none"
+          )
+        )
+      : getDeliveryWorkspaceFollowUpLabel(
+          focusedOverviewRecord.workspace.follow_up_status ?? "none"
+        ),
     latestSupportEventLabel: findLatestSupportEventLabel(
-      getActivityEntries(focusedOverviewRecord)
+      getActivityEntries(focusedOverviewRecord),
+      input.t
     ),
     reminderCheckpointLabel: getReminderCheckpointLabel({
       bucket:
         focusedOverviewRecord.workspace.follow_up_last_notification_bucket ?? null,
-      date: focusedOverviewRecord.workspace.follow_up_last_notification_date ?? null
+      date: focusedOverviewRecord.workspace.follow_up_last_notification_date ?? null,
+      t: input.t
     }),
     workspaceId: focusedOverviewRecord.workspace.id,
     workspaceTitle: focusedOverviewRecord.workspace.title

@@ -1,38 +1,36 @@
 import Link from "next/link"
 import { ArrowRight, ArrowUpRight } from "lucide-react"
+import { getServerI18n } from "@/lib/i18n/server"
 
-const faqs = [
-  {
-    answer:
-      "AI Ad Studio is built for product marketing ads: concept generation, preview review, final exports, and public handoff surfaces.",
-    question: "What kind of ads does this create?"
-  },
-  {
-    answer:
-      "No. The workflow is intentionally constrained so teams can move through a repeatable path instead of managing a blank-canvas editor.",
-    question: "Is this a general-purpose editor?"
-  },
-  {
-    answer:
-      "Yes. The workflow includes preview checkpoints so teams can compare outputs before committing to final rendering.",
-    question: "Can teams review outputs before final rendering?"
-  },
-  {
-    answer:
-      "Approved winners can move into public showcase, campaign, delivery, and lighter share-link surfaces depending on plan access.",
-    question: "What public surfaces exist after approval?"
-  }
-]
+export async function FaqCtaSection() {
+  const { t } = await getServerI18n()
+  const faqs = [
+    {
+      answer: t("marketing.faq.questions.ads.answer"),
+      question: t("marketing.faq.questions.ads.question")
+    },
+    {
+      answer: t("marketing.faq.questions.editor.answer"),
+      question: t("marketing.faq.questions.editor.question")
+    },
+    {
+      answer: t("marketing.faq.questions.review.answer"),
+      question: t("marketing.faq.questions.review.question")
+    },
+    {
+      answer: t("marketing.faq.questions.surfaces.answer"),
+      question: t("marketing.faq.questions.surfaces.question")
+    }
+  ]
 
-export function FaqCtaSection() {
   return (
     <section id="faq" className="px-4 pb-28 pt-8 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-10">
         <div className="grid gap-10 lg:grid-cols-[0.62fr_1.38fr]">
           <div className="max-w-md">
-            <p className="theme-marketing-eyebrow">FAQ</p>
+            <p className="theme-marketing-eyebrow">{t("marketing.faq.eyebrow")}</p>
             <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
-              The main objections should be answered on the page
+              {t("marketing.faq.title")}
             </h2>
           </div>
 
@@ -56,31 +54,28 @@ export function FaqCtaSection() {
         <div className="theme-accent-panel overflow-hidden rounded-[2.5rem] border p-8 sm:p-10">
           <div className="grid gap-8 lg:grid-cols-[1fr_auto] lg:items-end">
             <div className="max-w-3xl">
-              <p className="theme-marketing-eyebrow">Final CTA</p>
+              <p className="theme-marketing-eyebrow">{t("marketing.faq.finalCtaEyebrow")}</p>
               <h2 className="theme-marketing-title mt-4 text-4xl font-semibold text-[var(--foreground)] sm:text-5xl">
-                Move from product brief to approved ad output without turning
-                the workflow into chaos
+                {t("marketing.faq.finalCtaTitle")}
               </h2>
               <p className="mt-5 max-w-2xl text-sm leading-7 text-[var(--soft-foreground)]">
-                The homepage now ends where it should: a clear path into the
-                product and a proof surface for teams that want to inspect
-                output quality first.
+                {t("marketing.faq.finalCtaDescription")}
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
               <Link href="/dashboard">
-                <span className="theme-button-primary inline-flex h-12 items-center justify-center rounded-full border px-6 text-sm font-medium">
-                  Enter dashboard
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                <span className="theme-button-primary inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium">
+                  {t("marketing.faq.enterDashboard")}
+                  <ArrowRight className="theme-directional-icon h-4 w-4" />
                 </span>
               </Link>
               <Link
                 href="/showcase"
-                className="theme-inline-secondary-button inline-flex h-12 items-center justify-center rounded-full border px-6 text-sm font-medium"
+                className="theme-inline-secondary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium"
               >
-                Browse showcase
-                <ArrowUpRight className="ml-2 h-4 w-4" />
+                {t("marketing.faq.browseShowcase")}
+                <ArrowUpRight className="theme-directional-icon h-4 w-4" />
               </Link>
             </div>
           </div>

@@ -2,6 +2,7 @@ import type { DeliveryReminderSupportRecord } from "./delivery-reminder-support"
 import {
   isDeliveryReminderMismatchReopenActivityMetadata
 } from "./delivery-reminder-mismatch-reopen"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 export type DeliveryReminderMismatchLifecycleFilter =
   | "all"
@@ -64,6 +65,24 @@ export function getDeliveryReminderMismatchLifecycleFilterLabel(
   }
 
   return "All lifecycle buckets"
+}
+
+export function getDeliveryReminderMismatchLifecycleFilterLabelKey(
+  filter: DeliveryReminderMismatchLifecycleFilter
+): AppMessageKey {
+  if (filter === "unresolved") {
+    return "delivery.mismatch.filter.unresolved"
+  }
+
+  if (filter === "resolved") {
+    return "delivery.mismatch.filter.resolved"
+  }
+
+  if (filter === "failed_reopen_attempts") {
+    return "delivery.mismatch.filter.failed_reopen_attempts"
+  }
+
+  return "delivery.mismatch.filter.all"
 }
 
 function getActivityEntries<

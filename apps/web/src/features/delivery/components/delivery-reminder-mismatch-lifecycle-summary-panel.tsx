@@ -5,10 +5,11 @@ import {
 } from "@/features/delivery/lib/delivery-reminder-support-links"
 import type { DeliveryReminderMismatchLifecycleSummary } from "@/features/delivery/lib/delivery-reminder-mismatch-lifecycle-summary"
 import {
-  getDeliverySupportActivityFilterLabel,
+  getDeliverySupportActivityFilterLabelKey,
   type DeliverySupportActivityFilter
 } from "@/features/delivery/lib/delivery-support-activity-filter"
 import type { DeliveryReminderSupportFilter } from "@/features/delivery/lib/delivery-reminder-support-filter"
+import { getServerI18n } from "@/lib/i18n/server"
 
 type DeliveryReminderMismatchLifecycleSummaryPanelProps = {
   activeLifecycleFilter: DeliveryReminderMismatchLifecycleFilter
@@ -72,30 +73,33 @@ function SummaryCard(input: {
   )
 }
 
-export function DeliveryReminderMismatchLifecycleSummaryPanel({
+export async function DeliveryReminderMismatchLifecycleSummaryPanel({
   activeLifecycleFilter,
   activeSupportActivityFilter,
   currentDashboardSearchParams,
   summary
 }: DeliveryReminderMismatchLifecycleSummaryPanelProps) {
+  const { t } = await getServerI18n()
+
   return (
     <section className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
       <div className="flex flex-col gap-2 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <p className="text-sm font-medium text-white">
-            Reminder mismatch lifecycle
+            {t("delivery.mismatch.title")}
           </p>
           <p className="mt-1 text-sm text-slate-400">
-            Counts below reflect the current delivery scope and active support
-            activity filter:
-            <span className="ml-1 text-slate-200">
-              {getDeliverySupportActivityFilterLabel(activeSupportActivityFilter)}
+            {t("delivery.mismatch.description")}
+            <span className="[margin-inline-start:0.25rem] text-slate-200">
+              {t(getDeliverySupportActivityFilterLabelKey(activeSupportActivityFilter))}
             </span>
           </p>
         </div>
 
         <div className="rounded-full border border-white/10 bg-white/[0.04] px-3 py-1.5 text-xs text-slate-300">
-          {summary.visibleWorkspaceCount} visible workspaces
+          {t("delivery.mismatch.visibleWorkspaces", {
+            count: summary.visibleWorkspaceCount
+          })}
         </div>
       </div>
 
@@ -103,7 +107,7 @@ export function DeliveryReminderMismatchLifecycleSummaryPanel({
         <SummaryCard
           active={activeLifecycleFilter === "unresolved"}
           accentClassName="border-amber-400/30 bg-amber-500/10 text-amber-200"
-          description="Visible reminder support records still treated as unresolved mismatches."
+          description={t("delivery.mismatch.unresolved.description")}
           href={buildDeliveryReminderMismatchLifecycleFilterHref({
             activity: currentDashboardSearchParams.activity ?? null,
             focusFollowUpForm: currentDashboardSearchParams.focusFollowUpForm ?? null,
@@ -118,14 +122,14 @@ export function DeliveryReminderMismatchLifecycleSummaryPanel({
             supportActivityFilter:
               currentDashboardSearchParams.supportActivityFilter ?? null
           })}
-          title="Unresolved mismatches"
+          title={t("delivery.mismatch.unresolved.title")}
           value={summary.unresolvedMismatchCount}
         />
 
         <SummaryCard
           active={activeLifecycleFilter === "resolved"}
           accentClassName="border-cyan-400/30 bg-cyan-500/10 text-cyan-200"
-          description="Visible reminder support records already marked as resolved."
+          description={t("delivery.mismatch.resolved.description")}
           href={buildDeliveryReminderMismatchLifecycleFilterHref({
             activity: currentDashboardSearchParams.activity ?? null,
             focusFollowUpForm: currentDashboardSearchParams.focusFollowUpForm ?? null,
@@ -140,21 +144,21 @@ export function DeliveryReminderMismatchLifecycleSummaryPanel({
             supportActivityFilter:
               currentDashboardSearchParams.supportActivityFilter ?? null
           })}
-          title="Resolved mismatches"
+          title={t("delivery.mismatch.resolved.title")}
           value={summary.resolvedMismatchCount}
         />
 
         <SummaryCard
           accentClassName="border-amber-400/30 bg-amber-500/10 text-amber-200"
-          description="Visible mismatch-reopen lifecycle activity entries that succeeded."
-          title="Reopened mismatches"
+          description={t("delivery.mismatch.reopened.description")}
+          title={t("delivery.mismatch.reopened.title")}
           value={summary.reopenedMismatchCount}
         />
 
         <SummaryCard
           active={activeLifecycleFilter === "failed_reopen_attempts"}
           accentClassName="border-rose-400/30 bg-rose-500/10 text-rose-200"
-          description="Visible mismatch-reopen lifecycle activity entries that failed."
+          description={t("delivery.mismatch.failedReopen.description")}
           href={buildDeliveryReminderMismatchLifecycleFilterHref({
             activity: currentDashboardSearchParams.activity ?? null,
             focusFollowUpForm: currentDashboardSearchParams.focusFollowUpForm ?? null,
@@ -169,7 +173,7 @@ export function DeliveryReminderMismatchLifecycleSummaryPanel({
             supportActivityFilter:
               currentDashboardSearchParams.supportActivityFilter ?? null
           })}
-          title="Failed reopen attempts"
+          title={t("delivery.mismatch.failedReopen.title")}
           value={summary.failedReopenAttemptsCount}
         />
       </div>

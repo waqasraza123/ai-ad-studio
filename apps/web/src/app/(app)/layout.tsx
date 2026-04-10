@@ -32,5 +32,9 @@ export default async function DashboardLayout({
     redirect("/login")
   }
 
-  return <AppShell userEmail={user.email ?? "Signed in"}>{children}</AppShell>
+  return (
+    <AppShell userEmail={user.email ?? t("header.app.signedInFallback")}>
+      {children}
+    </AppShell>
+  )
 }

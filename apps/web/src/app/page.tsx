@@ -18,9 +18,12 @@ export default async function HomePage() {
     listBillingPlans(),
     listPublishedShowcaseItems()
   ])
-  await getServerI18n()
+  const { formatCurrency, t } = await getServerI18n()
   const featuredShowcaseItems = mapHomepageFeaturedShowcaseItems(showcaseItems)
-  const homepagePricingPlans = mapHomepagePricingPlans(billingPlans)
+  const homepagePricingPlans = mapHomepagePricingPlans(billingPlans, {
+    formatCurrency,
+    t
+  })
 
   return (
     <main className="theme-page-shell min-h-screen text-[var(--foreground)]">
