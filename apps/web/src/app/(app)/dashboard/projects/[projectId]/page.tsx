@@ -22,6 +22,7 @@ import {
 import { ExportSummary } from "@/features/exports/components/export-summary"
 import { ProjectExportsPanel } from "@/features/exports/components/project-exports-panel"
 import { ProjectBriefForm } from "@/features/projects/components/project-brief-form"
+import { ProjectWorkspaceMap } from "@/features/projects/components/project-workspace-map"
 import { ProjectUploadPanel } from "@/features/projects/components/project-upload-panel"
 import { toProjectDetailSummary } from "@/features/projects/mappers/project-view-model"
 import { RenderBatchPanel } from "@/features/renders/components/render-batch-panel"
@@ -237,6 +238,8 @@ export default async function ProjectDetailPage({
           {t("projects.detail.processingNotice")}
         </p>
       ) : null}
+
+      <ProjectWorkspaceMap projectName={summary.projectName} />
 
       <section className="grid gap-4 xl:grid-cols-[1.1fr_0.9fr]">
         <SurfaceCard className="p-6">

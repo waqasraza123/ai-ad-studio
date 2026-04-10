@@ -533,6 +533,19 @@ export const ar: AppMessageCatalog = {
   "projects.detail.eyebrow": "تفاصيل المشروع",
   "projects.detail.description":
     "تتضمن هذه الصفحة قوالب تحمل هوية العلامة، ومجموعات علامة موسعة، وبوابات اعتماد، وإدارة للمخرجات، وحزم إخراج خاصة بالمنصات، ودفعات A/B محكومة.",
+  "projects.workspaceMap.eyebrow": "خريطة مساحة العمل",
+  "projects.workspaceMap.title": "ابقَ على اطلاع بينما يتحرك هذا المشروع",
+  "projects.workspaceMap.description":
+    "{{value}} هو مساحة مشروع واحدة داخل الاستوديو الأوسع. تبقى الفوترة والافتراضات والتقارير والأسطح المشتركة بين المشاريع على بُعد خطوة واحدة.",
+  "projects.workspaceMap.stageBrief": "الموجز والأصول",
+  "projects.workspaceMap.stageConcepts": "المفاهيم والمعاينات",
+  "projects.workspaceMap.stageRender": "الإخراج والاعتماد",
+  "projects.workspaceMap.stageExport": "المخرجات والتسليم",
+  "projects.workspaceMap.jumpLabel": "انتقل عبر الاستوديو",
+  "projects.workspaceMap.adminTitle": "إدارة مساحة العمل ما زالت تؤثر في هذا المشروع",
+  "projects.workspaceMap.adminDescription":
+    "أصبحت افتراضات العلامة والوصول التجاري وحدود التشغيل داخل الإعدادات. افتح منطقة الإدارة في أي وقت دون فقدان سياق المشروع.",
+  "projects.workspaceMap.adminAction": "فتح إدارة مساحة العمل",
   "projects.summary.eyebrow": "ملخص المشروع",
   "projects.summary.status": "الحالة",
   "projects.summary.assets": "الأصول",

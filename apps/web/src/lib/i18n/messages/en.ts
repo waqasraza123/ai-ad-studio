@@ -543,6 +543,19 @@ export const en = {
   "projects.detail.eyebrow": "Project detail",
   "projects.detail.description":
     "This page includes reusable branded templates, expanded brand kits, approval gates, export management, platform-specific render packs, and controlled A/B variation batches.",
+  "projects.workspaceMap.eyebrow": "Workspace map",
+  "projects.workspaceMap.title": "Stay oriented while this project is in motion",
+  "projects.workspaceMap.description":
+    "{{value}} is one project workspace inside the wider studio. Billing, defaults, reporting, and cross-project surfaces stay one step away.",
+  "projects.workspaceMap.stageBrief": "Brief and assets",
+  "projects.workspaceMap.stageConcepts": "Concepts and previews",
+  "projects.workspaceMap.stageRender": "Render and approval",
+  "projects.workspaceMap.stageExport": "Exports and delivery",
+  "projects.workspaceMap.jumpLabel": "Jump across the studio",
+  "projects.workspaceMap.adminTitle": "Workspace administration still affects this project",
+  "projects.workspaceMap.adminDescription":
+    "Brand defaults, billing access, and operator guardrails now live inside Settings. Open the administration area any time without losing the project context.",
+  "projects.workspaceMap.adminAction": "Open workspace administration",
   "projects.summary.eyebrow": "Project summary",
   "projects.summary.status": "Status",
   "projects.summary.assets": "Assets",
