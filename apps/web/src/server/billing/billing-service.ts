@@ -1,6 +1,7 @@
 import "server-only"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { createBillingPlanCatalogError } from "@/server/billing/billing-plan-catalog"
 import type {
   BillingEventRecord,
   BillingPlanCode,
@@ -244,7 +245,7 @@ export async function listBillingPlans(client?: SupabaseClient) {
     .eq("is_active", true)
 
   if (error) {
-    throw new Error("Failed to list billing plans")
+    throw createBillingPlanCatalogError("list billing plans", error)
   }
 
   return sortPlans((data ?? []) as BillingPlanRecord[])
@@ -261,8 +262,12 @@ export async function getBillingPlanByCode(
     .eq("code", planCode)
     .maybeSingle()
 
-  if (error || !data) {
-    throw new Error(`Failed to load billing plan: ${planCode}`)
+  if (error) {
+    throw createBillingPlanCatalogError(`load billing plan: ${planCode}`, error)
+  }
+
+  if (!data) {
+    throw new Error(`Billing plan not found: ${planCode}`)
   }
 
   return data as BillingPlanRecord

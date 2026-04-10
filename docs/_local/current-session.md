@@ -6,30 +6,30 @@
 
 ## Current Objective
 
-Stabilize self-serve billing in `/dashboard/settings` so paid plans are actually purchasable and billing actions fail clearly when Stripe runtime is unavailable.
+Hotfix the billing catalog schema drift that broke the public homepage pricing query, then return to the activation + feedback follow-up work.
 
 ## Last Completed Step
 
-Fixed the broken plan-purchase interaction in `apps/web`: paid plans now submit from the full card surface instead of only a small nested CTA button; settings now loads a cached billing purchase-availability helper and disables checkout/plan-change/portal actions when Stripe runtime is degraded; settings also shows explicit `billing=success|cancelled|portal` feedback banners. Added focused unit/component coverage for purchase availability, billing feedback mapping, manage-billing actions, and the billing plan panel.
+Diagnosed the public homepage billing failure to remote Supabase schema drift: the linked project was missing `supabase/migrations/202604101200_phase_34_activation_feedback_foundation.sql`, so `billing_plans.allow_activation_packages` and the related creative-performance capability columns did not exist. Added the idempotent repair migration `supabase/migrations/202604101830_phase_34_billing_plan_catalog_repair.sql`, pushed both pending migrations with `supabase db push --linked`, verified that anon and service-role `billing_plans` reads now succeed for `free`, `starter`, `growth`, and `scale`, then hardened the web app so homepage pricing degrades cleanly instead of 500ing, billing catalog failures are classified (`schema_drift` vs `query_failed`), `/api/health` now includes `billingPlanCatalogReady`, and runtime smoke now checks the homepage route directly.
 
 ## Current Step
 
-Manual QA the billing panel on `/dashboard/settings` against a real Stripe-configured environment: click a paid card, confirm Checkout opens, confirm current/free cards stay non-actionable, and validate disabled purchase/portal states when billing runtime is intentionally degraded.
+The billing schema drift is fixed on the linked remote and the homepage/health surfaces are hardened against future billing-catalog failures. The next implementation step is to resume the activation + feedback follow-up slice: richer activation readiness/history handling, multi-row manual performance ingestion, and more detailed creative breakdowns by audience, offer, and tone.
 
 ## Scope Boundaries
 
-- Billing is owner-scoped, not org/seat-scoped.
-- Self-serve billing uses Stripe; manual stablecoin settlement is operator-only.
-- `owner_guardrails` remain editable only as tighter personal caps beneath plan entitlements.
-- Public campaign/delivery/showcase creation is gated by plan access; existing public items now use a 30-day downgrade-access check at read time.
-- Settings purchase availability is cached server-side for a short TTL; UI gating is preventive only and server actions remain the final guard.
+- Activation packages remain internal preparation records only; no direct partner publish APIs or scheduler behavior were added.
+- Creative performance ingestion is owner- and operator-submitted manual data in this phase; there is no partner-network sync yet.
+- The product workflow stays constrained; this slice extends the durable checkpoints instead of creating a generic campaign manager or media-buying surface.
+- Public campaign/delivery/showcase semantics are unchanged; activation packages are separate from those public surfaces.
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/features/settings/components/billing-plan-panel.tsx`
-- `apps/web/src/features/settings/actions/manage-billing.ts`
-- `apps/web/src/app/(app)/dashboard/settings/page.tsx`
-- `apps/web/src/server/billing/purchase-availability.ts`
+- `apps/web/src/server/activation/activation-service.ts`
+- `apps/web/src/server/creative-performance/creative-performance-service.ts`
+- `apps/web/src/app/(app)/dashboard/analytics/page.tsx`
+- `apps/web/src/app/(app)/dashboard/exports/[exportId]/page.tsx`
+- `supabase/migrations/*`
 - `docs/_local/current-session.md`
 
 ## Key Constraints
@@ -39,24 +39,32 @@ Manual QA the billing panel on `/dashboard/settings` against a real Stripe-confi
 - Keep user-authored and provider-authored content unchanged; localize repo-owned UI copy and formatting only.
 - The browser harness is intentionally real-stack: no mock auth mode, no test-only HTTP endpoints, and fixture setup depends on reachable Supabase auth + service-role APIs.
 - The local environment here can `typecheck` and `build`, but current Supabase auth requests are timing out; seeded E2E verification has to be rerun from a network path that can reach the configured Supabase host.
-- Brand names and code/data literals can stay untranslated when they function as identifiers; surrounding UI labels and prose should be Arabic in the Arabic locale.
+- Activation package creation and creative-performance ingestion are now billed feature gates on paid plans only.
+- Historical `preview_asset_id` backfill is best-effort; ambiguous legacy exports are allowed to remain null.
 
 ## Verification Commands
 
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/billing/purchase-availability.test.ts src/features/settings/lib/billing-feedback.test.ts src/features/settings/actions/manage-billing.test.ts`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings/components/billing-plan-panel.test.tsx`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/billing/billing-plan-catalog.test.ts src/server/billing/runtime-readiness.test.ts src/app/api/health/route.test.ts src/server/billing/purchase-availability.test.ts`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/components/marketing/pricing-snapshot-section.test.tsx src/app/page.test.tsx`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/activation/activation-service.test.ts src/server/creative-performance/creative-performance-service.test.ts src/features/analytics/lib/creative-performance-summary.test.ts`
+- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/activation/components/activation-package-panel.test.tsx src/features/analytics/components/creative-performance-ingestion-panel.test.tsx`
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- manual QA on `/dashboard/settings` with Stripe runtime both healthy and degraded
+- `supabase migration list --linked`
+- `supabase db push --linked`
+- `pnpm --filter @ai-ad-studio/web exec node --input-type=commonjs - <<'NODE' ... billing_plans capability-column validation ... NODE`
+- manual QA on `/dashboard/exports/[exportId]` for activation package creation and manifest download
+- manual QA on `/dashboard/analytics` for creative scorecards and manual performance ingestion
 
 ## Lookup Notes
 
-- Billing settings UI: `apps/web/src/features/settings/components/billing-plan-panel.tsx`
-- Billing server actions: `apps/web/src/features/settings/actions/manage-billing.ts`
-- Cached billing readiness helper: `apps/web/src/server/billing/purchase-availability.ts`
-- Settings route feedback wiring: `apps/web/src/app/(app)/dashboard/settings/page.tsx`
-- Billing feedback mapping: `apps/web/src/features/settings/lib/billing-feedback.ts`
+- Durable plan artifact: `docs/product/creative-activation-feedback-plan.md`
+- Activation services and repo: `apps/web/src/server/activation/*`
+- Creative performance services and repo: `apps/web/src/server/creative-performance/*`
+- Shared lineage resolver: `apps/web/src/server/creative-lineage/export-lineage.ts`
+- Export detail activation panel: `apps/web/src/features/activation/components/activation-package-panel.tsx`
+- Analytics creative section: `apps/web/src/app/(app)/dashboard/analytics/page.tsx`
 
 ## Expected Result
 
-Paid plan cards in `/dashboard/settings` should be clickable across the full card surface, keyboard-submittable, and visibly disabled when checkout or portal runtime is unavailable. Checkout/plan-change failures should no longer look like silent no-ops.
+Finalized canonical exports can now produce durable internal activation packages, owner/operator manual campaign outcomes can be ingested against real creative lineage, and `/dashboard/analytics` shows the first creative performance scorecards alongside existing usage-cost analytics.

@@ -1,4 +1,5 @@
 type ReadinessPayload = {
+  billingPlanCatalogReady?: boolean
   publicAppUrlConfigured?: boolean
   r2Configured?: boolean
   serviceRoleConfigured?: boolean
@@ -228,6 +229,13 @@ async function main() {
 
   assertReadinessForConfiguredSurfaces(config, healthPayload)
   logStep("/api/health ok")
+
+  await assertHtmlRoute({
+    expectedText: "AI Ad Studio",
+    name: "homepage",
+    path: `${config.baseUrl}/`,
+    timeoutMs: config.requestTimeoutMs
+  })
 
   if (config.shareToken) {
     await assertHtmlRoute({

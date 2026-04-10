@@ -27,6 +27,7 @@ describe("billing purchase availability", () => {
           activePlanCodes: ["free", "starter", "growth", "scale"],
           error: null,
           missingPlanCodes: [],
+          reasonCode: null,
           status: "ok"
         },
         status: "ok",
@@ -99,6 +100,7 @@ describe("billing purchase availability", () => {
           activePlanCodes: ["free"],
           error: null,
           missingPlanCodes: ["starter", "growth", "scale"],
+          reasonCode: "missing_required_plans",
           status: "degraded"
         },
         status: "degraded",

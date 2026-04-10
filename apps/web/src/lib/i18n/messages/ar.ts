@@ -700,6 +700,10 @@ export const ar: AppMessageCatalog = {
   "marketing.pricing.publishing.delivery": "يشمل نشر التسليم",
   "marketing.pricing.publishing.limited": "نشر عام محدود",
   "marketing.pricing.publishing.internal": "سير عمل داخلي فقط",
+  "marketing.pricing.unavailableEyebrow": "كتالوج مباشر غير متاح",
+  "marketing.pricing.unavailableTitle": "بيانات التسعير غير متاحة مؤقتًا",
+  "marketing.pricing.unavailableDescription":
+    "لا يزال مسار العمل وسطح المنتج متاحين، لكن تعذر تحميل بيانات الخطط الحية الآن. افتح اللوحة بعد استعادة جاهزية الفوترة للاطلاع على الكتالوج الحالي.",
   "marketing.faq.eyebrow": "الأسئلة الشائعة",
   "marketing.faq.title": "يجب الرد على الاعتراضات الرئيسية داخل الصفحة نفسها",
   "marketing.faq.finalCtaEyebrow": "الدعوة النهائية",

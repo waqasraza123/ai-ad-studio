@@ -25,40 +25,54 @@ export async function PricingSnapshotSection({ plans }: PricingSnapshotSectionPr
         </div>
 
         <div className="mt-10 grid gap-4 xl:grid-cols-4">
-          {plans.map((plan) => (
-            <SurfaceCard
-              key={plan.code}
-              className={`theme-marketing-card-lift h-full p-6 ${
-                plan.code === "growth"
-                  ? "border-[rgb(var(--primary-rgb)_/_0.28)] bg-[linear-gradient(180deg,rgb(var(--primary-rgb)_/_0.1),transparent_40%),var(--background-elevated)]"
-                  : "p-6"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-sm uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
-                    {plan.name}
-                  </p>
-                  <p className="mt-3 text-3xl font-semibold text-[var(--foreground)]">
-                    {plan.priceLabel}
-                  </p>
+          {plans.length > 0 ? (
+            plans.map((plan) => (
+              <SurfaceCard
+                key={plan.code}
+                className={`theme-marketing-card-lift h-full p-6 ${
+                  plan.code === "growth"
+                    ? "border-[rgb(var(--primary-rgb)_/_0.28)] bg-[linear-gradient(180deg,rgb(var(--primary-rgb)_/_0.1),transparent_40%),var(--background-elevated)]"
+                    : "p-6"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+                      {plan.name}
+                    </p>
+                    <p className="mt-3 text-3xl font-semibold text-[var(--foreground)]">
+                      {plan.priceLabel}
+                    </p>
+                  </div>
+                  {plan.code === "growth" ? (
+                    <span className="theme-accent-pill rounded-full border px-3 py-1 text-xs">
+                      {t("marketing.pricing.recommended")}
+                    </span>
+                  ) : null}
                 </div>
-                {plan.code === "growth" ? (
-                  <span className="theme-accent-pill rounded-full border px-3 py-1 text-xs">
-                    {t("marketing.pricing.recommended")}
-                  </span>
-                ) : null}
-              </div>
 
-              <div className="mt-6 space-y-3 text-sm text-[var(--soft-foreground)]">
-                <p>{plan.conceptsLabel}</p>
-                <p>{plan.previewsLabel}</p>
-                <p>{plan.rendersLabel}</p>
-                <p>{plan.exportsLabel}</p>
-                <p>{plan.publishingLabel}</p>
-              </div>
+                <div className="mt-6 space-y-3 text-sm text-[var(--soft-foreground)]">
+                  <p>{plan.conceptsLabel}</p>
+                  <p>{plan.previewsLabel}</p>
+                  <p>{plan.rendersLabel}</p>
+                  <p>{plan.exportsLabel}</p>
+                  <p>{plan.publishingLabel}</p>
+                </div>
+              </SurfaceCard>
+            ))
+          ) : (
+            <SurfaceCard className="theme-marketing-card-lift p-6 xl:col-span-4">
+              <p className="text-sm uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
+                {t("marketing.pricing.unavailableEyebrow")}
+              </p>
+              <h3 className="mt-3 text-2xl font-semibold text-[var(--foreground)]">
+                {t("marketing.pricing.unavailableTitle")}
+              </h3>
+              <p className="mt-4 max-w-3xl text-sm leading-7 text-[var(--soft-foreground)]">
+                {t("marketing.pricing.unavailableDescription")}
+              </p>
             </SurfaceCard>
-          ))}
+          )}
         </div>
 
         <div className="theme-accent-panel mt-10 flex flex-col gap-4 rounded-[2rem] border p-6 lg:flex-row lg:items-center lg:justify-between">

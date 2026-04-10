@@ -711,6 +711,10 @@ export const en = {
   "marketing.pricing.publishing.delivery": "Delivery publishing included",
   "marketing.pricing.publishing.limited": "Limited public publishing",
   "marketing.pricing.publishing.internal": "Internal workflow only",
+  "marketing.pricing.unavailableEyebrow": "Live catalog unavailable",
+  "marketing.pricing.unavailableTitle": "Pricing data is temporarily unavailable",
+  "marketing.pricing.unavailableDescription":
+    "The workflow and product surface are still available, but live plan data could not be loaded right now. Open the dashboard after billing runtime access is restored to inspect the current catalog.",
   "marketing.faq.eyebrow": "FAQ",
   "marketing.faq.title": "The main objections should be answered on the page",
   "marketing.faq.finalCtaEyebrow": "Final CTA",

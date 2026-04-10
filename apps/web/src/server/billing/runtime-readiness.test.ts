@@ -71,6 +71,7 @@ describe("billing runtime readiness internals", () => {
       activePlanCodes: ["free", "starter"],
       error: null,
       missingPlanCodes: ["growth", "scale"],
+      reasonCode: "missing_required_plans",
       status: "degraded"
     })
   })

@@ -35,6 +35,7 @@ export type BillingPlanCatalogReadiness = {
   activePlanCodes: BillingPlanCode[]
   error: string | null
   missingPlanCodes: BillingPlanCode[]
+  reasonCode: "missing_required_plans" | "query_failed" | "schema_drift" | null
   status: RuntimeStatus
 }
 
@@ -72,6 +73,7 @@ export function summarizeBillingPlanCatalog(
     activePlanCodes,
     error: null,
     missingPlanCodes,
+    reasonCode: missingPlanCodes.length > 0 ? "missing_required_plans" : null,
     status: toRuntimeStatus(missingPlanCodes.length === 0)
   }
 }

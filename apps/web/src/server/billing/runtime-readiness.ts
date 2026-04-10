@@ -1,6 +1,7 @@
 import "server-only"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { getServerEnvironment } from "@/lib/env"
+import { isBillingPlanCatalogError } from "@/server/billing/billing-plan-catalog"
 import { listBillingPlans } from "@/server/billing/billing-service"
 import {
   buildBillingRuntimeEnvironmentReadiness,
@@ -103,6 +104,24 @@ function deriveIssues(input: {
   return issues
 }
 
+export async function getBillingPlanCatalogReadiness(): Promise<BillingPlanCatalogReadiness> {
+  try {
+    const plans = await listBillingPlans(createSupabaseAdminClient())
+    return summarizeBillingPlanCatalog(plans)
+  } catch (error) {
+    return {
+      activePlanCodes: [],
+      error:
+        error instanceof Error
+          ? error.message
+          : "Billing plan catalog could not be loaded.",
+      missingPlanCodes: [...requiredPlanCodes],
+      reasonCode: isBillingPlanCatalogError(error) ? error.code : "query_failed",
+      status: "degraded"
+    }
+  }
+}
+
 export async function getBillingRuntimeDiagnostics(): Promise<BillingRuntimeDiagnostics> {
   const environment = getServerEnvironment()
   const env = buildBillingRuntimeEnvironmentReadiness(process.env)
@@ -173,26 +192,7 @@ export async function getBillingRuntimeDiagnostics(): Promise<BillingRuntimeDiag
     }
   }
 
-  let planCatalog: BillingPlanCatalogReadiness = {
-    activePlanCodes: [],
-    error: null,
-    missingPlanCodes: [...requiredPlanCodes],
-    status: "degraded"
-  }
-
-  try {
-    const plans = await listBillingPlans(createSupabaseAdminClient())
-    planCatalog = summarizeBillingPlanCatalog(plans)
-  } catch (error) {
-    planCatalog = {
-      ...planCatalog,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Billing plan catalog could not be loaded.",
-      status: "degraded"
-    }
-  }
+  const planCatalog = await getBillingPlanCatalogReadiness()
 
   const stripe = {
     apiReachable: stripeApiReachable,
@@ -236,5 +236,6 @@ export async function getBillingRuntimeDiagnostics(): Promise<BillingRuntimeDiag
 export const billingRuntimeReadinessInternals = {
   buildBillingRuntimeEnvironmentReadiness,
   buildCapabilities,
+  getBillingPlanCatalogReadiness,
   summarizeBillingPlanCatalog
 }
