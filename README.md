@@ -40,18 +40,18 @@ The current local-model matrix is:
 
 ## Screenshots
 
-![alt text](.github/screenshots/image.png)
-![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.35 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.43 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.03 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.34 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.45 AM.png>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.54 AM.png>)
+![alt text](.github/screenshots/image.jpg)
+![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.35 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.42.43 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.03 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.34 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.45 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.54 AM.jpg>)
 
-![Dashboard overview](.github/screenshots/Screenshot%202026-03-18%20at%205.02.25%E2%80%AFPM.png)
+![Dashboard overview](.github/screenshots/Screenshot%202026-03-18%20at%205.02.25%E2%80%AFPM.jpg)
 
-![Project detail](.github/screenshots/Screenshot%202026-03-18%20at%205.02.42%E2%80%AFPM.png)
+![Project detail](.github/screenshots/Screenshot%202026-03-18%20at%205.02.42%E2%80%AFPM.jpg)
 
-![Concept and render workflow](.github/screenshots/Screenshot%202026-03-18%20at%205.02.58%E2%80%AFPM.png)
+![Concept and render workflow](.github/screenshots/Screenshot%202026-03-18%20at%205.02.58%E2%80%AFPM.jpg)
 
-![Batch review flow](.github/screenshots/Screenshot%202026-03-18%20at%205.03.13%E2%80%AFPM.png)
+![Batch review flow](.github/screenshots/Screenshot%202026-03-18%20at%205.03.13%E2%80%AFPM.jpg)
 
-![Delivery and promotion flow](.github/screenshots/Screenshot%202026-03-18%20at%205.03.37%E2%80%AFPM.png)
+![Delivery and promotion flow](.github/screenshots/Screenshot%202026-03-18%20at%205.03.37%E2%80%AFPM.jpg)
 
 ## What this repository includes
 
