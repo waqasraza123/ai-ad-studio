@@ -4,6 +4,7 @@ import { SurfaceCard } from "@/components/primitives/surface-card"
 import { selectConceptAction } from "@/features/concepts/actions/select-concept"
 import { SafetySummary } from "@/features/safety/components/safety-summary"
 import { getServerI18n } from "@/lib/i18n/server"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 type ConceptPreviewCardProps = {
   angle: string
@@ -15,7 +16,7 @@ type ConceptPreviewCardProps = {
   riskFlags: string[]
   safetyNotes: string | null
   script: string
-  status: string
+  statusKey: AppMessageKey
   title: string
   wasSafetyModified: boolean
 }
@@ -30,7 +31,7 @@ export async function ConceptPreviewCard({
   riskFlags,
   safetyNotes,
   script,
-  status,
+  statusKey,
   title,
   wasSafetyModified
 }: ConceptPreviewCardProps) {
@@ -70,7 +71,7 @@ export async function ConceptPreviewCard({
 
         <div className="flex flex-col items-end gap-2">
           <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-            {status}
+            {t(statusKey)}
           </span>
           {wasSafetyModified ? (
             <span className="rounded-full border border-amber-400/20 bg-amber-400/10 px-3 py-1 text-xs text-amber-100">

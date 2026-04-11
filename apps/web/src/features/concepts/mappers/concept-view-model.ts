@@ -5,6 +5,17 @@ import type {
   PlatformPresetKey,
   RenderVariantKey
 } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
+
+export type PipelineState = {
+  descriptionKey: AppMessageKey
+  labelKey: AppMessageKey
+  status: "failed" | "idle" | "queued" | "ready" | "running" | "waiting"
+}
+
+export type PreviewPipelineState = PipelineState & {
+  isBlocked: boolean
+}
 
 function readPreviewDataUrl(asset: AssetRecord) {
   const previewDataUrl = asset.metadata.previewDataUrl
@@ -20,7 +31,19 @@ export function toConceptCardViewModel(input: {
   concept: ConceptRecord
   previewAsset: AssetRecord | null
   selectedConceptId: string | null
-}) {
+}): {
+  angle: string
+  hook: string
+  id: string
+  isSelected: boolean
+  previewDataUrl: string | null
+  riskFlags: string[]
+  safetyNotes: string | null
+  script: string
+  statusKey: AppMessageKey
+  title: string
+  wasSafetyModified: boolean
+} {
   return {
     angle: input.concept.angle,
     hook: input.concept.hook,
@@ -30,10 +53,40 @@ export function toConceptCardViewModel(input: {
     riskFlags: input.concept.risk_flags,
     safetyNotes: input.concept.safety_notes,
     script: input.concept.script,
-    status: input.concept.status,
+    statusKey: getConceptStatusLabelKey(input.concept.status),
     title: input.concept.title,
     wasSafetyModified: input.concept.was_safety_modified
   }
+}
+
+export function getConceptStatusLabelKey(
+  status: ConceptRecord["status"]
+): AppMessageKey {
+  if (status === "preview_generating") {
+    return "concepts.status.preview_generating"
+  }
+
+  if (status === "preview_ready") {
+    return "concepts.status.preview_ready"
+  }
+
+  if (status === "selected") {
+    return "concepts.status.selected"
+  }
+
+  if (status === "render_queued") {
+    return "concepts.status.render_queued"
+  }
+
+  if (status === "rendered") {
+    return "concepts.status.rendered"
+  }
+
+  if (status === "failed") {
+    return "common.status.failed"
+  }
+
+  return "concepts.status.planned"
 }
 
 export function mapConceptPreviewAssetsByConceptId(assets: AssetRecord[]) {
@@ -47,107 +100,110 @@ export function mapConceptPreviewAssetsByConceptId(assets: AssetRecord[]) {
   )
 }
 
-export function toConceptGenerationState(jobs: JobRecord[], conceptsCount: number) {
+export function toConceptGenerationState(
+  jobs: JobRecord[],
+  conceptsCount: number
+): PipelineState {
   const latestGenerateConceptsJob = jobs.find((job) => job.type === "generate_concepts")
 
   if (latestGenerateConceptsJob?.status === "queued") {
     return {
-      description:
-        "A concept generation job has been queued. Start the worker to process it.",
-      label: "Queued"
-    }
+      descriptionKey: "concepts.state.generation.queued.description",
+      labelKey: "common.status.queued",
+      status: "queued"
+    } satisfies PipelineState
   }
 
   if (latestGenerateConceptsJob?.status === "running") {
     return {
-      description:
-        "The worker is currently drafting, safety-reviewing, and persisting the concept set.",
-      label: "Running"
-    }
+      descriptionKey: "concepts.state.generation.running.description",
+      labelKey: "common.status.running",
+      status: "running"
+    } satisfies PipelineState
   }
 
   if (latestGenerateConceptsJob?.status === "failed") {
     return {
-      description:
-        "The last concept generation attempt failed. You can trigger another run.",
-      label: "Failed"
-    }
+      descriptionKey: "concepts.state.generation.failed.description",
+      labelKey: "common.status.failed",
+      status: "failed"
+    } satisfies PipelineState
   }
 
   if (conceptsCount > 0) {
     return {
-      description:
-        "The concept set is ready and has passed the safety review layer.",
-      label: "Ready"
-    }
+      descriptionKey: "concepts.state.generation.ready.description",
+      labelKey: "common.status.ready",
+      status: "ready"
+    } satisfies PipelineState
   }
 
   return {
-    description:
-      "Generate exactly three concept directions from the saved brief using the durable jobs flow.",
-    label: "Idle"
-  }
+    descriptionKey: "concepts.state.generation.idle.description",
+    labelKey: "common.status.idle",
+    status: "idle"
+  } satisfies PipelineState
 }
 
 export function toConceptPreviewState(input: {
   concepts: ConceptRecord[]
   jobs: JobRecord[]
   previewAssetsCount: number
-}) {
+}): PreviewPipelineState {
   const latestPreviewJob = input.jobs.find(
     (job) => job.type === "generate_concept_preview"
   )
 
   if (latestPreviewJob?.status === "queued") {
     return {
-      description:
-        "A preview generation job is queued. Start the worker to produce one visual per concept.",
+      descriptionKey: "concepts.state.preview.queued.description",
       isBlocked: true,
-      label: "Queued"
+      labelKey: "common.status.queued",
+      status: "queued"
     }
   }
 
   if (latestPreviewJob?.status === "running") {
     return {
-      description:
-        "The worker is generating and persisting concept preview visuals.",
+      descriptionKey: "concepts.state.preview.running.description",
       isBlocked: true,
-      label: "Running"
+      labelKey: "common.status.running",
+      status: "running"
     }
   }
 
   if (latestPreviewJob?.status === "failed") {
     return {
-      description:
-        "The last preview generation attempt failed. You can trigger another run.",
+      descriptionKey: "concepts.state.preview.failed.description",
       isBlocked: false,
-      label: "Failed"
+      labelKey: "common.status.failed",
+      status: "failed"
     }
   }
 
   if (input.previewAssetsCount > 0) {
     return {
-      description:
-        "Preview visuals are ready. Select the strongest concept to take forward.",
+      descriptionKey: "concepts.state.preview.ready.description",
       isBlocked: false,
-      label: "Ready"
+      labelKey: "common.status.ready",
+      status: "ready"
     }
   }
 
   if (input.concepts.length === 0) {
     return {
-      description:
-        "Generate concepts first. Preview generation becomes available after concepts exist.",
+      descriptionKey: "concepts.state.preview.waiting.description",
       isBlocked: true,
-      label: "Waiting"
+      labelKey: "common.status.waiting",
+      status: "waiting"
     }
   }
 
   return {
-    description:
-      "Generate one preview image per concept. This flow persists the preview assets for later rendering.",
+    descriptionKey: "concepts.state.preview.idle.description",
     isBlocked: false,
-    label: "Idle"
+    labelKey: "common.status.idle",
+    status: "idle"
   }
 }
 
@@ -155,54 +211,54 @@ export function toRenderState(input: {
   hasLatestExport: boolean
   jobs: JobRecord[]
   selectedConceptTitle: string | null
-}) {
+}): PipelineState {
   const latestRenderJob = input.jobs.find((job) => job.type === "render_final_ad")
 
   if (latestRenderJob?.status === "queued") {
     return {
-      description:
-        "A final render job is queued. Keep the worker running to process the selected formats and preset.",
-      label: "Queued"
-    }
+      descriptionKey: "renders.state.queued.description",
+      labelKey: "common.status.queued",
+      status: "queued"
+    } satisfies PipelineState
   }
 
   if (latestRenderJob?.status === "running") {
     return {
-      description:
-        "The worker is planning scenes, generating motion, and building multiple export outputs.",
-      label: "Running"
-    }
+      descriptionKey: "renders.state.running.description",
+      labelKey: "common.status.running",
+      status: "running"
+    } satisfies PipelineState
   }
 
   if (latestRenderJob?.status === "failed") {
     return {
-      description:
-        "The last render attempt failed. Check worker logs and trigger another run.",
-      label: "Failed"
-    }
+      descriptionKey: "renders.state.failed.description",
+      labelKey: "common.status.failed",
+      status: "failed"
+    } satisfies PipelineState
   }
 
   if (input.hasLatestExport) {
     return {
-      description:
-        "Exports exist. Open one to validate preset behavior, scene planning, and format metadata.",
-      label: "Ready"
-    }
+      descriptionKey: "renders.state.ready.description",
+      labelKey: "common.status.ready",
+      status: "ready"
+    } satisfies PipelineState
   }
 
   if (!input.selectedConceptTitle) {
     return {
-      description:
-        "Select a concept before triggering the final render scaffold.",
-      label: "Waiting"
-    }
+      descriptionKey: "renders.state.waiting.description",
+      labelKey: "common.status.waiting",
+      status: "waiting"
+    } satisfies PipelineState
   }
 
   return {
-    description:
-      "Trigger a durable render job for the selected concept, platform preset, and output formats.",
-    label: "Idle"
-  }
+    descriptionKey: "renders.state.idle.description",
+    labelKey: "common.status.idle",
+    status: "idle"
+  } satisfies PipelineState
 }
 
 export function getLatestVariantKey(

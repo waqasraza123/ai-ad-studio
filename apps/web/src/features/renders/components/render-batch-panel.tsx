@@ -3,6 +3,11 @@ import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { startRenderBatchAction } from "@/features/renders/actions/start-render-batch"
 import { getServerI18n } from "@/lib/i18n/server"
+import {
+  getPlatformPresetLabelKey,
+  getRenderBatchStatusLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import type { RenderBatchRecord } from "@/server/database/types"
 
 type RenderBatchPanelProps = {
@@ -65,10 +70,10 @@ export async function RenderBatchPanel({
             name="platform_preset"
           >
             <option value="default">{t("renders.batchPanel.variant.default")}</option>
-            <option value="instagram_reels">Instagram Reels</option>
-            <option value="instagram_feed">Instagram Feed</option>
-            <option value="youtube_shorts">YouTube Shorts</option>
-            <option value="youtube_landscape">YouTube Landscape</option>
+            <option value="instagram_reels">{t(getPlatformPresetLabelKey("instagram_reels"))}</option>
+            <option value="instagram_feed">{t(getPlatformPresetLabelKey("instagram_feed"))}</option>
+            <option value="youtube_shorts">{t(getPlatformPresetLabelKey("youtube_shorts"))}</option>
+            <option value="youtube_landscape">{t(getPlatformPresetLabelKey("youtube_landscape"))}</option>
           </select>
         </label>
 
@@ -130,10 +135,13 @@ export async function RenderBatchPanel({
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="text-sm font-medium text-white">
-                      {batch.variant_keys.length} variants · {batch.aspect_ratios.join(", ")}
+                      {t("renders.batchPanel.variantsSummary", {
+                        count: batch.variant_keys.length,
+                        value: batch.aspect_ratios.join(", ")
+                      })}
                     </p>
                     <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(batch.status)}`}>
-                      {batch.status}
+                      {t(getRenderBatchStatusLabelKey(batch.status))}
                     </span>
                     {batch.winner_export_id ? (
                       <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
@@ -147,7 +155,7 @@ export async function RenderBatchPanel({
                     ) : null}
                   </div>
                   <p className="mt-2 text-sm text-slate-300">
-                    {batch.platform_preset} · {t("renders.batchPanel.exportsCount", {
+                    {t(getPlatformPresetLabelKey(batch.platform_preset))} · {t("renders.batchPanel.exportsCount", {
                       count: batch.export_count
                     })}
                   </p>
@@ -183,7 +191,7 @@ export async function RenderBatchPanel({
                       key={variantKey}
                       className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300"
                     >
-                      {variantKey}
+                      {t(getRenderVariantLabelKey(variantKey))}
                     </span>
                   ))}
                   <Link

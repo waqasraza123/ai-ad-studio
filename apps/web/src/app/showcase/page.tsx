@@ -2,6 +2,7 @@ import { PublicPageHeader } from "@/components/i18n/public-page-header"
 import { PublicPageFrame } from "@/components/layout/page-frame"
 import { PublicShowcaseGallery } from "@/features/showcase/components/public-showcase-gallery"
 import { getServerI18n } from "@/lib/i18n/server"
+import { getPlatformPresetLabelKey } from "@/features/renders/lib/render-ui"
 import { listPublishedShowcaseItems } from "@/server/showcase/showcase-repository"
 
 type PublicShowcasePageProps = {
@@ -63,13 +64,13 @@ export default async function PublicShowcasePage({
               className="theme-inline-secondary-button inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium"
               href="/showcase?platformPreset=instagram_reels"
             >
-              Instagram Reels
+              {t(getPlatformPresetLabelKey("instagram_reels"))}
             </a>
             <a
               className="theme-inline-secondary-button inline-flex h-10 items-center justify-center rounded-full border px-4 text-sm font-medium"
               href="/showcase?platformPreset=youtube_landscape"
             >
-              YouTube Landscape
+              {t(getPlatformPresetLabelKey("youtube_landscape"))}
             </a>
           </div>
         </section>

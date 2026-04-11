@@ -1,5 +1,6 @@
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getServerI18n } from "@/lib/i18n/server"
+import { getRenderVariantLabelKey } from "@/features/renders/lib/render-ui"
 import type { BatchReviewCommentRecord, ExportRecord } from "@/server/database/types"
 
 type BatchReviewCommentsPanelProps = {
@@ -11,7 +12,8 @@ function exportLabel(
   exportId: string | null,
   exports: ExportRecord[],
   fallbackLabel: string,
-  unknownLabel: string
+  unknownLabel: string,
+  t: Awaited<ReturnType<typeof getServerI18n>>["t"]
 ) {
   if (!exportId) {
     return fallbackLabel
@@ -23,7 +25,7 @@ function exportLabel(
     return unknownLabel
   }
 
-  return `${exportRecord.variant_key} · ${exportRecord.aspect_ratio}`
+  return `${t(getRenderVariantLabelKey(exportRecord.variant_key))} · ${exportRecord.aspect_ratio}`
 }
 
 export async function BatchReviewCommentsPanel({
@@ -63,7 +65,8 @@ export async function BatchReviewCommentsPanel({
                     comment.export_id,
                     exports,
                     t("renders.commentsPanel.batchWide"),
-                    t("renders.commentsPanel.unknownExport")
+                    t("renders.commentsPanel.unknownExport"),
+                    t
                   )}
                 </span>
               </div>

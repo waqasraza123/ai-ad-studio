@@ -1,9 +1,15 @@
 import Link from "next/link"
+import { getServerI18n } from "@/lib/i18n/server"
 import { renderProjectAction } from "@/features/renders/actions/render-project"
 import {
   getPlatformPresetDefinition,
   platformPresets
 } from "@/features/renders/lib/platform-presets"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import type {
   PlatformPresetKey,
   RenderVariantKey
@@ -13,59 +19,62 @@ import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 
 type RenderPanelProps = {
+  descriptionKey: AppMessageKey
+  labelKey: AppMessageKey
   latestExportId: string | null
   platformPreset: PlatformPresetKey
   projectId: string
-  renderJobDescription: string
-  renderJobLabel: string
   selectedConceptTitle: string | null
   selectedVariantKey: RenderVariantKey
   scenePlan: ScenePlanItem[]
+  status: "failed" | "idle" | "queued" | "ready" | "running" | "waiting"
 }
 
-export function RenderPanel({
+export async function RenderPanel({
+  descriptionKey,
+  labelKey,
   latestExportId,
   platformPreset,
   projectId,
-  renderJobDescription,
-  renderJobLabel,
   scenePlan,
   selectedConceptTitle,
-  selectedVariantKey
+  selectedVariantKey,
+  status
 }: RenderPanelProps) {
+  const { t } = await getServerI18n()
   const action = renderProjectAction.bind(null, projectId)
-  const isBlocked = renderJobLabel === "Queued" || renderJobLabel === "Running"
+  const isBlocked = status === "queued" || status === "running"
   const canRender = Boolean(selectedConceptTitle)
   const presetDefinition = getPlatformPresetDefinition(platformPreset)
 
   return (
     <SurfaceCard className="p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Final render
+        {t("renders.panel.eyebrow")}
       </p>
       <div className="mt-4 flex flex-wrap items-center gap-3">
         <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-          Multi-format render pipeline
+          {t("renders.panel.title")}
         </h2>
         <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-          {renderJobLabel}
+          {t(labelKey)}
         </span>
       </div>
 
       <p className="mt-3 text-sm leading-7 text-slate-400">
-        {renderJobDescription}
+        {t(descriptionKey)}
       </p>
 
       <div className="mt-5 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-        <p className="text-sm text-slate-400">Selected concept</p>
+        <p className="text-sm text-slate-400">{t("renders.panel.selectedConcept")}</p>
         <p className="mt-2 text-sm font-medium text-white">
-          {selectedConceptTitle ?? "No concept selected yet"}
+          {selectedConceptTitle ?? t("renders.panel.noConceptSelected")}
         </p>
       </div>
 
       <form action={action} className="mt-6 space-y-5">
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Platform preset</span>
+          <span className="text-sm text-slate-300">{t("renders.panel.platformPreset")}</span>
           <select
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-amber-300/40"
             defaultValue={platformPreset}
@@ -73,28 +82,30 @@ export function RenderPanel({
           >
             {platformPresets.map((preset) => (
               <option key={preset.key} value={preset.key}>
-                {preset.label}
+                {t(getPlatformPresetLabelKey(preset.key))}
               </option>
             ))}
           </select>
-          <p className="text-xs text-slate-500">{presetDefinition.description}</p>
+          <p className="text-xs text-slate-500">
+            {t(presetDefinition.descriptionKey)}
+          </p>
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Render variant</span>
+          <span className="text-sm text-slate-300">{t("renders.panel.renderVariant")}</span>
           <select
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white outline-none transition focus:border-amber-300/40"
             defaultValue={selectedVariantKey}
             name="variantKey"
           >
-            <option value="default">Default</option>
-            <option value="caption_heavy">Caption heavy</option>
-            <option value="cta_heavy">CTA heavy</option>
+            <option value="default">{t(getRenderVariantLabelKey("default"))}</option>
+            <option value="caption_heavy">{t(getRenderVariantLabelKey("caption_heavy"))}</option>
+            <option value="cta_heavy">{t(getRenderVariantLabelKey("cta_heavy"))}</option>
           </select>
         </label>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm font-medium text-white">Output formats</p>
+          <p className="text-sm font-medium text-white">{t("renders.panel.outputFormats")}</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {presetDefinition.aspectRatios.map((aspectRatio) => (
               <span
@@ -108,7 +119,7 @@ export function RenderPanel({
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm font-medium text-white">Scene plan preview</p>
+          <p className="text-sm font-medium text-white">{t("renders.panel.scenePlanPreview")}</p>
           <div className="mt-4 space-y-3">
             {scenePlan.map((scene) => (
               <div
@@ -132,13 +143,13 @@ export function RenderPanel({
 
         <FormSubmitButton
           disabled={!canRender || isBlocked}
-          pendingLabel="Starting render…"
+          pendingLabel={t("renders.panel.pending")}
         >
           {!canRender
-            ? "Select a concept first"
+            ? t("renders.panel.selectConceptFirst")
             : isBlocked
-              ? "Render in progress"
-              : "Render project"}
+              ? t("renders.panel.inProgress")
+              : t("renders.panel.action")}
         </FormSubmitButton>
       </form>
 
@@ -148,7 +159,7 @@ export function RenderPanel({
             href={`/dashboard/exports/${latestExportId}`}
             className="inline-flex h-11 items-center justify-center rounded-full border border-amber-400/20 bg-amber-500/10 px-5 text-sm font-medium text-amber-100 transition hover:bg-amber-500/20"
           >
-            Open latest export
+            {t("renders.panel.openLatestExport")}
           </Link>
         </div>
       ) : null}

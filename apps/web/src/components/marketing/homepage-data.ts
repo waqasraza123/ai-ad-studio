@@ -3,6 +3,7 @@ import type {
   BillingPlanRecord,
   ShowcaseItemRecord
 } from "@/server/database/types"
+import { getBillingPlanNameKey } from "@/lib/billing-plan-labels"
 import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import type { TranslationValues } from "@/lib/i18n/translator"
 
@@ -114,7 +115,7 @@ export function mapHomepagePricingPlans(
       exportsLabel: i18n.t("marketing.pricing.exportsPerMonth", {
         count: plan.included_final_exports
       }),
-      name: plan.display_name,
+      name: i18n.t(getBillingPlanNameKey(plan.code)),
       previewsLabel: i18n.t("marketing.pricing.previewsPerMonth", {
         count: plan.included_preview_generations
       }),

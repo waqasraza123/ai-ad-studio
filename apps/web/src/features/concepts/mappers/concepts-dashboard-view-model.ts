@@ -4,18 +4,12 @@ import type {
   JobRecord,
   ProjectRecord,
 } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import {
   mapConceptPreviewAssetsByConceptId,
   toConceptGenerationState,
   toConceptPreviewState,
 } from "./concept-view-model"
-
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value))
-}
 
 function readPreviewDataUrl(asset: AssetRecord | null) {
   if (!asset) {
@@ -40,15 +34,15 @@ function getLatestConcept(concepts: ConceptRecord[]) {
 
 export type ConceptsDashboardProjectViewModel = {
   conceptCount: number
-  conceptGenerationDescription: string
-  conceptGenerationLabel: string
+  conceptGenerationDescriptionKey: AppMessageKey
+  conceptGenerationLabelKey: AppMessageKey
   featuredPreviewDataUrl: string | null
   href: string
   latestConceptTitle: string | null
   latestUpdatedAtLabel: string
   previewCount: number
-  previewDescription: string
-  previewLabel: string
+  previewDescriptionKey: AppMessageKey
+  previewLabelKey: AppMessageKey
   projectId: string
   projectName: string
   projectStatus: ProjectRecord["status"]
@@ -65,6 +59,7 @@ export type ConceptsDashboardSummaryViewModel = {
 
 export function toConceptsDashboardProjectViewModel(input: {
   concepts: ConceptRecord[]
+  formatDateTime: (value: Date | number | string) => string
   jobs: JobRecord[]
   previewAssets: AssetRecord[]
   project: ProjectRecord
@@ -90,17 +85,17 @@ export function toConceptsDashboardProjectViewModel(input: {
 
   return {
     conceptCount: input.concepts.length,
-    conceptGenerationDescription: conceptGenerationState.description,
-    conceptGenerationLabel: conceptGenerationState.label,
+    conceptGenerationDescriptionKey: conceptGenerationState.descriptionKey,
+    conceptGenerationLabelKey: conceptGenerationState.labelKey,
     featuredPreviewDataUrl: readPreviewDataUrl(featuredPreviewAsset),
     href: `/dashboard/projects/${input.project.id}`,
     latestConceptTitle: latestConcept?.title ?? null,
-    latestUpdatedAtLabel: formatTimestamp(
+    latestUpdatedAtLabel: input.formatDateTime(
       latestConcept?.updated_at ?? input.project.updated_at
     ),
     previewCount: previewAssetsByConceptId.size,
-    previewDescription: previewState.description,
-    previewLabel: previewState.label,
+    previewDescriptionKey: previewState.descriptionKey,
+    previewLabelKey: previewState.labelKey,
     projectId: input.project.id,
     projectName: input.project.name,
     projectStatus: input.project.status,

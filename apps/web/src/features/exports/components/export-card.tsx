@@ -1,4 +1,9 @@
 import Link from "next/link"
+import { getServerI18n } from "@/lib/i18n/server"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import type {
   ExportAspectRatio,
   PlatformPresetKey,
@@ -15,7 +20,7 @@ type ExportCardProps = {
   variantKey: RenderVariantKey
 }
 
-export function ExportCard({
+export async function ExportCard({
   aspectRatio,
   createdAtLabel,
   exportId,
@@ -23,6 +28,8 @@ export function ExportCard({
   projectName,
   variantKey
 }: ExportCardProps) {
+  const { t } = await getServerI18n()
+
   return (
     <Link href={`/dashboard/exports/${exportId}`}>
       <SurfaceCard className="h-full p-5 transition hover:border-white/20 hover:bg-white/[0.06]">
@@ -38,10 +45,10 @@ export function ExportCard({
 
         <div className="mt-5 flex flex-wrap gap-2">
           <span className="rounded-full border border-amber-400/20 bg-amber-500/10 px-3 py-1 text-xs text-amber-100">
-            {platformPreset}
+            {t(getPlatformPresetLabelKey(platformPreset))}
           </span>
           <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-            {variantKey}
+            {t(getRenderVariantLabelKey(variantKey))}
           </span>
         </div>
       </SurfaceCard>

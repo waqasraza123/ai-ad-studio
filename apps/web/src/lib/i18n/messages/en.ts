@@ -1518,6 +1518,230 @@ export const en = {
   "delivery.investigationStale.missingWorkspaceBadge":
     "Missing workspace focus",
   "delivery.investigationStale.reminderIdBadge": "Reminder {{value}}",
+  "common.actions.dismiss": "Dismiss",
+  "common.status.active": "Active",
+  "common.status.archived": "Archived",
+  "common.status.cancelled": "Cancelled",
+  "common.status.failed": "Failed",
+  "common.status.free": "Free",
+  "common.status.idle": "Idle",
+  "common.status.queued": "Queued",
+  "common.status.ready": "Ready",
+  "common.status.rendering": "Rendering",
+  "common.status.running": "Running",
+  "common.status.waiting": "Waiting",
+  "billing.plan.free": "Free",
+  "billing.plan.starter": "Starter",
+  "billing.plan.growth": "Growth",
+  "billing.plan.scale": "Scale",
+  "campaigns.page.eyebrow": "Campaigns",
+  "campaigns.page.title": "Winner-only share campaigns",
+  "campaigns.page.description":
+    "Public campaign pages can only be created from reviewed winning exports.",
+  "notifications.page.eyebrow": "Notifications",
+  "notifications.page.title": "Alerts for exports, failures, and queue health",
+  "notifications.page.description":
+    "Track completed exports, failed jobs, and long-running queue conditions in one place.",
+  "notifications.markAllRead": "Mark all as read",
+  "showcase.dashboard.eyebrow": "Showcase",
+  "showcase.dashboard.title": "Public demo gallery manager",
+  "showcase.dashboard.description":
+    "Publish selected exports into a public showcase grouped by template, format, and platform preset.",
+  "showcase.dashboard.empty": "No showcase items yet.",
+  "configuration.required.eyebrow": "Configuration required",
+  "configuration.required.description":
+    "Add Supabase values to your local environment before proving auth end to end:",
+  "flash.brief_saved": "Project brief saved.",
+  "brandKit.selector.eyebrow": "Brand kit",
+  "brandKit.selector.title": "Brand palette and typography",
+  "brandKit.selector.description":
+    "Brand kits control the visual theme that templates inherit during planning and final composition.",
+  "brandKit.selector.label": "Brand kit",
+  "brandKit.selector.heading": "Heading",
+  "brandKit.selector.body": "Body",
+  "brandKit.selector.pending": "Saving…",
+  "brandKit.selector.save": "Save brand kit",
+  "settings.guardrails.eyebrow": "Personal safety caps",
+  "settings.guardrails.title": "Personal budget and concurrency caps",
+  "settings.guardrails.description":
+    "These caps can only tighten the limits from your active subscription. They cannot raise plan entitlements above what Billing and plan allow.",
+  "settings.guardrails.monthlyTotalBudget": "Monthly total budget",
+  "settings.guardrails.monthlyOpenAiBudget": "Monthly OpenAI budget",
+  "settings.guardrails.monthlyRunwayBudget": "Monthly Runway budget",
+  "settings.guardrails.concurrentRenderJobs": "Concurrent render jobs",
+  "settings.guardrails.concurrentPreviewJobs": "Concurrent preview jobs",
+  "settings.guardrails.autoBlockOnBudget": "Auto-block jobs that exceed budget",
+  "settings.guardrails.currentDefault": "Current default {{value}}",
+  "settings.guardrails.pending": "Saving…",
+  "settings.guardrails.save": "Save guardrails",
+  "renderPack.summary.eyebrow": "Render pack",
+  "renderPack.summary.title": "Platform-safe layout",
+  "renderPack.summary.description":
+    "Active render pack for {{platformPreset}} at {{aspectRatio}}. This controls safe zones, caption placement, and CTA timing during composition.",
+  "renderPack.summary.safeZone": "Safe zone",
+  "renderPack.summary.captionLayout": "Caption layout",
+  "renderPack.summary.captionLayoutPosition":
+    "x {{x}} · y {{y}} · font {{font}}",
+  "renderPack.summary.ctaTiming": "CTA timing",
+  "renderPack.summary.ctaStart": "start {{value}}s",
+  "renderPack.summary.ctaDuration": "duration {{value}}s",
+  "concepts.status.planned": "Planned",
+  "concepts.status.preview_generating": "Preview generating",
+  "concepts.status.preview_ready": "Preview ready",
+  "concepts.status.selected": "Selected",
+  "concepts.status.render_queued": "Render queued",
+  "concepts.status.rendered": "Rendered",
+  "concepts.state.generation.queued.description":
+    "A concept generation job has been queued. Start the worker to process it.",
+  "concepts.state.generation.running.description":
+    "The worker is currently drafting, safety-reviewing, and persisting the concept set.",
+  "concepts.state.generation.failed.description":
+    "The last concept generation attempt failed. You can trigger another run.",
+  "concepts.state.generation.ready.description":
+    "The concept set is ready and has passed the safety review layer.",
+  "concepts.state.generation.idle.description":
+    "Generate exactly three concept directions from the saved brief using the durable jobs flow.",
+  "concepts.state.preview.queued.description":
+    "A preview generation job is queued. Start the worker to produce one visual per concept.",
+  "concepts.state.preview.running.description":
+    "The worker is generating and persisting concept preview visuals.",
+  "concepts.state.preview.failed.description":
+    "The last preview generation attempt failed. You can trigger another run.",
+  "concepts.state.preview.ready.description":
+    "Preview visuals are ready. Select the strongest concept to take forward.",
+  "concepts.state.preview.waiting.description":
+    "Generate concepts first. Preview generation becomes available after concepts exist.",
+  "concepts.state.preview.idle.description":
+    "Generate one preview image per concept. This flow persists the preview assets for later rendering.",
+  "renders.panel.eyebrow": "Final render",
+  "renders.panel.title": "Multi-format render pipeline",
+  "renders.panel.selectedConcept": "Selected concept",
+  "renders.panel.noConceptSelected": "No concept selected yet",
+  "renders.panel.platformPreset": "Platform preset",
+  "renders.panel.renderVariant": "Render variant",
+  "renders.panel.outputFormats": "Output formats",
+  "renders.panel.scenePlanPreview": "Scene plan preview",
+  "renders.panel.pending": "Starting render…",
+  "renders.panel.selectConceptFirst": "Select a concept first",
+  "renders.panel.inProgress": "Render in progress",
+  "renders.panel.action": "Render project",
+  "renders.panel.openLatestExport": "Open latest export",
+  "renders.variant.default": "Default",
+  "renders.variant.caption_heavy": "Caption heavy",
+  "renders.variant.cta_heavy": "CTA heavy",
+  "renders.platformPreset.default.label": "Default",
+  "renders.platformPreset.default.description": "General-purpose vertical export",
+  "renders.platformPreset.instagram_reels.label": "Instagram Reels",
+  "renders.platformPreset.instagram_reels.description":
+    "Optimized for Instagram Reels pacing",
+  "renders.platformPreset.instagram_feed.label": "Instagram Feed",
+  "renders.platformPreset.instagram_feed.description":
+    "Square export for Instagram feed",
+  "renders.platformPreset.youtube_shorts.label": "YouTube Shorts",
+  "renders.platformPreset.youtube_shorts.description":
+    "Vertical short-form preset for YouTube Shorts",
+  "renders.platformPreset.youtube_landscape.label": "YouTube Landscape",
+  "renders.platformPreset.youtube_landscape.description":
+    "Landscape export for YouTube or landing pages",
+  "renders.state.queued.description":
+    "A final render job is queued. Keep the worker running to process the selected formats and preset.",
+  "renders.state.running.description":
+    "The worker is planning scenes, generating motion, and building multiple export outputs.",
+  "renders.state.failed.description":
+    "The last render attempt failed. Check worker logs and trigger another run.",
+  "renders.state.ready.description":
+    "Exports exist. Open one to validate preset behavior, scene planning, and format metadata.",
+  "renders.state.waiting.description":
+    "Select a concept before triggering the final render scaffold.",
+  "renders.state.idle.description":
+    "Trigger a durable render job for the selected concept, platform preset, and output formats.",
+  "renders.scenePlan.motion.landscapeFriendly": "landscape-friendly framing",
+  "renders.scenePlan.motion.squareSafe": "square-safe framing",
+  "renders.scenePlan.motion.verticalFirst": "vertical-first framing",
+  "renders.scenePlan.safeZone.custom": "safe-zone T{{top}} B{{bottom}}",
+  "renders.scenePlan.safeZone.default": "default-safe-zone",
+  "renders.scenePlan.defaultMotion.captionLead":
+    "caption-led hero reveal with {{value}}",
+  "renders.scenePlan.defaultMotion.heroReveal":
+    "hero reveal with {{value}}",
+  "renders.scenePlan.defaultMotion.productDetail":
+    "product detail emphasis with {{value}}",
+  "renders.scenePlan.defaultMotion.conversionFocused":
+    "conversion-focused emphasis with {{value}}",
+  "renders.scenePlan.defaultMotion.captionRich":
+    "caption-rich detail emphasis with {{value}}",
+  "renders.scenePlan.defaultMotion.aggressiveCta":
+    "aggressive CTA transition with {{value}}",
+  "renders.scenePlan.defaultMotion.cleanCta":
+    "clean CTA close with {{value}}",
+  "renders.scenePlan.caption.strongCta": "Strong CTA close: {{value}}",
+  "renders.scenePlan.caption.closeWithCta": "Close with CTA: {{value}}",
+  "renders.batchPanel.variantsSummary": "{{count}} variants · {{value}}",
+  "settings.billing.price.free": "Free",
+  "settings.billing.price.monthly": "{{value}}/mo",
+  "settings.billing.status.gracePeriod": "Grace period",
+  "settings.billing.cancel.pending": "Scheduling cancel…",
+  "settings.billing.cancel.action": "Cancel at period end",
+  "settings.billing.reactivate.pending": "Reactivating…",
+  "settings.billing.reactivate.action": "Reactivate subscription",
+  "settings.billing.planDetails.activeProjects": "{{count}} active projects",
+  "settings.billing.planDetails.conceptRuns": "{{count}} concept runs / month",
+  "settings.billing.planDetails.previews": "{{count}} previews / month",
+  "settings.billing.planDetails.renderBatches":
+    "{{count}} render batches / month",
+  "settings.billing.planDetails.finalExports":
+    "{{count}} final exports / month",
+  "settings.billing.planDetails.storage": "{{value}} storage",
+  "settings.billing.planDetails.concurrency":
+    "{{preview}} preview jobs • {{render}} render jobs",
+  "settings.billing.planDetails.watermarked": "Watermarked exports",
+  "settings.billing.planDetails.noWatermark": "No export watermark",
+  "settings.billing.planDetails.externalReviewIncluded":
+    "External review included",
+  "settings.billing.planDetails.externalReviewLocked": "External review locked",
+  "settings.billing.panel.eyebrow": "Billing and plan",
+  "settings.billing.panel.title": "{{value}} plan",
+  "settings.billing.panel.description":
+    "Cards and USDC checkout run through Stripe Checkout. Base is recommended for lower stablecoin network fees. Free exports are watermarked; paid plans remove the watermark and unlock stricter production workflows.",
+  "settings.billing.panel.currentPeriod": "Current billing period",
+  "settings.billing.panel.periodRange": "{{start}} to {{end}}",
+  "settings.billing.panel.monthlyPlan": "Monthly plan",
+  "settings.billing.panel.status": "Status: {{value}}{{suffix}}",
+  "settings.billing.panel.endsAtClose": "ends at period close",
+  "settings.billing.panel.projects": "Projects",
+  "settings.billing.panel.hardCap": "Hard cap, no overage.",
+  "settings.billing.panel.generationUsage": "Generation usage",
+  "settings.billing.panel.generationUsageSummary":
+    "{{concepts}} concepts • {{previews}} previews",
+  "settings.billing.panel.renderExportSummary":
+    "Renders: {{renders}} batches • Exports: {{exports}}",
+  "settings.billing.panel.overageStorage": "Overage and storage",
+  "settings.billing.panel.storageUsage": "Storage {{current}} of {{total}}",
+  "settings.billing.panel.generationBlocked":
+    "Generation is currently blocked by billing: {{value}}.",
+  "settings.billing.panel.includedMeterUsage": "Included meter usage",
+  "settings.billing.panel.conceptRuns": "Concept runs:",
+  "settings.billing.panel.previews": "Previews:",
+  "settings.billing.panel.renderBatches": "Render batches:",
+  "settings.billing.panel.finalExports": "Final exports:",
+  "settings.billing.panel.billingControls": "Billing controls",
+  "settings.billing.panel.projectedOverage": "Projected overage: {{value}}",
+  "settings.billing.panel.overageCap": "Overage cap: {{value}}",
+  "settings.billing.panel.providerSafetyCap": "Provider safety cap: {{value}}",
+  "settings.billing.panel.providerCostTracked":
+    "Provider cost tracked: {{value}}",
+  "settings.billing.panel.featureAccess": "Feature access",
+  "settings.billing.panel.campaignPublishing": "Campaign publishing",
+  "settings.billing.panel.noCampaignPublishing": "No campaign publishing",
+  "settings.billing.panel.publicShowcase": "Public showcase",
+  "settings.billing.panel.noPublicShowcase": "No public showcase",
+  "settings.billing.panel.deliveryWorkspaces": "Delivery workspaces",
+  "settings.billing.panel.noDeliveryWorkspaces": "No delivery workspaces",
+  "settings.billing.panel.externalReviewLinks": "External review links",
+  "settings.billing.panel.noExternalReviewLinks": "No external review links",
+  "settings.billing.panel.activity": "Billing activity",
+  "settings.billing.panel.activityEmpty":
+    "No billing events yet. Stripe webhook activity, invoices, and checkout events will appear here.",
   "auth_unconfigured": "Auth is not configured yet.",
   "auth_credentials_required": "Email and password are required.",
   "auth_sign_in_failed": "Unable to sign in with those credentials.",

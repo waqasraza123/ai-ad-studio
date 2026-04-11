@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Settings2 } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getServerI18n } from "@/lib/i18n/server"
+import { getBillingPlanNameKey } from "@/lib/billing-plan-labels"
 import type {
   BrandKitRecord,
   EffectiveOwnerLimits,
@@ -60,7 +61,7 @@ export async function WorkspaceAdministrationPanel({
           <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
             <p className="text-sm text-slate-400">{t("dashboard.admin.planLabel")}</p>
             <p className="mt-2 text-xl font-semibold text-white">
-              {limits.plan.display_name}
+              {t(getBillingPlanNameKey(limits.plan.code))}
             </p>
             <p className="mt-2 text-sm text-slate-400">
               {formatMonthlyPrice(limits.plan.monthly_price_usd)}

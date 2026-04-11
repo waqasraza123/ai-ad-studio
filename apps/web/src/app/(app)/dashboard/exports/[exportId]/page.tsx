@@ -6,6 +6,10 @@ import { exportStatusIsInProgress } from "@/features/exports/lib/export-status-u
 import { ShareLinkPanel } from "@/features/exports/components/share-link-panel"
 import { ActivationPackagePanel } from "@/features/activation/components/activation-package-panel"
 import { ShareCampaignPanel } from "@/features/renders/components/share-campaign-panel"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import { ShowcasePublishPanel } from "@/features/showcase/components/showcase-publish-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { DeliveryWorkspacePanel } from "@/features/delivery/components/delivery-workspace-panel"
@@ -238,14 +242,14 @@ export default async function ExportDetailPage({
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">{t("exports.detail.variant")}</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {exportRecord.variant_key}
+            {t(getRenderVariantLabelKey(exportRecord.variant_key))}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-5">
           <p className="text-sm text-slate-400">{t("exports.detail.preset")}</p>
           <p className="mt-2 text-sm font-medium text-white">
-            {exportRecord.platform_preset}
+            {t(getPlatformPresetLabelKey(exportRecord.platform_preset))}
           </p>
         </div>
 

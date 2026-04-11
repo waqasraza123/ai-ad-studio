@@ -7,6 +7,7 @@ import {
   openBillingPortalAction,
   reactivateSubscriptionAction
 } from "@/features/settings/actions/manage-billing"
+import { getBillingPlanNameKey } from "@/lib/billing-plan-labels"
 import { getServerI18n } from "@/lib/i18n/server"
 import { cn } from "@/lib/utils"
 import { formatStorage } from "@/server/billing/billing-service"
@@ -16,6 +17,7 @@ import type {
   BillingPlanRecord,
   EffectiveOwnerLimits
 } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 type BillingPlanPanelProps = {
   billingEvents: BillingEventRecord[]
@@ -28,13 +30,6 @@ function formatUsd(value: number) {
   return `$${value.toFixed(2)}`
 }
 
-function formatTimestamp(value: string) {
-  return new Intl.DateTimeFormat("en", {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(value))
-}
-
 function usageLabel(input: {
   cap: number
   current: number
@@ -42,24 +37,67 @@ function usageLabel(input: {
   return `${input.current} / ${input.cap}`
 }
 
-function PlanDetails({ plan }: { plan: BillingPlanRecord }) {
+function getSubscriptionStatusLabelKey(
+  status: EffectiveOwnerLimits["subscription"]["status"]
+): AppMessageKey {
+  if (status === "active") {
+    return "common.status.active"
+  }
+
+  if (status === "free") {
+    return "common.status.free"
+  }
+
+  if (status === "grace_period") {
+    return "settings.billing.status.gracePeriod"
+  }
+
+  return "common.status.cancelled"
+}
+
+function formatPriceLabel(
+  monthlyPriceUsd: number,
+  t: (key: AppMessageKey, values?: Record<string, string | number | null | undefined>) => string
+) {
+  if (monthlyPriceUsd === 0) {
+    return t("settings.billing.price.free")
+  }
+
+  return t("settings.billing.price.monthly", {
+    value: formatUsd(monthlyPriceUsd)
+  })
+}
+
+function PlanDetails({
+  plan,
+  t
+}: {
+  plan: BillingPlanRecord
+  t: (key: AppMessageKey, values?: Record<string, string | number | null | undefined>) => string
+}) {
   return (
     <div className="mt-4 space-y-2 text-sm text-slate-300">
-      <p>{plan.included_active_projects} active projects</p>
-      <p>{plan.included_concept_runs} concept runs / month</p>
-      <p>{plan.included_preview_generations} previews / month</p>
-      <p>{plan.included_render_batches} render batches / month</p>
-      <p>{plan.included_final_exports} final exports / month</p>
-      <p>{formatStorage(plan.included_storage_bytes)} storage</p>
+      <p>{t("settings.billing.planDetails.activeProjects", { count: plan.included_active_projects })}</p>
+      <p>{t("settings.billing.planDetails.conceptRuns", { count: plan.included_concept_runs })}</p>
+      <p>{t("settings.billing.planDetails.previews", { count: plan.included_preview_generations })}</p>
+      <p>{t("settings.billing.planDetails.renderBatches", { count: plan.included_render_batches })}</p>
+      <p>{t("settings.billing.planDetails.finalExports", { count: plan.included_final_exports })}</p>
+      <p>{t("settings.billing.planDetails.storage", { value: formatStorage(plan.included_storage_bytes) })}</p>
       <p>
-        {plan.max_concurrent_preview_jobs} preview jobs •{" "}
-        {plan.max_concurrent_render_jobs} render jobs
+        {t("settings.billing.planDetails.concurrency", {
+          preview: plan.max_concurrent_preview_jobs,
+          render: plan.max_concurrent_render_jobs
+        })}
       </p>
-      <p>{plan.watermark_exports ? "Watermarked exports" : "No export watermark"}</p>
+      <p>
+        {plan.watermark_exports
+          ? t("settings.billing.planDetails.watermarked")
+          : t("settings.billing.planDetails.noWatermark")}
+      </p>
       <p>
         {plan.allow_external_batch_reviews
-          ? "External review included"
-          : "External review locked"}
+          ? t("settings.billing.planDetails.externalReviewIncluded")
+          : t("settings.billing.planDetails.externalReviewLocked")}
       </p>
     </div>
   )
@@ -71,7 +109,7 @@ export async function BillingPlanPanel({
   limits,
   purchaseAvailability
 }: BillingPlanPanelProps) {
-  const { t } = await getServerI18n()
+  const { formatDateTime, t } = await getServerI18n()
   const currentPlan = limits.plan
   const stripeManaged = Boolean(limits.subscription.stripe_subscription_id)
   const purchaseAvailable = stripeManaged
@@ -85,77 +123,96 @@ export async function BillingPlanPanel({
   return (
     <SurfaceCard className="p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Billing and plan
+        {t("settings.billing.panel.eyebrow")}
       </p>
       <div className="mt-3 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-[-0.03em] text-white">
-            {currentPlan.display_name} plan
+            {t("settings.billing.panel.title", {
+              value: t(getBillingPlanNameKey(currentPlan.code))
+            })}
           </h2>
           <p className="mt-3 max-w-3xl text-sm leading-7 text-slate-400">
-            Cards and USDC checkout run through Stripe Checkout. Base is recommended for
-            lower stablecoin network fees. Free exports are watermarked; paid plans
-            remove the watermark and unlock stricter production workflows.
+            {t("settings.billing.panel.description")}
           </p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] px-4 py-3 text-sm text-slate-300">
-          <p className="text-slate-400">Current billing period</p>
+          <p className="text-slate-400">{t("settings.billing.panel.currentPeriod")}</p>
           <p className="mt-2 font-medium text-white">
-            {formatTimestamp(limits.subscription.current_period_start)}
+            {t("settings.billing.panel.periodRange", {
+              end: formatDateTime(limits.subscription.current_period_end, {
+                dateStyle: "medium",
+                timeStyle: "short"
+              }),
+              start: formatDateTime(limits.subscription.current_period_start, {
+                dateStyle: "medium",
+                timeStyle: "short"
+              })
+            })}
           </p>
-          <p className="text-slate-400">to {formatTimestamp(limits.subscription.current_period_end)}</p>
         </div>
       </div>
 
       <div className="mt-6 grid gap-4 md:grid-cols-2 2xl:grid-cols-4">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Monthly plan</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.monthlyPlan")}</p>
           <p className="mt-2 text-2xl font-semibold text-white">
-            {currentPlan.monthly_price_usd === 0
-              ? "Free"
-              : `${formatUsd(currentPlan.monthly_price_usd)}/mo`}
+            {formatPriceLabel(currentPlan.monthly_price_usd, t)}
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            Status: {limits.subscription.status}
-            {limits.subscription.cancel_at_period_end ? " • ends at period close" : ""}
+            {t("settings.billing.panel.status", {
+              suffix: limits.subscription.cancel_at_period_end
+                ? ` • ${t("settings.billing.panel.endsAtClose")}`
+                : "",
+              value: t(getSubscriptionStatusLabelKey(limits.subscription.status))
+            })}
           </p>
         </div>
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Projects</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.projects")}</p>
           <p className="mt-2 text-2xl font-semibold text-white">
             {usageLabel({
               cap: limits.hardCaps.activeProjects,
               current: limits.usage.active_projects_used
             })}
           </p>
-          <p className="mt-2 text-xs text-slate-500">Hard cap, no overage.</p>
+          <p className="mt-2 text-xs text-slate-500">{t("settings.billing.panel.hardCap")}</p>
         </div>
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Generation usage</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.generationUsage")}</p>
           <p className="mt-2 text-2xl font-semibold text-white">
-            {limits.usage.concept_runs_used} concepts • {limits.usage.preview_generations_used} previews
+            {t("settings.billing.panel.generationUsageSummary", {
+              concepts: limits.usage.concept_runs_used,
+              previews: limits.usage.preview_generations_used
+            })}
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            Renders: {limits.usage.render_batches_used} batches • Exports:{" "}
-            {limits.usage.final_exports_used}
+            {t("settings.billing.panel.renderExportSummary", {
+              exports: limits.usage.final_exports_used,
+              renders: limits.usage.render_batches_used
+            })}
           </p>
         </div>
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Overage and storage</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.overageStorage")}</p>
           <p className="mt-2 text-2xl font-semibold text-white">
             {formatUsd(limits.usage.projected_overage_usd)}
           </p>
           <p className="mt-2 text-xs text-slate-500">
-            Storage {formatStorage(limits.usage.storage_bytes_used)} of{" "}
-            {formatStorage(limits.hardCaps.storageBytes)}
+            {t("settings.billing.panel.storageUsage", {
+              current: formatStorage(limits.usage.storage_bytes_used),
+              total: formatStorage(limits.hardCaps.storageBytes)
+            })}
           </p>
         </div>
       </div>
 
       {limits.generationBlocked ? (
         <div className="mt-6 rounded-[1.5rem] border border-amber-400/20 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
-          Generation is currently blocked by billing: {limits.generationBlockReason}.
+          {t("settings.billing.panel.generationBlocked", {
+            value: limits.generationBlockReason
+          })}
         </div>
       ) : null}
 
@@ -190,13 +247,16 @@ export async function BillingPlanPanel({
         {stripeManaged && !limits.subscription.cancel_at_period_end ? (
           purchaseAvailability.portalAvailable ? (
             <form action={cancelSubscriptionAction}>
-              <FormSubmitButton variant="secondary" pendingLabel="Scheduling cancel…">
-                Cancel at period end
+              <FormSubmitButton
+                variant="secondary"
+                pendingLabel={t("settings.billing.cancel.pending")}
+              >
+                {t("settings.billing.cancel.action")}
               </FormSubmitButton>
             </form>
           ) : (
             <Button disabled variant="secondary">
-              Cancel at period end
+              {t("settings.billing.cancel.action")}
             </Button>
           )
         ) : null}
@@ -204,13 +264,16 @@ export async function BillingPlanPanel({
         {stripeManaged && limits.subscription.cancel_at_period_end ? (
           purchaseAvailability.portalAvailable ? (
             <form action={reactivateSubscriptionAction}>
-              <FormSubmitButton variant="secondary" pendingLabel="Reactivating…">
-                Reactivate subscription
+              <FormSubmitButton
+                variant="secondary"
+                pendingLabel={t("settings.billing.reactivate.pending")}
+              >
+                {t("settings.billing.reactivate.action")}
               </FormSubmitButton>
             </form>
           ) : (
             <Button disabled variant="secondary">
-              Reactivate subscription
+              {t("settings.billing.reactivate.action")}
             </Button>
           )
         ) : null}
@@ -227,10 +290,10 @@ export async function BillingPlanPanel({
             : t("settings.billing.purchase.checkoutPill")
           const actionLabel = stripeManaged
             ? t("settings.billing.purchase.switchAction", {
-                value: plan.display_name
+                value: t(getBillingPlanNameKey(plan.code))
               })
             : t("settings.billing.purchase.checkoutAction", {
-                value: plan.display_name
+                value: t(getBillingPlanNameKey(plan.code))
               })
 
           if (canUpgrade) {
@@ -258,12 +321,10 @@ export async function BillingPlanPanel({
                   <div className="flex w-full items-center justify-between gap-3">
                     <div>
                       <p className="text-sm uppercase tracking-[0.18em] text-slate-400">
-                        {plan.display_name}
+                        {t(getBillingPlanNameKey(plan.code))}
                       </p>
                       <p className="mt-2 text-2xl font-semibold text-white">
-                        {plan.monthly_price_usd === 0
-                          ? "Free"
-                          : `${formatUsd(plan.monthly_price_usd)}/mo`}
+                        {formatPriceLabel(plan.monthly_price_usd, t)}
                       </p>
                     </div>
                     <span
@@ -280,7 +341,7 @@ export async function BillingPlanPanel({
                     </span>
                   </div>
 
-                  <PlanDetails plan={plan} />
+                  <PlanDetails plan={plan} t={t} />
 
                   <div className="mt-5 flex w-full items-center justify-between gap-3">
                     <span
@@ -323,12 +384,10 @@ export async function BillingPlanPanel({
               <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm uppercase tracking-[0.18em] text-slate-400">
-                    {plan.display_name}
+                    {t(getBillingPlanNameKey(plan.code))}
                   </p>
                   <p className="mt-2 text-2xl font-semibold text-white">
-                    {plan.monthly_price_usd === 0
-                      ? "Free"
-                      : `${formatUsd(plan.monthly_price_usd)}/mo`}
+                    {formatPriceLabel(plan.monthly_price_usd, t)}
                   </p>
                 </div>
                 <span
@@ -349,7 +408,7 @@ export async function BillingPlanPanel({
                 </span>
               </div>
 
-              <PlanDetails plan={plan} />
+              <PlanDetails plan={plan} t={t} />
 
               {isCurrent ? (
                 <p className="mt-5 text-xs text-amber-100">
@@ -369,31 +428,31 @@ export async function BillingPlanPanel({
 
       <div className="mt-8 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Included meter usage</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.includedMeterUsage")}</p>
           <div className="mt-3 space-y-2 text-sm text-slate-300">
             <p>
-              Concept runs:{" "}
+              {t("settings.billing.panel.conceptRuns")}{" "}
               {usageLabel({
                 cap: limits.plan.included_concept_runs,
                 current: limits.usage.concept_runs_used
               })}
             </p>
             <p>
-              Previews:{" "}
+              {t("settings.billing.panel.previews")}{" "}
               {usageLabel({
                 cap: limits.plan.included_preview_generations,
                 current: limits.usage.preview_generations_used
               })}
             </p>
             <p>
-              Render batches:{" "}
+              {t("settings.billing.panel.renderBatches")}{" "}
               {usageLabel({
                 cap: limits.plan.included_render_batches,
                 current: limits.usage.render_batches_used
               })}
             </p>
             <p>
-              Final exports:{" "}
+              {t("settings.billing.panel.finalExports")}{" "}
               {usageLabel({
                 cap: limits.plan.included_final_exports,
                 current: limits.usage.final_exports_used
@@ -403,34 +462,33 @@ export async function BillingPlanPanel({
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Billing controls</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.billingControls")}</p>
           <div className="mt-3 space-y-2 text-sm text-slate-300">
-            <p>Projected overage: {formatUsd(limits.usage.projected_overage_usd)}</p>
-            <p>Overage cap: {formatUsd(limits.budgets.monthlyOverageCapUsd)}</p>
-            <p>Provider safety cap: {formatUsd(limits.budgets.monthlyTotalBudgetUsd)}</p>
-            <p>Provider cost tracked: {formatUsd(limits.usage.provider_cost_usd)}</p>
+            <p>{t("settings.billing.panel.projectedOverage", { value: formatUsd(limits.usage.projected_overage_usd) })}</p>
+            <p>{t("settings.billing.panel.overageCap", { value: formatUsd(limits.budgets.monthlyOverageCapUsd) })}</p>
+            <p>{t("settings.billing.panel.providerSafetyCap", { value: formatUsd(limits.budgets.monthlyTotalBudgetUsd) })}</p>
+            <p>{t("settings.billing.panel.providerCostTracked", { value: formatUsd(limits.usage.provider_cost_usd) })}</p>
           </div>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-          <p className="text-sm text-slate-400">Feature access</p>
+          <p className="text-sm text-slate-400">{t("settings.billing.panel.featureAccess")}</p>
           <div className="mt-3 space-y-2 text-sm text-slate-300">
-            <p>{limits.featureAccess.allowShareCampaigns ? "Campaign publishing" : "No campaign publishing"}</p>
-            <p>{limits.featureAccess.allowPublicShowcase ? "Public showcase" : "No public showcase"}</p>
-            <p>{limits.featureAccess.allowDeliveryWorkspaces ? "Delivery workspaces" : "No delivery workspaces"}</p>
-            <p>{limits.featureAccess.allowExternalBatchReviews ? "External review links" : "No external review links"}</p>
+            <p>{limits.featureAccess.allowShareCampaigns ? t("settings.billing.panel.campaignPublishing") : t("settings.billing.panel.noCampaignPublishing")}</p>
+            <p>{limits.featureAccess.allowPublicShowcase ? t("settings.billing.panel.publicShowcase") : t("settings.billing.panel.noPublicShowcase")}</p>
+            <p>{limits.featureAccess.allowDeliveryWorkspaces ? t("settings.billing.panel.deliveryWorkspaces") : t("settings.billing.panel.noDeliveryWorkspaces")}</p>
+            <p>{limits.featureAccess.allowExternalBatchReviews ? t("settings.billing.panel.externalReviewLinks") : t("settings.billing.panel.noExternalReviewLinks")}</p>
           </div>
         </div>
       </div>
 
       <div className="mt-8 rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-4">
         <p className="text-sm uppercase tracking-[0.18em] text-slate-400">
-          Billing activity
+          {t("settings.billing.panel.activity")}
         </p>
         {billingEvents.length === 0 ? (
           <p className="mt-3 text-sm text-slate-500">
-            No billing events yet. Stripe webhook activity, invoices, and checkout events
-            will appear here.
+            {t("settings.billing.panel.activityEmpty")}
           </p>
         ) : (
           <div className="mt-4 space-y-3">
@@ -449,7 +507,10 @@ export async function BillingPlanPanel({
                     </p>
                   </div>
                   <p className="text-xs text-slate-500">
-                    {formatTimestamp(event.event_occurred_at)}
+                    {formatDateTime(event.event_occurred_at, {
+                      dateStyle: "medium",
+                      timeStyle: "short"
+                    })}
                   </p>
                 </div>
               </div>

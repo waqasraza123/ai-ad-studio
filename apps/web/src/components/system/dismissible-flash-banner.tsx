@@ -2,22 +2,21 @@
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useMemo } from "react"
-
-const flashCopy: Record<string, string> = {
-  brief_saved: "Project brief saved."
-}
+import { useI18n } from "@/lib/i18n/provider"
 
 type DismissibleFlashBannerProps = {
   className?: string
 }
 
 export function DismissibleFlashBanner({ className }: DismissibleFlashBannerProps) {
+  const { t } = useI18n()
   const searchParams = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
 
   const flashKey = searchParams.get("flash")
-  const message = flashKey ? flashCopy[flashKey] ?? null : null
+  const message =
+    flashKey === "brief_saved" ? t("flash.brief_saved") : null
 
   const dismiss = useCallback(() => {
     const next = new URLSearchParams(searchParams.toString())
@@ -50,7 +49,7 @@ export function DismissibleFlashBanner({ className }: DismissibleFlashBannerProp
           onClick={dismiss}
           className="shrink-0 rounded-full border border-white/15 px-3 py-1 text-xs font-medium text-white transition hover:bg-white/10"
         >
-          Dismiss
+          {t("common.actions.dismiss")}
         </button>
       </div>
     </div>

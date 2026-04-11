@@ -4,6 +4,7 @@ import {
   summarizeConceptsDashboard,
   toConceptsDashboardProjectViewModel,
 } from "@/features/concepts/mappers/concepts-dashboard-view-model"
+import { getServerI18n } from "@/lib/i18n/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
@@ -11,6 +12,7 @@ import { listConceptPreviewAssetsByProjectIdForOwner } from "@/server/projects/a
 import { listProjectsByOwner } from "@/server/projects/project-repository"
 
 export default async function DashboardConceptsPage() {
+  const { formatDateTime } = await getServerI18n()
   const user = await getAuthenticatedUser()
 
   if (!user) {
@@ -29,6 +31,7 @@ export default async function DashboardConceptsPage() {
 
       return toConceptsDashboardProjectViewModel({
         concepts,
+        formatDateTime,
         jobs,
         previewAssets,
         project,

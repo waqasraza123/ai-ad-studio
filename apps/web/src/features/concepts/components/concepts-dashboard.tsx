@@ -152,8 +152,8 @@ export async function ConceptsDashboard({
                       {project.conceptCount}
                     </p>
                     <p className="mt-2 text-sm text-slate-400">
-                      {project.conceptGenerationLabel}:{" "}
-                      {project.conceptGenerationDescription}
+                      {t(project.conceptGenerationLabelKey)}:{" "}
+                      {t(project.conceptGenerationDescriptionKey)}
                     </p>
                   </div>
 
@@ -163,7 +163,7 @@ export async function ConceptsDashboard({
                       {project.previewCount}
                     </p>
                     <p className="mt-2 text-sm text-slate-400">
-                      {project.previewLabel}: {project.previewDescription}
+                      {t(project.previewLabelKey)}: {t(project.previewDescriptionKey)}
                     </p>
                   </div>
 

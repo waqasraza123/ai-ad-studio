@@ -1,4 +1,7 @@
 import Link from "next/link"
+import { getServerI18n } from "@/lib/i18n/server"
+import { getPlatformPresetLabelKey } from "@/features/renders/lib/render-ui"
+import { isPlatformPresetKey } from "@/features/renders/lib/platform-presets"
 import type { ShowcaseItemRecord } from "@/server/database/types"
 
 type ShowcaseGalleryGridProps = {
@@ -33,13 +36,15 @@ function readPreviewDataUrl(item: ShowcaseItemRecord) {
   return (item as ShowcaseGalleryItem).preview_data_url ?? null
 }
 
-export function ShowcaseGalleryGrid({
+export async function ShowcaseGalleryGrid({
   showcaseItems
 }: ShowcaseGalleryGridProps) {
+  const { t } = await getServerI18n()
+
   if (showcaseItems.length === 0) {
     return (
       <div className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-8 text-sm text-slate-400">
-        No showcase items yet.
+        {t("showcase.dashboard.empty")}
       </div>
     )
   }
@@ -67,7 +72,7 @@ export function ShowcaseGalleryGrid({
               />
             ) : (
               <div className="flex h-64 w-full items-center justify-center rounded-[1.5rem] bg-white/[0.04] text-sm text-slate-400">
-                Preview unavailable
+                {t("public.showcase.previewUnavailable")}
               </div>
             )}
 
@@ -84,9 +89,9 @@ export function ShowcaseGalleryGrid({
                   </span>
                 ) : null}
 
-                {platformPreset ? (
+                {platformPreset && isPlatformPresetKey(platformPreset) ? (
                   <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-                    {platformPreset}
+                    {t(getPlatformPresetLabelKey(platformPreset))}
                   </span>
                 ) : null}
 

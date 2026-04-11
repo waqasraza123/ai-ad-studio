@@ -1,5 +1,10 @@
 import Link from "next/link"
 import { getServerI18n } from "@/lib/i18n/server"
+import { getExportStatusLabelKey } from "@/features/exports/lib/export-status-ui"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import type {
   ExportAspectRatio,
   ExportRecord
@@ -65,7 +70,7 @@ export async function ProjectExportsPanel({ exports }: ProjectExportsPanelProps)
                 <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                   <div>
                     <p className="text-sm font-medium text-white">
-                      {exportRecord.aspect_ratio} · {exportRecord.platform_preset}
+                      {exportRecord.aspect_ratio} · {t(getPlatformPresetLabelKey(exportRecord.platform_preset))}
                     </p>
                     <p className="mt-1 text-sm text-slate-400">
                       {formatDateTime(exportRecord.created_at, {
@@ -77,10 +82,10 @@ export async function ProjectExportsPanel({ exports }: ProjectExportsPanelProps)
 
                   <div className="flex flex-wrap gap-2">
                     <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-                      {exportRecord.variant_key}
+                      {t(getRenderVariantLabelKey(exportRecord.variant_key))}
                     </span>
                     <span className="rounded-full border border-emerald-400/20 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-100">
-                      {exportRecord.status}
+                      {t(getExportStatusLabelKey(exportRecord.status))}
                     </span>
                   </div>
                 </div>

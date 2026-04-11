@@ -1,4 +1,6 @@
 import { getServerI18n } from "@/lib/i18n/server"
+import { getPlatformPresetLabelKey } from "@/features/renders/lib/render-ui"
+import { isPlatformPresetKey } from "@/features/renders/lib/platform-presets"
 import type { ShowcaseItemRecord } from "@/server/database/types"
 
 type PublicShowcaseGalleryProps = {
@@ -103,9 +105,9 @@ export async function PublicShowcaseGallery({
                   </span>
                 ) : null}
 
-                {platformPreset ? (
+                {platformPreset && isPlatformPresetKey(platformPreset) ? (
                   <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-                    {platformPreset}
+                    {t(getPlatformPresetLabelKey(platformPreset))}
                   </span>
                 ) : null}
 

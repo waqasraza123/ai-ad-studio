@@ -7,6 +7,7 @@ import { getServerI18n } from "@/lib/i18n/server"
 import { submitPublicBatchReviewResponseAction } from "@/features/renders/actions/public-batch-review"
 import { PublicBatchReviewComments } from "@/features/renders/components/public-batch-review-comments"
 import { PublicBatchReviewGrid } from "@/features/renders/components/public-batch-review-grid"
+import { getRenderVariantLabelKey } from "@/features/renders/lib/render-ui"
 import {
   getPublicBatchReviewLockMessage,
   getPublicBatchReviewWriteState
@@ -49,6 +50,20 @@ function responseClasses(status: string) {
   return "border-[var(--border)] bg-[var(--background-soft)] text-[var(--soft-foreground)]"
 }
 
+function getResponseStatusLabelKey(
+  status: "approved" | "pending" | "rejected"
+) {
+  if (status === "approved") {
+    return "common.status.approved"
+  }
+
+  if (status === "rejected") {
+    return "common.status.rejected"
+  }
+
+  return "common.status.pending"
+}
+
 function formatTimestamp(
   formatDateTime: (value: Date | number | string, options?: Intl.DateTimeFormatOptions) => string,
   value: string | null,
@@ -87,7 +102,7 @@ export default async function PublicBatchReviewPage({
   const exportLabels = new Map(
     exports.map((exportItem) => [
       exportItem.export_id,
-      `${exportItem.variant_key} · ${exportItem.aspect_ratio}`
+      `${t(getRenderVariantLabelKey(exportItem.variant_key))} · ${exportItem.aspect_ratio}`
     ] as const)
   )
 
@@ -129,7 +144,7 @@ export default async function PublicBatchReviewPage({
             <div
               className={`rounded-full border px-4 py-2 text-sm ${responseClasses(context.response_status)}`}
             >
-              {context.response_status}
+              {t(getResponseStatusLabelKey(context.response_status))}
             </div>
           </div>
 
@@ -169,7 +184,9 @@ export default async function PublicBatchReviewPage({
                 {t("public.review.recordedTitle")}
               </p>
               <p className="mt-2 text-emerald-100/90">
-                {t("public.review.outcome", { value: context.response_status })}
+                {t("public.review.outcome", {
+                  value: t(getResponseStatusLabelKey(context.response_status))
+                })}
                 {context.response_note ? (
                   <span className="mt-2 block text-emerald-100/85">
                     {t("public.review.note", { value: context.response_note })}

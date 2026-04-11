@@ -1,5 +1,9 @@
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { selectRenderBatchWinnerAction } from "@/features/renders/actions/select-render-batch-winner"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import { getServerI18n } from "@/lib/i18n/server"
 import type {
   AssetRecord,
@@ -113,13 +117,13 @@ export async function RenderBatchReviewGrid({
 
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-                {variantLabel(exportRecord)}
+                {t(getRenderVariantLabelKey(variantLabel(exportRecord) as "default" | "caption_heavy" | "cta_heavy"))}
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
                 {exportRecord.aspect_ratio}
               </span>
               <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-                {exportRecord.platform_preset}
+                {t(getPlatformPresetLabelKey(exportRecord.platform_preset))}
               </span>
             </div>
 

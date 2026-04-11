@@ -1,5 +1,10 @@
 import Link from "next/link"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import {
+  getPlatformPresetLabelKey,
+  getRenderBatchStatusLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import { getServerI18n } from "@/lib/i18n/server"
 import type {
   BatchReviewLinkRecord,
@@ -66,12 +71,12 @@ export async function RenderBatchReviewSummary({
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm text-slate-400">{t("renders.reviewSummary.status")}</p>
-          <p className="mt-2 text-sm font-medium text-white">{batch.status}</p>
+          <p className="mt-2 text-sm font-medium text-white">{t(getRenderBatchStatusLabelKey(batch.status))}</p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
           <p className="text-sm text-slate-400">{t("renders.reviewSummary.preset")}</p>
-          <p className="mt-2 text-sm font-medium text-white">{batch.platform_preset}</p>
+          <p className="mt-2 text-sm font-medium text-white">{t(getPlatformPresetLabelKey(batch.platform_preset))}</p>
         </div>
 
         <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
@@ -92,7 +97,7 @@ export async function RenderBatchReviewSummary({
           <p className="text-sm text-slate-400">{t("renders.reviewSummary.currentWinner")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {winner
-              ? `${winner.variant_key} · ${winner.aspect_ratio}`
+              ? `${t(getRenderVariantLabelKey(winner.variant_key))} · ${winner.aspect_ratio}`
               : t("renders.reviewSummary.noWinner")}
           </p>
         </div>
@@ -101,7 +106,7 @@ export async function RenderBatchReviewSummary({
           <p className="text-sm text-slate-400">{t("renders.reviewSummary.canonicalExport")}</p>
           <p className="mt-2 text-sm font-medium text-white">
             {finalizedExport
-              ? `${finalizedExport.variant_key} · ${finalizedExport.aspect_ratio}`
+              ? `${t(getRenderVariantLabelKey(finalizedExport.variant_key))} · ${finalizedExport.aspect_ratio}`
               : t("renders.reviewSummary.notFinalized")}
           </p>
         </div>

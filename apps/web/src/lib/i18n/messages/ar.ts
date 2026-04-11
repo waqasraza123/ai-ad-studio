@@ -1515,6 +1515,228 @@ export const ar: AppMessageCatalog = {
     "تركيز مساحة العمل مفقود",
   "delivery.investigationStale.reminderIdBadge":
     "التذكير {{value}}",
+  "common.actions.dismiss": "إخفاء",
+  "common.status.active": "نشط",
+  "common.status.archived": "مؤرشف",
+  "common.status.cancelled": "ملغي",
+  "common.status.failed": "فشل",
+  "common.status.free": "مجاني",
+  "common.status.idle": "خامل",
+  "common.status.queued": "في قائمة الانتظار",
+  "common.status.ready": "جاهز",
+  "common.status.rendering": "جارٍ الإخراج",
+  "common.status.running": "قيد التشغيل",
+  "common.status.waiting": "بانتظار",
+  "billing.plan.free": "مجاني",
+  "billing.plan.starter": "المبتدئ",
+  "billing.plan.growth": "النمو",
+  "billing.plan.scale": "التوسّع",
+  "campaigns.page.eyebrow": "الحملات",
+  "campaigns.page.title": "حملات المشاركة الخاصة بالفائزين فقط",
+  "campaigns.page.description":
+    "لا يمكن إنشاء صفحات الحملة العامة إلا من المخرجات الفائزة التي تمت مراجعتها.",
+  "notifications.page.eyebrow": "الإشعارات",
+  "notifications.page.title": "تنبيهات المخرجات والإخفاقات وصحة الطوابير",
+  "notifications.page.description":
+    "تابع المخرجات المكتملة والوظائف الفاشلة وحالات الطوابير طويلة التشغيل في مكان واحد.",
+  "notifications.markAllRead": "تحديد الكل كمقروء",
+  "showcase.dashboard.eyebrow": "المعرض",
+  "showcase.dashboard.title": "إدارة المعرض التجريبي العام",
+  "showcase.dashboard.description":
+    "انشر المخرجات المختارة في معرض عام مجمّع حسب القالب والتنسيق والإعداد الخاص بالمنصة.",
+  "showcase.dashboard.empty": "لا توجد عناصر معرض بعد.",
+  "configuration.required.eyebrow": "الإعداد مطلوب",
+  "configuration.required.description":
+    "أضف قيم Supabase إلى بيئتك المحلية قبل التحقق من المصادقة من البداية إلى النهاية:",
+  "flash.brief_saved": "تم حفظ موجز المشروع.",
+  "brandKit.selector.eyebrow": "مجموعة العلامة",
+  "brandKit.selector.title": "لوحة العلامة والطباعة",
+  "brandKit.selector.description":
+    "تتحكم مجموعات العلامة في النمط البصري الذي ترثه القوالب أثناء التخطيط والتركيب النهائي.",
+  "brandKit.selector.label": "مجموعة العلامة",
+  "brandKit.selector.heading": "العنوان",
+  "brandKit.selector.body": "النص",
+  "brandKit.selector.pending": "جارٍ الحفظ…",
+  "brandKit.selector.save": "حفظ مجموعة العلامة",
+  "settings.guardrails.eyebrow": "حدود الأمان الشخصية",
+  "settings.guardrails.title": "حدود الميزانية والتوازي الشخصية",
+  "settings.guardrails.description":
+    "لا يمكن لهذه الحدود إلا تشديد القيود القادمة من اشتراكك النشط. ولا يمكنها رفع الاستحقاقات فوق ما تسمح به الفوترة والخطة.",
+  "settings.guardrails.monthlyTotalBudget": "إجمالي الميزانية الشهرية",
+  "settings.guardrails.monthlyOpenAiBudget": "ميزانية OpenAI الشهرية",
+  "settings.guardrails.monthlyRunwayBudget": "ميزانية رنواي الشهرية",
+  "settings.guardrails.concurrentRenderJobs": "وظائف الإخراج المتزامنة",
+  "settings.guardrails.concurrentPreviewJobs": "وظائف المعاينة المتزامنة",
+  "settings.guardrails.autoBlockOnBudget": "حظر الوظائف تلقائيًا عند تجاوز الميزانية",
+  "settings.guardrails.currentDefault": "القيمة الافتراضية الحالية {{value}}",
+  "settings.guardrails.pending": "جارٍ الحفظ…",
+  "settings.guardrails.save": "حفظ الحدود",
+  "renderPack.summary.eyebrow": "حزمة الإخراج",
+  "renderPack.summary.title": "تخطيط آمن للمنصة",
+  "renderPack.summary.description":
+    "حزمة الإخراج النشطة الخاصة بـ {{platformPreset}} عند {{aspectRatio}}. وهي تتحكم في المناطق الآمنة وموضع التسميات وتوقيت الدعوة إلى الإجراء أثناء التركيب.",
+  "renderPack.summary.safeZone": "المنطقة الآمنة",
+  "renderPack.summary.captionLayout": "تخطيط التسمية",
+  "renderPack.summary.captionLayoutPosition":
+    "س {{x}} · ص {{y}} · الخط {{font}}",
+  "renderPack.summary.ctaTiming": "توقيت الدعوة إلى الإجراء",
+  "renderPack.summary.ctaStart": "البداية {{value}}ث",
+  "renderPack.summary.ctaDuration": "المدة {{value}}ث",
+  "concepts.status.planned": "مخطط",
+  "concepts.status.preview_generating": "جارٍ توليد المعاينة",
+  "concepts.status.preview_ready": "المعاينة جاهزة",
+  "concepts.status.selected": "تم الاختيار",
+  "concepts.status.render_queued": "الإخراج في قائمة الانتظار",
+  "concepts.status.rendered": "تم الإخراج",
+  "concepts.state.generation.queued.description":
+    "تمت إضافة وظيفة توليد المفاهيم إلى قائمة الانتظار. شغّل العامل لمعالجتها.",
+  "concepts.state.generation.running.description":
+    "يقوم العامل حاليًا بصياغة مجموعة المفاهيم ومراجعتها أمنيًا ثم حفظها.",
+  "concepts.state.generation.failed.description":
+    "فشلت آخر محاولة لتوليد المفاهيم. يمكنك تشغيل محاولة جديدة.",
+  "concepts.state.generation.ready.description":
+    "أصبحت مجموعة المفاهيم جاهزة واجتازت طبقة المراجعة الآمنة.",
+  "concepts.state.generation.idle.description":
+    "ولّد ثلاثة اتجاهات مفاهيمية بالضبط من الموجز المحفوظ باستخدام مسار الوظائف الثابت.",
+  "concepts.state.preview.queued.description":
+    "وظيفة توليد المعاينات في قائمة الانتظار. شغّل العامل لإنتاج صورة واحدة لكل مفهوم.",
+  "concepts.state.preview.running.description":
+    "يقوم العامل بتوليد معاينات المفاهيم المرئية وحفظها.",
+  "concepts.state.preview.failed.description":
+    "فشلت آخر محاولة لتوليد المعاينات. يمكنك تشغيل محاولة جديدة.",
+  "concepts.state.preview.ready.description":
+    "أصبحت المعاينات جاهزة. اختر أقوى مفهوم للانتقال إلى الخطوة التالية.",
+  "concepts.state.preview.waiting.description":
+    "ولّد المفاهيم أولًا. يصبح توليد المعاينات متاحًا بعد وجود المفاهيم.",
+  "concepts.state.preview.idle.description":
+    "ولّد صورة معاينة واحدة لكل مفهوم. يحفظ هذا التدفق أصول المعاينة لاستخدامها لاحقًا في الإخراج.",
+  "renders.panel.eyebrow": "الإخراج النهائي",
+  "renders.panel.title": "مسار إخراج متعدد التنسيقات",
+  "renders.panel.selectedConcept": "المفهوم المختار",
+  "renders.panel.noConceptSelected": "لم يتم اختيار مفهوم بعد",
+  "renders.panel.platformPreset": "إعداد المنصة",
+  "renders.panel.renderVariant": "نسخة الإخراج",
+  "renders.panel.outputFormats": "تنسيقات الإخراج",
+  "renders.panel.scenePlanPreview": "معاينة خطة المشاهد",
+  "renders.panel.pending": "جارٍ بدء الإخراج…",
+  "renders.panel.selectConceptFirst": "اختر مفهومًا أولًا",
+  "renders.panel.inProgress": "الإخراج جارٍ",
+  "renders.panel.action": "إخراج المشروع",
+  "renders.panel.openLatestExport": "فتح أحدث مخرج",
+  "renders.variant.default": "الافتراضي",
+  "renders.variant.caption_heavy": "تركيز أكبر على النص",
+  "renders.variant.cta_heavy": "تركيز أكبر على الدعوة للإجراء",
+  "renders.platformPreset.default.label": "الافتراضي",
+  "renders.platformPreset.default.description": "مخرج عمودي عام الاستخدام",
+  "renders.platformPreset.instagram_reels.label": "إنستغرام ريلز",
+  "renders.platformPreset.instagram_reels.description":
+    "محسّن لإيقاع إنستغرام ريلز",
+  "renders.platformPreset.instagram_feed.label": "إنستغرام فيد",
+  "renders.platformPreset.instagram_feed.description":
+    "مخرج مربع لخلاصة إنستغرام",
+  "renders.platformPreset.youtube_shorts.label": "يوتيوب شورتس",
+  "renders.platformPreset.youtube_shorts.description":
+    "إعداد عمودي للمحتوى القصير على يوتيوب شورتس",
+  "renders.platformPreset.youtube_landscape.label": "يوتيوب أفقي",
+  "renders.platformPreset.youtube_landscape.description":
+    "مخرج أفقي ليوتيوب أو صفحات الهبوط",
+  "renders.state.queued.description":
+    "وظيفة الإخراج النهائي في قائمة الانتظار. أبقِ العامل قيد التشغيل لمعالجة التنسيقات والإعداد المختارين.",
+  "renders.state.running.description":
+    "يقوم العامل بتخطيط المشاهد وتوليد الحركة وبناء عدة مخرجات.",
+  "renders.state.failed.description":
+    "فشلت آخر محاولة للإخراج. راجع سجلات العامل ثم أعد المحاولة.",
+  "renders.state.ready.description":
+    "توجد مخرجات جاهزة. افتح أحدها للتحقق من سلوك الإعداد وتخطيط المشاهد وبيانات التنسيق.",
+  "renders.state.waiting.description":
+    "اختر مفهومًا قبل تشغيل قالب الإخراج النهائي.",
+  "renders.state.idle.description":
+    "شغّل وظيفة إخراج ثابتة للمفهوم المختار وإعداد المنصة وتنسيقات الإخراج.",
+  "renders.scenePlan.motion.landscapeFriendly": "تأطير مناسب للوضع الأفقي",
+  "renders.scenePlan.motion.squareSafe": "تأطير آمن للمربع",
+  "renders.scenePlan.motion.verticalFirst": "تأطير عمودي أولًا",
+  "renders.scenePlan.safeZone.custom": "منطقة آمنة أ{{top}} أ{{bottom}}",
+  "renders.scenePlan.safeZone.default": "منطقة آمنة افتراضية",
+  "renders.scenePlan.defaultMotion.captionLead":
+    "كشف بطولي تقوده التسمية مع {{value}}",
+  "renders.scenePlan.defaultMotion.heroReveal":
+    "كشف بطولي مع {{value}}",
+  "renders.scenePlan.defaultMotion.productDetail":
+    "إبراز تفاصيل المنتج مع {{value}}",
+  "renders.scenePlan.defaultMotion.conversionFocused":
+    "إبراز موجّه للتحويل مع {{value}}",
+  "renders.scenePlan.defaultMotion.captionRich":
+    "إبراز تفصيلي غني بالتسميات مع {{value}}",
+  "renders.scenePlan.defaultMotion.aggressiveCta":
+    "انتقال قوي للدعوة إلى الإجراء مع {{value}}",
+  "renders.scenePlan.defaultMotion.cleanCta":
+    "خاتمة نظيفة للدعوة إلى الإجراء مع {{value}}",
+  "renders.scenePlan.caption.strongCta": "خاتمة قوية للدعوة إلى الإجراء: {{value}}",
+  "renders.scenePlan.caption.closeWithCta": "اختتام مع دعوة إلى الإجراء: {{value}}",
+  "renders.batchPanel.variantsSummary": "{{count}} نسخة · {{value}}",
+  "settings.billing.price.free": "مجاني",
+  "settings.billing.price.monthly": "{{value}}/شهريًا",
+  "settings.billing.status.gracePeriod": "فترة سماح",
+  "settings.billing.cancel.pending": "جارٍ جدولة الإلغاء…",
+  "settings.billing.cancel.action": "إلغاء عند نهاية الفترة",
+  "settings.billing.reactivate.pending": "جارٍ إعادة التفعيل…",
+  "settings.billing.reactivate.action": "إعادة تفعيل الاشتراك",
+  "settings.billing.planDetails.activeProjects": "{{count}} مشروعًا نشطًا",
+  "settings.billing.planDetails.conceptRuns": "{{count}} تشغيلات مفاهيم / شهريًا",
+  "settings.billing.planDetails.previews": "{{count}} معاينات / شهريًا",
+  "settings.billing.planDetails.renderBatches": "{{count}} دفعات إخراج / شهريًا",
+  "settings.billing.planDetails.finalExports": "{{count}} مخرجات نهائية / شهريًا",
+  "settings.billing.planDetails.storage": "تخزين {{value}}",
+  "settings.billing.planDetails.concurrency":
+    "{{preview}} وظائف معاينة • {{render}} وظائف إخراج",
+  "settings.billing.planDetails.watermarked": "مخرجات بعلامة مائية",
+  "settings.billing.planDetails.noWatermark": "بدون علامة مائية على المخرجات",
+  "settings.billing.planDetails.externalReviewIncluded":
+    "المراجعة الخارجية متاحة",
+  "settings.billing.planDetails.externalReviewLocked":
+    "المراجعة الخارجية مقفلة",
+  "settings.billing.panel.eyebrow": "الفوترة والخطة",
+  "settings.billing.panel.title": "خطة {{value}}",
+  "settings.billing.panel.description":
+    "تعمل بطاقات الدفع والدفع بعملة USDC عبر Stripe Checkout. تُعد شبكة Base موصى بها لرسوم الشبكة الأقل. تحمل المخرجات المجانية علامة مائية، بينما تزيلها الخطط المدفوعة وتفتح تدفقات إنتاج أكثر صرامة.",
+  "settings.billing.panel.currentPeriod": "فترة الفوترة الحالية",
+  "settings.billing.panel.periodRange": "{{start}} إلى {{end}}",
+  "settings.billing.panel.monthlyPlan": "الخطة الشهرية",
+  "settings.billing.panel.status": "الحالة: {{value}}{{suffix}}",
+  "settings.billing.panel.endsAtClose": "ينتهي عند إغلاق الفترة",
+  "settings.billing.panel.projects": "المشاريع",
+  "settings.billing.panel.hardCap": "حد صارم بلا تجاوز.",
+  "settings.billing.panel.generationUsage": "استخدام التوليد",
+  "settings.billing.panel.generationUsageSummary":
+    "{{concepts}} مفاهيم • {{previews}} معاينات",
+  "settings.billing.panel.renderExportSummary":
+    "الإخراج: {{renders}} دفعات • المخرجات: {{exports}}",
+  "settings.billing.panel.overageStorage": "التجاوز والتخزين",
+  "settings.billing.panel.storageUsage": "التخزين {{current}} من {{total}}",
+  "settings.billing.panel.generationBlocked":
+    "التوليد محظور حاليًا بسبب الفوترة: {{value}}.",
+  "settings.billing.panel.includedMeterUsage": "الاستخدام المشمول بالمقاييس",
+  "settings.billing.panel.conceptRuns": "تشغيلات المفاهيم:",
+  "settings.billing.panel.previews": "المعاينات:",
+  "settings.billing.panel.renderBatches": "دفعات الإخراج:",
+  "settings.billing.panel.finalExports": "المخرجات النهائية:",
+  "settings.billing.panel.billingControls": "ضوابط الفوترة",
+  "settings.billing.panel.projectedOverage": "التجاوز المتوقع: {{value}}",
+  "settings.billing.panel.overageCap": "حد التجاوز: {{value}}",
+  "settings.billing.panel.providerSafetyCap": "حد أمان المزود: {{value}}",
+  "settings.billing.panel.providerCostTracked": "تكلفة المزود المتتبعة: {{value}}",
+  "settings.billing.panel.featureAccess": "وصول الميزات",
+  "settings.billing.panel.campaignPublishing": "نشر الحملات",
+  "settings.billing.panel.noCampaignPublishing": "من دون نشر الحملات",
+  "settings.billing.panel.publicShowcase": "المعرض العام",
+  "settings.billing.panel.noPublicShowcase": "من دون معرض عام",
+  "settings.billing.panel.deliveryWorkspaces": "مساحات التسليم",
+  "settings.billing.panel.noDeliveryWorkspaces": "من دون مساحات تسليم",
+  "settings.billing.panel.externalReviewLinks": "روابط المراجعة الخارجية",
+  "settings.billing.panel.noExternalReviewLinks": "من دون روابط مراجعة خارجية",
+  "settings.billing.panel.activity": "نشاط الفوترة",
+  "settings.billing.panel.activityEmpty":
+    "لا توجد أحداث فوترة بعد. ستظهر هنا أنشطة Stripe webhooks والفواتير وأحداث الدفع.",
   "auth_unconfigured": "المصادقة غير مهيأة بعد.",
   "auth_credentials_required": "البريد الإلكتروني وكلمة المرور مطلوبان.",
   "auth_sign_in_failed": "تعذر تسجيل الدخول باستخدام بيانات الاعتماد هذه.",

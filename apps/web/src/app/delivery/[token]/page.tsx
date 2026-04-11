@@ -4,6 +4,7 @@ import { PublicPageFrame } from "@/components/layout/page-frame"
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { acknowledgePublicDeliveryWorkspaceAction } from "@/features/delivery/actions/public-delivery"
 import { summarizeDeliveryWorkspaceActivity } from "@/features/delivery/lib/delivery-activity"
+import { getPlatformPresetLabelKey } from "@/features/renders/lib/render-ui"
 import { getFormErrorMessage } from "@/lib/form-error-messages"
 import { getServerI18n } from "@/lib/i18n/server"
 import {
@@ -292,7 +293,7 @@ export default async function PublicDeliveryPage({
                     {exportRecord ? (
                       <>
                         <span className="theme-soft-panel rounded-full border px-3 py-1 text-xs text-[var(--soft-foreground)]">
-                          {exportRecord.platform_preset}
+                          {t(getPlatformPresetLabelKey(exportRecord.platform_preset))}
                         </span>
                         {isCanonical ? (
                           <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100">

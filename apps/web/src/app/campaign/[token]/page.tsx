@@ -1,6 +1,10 @@
 import { notFound } from "next/navigation"
 import { PublicPageHeader } from "@/components/i18n/public-page-header"
 import { PublicPageFrame } from "@/components/layout/page-frame"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import { getServerI18n } from "@/lib/i18n/server"
 import { getPublicShareCampaignBundleByToken } from "@/server/share-campaigns/public-share-campaign"
 
@@ -48,13 +52,13 @@ export default async function PublicCampaignPage({
 
           <div className="mt-5 flex flex-wrap gap-2">
             <span className="theme-soft-panel rounded-full border px-3 py-1 text-xs text-[var(--soft-foreground)]">
-              {exportRecord.variant_key}
+              {t(getRenderVariantLabelKey(exportRecord.variant_key))}
             </span>
             <span className="theme-soft-panel rounded-full border px-3 py-1 text-xs text-[var(--soft-foreground)]">
               {exportRecord.aspect_ratio}
             </span>
             <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-              {exportRecord.platform_preset}
+              {t(getPlatformPresetLabelKey(exportRecord.platform_preset))}
             </span>
           </div>
         </section>

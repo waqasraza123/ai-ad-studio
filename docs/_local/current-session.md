@@ -2,19 +2,19 @@
 
 ## Date
 
-2026-04-10
+2026-04-11
 
 ## Current Objective
 
-Refactor the web app toward a true full-width application layout while preserving the recent activation + feedback work already in the dirty worktree.
+Finish the remaining Arabic localization pass across the web app, remove visible hardcoded English from the covered public/dashboard surfaces, and leave the repo in a buildable state.
 
 ## Last Completed Step
 
-Completed the full-width layout pass for `apps/web`. Added shared width primitives in `src/components/layout/page-frame.tsx`, width tokens/utilities in `apps/web/src/app/globals.css`, widened the authenticated shell in `src/components/layout/app-shell.tsx`, migrated public wrappers/marketing sections to shared public frame rules, moved export detail and new-project into explicit `expanded` app frames, and widened dense operational grids like project list, exports dashboard, billing plan cards, workspace administration, and creative-performance breakdowns. Added English/Arabic copy for the widened new-project and exports headers, added `src/components/layout/page-frame.test.tsx`, and re-verified with `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/components/layout`, `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/app src/features/projects src/features/exports src/features/settings`, `pnpm --filter @ai-ad-studio/web build`, and `pnpm --filter @ai-ad-studio/web typecheck`.
+Completed the Arabic translation hardening pass for `apps/web`. Localized remaining route shells (`/dashboard/campaigns`, `/dashboard/notifications`, `/dashboard/showcase`, public showcase/campaign/review/delivery surfaces), refactored concept/render/runtime helpers to emit typed message keys instead of English strings, localized billing/guardrails/brand-kit/render-pack/shared render/export/showcase UI, and expanded both `src/lib/i18n/messages/en.ts` and `src/lib/i18n/messages/ar.ts` for the new keys. Added shared helpers `src/features/renders/lib/render-ui.ts` and `src/lib/billing-plan-labels.ts`, then re-verified with `pnpm --filter @ai-ad-studio/web typecheck` and `pnpm --filter @ai-ad-studio/web build`.
 
 ## Current Step
 
-The layout refactor is implemented and verified. The next step is manual QA across the widened authenticated and public surfaces, then commit/push only the layout-related files without bundling the unrelated activation/analytics work unless intentionally desired.
+Commit and push the verified translation-only slice without bundling unrelated README/screenshot churn already present in the worktree.
 
 ## Scope Boundaries
 
@@ -25,49 +25,31 @@ The layout refactor is implemented and verified. The next step is manual QA acro
 
 ## Likely Files To Touch Next
 
-- `apps/web/src/server/activation/activation-service.ts`
-- `apps/web/src/components/layout/page-frame.tsx`
-- `apps/web/src/components/layout/app-shell.tsx`
-- `apps/web/src/app/globals.css`
-- `apps/web/src/app/(app)/dashboard/projects/new/page.tsx`
-- `apps/web/src/app/(app)/dashboard/exports/[exportId]/page.tsx`
-- `apps/web/src/app/login/page.tsx`
 - `docs/_local/current-session.md`
+- manual QA follow-up on `/dashboard/projects/[projectId]`, `/dashboard/settings/billing`, `/dashboard/showcase`, `/showcase`, `/campaign/[token]`, `/review/[token]`, and `/delivery/[token]`
 
 ## Key Constraints
 
 - Keep URLs stable; locale stays in cookie state, not path prefixes.
-- Preserve design quality in both LTR and RTL; prefer logical properties/utilities over one-off left/right fixes.
-- Keep user-authored and provider-authored content unchanged; localize repo-owned UI copy and formatting only.
-- The browser harness is intentionally real-stack: no mock auth mode, no test-only HTTP endpoints, and fixture setup depends on reachable Supabase auth + service-role APIs.
-- The local environment here can `typecheck` and `build`, but current Supabase auth requests are timing out; seeded E2E verification has to be rerun from a network path that can reach the configured Supabase host.
-- Activation package creation and creative-performance ingestion are now billed feature gates on paid plans only.
-- Historical `preview_asset_id` backfill is best-effort; ambiguous legacy exports are allowed to remain null.
-- The app shell now provides the default fluid page frame; only intentionally narrower authenticated surfaces should opt into explicit `expanded` or `readable` frames.
-- Public landing/tokenized surfaces now share one public frame system; preserve readable copy caps inside those wider wrappers instead of reintroducing page-level `max-w-*` wrappers ad hoc.
+- Keep user-authored/provider-authored content unchanged; localize repo-owned visible UI only.
+- Preserve direction safety for both LTR and RTL surfaces.
+- Prefer typed message keys over new hardcoded English strings in route shells, helpers, and shared components.
+- The browser harness remains real-stack; local verification here was limited to `typecheck` and `build`.
+- Do not bundle unrelated README/screenshot drift into this translation commit unless explicitly requested.
 
 ## Verification Commands
 
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/server/billing/billing-plan-catalog.test.ts src/server/billing/runtime-readiness.test.ts src/app/api/health/route.test.ts src/server/billing/purchase-availability.test.ts`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/components/marketing/pricing-snapshot-section.test.tsx src/app/page.test.tsx`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings/components/billing-plan-panel.test.tsx`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/features/settings src/components/layout`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/features/settings/actions`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.unit.config.ts src/lib/env.test.ts`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/components/layout`
-- `pnpm --filter @ai-ad-studio/web exec vitest run --config vitest.component.config.ts src/app src/features/projects src/features/exports src/features/settings`
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- manual QA on `/dashboard`, `/dashboard/projects/new`, `/dashboard/projects/[projectId]`, `/dashboard/exports`, `/dashboard/exports/[exportId]`, `/dashboard/analytics`, `/dashboard/settings`, and `/dashboard/delivery`
-- manual QA on `/`, `/login`, `/showcase`, `/review/[token]`, `/delivery/[token]`, `/campaign/[token]`, and `/share/[token]`
+- manual QA on `/dashboard/projects/[projectId]`, `/dashboard/settings/billing`, `/dashboard/showcase`, `/showcase`, `/campaign/[token]`, `/review/[token]`, and `/delivery/[token]`
 
 ## Lookup Notes
 
-- Width system: `apps/web/src/components/layout/page-frame.tsx`
-- Shell/frame globals: `apps/web/src/app/globals.css`
-- Authenticated shell: `apps/web/src/components/layout/app-shell.tsx`
-- Public frame consumers: `apps/web/src/components/marketing/*`, `apps/web/src/components/i18n/public-page-header.tsx`, and tokenized public routes under `apps/web/src/app/*`
+- Message catalogs: `apps/web/src/lib/i18n/messages/en.ts` and `apps/web/src/lib/i18n/messages/ar.ts`
+- Render UI label helpers: `apps/web/src/features/renders/lib/render-ui.ts`
+- Billing plan label helper: `apps/web/src/lib/billing-plan-labels.ts`
+- Concept/render state mapping: `apps/web/src/features/concepts/mappers/concept-view-model.ts`
 
 ## Expected Result
 
-The product now uses width intentionally: the authenticated app feels like a real modern canvas, dense workflow surfaces have more room, detail/form pages opt into an expanded frame instead of arbitrary narrow wrappers, and public surfaces share one coherent centered width system without losing readability.
+Covered public and dashboard surfaces render Arabic UI copy consistently, shared workflow helpers no longer surface hardcoded English labels, and the web app still passes `typecheck` plus production `build`.

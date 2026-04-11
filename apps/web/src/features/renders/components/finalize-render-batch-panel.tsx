@@ -3,6 +3,7 @@ import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { finalizeRenderBatchAction } from "@/features/renders/actions/finalize-render-batch"
 import { getServerI18n } from "@/lib/i18n/server"
+import { getRenderVariantLabelKey } from "@/features/renders/lib/render-ui"
 import type {
   ExportRecord,
   RenderBatchRecord
@@ -46,7 +47,7 @@ export async function FinalizeRenderBatchPanel({
             <p className="text-sm text-emerald-100">{t("renders.finalize.finalizedExport")}</p>
             <p className="mt-2 text-sm font-medium text-white">
               {finalizedExport
-                ? `${finalizedExport.variant_key} · ${finalizedExport.aspect_ratio}`
+                ? `${t(getRenderVariantLabelKey(finalizedExport.variant_key))} · ${finalizedExport.aspect_ratio}`
                 : t("renders.finalize.unknownExport")}
             </p>
           </div>
@@ -101,7 +102,7 @@ export async function FinalizeRenderBatchPanel({
         <p className="text-sm text-slate-400">{t("renders.finalize.selectedWinner")}</p>
         <p className="mt-2 text-sm font-medium text-white">
           {winner
-            ? `${winner.variant_key} · ${winner.aspect_ratio}`
+            ? `${t(getRenderVariantLabelKey(winner.variant_key))} · ${winner.aspect_ratio}`
             : t("renders.finalize.chooseWinnerFirst")}
         </p>
       </div>

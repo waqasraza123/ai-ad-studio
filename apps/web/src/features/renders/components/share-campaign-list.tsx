@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { getServerI18n } from "@/lib/i18n/server"
+import { getShareCampaignStatusLabelKey } from "@/features/renders/lib/render-ui"
 import type {
   ProjectRecord,
   ShareCampaignRecord
@@ -46,7 +47,7 @@ export async function ShareCampaignList({
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-medium text-white">{campaign.title}</p>
                   <span className={`rounded-full border px-3 py-1 text-xs ${statusClasses(campaign.status)}`}>
-                    {campaign.status}
+                    {t(getShareCampaignStatusLabelKey(campaign.status))}
                   </span>
                 </div>
 

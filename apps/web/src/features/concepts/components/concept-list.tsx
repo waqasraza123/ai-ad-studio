@@ -1,5 +1,6 @@
 import { Lightbulb } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 import { getServerI18n } from "@/lib/i18n/server"
 import { ConceptPreviewCard } from "./concept-preview-card"
 
@@ -12,7 +13,7 @@ type ConceptViewModel = {
   riskFlags: string[]
   safetyNotes: string | null
   script: string
-  status: string
+  statusKey: AppMessageKey
   title: string
   wasSafetyModified: boolean
 }
@@ -55,7 +56,7 @@ export async function ConceptList({ concepts, projectId }: ConceptListProps) {
           riskFlags={concept.riskFlags}
           safetyNotes={concept.safetyNotes}
           script={concept.script}
-          status={concept.status}
+          statusKey={concept.statusKey}
           title={concept.title}
           wasSafetyModified={concept.wasSafetyModified}
         />

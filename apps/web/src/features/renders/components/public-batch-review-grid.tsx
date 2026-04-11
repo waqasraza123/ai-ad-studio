@@ -1,6 +1,10 @@
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { submitPublicBatchReviewCommentAction } from "@/features/renders/actions/public-batch-review"
 import { getServerI18n } from "@/lib/i18n/server"
+import {
+  getPlatformPresetLabelKey,
+  getRenderVariantLabelKey
+} from "@/features/renders/lib/render-ui"
 import type { PublicBatchReviewExport } from "@/server/database/types"
 
 type PublicBatchReviewGridProps = {
@@ -58,13 +62,13 @@ export async function PublicBatchReviewGrid({
 
             <div className="mt-4 flex flex-wrap gap-2">
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
-                {exportItem.variant_key}
+                {t(getRenderVariantLabelKey(exportItem.variant_key))}
               </span>
               <span className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1 text-xs text-slate-300">
                 {exportItem.aspect_ratio}
               </span>
               <span className="rounded-full border border-indigo-400/20 bg-indigo-500/10 px-3 py-1 text-xs text-indigo-100">
-                {exportItem.platform_preset}
+                {t(getPlatformPresetLabelKey(exportItem.platform_preset))}
               </span>
               {exportItem.is_winner ? (
                 <span className="rounded-full border border-emerald-400/20 bg-emerald-500/10 px-3 py-1 text-xs text-emerald-100">

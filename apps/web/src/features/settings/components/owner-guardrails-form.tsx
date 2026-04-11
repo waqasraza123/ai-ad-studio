@@ -1,6 +1,7 @@
 import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { updateOwnerGuardrailsAction } from "@/features/settings/actions/update-owner-guardrails"
+import { getServerI18n } from "@/lib/i18n/server"
 import type { OwnerGuardrailsRecord } from "@/server/database/types"
 
 type OwnerGuardrailsFormProps = {
@@ -11,25 +12,26 @@ function formatCurrency(value: number) {
   return `$${value.toFixed(2)}`
 }
 
-export function OwnerGuardrailsForm({
+export async function OwnerGuardrailsForm({
   guardrails
 }: OwnerGuardrailsFormProps) {
+  const { formatCurrency, t } = await getServerI18n()
+
   return (
     <SurfaceCard className="p-6">
       <p className="text-sm uppercase tracking-[0.24em] text-slate-400">
-        Personal safety caps
+        {t("settings.guardrails.eyebrow")}
       </p>
       <h2 className="mt-3 text-2xl font-semibold tracking-[-0.03em] text-white">
-        Personal budget and concurrency caps
+        {t("settings.guardrails.title")}
       </h2>
       <p className="mt-3 text-sm leading-7 text-slate-400">
-        These caps can only tighten the limits from your active subscription. They
-        cannot raise plan entitlements above what Billing and plan allows.
+        {t("settings.guardrails.description")}
       </p>
 
       <form action={updateOwnerGuardrailsAction} className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-3">
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Monthly total budget</span>
+          <span className="text-sm text-slate-300">{t("settings.guardrails.monthlyTotalBudget")}</span>
           <input
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
             defaultValue={guardrails.monthly_total_budget_usd}
@@ -39,12 +41,14 @@ export function OwnerGuardrailsForm({
             step="0.01"
           />
           <span className="text-xs text-slate-500">
-            Current default {formatCurrency(guardrails.monthly_total_budget_usd)}
+            {t("settings.guardrails.currentDefault", {
+              value: formatCurrency(guardrails.monthly_total_budget_usd)
+            })}
           </span>
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Monthly OpenAI budget</span>
+          <span className="text-sm text-slate-300">{t("settings.guardrails.monthlyOpenAiBudget")}</span>
           <input
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
             defaultValue={guardrails.monthly_openai_budget_usd}
@@ -54,12 +58,14 @@ export function OwnerGuardrailsForm({
             step="0.01"
           />
           <span className="text-xs text-slate-500">
-            Current default {formatCurrency(guardrails.monthly_openai_budget_usd)}
+            {t("settings.guardrails.currentDefault", {
+              value: formatCurrency(guardrails.monthly_openai_budget_usd)
+            })}
           </span>
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Monthly Runway budget</span>
+          <span className="text-sm text-slate-300">{t("settings.guardrails.monthlyRunwayBudget")}</span>
           <input
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
             defaultValue={guardrails.monthly_runway_budget_usd}
@@ -69,12 +75,14 @@ export function OwnerGuardrailsForm({
             step="0.01"
           />
           <span className="text-xs text-slate-500">
-            Current default {formatCurrency(guardrails.monthly_runway_budget_usd)}
+            {t("settings.guardrails.currentDefault", {
+              value: formatCurrency(guardrails.monthly_runway_budget_usd)
+            })}
           </span>
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Concurrent render jobs</span>
+          <span className="text-sm text-slate-300">{t("settings.guardrails.concurrentRenderJobs")}</span>
           <input
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
             defaultValue={guardrails.max_concurrent_render_jobs}
@@ -86,7 +94,7 @@ export function OwnerGuardrailsForm({
         </label>
 
         <label className="grid gap-2">
-          <span className="text-sm text-slate-300">Concurrent preview jobs</span>
+          <span className="text-sm text-slate-300">{t("settings.guardrails.concurrentPreviewJobs")}</span>
           <input
             className="h-11 rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-white"
             defaultValue={guardrails.max_concurrent_preview_jobs}
@@ -104,12 +112,12 @@ export function OwnerGuardrailsForm({
             name="auto_block_on_budget"
             type="checkbox"
           />
-          <span className="text-sm text-slate-300">Auto-block jobs that exceed budget</span>
+          <span className="text-sm text-slate-300">{t("settings.guardrails.autoBlockOnBudget")}</span>
         </label>
 
         <div className="md:col-span-2 xl:col-span-3">
-          <FormSubmitButton pendingLabel="Saving…">
-            Save guardrails
+          <FormSubmitButton pendingLabel={t("settings.guardrails.pending")}>
+            {t("settings.guardrails.save")}
           </FormSubmitButton>
         </div>
       </form>

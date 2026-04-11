@@ -11,6 +11,7 @@ import { ConceptList } from "@/features/concepts/components/concept-list"
 import { GenerateConceptPreviewsPanel } from "@/features/concepts/components/generate-concept-previews-panel"
 import { GenerateConceptsPanel } from "@/features/concepts/components/generate-concepts-panel"
 import {
+  type PipelineState,
   getLatestPlatformPreset,
   getLatestVariantKey,
   mapConceptPreviewAssetsByConceptId,
@@ -188,6 +189,7 @@ export default async function ProjectDetailPage({
         platformPreset: selectedPlatformPreset,
         renderPack: activeRenderPack,
         script: selectedConcept.script,
+        t,
         template: currentTemplate,
         variantKey: selectedVariantKey
       })
@@ -206,17 +208,17 @@ export default async function ProjectDetailPage({
       ? `/api/exports/${latestExport.id}/download`
       : null
 
-  const jobPipelineIsBusy = (label: string) =>
-    label === "Queued" || label === "Running"
+  const jobPipelineIsBusy = (status: PipelineState["status"]) =>
+    status === "queued" || status === "running"
 
   const renderBatchInFlight = renderBatches.some(
     (batch) => batch.status === "queued" || batch.status === "rendering"
   )
 
   const workspaceHasActiveAsyncWork =
-    jobPipelineIsBusy(conceptGenerationState.label) ||
-    jobPipelineIsBusy(conceptPreviewState.label) ||
-    jobPipelineIsBusy(renderState.label) ||
+    jobPipelineIsBusy(conceptGenerationState.status) ||
+    jobPipelineIsBusy(conceptPreviewState.status) ||
+    jobPipelineIsBusy(renderState.status) ||
     renderBatchInFlight ||
     latestExport?.status === "queued" ||
     latestExport?.status === "rendering"
@@ -293,14 +295,15 @@ export default async function ProjectDetailPage({
 
       <div className="grid gap-6 xl:grid-cols-2">
         <GenerateConceptsPanel
-          description={conceptGenerationState.description}
-          label={conceptGenerationState.label}
+          descriptionKey={conceptGenerationState.descriptionKey}
+          labelKey={conceptGenerationState.labelKey}
           projectId={projectId}
+          status={conceptGenerationState.status}
         />
         <GenerateConceptPreviewsPanel
-          description={conceptPreviewState.description}
+          descriptionKey={conceptPreviewState.descriptionKey}
           isBlocked={conceptPreviewState.isBlocked}
-          label={conceptPreviewState.label}
+          labelKey={conceptPreviewState.labelKey}
           projectId={projectId}
         />
       </div>
@@ -321,14 +324,15 @@ export default async function ProjectDetailPage({
       </div>
 
       <RenderPanel
+        descriptionKey={renderState.descriptionKey}
+        labelKey={renderState.labelKey}
         latestExportId={latestExport?.id ?? null}
         platformPreset={selectedPlatformPreset}
         projectId={projectId}
-        renderJobDescription={renderState.description}
-        renderJobLabel={renderState.label}
         scenePlan={scenePlan}
         selectedConceptTitle={selectedConcept?.title ?? null}
         selectedVariantKey={selectedVariantKey}
+        status={renderState.status}
       />
 
       <RenderBatchPanel

@@ -3,21 +3,22 @@ import type {
   PlatformPresetKey,
   RenderVariantKey
 } from "@/server/database/types"
+import type { AppMessageKey } from "@/lib/i18n/messages/en"
 
 export type PlatformPresetDefinition = {
   aspectRatios: ExportAspectRatio[]
   defaultVariant: RenderVariantKey
-  description: string
+  descriptionKey: AppMessageKey
   key: PlatformPresetKey
-  label: string
+  labelKey: AppMessageKey
 }
 
 const defaultPlatformPreset: PlatformPresetDefinition = {
   aspectRatios: ["9:16"],
   defaultVariant: "default",
-  description: "General-purpose vertical export",
+  descriptionKey: "renders.platformPreset.default.description",
   key: "default",
-  label: "Default"
+  labelKey: "renders.platformPreset.default.label"
 }
 
 export const platformPresets: PlatformPresetDefinition[] = [
@@ -25,30 +26,30 @@ export const platformPresets: PlatformPresetDefinition[] = [
   {
     aspectRatios: ["9:16"],
     defaultVariant: "cta_heavy",
-    description: "Optimized for Instagram Reels pacing",
+    descriptionKey: "renders.platformPreset.instagram_reels.description",
     key: "instagram_reels",
-    label: "Instagram Reels"
+    labelKey: "renders.platformPreset.instagram_reels.label"
   },
   {
     aspectRatios: ["1:1"],
     defaultVariant: "caption_heavy",
-    description: "Square export for Instagram feed",
+    descriptionKey: "renders.platformPreset.instagram_feed.description",
     key: "instagram_feed",
-    label: "Instagram Feed"
+    labelKey: "renders.platformPreset.instagram_feed.label"
   },
   {
     aspectRatios: ["9:16"],
     defaultVariant: "default",
-    description: "Vertical short-form preset for YouTube Shorts",
+    descriptionKey: "renders.platformPreset.youtube_shorts.description",
     key: "youtube_shorts",
-    label: "YouTube Shorts"
+    labelKey: "renders.platformPreset.youtube_shorts.label"
   },
   {
     aspectRatios: ["16:9"],
     defaultVariant: "caption_heavy",
-    description: "Landscape export for YouTube or landing pages",
+    descriptionKey: "renders.platformPreset.youtube_landscape.description",
     key: "youtube_landscape",
-    label: "YouTube Landscape"
+    labelKey: "renders.platformPreset.youtube_landscape.label"
   }
 ]
 

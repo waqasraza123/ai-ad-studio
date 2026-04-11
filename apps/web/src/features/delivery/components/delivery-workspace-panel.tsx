@@ -11,6 +11,7 @@ import { FormSubmitButton } from "@/components/primitives/form-submit-button"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { getServerI18n } from "@/lib/i18n/server"
 import type { AppMessageKey } from "@/lib/i18n/messages/en"
+import { getRenderVariantLabelKey } from "@/features/renders/lib/render-ui"
 
 type DeliveryWorkspacePanelProps = {
   canonicalExportId: string
@@ -92,7 +93,7 @@ export async function DeliveryWorkspacePanel({
                         value={exportRecord.id}
                       />
                       <span>
-                        {exportRecord.variant_key} · {exportRecord.aspect_ratio}
+                        {t(getRenderVariantLabelKey(exportRecord.variant_key))} · {exportRecord.aspect_ratio}
                         {isCanonical ? ` · ${t("public.delivery.canonical").toLowerCase()}` : ""}
                       </span>
                     </label>
