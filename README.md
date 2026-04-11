@@ -42,7 +42,11 @@ The current local-model matrix is:
 
 ![alt text](.github/screenshots/image.jpg)
 ![alt text](.github/screenshots/dashboard.jpg)
-![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.02.58 PM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-03-18 at 5.03.13 PM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.03 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.43.34 AM.jpg>) ![alt text](<.github/screenshots/Screenshot 2026-04-06 at 11.44.54 AM.jpg>)
+![alt text](.github/screenshots/production-workspace.jpg)
+![alt text](.github/screenshots/concept-generation-form.jpg)
+![alt text](.github/screenshots/colored-cycle-dashboard.jpg)
+![alt text](.github/screenshots/saas-launch.jpg)
+![alt text](.github/screenshots/sign-in-signup.jpg)
 
 ## What this repository includes
 
