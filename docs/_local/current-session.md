@@ -6,30 +6,41 @@
 
 ## Current Objective
 
-Rename visible sign-in button text to `Demo Login`, add a unique site favicon, and push the changes.
+Share loader primitives across language switching, form pending states, media preview loading, and dashboard route skeletons.
 
 ## Last Completed Step
 
-Updated the English and Arabic i18n catalog values for the landing top-bar login link and login form submit button. Added an App Router SVG favicon and metadata icon reference.
+Added shared loading spinner, inline loader, and blocking overlay primitives. Refactored language switching, form submit buttons, export media loading, and dashboard route skeletons to use them with localized labels and focused component coverage.
 
 ## Changed Files
 
-- `apps/web/package.json`
-- `apps/web/src/app/icon.svg`
-- `apps/web/src/app/layout.tsx`
+- `apps/web/src/components/loading/loading-spinner.tsx`
+- `apps/web/src/components/loading/loading-inline.tsx`
+- `apps/web/src/components/loading/loading-overlay.tsx`
+- `apps/web/src/components/loading/loading-indicators.test.tsx`
+- `apps/web/src/components/loading/dashboard-route-skeleton.tsx`
+- `apps/web/src/components/loading/dashboard-route-skeleton.test.tsx`
+- `apps/web/src/components/i18n/language-switcher.tsx`
+- `apps/web/src/components/i18n/language-switcher.test.tsx`
+- `apps/web/src/components/primitives/form-submit-button.tsx`
+- `apps/web/src/components/primitives/form-submit-button.test.tsx`
+- `apps/web/src/components/media/export-media-frame.tsx`
+- `apps/web/src/components/media/export-media-frame.test.tsx`
 - `apps/web/src/lib/i18n/messages/en.ts`
 - `apps/web/src/lib/i18n/messages/ar.ts`
 - `docs/_local/current-session.md`
-- `pnpm-lock.yaml`
 
 ## Verification Commands
 
-- `rg -n "header\.marketing\.signIn|auth\.signInAction|Demo Login|\"Sign in\"|تسجيل الدخول" apps/web/src/lib/i18n/messages apps/web/src/components apps/web/src/app/login`
-- `git diff --cached --check`
-- `pnpm build` (required network access for `next/font` Google Fonts fetch; passed)
+- `pnpm --filter @ai-ad-studio/web test:component src/components/loading/loading-indicators.test.tsx src/components/loading/dashboard-route-skeleton.test.tsx src/components/primitives/form-submit-button.test.tsx src/components/i18n/language-switcher.test.tsx src/components/media/export-media-frame.test.tsx`
+- `pnpm --filter @ai-ad-studio/web test:i18n-audit`
+- `pnpm --filter @ai-ad-studio/web typecheck`
+- `git diff --check`
+- `pnpm --filter @ai-ad-studio/web build`
 
 ## Notes
 
-- Kept non-button auth copy unchanged, including headings, descriptions, pending labels, and error messages.
-- Added `@next/env` as an explicit web dependency because the pre-push `pnpm build` hook failed while loading `next.config.ts`, which imports `@next/env` directly.
+- The locale architecture remains cookie-backed and URL-stable; switching still uses `changeLocaleAction` and redirects back to the current path/query.
+- Full-screen blocking overlays are limited to global transitions; form actions use inline loaders, media loading stays within the media frame, and route loading keeps the dashboard skeleton.
+- `Loader2` usage is now centralized in `LoadingSpinner`.
 - No durable architecture or roadmap changes were made, so `docs/project-state.md` was not updated.

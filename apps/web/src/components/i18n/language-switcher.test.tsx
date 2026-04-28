@@ -1,6 +1,8 @@
 import { screen, within } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { createElement } from "react"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
+import { changeLocaleAction } from "@/app/actions"
 import { renderWithAppProviders } from "@/test/render"
 
 vi.mock("@/app/actions", () => ({
@@ -8,6 +10,10 @@ vi.mock("@/app/actions", () => ({
 }))
 
 describe("LanguageSwitcher", () => {
+  beforeEach(() => {
+    vi.mocked(changeLocaleAction).mockReset()
+  })
+
   it("renders both locales and marks the active locale", async () => {
     const { LanguageSwitcher } = await import("./language-switcher")
     const { container } = renderWithAppProviders(createElement(LanguageSwitcher, {
@@ -59,5 +65,32 @@ describe("LanguageSwitcher", () => {
     expect(returnToInputs[1]).toHaveValue(
       "/showcase?aspectRatio=9%3A16&platformPreset=instagram_reels"
     )
+  })
+
+  it("shows a blocking transition state while a locale change is pending", async () => {
+    vi.mocked(changeLocaleAction).mockImplementation(
+      () => new Promise<never>(() => {})
+    )
+
+    const user = userEvent.setup()
+    const { LanguageSwitcher } = await import("./language-switcher")
+
+    renderWithAppProviders(createElement(LanguageSwitcher), {
+      locale: "en",
+      pathname: "/dashboard"
+    })
+
+    const switcher = screen.getByRole("group", { name: "Switch language" })
+    expect(within(switcher).getByRole("button", { name: "English" })).toBeDisabled()
+
+    await user.click(within(switcher).getByRole("button", { name: "Arabic" }))
+
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Switching language..."
+    )
+    expect(
+      within(switcher).getByRole("button", { name: /Switching language/i })
+    ).toHaveAttribute("aria-busy", "true")
+    expect(changeLocaleAction).toHaveBeenCalledTimes(1)
   })
 })

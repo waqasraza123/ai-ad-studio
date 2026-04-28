@@ -1,7 +1,7 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
 import { useState } from "react"
+import { LoadingSpinner } from "@/components/loading/loading-spinner"
 import { useI18n } from "@/lib/i18n/provider"
 import { cn } from "@/lib/utils"
 
@@ -45,9 +45,10 @@ export function ExportMediaFrame({
     <div className="relative aspect-video w-full bg-slate-950">
       {phase === "loading" ? (
         <div className="absolute inset-0 z-10 grid place-items-center bg-slate-950/80">
-          <Loader2
-            className="h-9 w-9 animate-spin text-amber-200/85"
-            aria-label={t("media.exportFrame.loading")}
+          <LoadingSpinner
+            className="text-amber-200/85"
+            label={t("media.exportFrame.loading")}
+            size="lg"
           />
         </div>
       ) : null}

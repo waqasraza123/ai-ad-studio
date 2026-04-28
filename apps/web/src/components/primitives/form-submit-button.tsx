@@ -1,8 +1,8 @@
 "use client"
 
-import { Loader2 } from "lucide-react"
 import { useFormStatus } from "react-dom"
 import type { ComponentProps, ReactNode } from "react"
+import { LoadingInline } from "@/components/loading/loading-inline"
 import { Button } from "@/components/primitives/button"
 import { cn } from "@/lib/utils"
 
@@ -35,13 +35,7 @@ export function FormSubmitButton({
       {...props}
     >
       {pending ? (
-        <>
-          <Loader2
-            className="h-4 w-4 shrink-0 animate-spin"
-            aria-hidden
-          />
-          <span>{pendingLabel ?? children}</span>
-        </>
+        <LoadingInline label={pendingLabel ?? children} />
       ) : (
         children
       )}
