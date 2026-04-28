@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>AI Ad Studio</title>
+  <defs>
+    <linearGradient id="field" x1="8" y1="6" x2="56" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#101827" />
+      <stop offset="0.52" stop-color="#17243b" />
+      <stop offset="1" stop-color="#071115" />
+    </linearGradient>
+    <linearGradient id="signal" x1="15" y1="13" x2="51" y2="51" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#7dd3fc" />
+      <stop offset="0.5" stop-color="#34d399" />
+      <stop offset="1" stop-color="#fbbf24" />
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="url(#field)" />
+  <path
+    d="M14 17.5C14 15.57 15.57 14 17.5 14H46.5C48.43 14 50 15.57 50 17.5V46.5C50 48.43 48.43 50 46.5 50H17.5C15.57 50 14 48.43 14 46.5V17.5Z"
+    fill="none"
+    stroke="url(#signal)"
+    stroke-width="4"
+  />
+  <path d="M20 44L27.45 21H32.55L40 44H34.85L33.7 39.75H26.15L25 44H20ZM27.25 35.65H32.6L29.95 25.9L27.25 35.65Z" fill="#f8fafc" />
+  <path d="M41.5 22H46V44H41.5V22Z" fill="#f8fafc" />
+  <circle cx="47" cy="17" r="5" fill="#fb7185" />
+  <path d="M17 47L28 47" stroke="#7dd3fc" stroke-width="4" stroke-linecap="round" />
+</svg>
