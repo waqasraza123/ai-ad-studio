@@ -1,14 +1,18 @@
 import "server-only"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import {
+  createActivationPackageEvent,
   createActivationPackageRecord,
+  getActivationPackageByIdForOwner,
   listActivationPackagesByExportIdForOwner,
-  supersedeActivationPackagesForExportChannel
+  supersedeActivationPackagesForExportChannel,
+  updateActivationPackageTrackingStatus
 } from "@/server/activation/activation-repository"
 import { resolveExportCreativeLineage } from "@/server/creative-lineage/export-lineage"
 import type {
   ActivationChannel,
-  ActivationPackageCreatedVia
+  ActivationPackageCreatedVia,
+  ActivationTrackingStatus
 } from "@/server/database/types"
 
 export class ActivationPackageError extends Error {
@@ -16,6 +20,7 @@ export class ActivationPackageError extends Error {
     readonly code:
       | "activation_export_not_finalized"
       | "activation_export_not_found"
+      | "activation_tracking_invalid"
       | "activation_package_failed"
   ) {
     super(code)
@@ -112,10 +117,20 @@ function buildActivationManifest(input: {
   channel: ActivationChannel
   lineage: NonNullable<Awaited<ReturnType<typeof resolveExportCreativeLineage>>>
 }) {
-  const { concept, exportAsset, exportRecord, previewAsset, project, projectInput, renderBatch } =
-    input.lineage
+  const {
+    concept,
+    exportAsset,
+    exportRecord,
+    previewAsset,
+    project,
+    projectInput,
+    renderBatch
+  } = input.lineage
 
-  const placements = placementsForChannel(input.channel, exportRecord.aspect_ratio)
+  const placements = placementsForChannel(
+    input.channel,
+    exportRecord.aspect_ratio
+  )
   const exportDownloadPath = `/api/exports/${exportRecord.id}/download`
   const manifestVersion = 1
   const readiness = buildReadinessAssessment({
@@ -217,7 +232,8 @@ function buildActivationManifest(input: {
         exportRecord.variant_key,
         exportRecord.aspect_ratio
       ].join(" · "),
-      headline: concept?.hook ?? projectInput?.product_name ?? project?.name ?? null,
+      headline:
+        concept?.hook ?? projectInput?.product_name ?? project?.name ?? null,
       placements,
       primaryAsset: {
         assetId: exportRecord.asset_id,
@@ -354,6 +370,93 @@ export async function createActivationPackageForExport(input: {
   }
 }
 
+function normalizeTrackingStatus(value: unknown): ActivationTrackingStatus {
+  if (
+    value === "tracking_ready" ||
+    value === "active" ||
+    value === "historical"
+  ) {
+    return value
+  }
+
+  throw new ActivationPackageError("activation_tracking_invalid")
+}
+
+function normalizeTrackingNotes(value: unknown) {
+  const normalized = String(value ?? "").trim()
+  return normalized.length > 0 ? normalized.slice(0, 1000) : null
+}
+
+export function parseActivationTrackingInput(input: {
+  trackingStatus: unknown
+  trackingNotes: unknown
+}) {
+  return {
+    trackingNotes: normalizeTrackingNotes(input.trackingNotes),
+    trackingStatus: normalizeTrackingStatus(input.trackingStatus)
+  }
+}
+
+export async function updateActivationPackageTracking(input: {
+  packageId: string
+  ownerId: string
+  createdByUserId: string | null
+  trackingStatus: ActivationTrackingStatus
+  trackingNotes: string | null
+  client?: SupabaseClient
+}) {
+  const packageRecord = await getActivationPackageByIdForOwner(
+    input.packageId,
+    input.ownerId,
+    input.client
+  )
+
+  if (!packageRecord) {
+    throw new ActivationPackageError("activation_export_not_found")
+  }
+
+  if (
+    packageRecord.status === "superseded" ||
+    packageRecord.status === "archived"
+  ) {
+    throw new ActivationPackageError("activation_tracking_invalid")
+  }
+
+  const now = new Date().toISOString()
+  const updated = await updateActivationPackageTrackingStatus({
+    activatedAt:
+      input.trackingStatus === "active"
+        ? (packageRecord.activated_at ?? now)
+        : packageRecord.activated_at,
+    client: input.client,
+    historicalAt:
+      input.trackingStatus === "historical"
+        ? (packageRecord.historical_at ?? now)
+        : input.trackingStatus === "active"
+          ? null
+          : packageRecord.historical_at,
+    ownerId: input.ownerId,
+    packageId: input.packageId,
+    trackingNotes: input.trackingNotes,
+    trackingStatus: input.trackingStatus
+  })
+
+  await createActivationPackageEvent({
+    activationPackageId: packageRecord.id,
+    client: input.client,
+    createdByUserId: input.createdByUserId,
+    exportId: packageRecord.export_id,
+    nextTrackingStatus: input.trackingStatus,
+    notes: input.trackingNotes,
+    ownerId: input.ownerId,
+    previousTrackingStatus: packageRecord.tracking_status,
+    projectId: packageRecord.project_id
+  })
+
+  return updated
+}
+
 export const activationServiceInternals = {
-  buildReadinessAssessment
+  buildReadinessAssessment,
+  normalizeTrackingStatus
 }

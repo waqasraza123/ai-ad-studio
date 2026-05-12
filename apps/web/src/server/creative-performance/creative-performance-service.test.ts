@@ -135,6 +135,28 @@ describe("creative performance service", () => {
     ).toThrowError(CreativePerformanceError)
   })
 
+  it("parses stable export and package performance target values", () => {
+    expect(
+      creativePerformanceServiceInternals.parseCreativePerformanceTargetValue(
+        "export:export-1"
+      )
+    ).toEqual({
+      activationPackageId: null,
+      channel: null,
+      exportId: "export-1"
+    })
+
+    expect(
+      creativePerformanceServiceInternals.parseCreativePerformanceTargetValue(
+        "package:package-1:export-1:meta"
+      )
+    ).toEqual({
+      activationPackageId: "package-1",
+      channel: "meta",
+      exportId: "export-1"
+    })
+  })
+
   it("treats a fully blank row as removable in batch parsing", () => {
     expect(
       creativePerformanceServiceInternals.normalizePerformanceRow({

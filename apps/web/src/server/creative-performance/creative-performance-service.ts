@@ -38,7 +38,8 @@ function deriveMetrics(input: {
   const ctr = input.impressions > 0 ? input.clicks / input.impressions : 0
   const cpc = input.clicks > 0 ? input.spendUsd / input.clicks : 0
   const cpa = input.conversions > 0 ? input.spendUsd / input.conversions : 0
-  const roas = input.spendUsd > 0 ? input.conversionValueUsd / input.spendUsd : 0
+  const roas =
+    input.spendUsd > 0 ? input.conversionValueUsd / input.spendUsd : 0
 
   return {
     cpa: round(cpa, 4),
@@ -83,6 +84,47 @@ function normalizeMetricDate(value: string) {
   return trimmed
 }
 
+export function parseCreativePerformanceTargetValue(value: unknown) {
+  const normalized = String(value ?? "").trim()
+
+  if (normalized.startsWith("export:")) {
+    const exportId = normalized.slice("export:".length).trim()
+
+    if (!exportId) {
+      throw new CreativePerformanceError("creative_performance_invalid")
+    }
+
+    return {
+      activationPackageId: null,
+      channel: null,
+      exportId
+    }
+  }
+
+  if (normalized.startsWith("package:")) {
+    const [, activationPackageId, exportId, channel] = normalized.split(":")
+
+    if (
+      !activationPackageId ||
+      !exportId ||
+      (channel !== "meta" &&
+        channel !== "google" &&
+        channel !== "tiktok" &&
+        channel !== "internal_handoff")
+    ) {
+      throw new CreativePerformanceError("creative_performance_invalid")
+    }
+
+    return {
+      activationPackageId,
+      channel,
+      exportId
+    }
+  }
+
+  throw new CreativePerformanceError("creative_performance_invalid")
+}
+
 export type ManualCreativePerformanceRowInput = {
   channel: ActivationChannel
   exportId: string
@@ -106,8 +148,8 @@ export type ManualCreativePerformanceBatchInput = {
   client?: SupabaseClient
 }
 
-export type ManualCreativePerformanceInput = ManualCreativePerformanceBatchInput &
-  ManualCreativePerformanceRowInput
+export type ManualCreativePerformanceInput =
+  ManualCreativePerformanceBatchInput & ManualCreativePerformanceRowInput
 
 async function createPerformanceRecordForRow(input: {
   batchId: string
@@ -136,8 +178,14 @@ async function createPerformanceRecordForRow(input: {
       supabase
     )
 
-    if (!packageRecord || packageRecord.export_id !== lineage.exportRecord.id) {
-      throw new CreativePerformanceError("creative_performance_package_not_found")
+    if (
+      !packageRecord ||
+      packageRecord.export_id !== lineage.exportRecord.id ||
+      packageRecord.channel !== input.row.channel
+    ) {
+      throw new CreativePerformanceError(
+        "creative_performance_package_not_found"
+      )
     }
 
     activationPackageId = packageRecord.id
@@ -178,7 +226,8 @@ async function createPerformanceRecordForRow(input: {
     offerText: lineage.projectInput?.offer_text ?? null,
     ownerId: input.ownerId,
     platformPreset: lineage.exportRecord.platform_preset,
-    previewAssetId: lineage.previewAsset?.id ?? lineage.exportRecord.preview_asset_id,
+    previewAssetId:
+      lineage.previewAsset?.id ?? lineage.exportRecord.preview_asset_id,
     projectId: lineage.project.id,
     renderBatchId: lineage.renderBatch?.id ?? null,
     roas: derived.roas,
@@ -457,5 +506,6 @@ export function parseManualCreativePerformanceInput(input: {
 
 export const creativePerformanceServiceInternals = {
   deriveMetrics,
-  normalizePerformanceRow
+  normalizePerformanceRow,
+  parseCreativePerformanceTargetValue
 }

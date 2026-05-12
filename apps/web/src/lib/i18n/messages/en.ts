@@ -47,14 +47,25 @@ export const en = {
   "common.words.label": "Label",
   "common.words.records": "Records",
   "common.words.impressions": "Impressions",
+  "common.words.clicks": "Clicks",
+  "common.words.conversions": "Conversions",
   "common.words.spend": "Spend",
+  "common.words.ctr": "CTR",
+  "common.words.conversionRate": "Conversion rate",
+  "common.words.cpa": "CPA",
   "common.words.roas": "ROAS",
   "common.words.created": "Created {{value}}",
   "common.words.updated": "Updated {{value}}",
   "common.words.notSet": "Not set",
   "common.words.unknownProject": "Unknown project",
-  "common.count.projects": { one: "{{count}} project", other: "{{count}} projects" },
-  "common.count.itemsShown": { one: "{{count}} shown", other: "{{count}} shown" },
+  "common.count.projects": {
+    one: "{{count}} project",
+    other: "{{count}} projects"
+  },
+  "common.count.itemsShown": {
+    one: "{{count}} shown",
+    other: "{{count}} shown"
+  },
   "header.marketing.workflow": "Workflow",
   "header.marketing.samples": "Samples",
   "header.marketing.plans": "Plans",
@@ -125,11 +136,11 @@ export const en = {
   "auth.configuration.title": "Connect Supabase to prove auth end to end",
   "auth.configuration.description":
     "This repo now contains the auth integration points, protected route logic, and versioned schema files. Add your Supabase credentials locally to validate real sign-in and session flow.",
-  "auth.configuration.dashboardTitle": "Auth is not configured in this environment",
+  "auth.configuration.dashboardTitle":
+    "Auth is not configured in this environment",
   "auth.configuration.dashboardDescription":
     "Protected routes are wired. Add Supabase credentials locally to validate real sessions, redirects, and ownership-protected flows.",
-  "marketing.hero.badge":
-    "Public product workflow{{suffix}}",
+  "marketing.hero.badge": "Public product workflow{{suffix}}",
   "marketing.hero.badgeSuffix": " • {{count}} live samples highlighted",
   "marketing.hero.title":
     "Turn product inputs into campaign-ready ad outputs with a controlled studio workflow",
@@ -195,8 +206,7 @@ export const en = {
   "dashboard.admin.brandLabel": "Brand kit",
   "dashboard.admin.guardrailsSummary":
     "Preview {{preview}} • Render {{render}}",
-  "dashboard.admin.brandSummary":
-    "Heading {{heading}} • Body {{body}}",
+  "dashboard.admin.brandSummary": "Heading {{heading}} • Body {{body}}",
   "dashboard.admin.brandUnavailable":
     "Default brand kit details are unavailable right now.",
   "projects.list.unavailableTitle": "Projects are temporarily unavailable",
@@ -220,7 +230,8 @@ export const en = {
   "projects.new.placeholder": "Luxe serum launch",
   "projects.new.pending": "Creating project…",
   "projects.new.action": "Create project",
-  "projects.new.redirectHint": "You will be redirected to the project detail workspace.",
+  "projects.new.redirectHint":
+    "You will be redirected to the project detail workspace.",
   "projects.new.nextEyebrow": "What happens next",
   "projects.new.nextTitle": "The workspace opens into the full production flow",
   "projects.new.stepOneTitle": "Persist the brief",
@@ -281,7 +292,8 @@ export const en = {
   "concepts.dashboard.latestConcept": "Latest concept: {{value}}",
   "concepts.dashboard.noLatestConcept": "No concepts generated yet",
   "concepts.dashboard.openWorkspace": "Open project workspace",
-  "concepts.dashboard.notGeneratedTitle": "Concepts have not been generated yet",
+  "concepts.dashboard.notGeneratedTitle":
+    "Concepts have not been generated yet",
   "concepts.dashboard.notGeneratedDescription":
     "The current repo keeps concept generation in the project detail page. Open a workspace, save the brief, and trigger concept generation there.",
   "concepts.panel.generationEyebrow": "Concept generation",
@@ -371,6 +383,66 @@ export const en = {
     "Creative performance was recorded successfully.",
   "analytics.creative.ingestion.successCount":
     "{{count}} creative performance rows were recorded successfully.",
+  "analytics.intelligence.eyebrow": "Creative performance intelligence",
+  "analytics.intelligence.title":
+    "Activation tracking, outcomes, and next steps",
+  "analytics.intelligence.description":
+    "Connect finalized exports and activation packages to manual performance records, then surface deterministic recommendations from real creative lineage.",
+  "analytics.intelligence.tracking.title": "Activation tracking",
+  "analytics.intelligence.tracking.empty":
+    "Finalize a render batch and prepare an activation package before tracking performance.",
+  "analytics.intelligence.tracking.canonical": "Canonical export",
+  "analytics.intelligence.tracking.notes": "Tracking note",
+  "analytics.intelligence.tracking.pending": "Updating tracking…",
+  "analytics.intelligence.tracking.markReady": "Ready",
+  "analytics.intelligence.tracking.markActive": "Active",
+  "analytics.intelligence.tracking.markHistorical": "Historical",
+  "analytics.intelligence.status.notTracked": "Not tracked",
+  "analytics.intelligence.status.trackingReady": "Tracking ready",
+  "analytics.intelligence.status.active": "Active",
+  "analytics.intelligence.status.historical": "Historical",
+  "analytics.intelligence.dataState.noData": "No performance data",
+  "analytics.intelligence.dataState.lowSignal": "Low signal",
+  "analytics.intelligence.dataState.tracked": "Tracked",
+  "analytics.intelligence.lastMetric": "Last metric {{value}}",
+  "analytics.intelligence.noMetricDate": "No metrics yet",
+  "analytics.intelligence.insights.title": "Deterministic insights",
+  "analytics.intelligence.insights.empty":
+    "No insights yet. Add enough performance records for a tracked activation.",
+  "analytics.intelligence.insight.bestCtr.title": "Strongest CTR performer",
+  "analytics.intelligence.insight.bestCtr.body":
+    "{{target}} has the strongest click-through signal at {{ctr}}. Promote or adapt this hook into the next variant batch.",
+  "analytics.intelligence.insight.bestConversionRate.title":
+    "Strongest conversion performer",
+  "analytics.intelligence.insight.bestConversionRate.body":
+    "{{target}} converts best among creatives with enough clicks. Iterate on its CTA and offer structure.",
+  "analytics.intelligence.insight.highSpendLowConversion.title":
+    "High spend without conversions",
+  "analytics.intelligence.insight.highSpendLowConversion.body":
+    "{{target}} has spent {{value}} without conversions. Pause or retest with a clearer CTA before adding spend.",
+  "analytics.intelligence.insight.lowSignal.title": "Tracked but low signal",
+  "analytics.intelligence.insight.lowSignal.body":
+    "{{target}} is active without enough performance data. Keep collecting metrics before making a winner call.",
+  "analytics.intelligence.insight.retestCandidate.title": "Retest candidate",
+  "analytics.intelligence.insight.retestCandidate.body":
+    "{{target}} is activation-ready but has no tracked outcomes. Launch a small retest before producing more variants.",
+  "analytics.intelligence.insight.fatigueRisk.title": "Fatigue risk",
+  "analytics.intelligence.insight.fatigueRisk.body":
+    "{{target}} shows a CTR drop versus prior records. Refresh the hook or localize the opening scene.",
+  "analytics.intelligence.action.promote": "Recommended action: promote",
+  "analytics.intelligence.action.iterate": "Recommended action: iterate",
+  "analytics.intelligence.action.pause": "Recommended action: pause",
+  "analytics.intelligence.action.retest": "Recommended action: retest",
+  "analytics.intelligence.action.collect_data":
+    "Recommended action: collect more data",
+  "analytics.intelligence.topCreatives": "Top creative outputs",
+  "analytics.intelligence.weakCreatives": "Weakest spend efficiency",
+  "analytics.intelligence.dimensions.title": "Pattern comparison",
+  "analytics.intelligence.dimension.angle": "Angles",
+  "analytics.intelligence.dimension.aspectRatio": "Aspect ratios",
+  "analytics.intelligence.dimension.brandTone": "Brand tones",
+  "analytics.intelligence.dimension.callToAction": "CTAs",
+  "analytics.intelligence.dimension.concept": "Concept hooks",
   "notifications.overview.total": "Total notifications",
   "notifications.overview.unread": "Unread",
   "notifications.overview.warnings": "Warnings",
@@ -401,8 +473,7 @@ export const en = {
   "public.review.note": "Note: {{value}}",
   "public.review.submitPending": "Submitting…",
   "public.review.submit": "Submit decision",
-  "public.review.placeholder":
-    "Share why you approve or reject this batch",
+  "public.review.placeholder": "Share why you approve or reject this batch",
   "public.review.decision.approve": "Approve",
   "public.review.decision.reject": "Reject",
   "public.delivery.eyebrow": "Delivery workspace",
@@ -410,7 +481,8 @@ export const en = {
   "public.delivery.acknowledgementNote": "Acknowledgement note",
   "public.delivery.acknowledgementPending": "Submitting…",
   "public.delivery.placeholder.recipient": "Client name or team",
-  "public.delivery.placeholder.note": "Optional acknowledgement or receipt note",
+  "public.delivery.placeholder.note":
+    "Optional acknowledgement or receipt note",
   "public.delivery.approvalSummary": "Approval summary",
   "public.delivery.reviewNote": "Review note",
   "public.delivery.noReviewNote": "No review note was recorded.",
@@ -449,7 +521,8 @@ export const en = {
   "exports.shareLink.eyebrow": "Share link",
   "exports.shareLink.description":
     "Create or refresh an owner-controlled utility link for this export.",
-  "exports.shareLink.empty": "No share link has been created for this export yet.",
+  "exports.shareLink.empty":
+    "No share link has been created for this export yet.",
   "exports.shareLink.pending": "Updating link…",
   "exports.shareLink.reuse": "Reuse utility share link",
   "exports.shareLink.create": "Create utility share link",
@@ -524,8 +597,7 @@ export const en = {
   "exports.detail.notFound": "Not found",
   "exports.detail.unknown": "Unknown",
   "exports.detail.notAvailable": "n/a",
-  "exports.detail.noSafetyNotes":
-    "No additional safety notes were recorded.",
+  "exports.detail.noSafetyNotes": "No additional safety notes were recorded.",
   "activation.panel.eyebrow": "Activation package",
   "activation.panel.description":
     "Prepare a channel-ready internal package for this finalized export. Packages stay audit-friendly and separate from direct external publishing.",
@@ -548,7 +620,8 @@ export const en = {
   "activation.panel.historyEntry": "History entry",
   "activation.panel.assetCount": "{{count}} bundle assets",
   "activation.panel.placementCount": "{{count}} placements",
-  "activation.panel.empty": "No activation packages have been prepared for this export yet.",
+  "activation.panel.empty":
+    "No activation packages have been prepared for this export yet.",
   "activation.panel.downloadManifest": "Download manifest",
   "activation.panel.readiness.ready": "Ready",
   "activation.panel.readiness.blocked": "Blocked",
@@ -595,7 +668,8 @@ export const en = {
   "projects.detail.description":
     "This page includes reusable branded templates, expanded brand kits, approval gates, export management, platform-specific render packs, and controlled A/B variation batches.",
   "projects.workspaceMap.eyebrow": "Workspace map",
-  "projects.workspaceMap.title": "Stay oriented while this project is in motion",
+  "projects.workspaceMap.title":
+    "Stay oriented while this project is in motion",
   "projects.workspaceMap.description":
     "{{value}} is one project workspace inside the wider studio. Billing, defaults, reporting, and cross-project surfaces stay one step away.",
   "projects.workspaceMap.stageBrief": "Brief and assets",
@@ -603,7 +677,8 @@ export const en = {
   "projects.workspaceMap.stageRender": "Render and approval",
   "projects.workspaceMap.stageExport": "Exports and delivery",
   "projects.workspaceMap.jumpLabel": "Jump across the studio",
-  "projects.workspaceMap.adminTitle": "Workspace administration still affects this project",
+  "projects.workspaceMap.adminTitle":
+    "Workspace administration still affects this project",
   "projects.workspaceMap.adminDescription":
     "Brand defaults, billing access, and operator guardrails now live inside Settings. Open the administration area any time without losing the project context.",
   "projects.workspaceMap.adminAction": "Open workspace administration",
@@ -666,8 +741,7 @@ export const en = {
     "Keep the default palette and typography ready for project templates and future exports.",
   "settings.overview.brand.unavailable": "Default brand kit unavailable",
   "settings.overview.brand.palette": "Palette {{value}}",
-  "settings.overview.brand.typography":
-    "Heading {{heading}} • Body {{body}}",
+  "settings.overview.brand.typography": "Heading {{heading}} • Body {{body}}",
   "settings.overview.brand.openAction": "Open brand kit",
   "settings.brand.unavailable":
     "A default brand kit is not available for this workspace right now.",
@@ -675,8 +749,7 @@ export const en = {
     "Checkout started successfully. Complete payment in Stripe to activate the selected plan.",
   "settings.billing.feedback.cancelled":
     "Checkout was cancelled before payment was completed.",
-  "settings.billing.feedback.portal":
-    "Returned from the billing portal.",
+  "settings.billing.feedback.portal": "Returned from the billing portal.",
   "settings.billing.unavailable.checkout":
     "Paid plan checkout is unavailable right now. Check Stripe billing runtime and try again.",
   "settings.billing.unavailable.planChange":
@@ -701,27 +774,29 @@ export const en = {
   "settings.billing.purchase.unavailableAction": "Unavailable",
   "settings.billing.purchase.checkoutAction": "Choose {{value}}",
   "settings.billing.purchase.switchAction": "Switch to {{value}}",
-  "billing_checkout_unavailable":
+  billing_checkout_unavailable:
     "Checkout is not configured right now. Add Stripe billing settings and try again.",
-  "billing_plan_change_unavailable":
+  billing_plan_change_unavailable:
     "Plan changes are not available right now. Check Stripe billing setup and try again.",
-  "billing_portal_unavailable":
+  billing_portal_unavailable:
     "Billing portal is not available for this account yet.",
-  "activation_export_not_found":
+  activation_export_not_found:
     "The export could not be found for activation packaging.",
-  "activation_export_not_finalized":
+  activation_export_not_finalized:
     "Only the finalized canonical export can be prepared as an activation package.",
-  "activation_package_failed":
+  activation_package_failed:
     "The activation package could not be prepared. Try again.",
-  "billing_upgrade_required_activation":
+  activation_tracking_invalid:
+    "Activation tracking could not be updated for that package.",
+  billing_upgrade_required_activation:
     "Your current plan does not include activation packages. Upgrade in Billing and plan.",
-  "billing_upgrade_required_creative_performance":
+  billing_upgrade_required_creative_performance:
     "Your current plan does not include creative performance ingestion and analytics. Upgrade in Billing and plan.",
-  "creative_performance_invalid":
+  creative_performance_invalid:
     "The creative performance record is invalid. Check the metrics and try again.",
-  "creative_performance_export_not_found":
+  creative_performance_export_not_found:
     "The selected export could not be found for creative performance tracking.",
-  "creative_performance_package_not_found":
+  creative_performance_package_not_found:
     "The selected activation package could not be found for this export.",
   "theme.palette.eyebrow": "Theme palette",
   "theme.palette.auto": "Auto cycling",
@@ -789,7 +864,8 @@ export const en = {
   "marketing.heroPreview.steps.publish.detail":
     "Showcase and delivery stay aligned.",
   "marketing.workflow.eyebrow": "Workflow",
-  "marketing.workflow.title": "A professional path from brief to approved output",
+  "marketing.workflow.title":
+    "A professional path from brief to approved output",
   "marketing.workflow.description":
     "The homepage should make the product shape obvious: this is a constrained ad-generation system for marketing teams, not a general-purpose editing canvas.",
   "marketing.workflow.steps.brief.title": "Frame the campaign brief",
@@ -805,7 +881,8 @@ export const en = {
   "marketing.workflow.steps.publish.description":
     "Promote the winning export into campaign, showcase, and delivery surfaces with less manual cleanup.",
   "marketing.showcase.eyebrow": "Samples",
-  "marketing.showcase.title": "Real output proof, not placeholder product claims",
+  "marketing.showcase.title":
+    "Real output proof, not placeholder product claims",
   "marketing.showcase.description":
     "The homepage should be backed by real showcase output whenever it exists. When it does not, the section still holds the layout with designed sample placeholders rather than fake testimonials or invented case studies.",
   "marketing.showcase.exploreFull": "Explore full showcase",
@@ -831,7 +908,8 @@ export const en = {
   "marketing.showcase.fallback.three.tagTwo": "Brand story",
   "marketing.showcase.fallback.three.tagThree": "Minimal modern",
   "marketing.pricing.eyebrow": "Plans",
-  "marketing.pricing.title": "A concise pricing snapshot built from live plan data",
+  "marketing.pricing.title":
+    "A concise pricing snapshot built from live plan data",
   "marketing.pricing.description":
     "The homepage should help teams understand value shape quickly without collapsing into a full billing settings experience.",
   "marketing.pricing.recommended": "Recommended",
@@ -851,7 +929,8 @@ export const en = {
   "marketing.pricing.publishing.limited": "Limited public publishing",
   "marketing.pricing.publishing.internal": "Internal workflow only",
   "marketing.pricing.unavailableEyebrow": "Live catalog unavailable",
-  "marketing.pricing.unavailableTitle": "Pricing data is temporarily unavailable",
+  "marketing.pricing.unavailableTitle":
+    "Pricing data is temporarily unavailable",
   "marketing.pricing.unavailableDescription":
     "The workflow and product surface are still available, but live plan data could not be loaded right now. Open the dashboard after billing runtime access is restored to inspect the current catalog.",
   "marketing.faq.eyebrow": "FAQ",
@@ -866,7 +945,8 @@ export const en = {
   "marketing.faq.questions.ads.question": "What kind of ads does this create?",
   "marketing.faq.questions.ads.answer":
     "AI Ad Studio is built for product marketing ads: concept generation, preview review, final exports, and public handoff surfaces.",
-  "marketing.faq.questions.editor.question": "Is this a general-purpose editor?",
+  "marketing.faq.questions.editor.question":
+    "Is this a general-purpose editor?",
   "marketing.faq.questions.editor.answer":
     "No. The workflow is intentionally constrained so teams can move through a repeatable path instead of managing a blank-canvas editor.",
   "marketing.faq.questions.review.question":
@@ -946,8 +1026,7 @@ export const en = {
     "Buying Runway changes your environment setup, not the product workflow. Add your key, keep previews on Runway, and decide whether scene video stays hosted or moves to a supported local sidecar.",
   "runtime.runwayUpgrade.stepOne":
     "Buy a Runway API plan and generate a secret key.",
-  "runtime.runwayUpgrade.stepTwo":
-    "Add RUNWAYML_API_SECRET to .env.local.",
+  "runtime.runwayUpgrade.stepTwo": "Add RUNWAYML_API_SECRET to .env.local.",
   "runtime.runwayUpgrade.stepThree":
     "Set PREVIEW_PROVIDER=runway and choose whether SCENE_VIDEO_PROVIDER stays runway or switches to local_http for hybrid mode.",
   "runtime.runwayUpgrade.stepFour":
@@ -1192,8 +1271,7 @@ export const en = {
   "delivery.mismatch.filter.all": "All lifecycle buckets",
   "delivery.mismatch.filter.unresolved": "Unresolved mismatches",
   "delivery.mismatch.filter.resolved": "Resolved mismatches",
-  "delivery.mismatch.filter.failed_reopen_attempts":
-    "Failed reopen attempts",
+  "delivery.mismatch.filter.failed_reopen_attempts": "Failed reopen attempts",
   "delivery.page.eyebrow": "Delivery",
   "delivery.page.title": "Finalized client delivery workspaces",
   "delivery.page.description":
@@ -1270,8 +1348,7 @@ export const en = {
   "delivery.support.reminderDueOn": "Reminder due on",
   "delivery.support.workspaceId": "Workspace id",
   "delivery.support.openWorkspace": "Open workspace in delivery dashboard",
-  "delivery.support.openFollowUp":
-    "Open follow-up form with reminder context",
+  "delivery.support.openFollowUp": "Open follow-up form with reminder context",
   "delivery.support.followUpDueOn": "Follow-up due on",
   "delivery.support.lastNotificationBucket": "Last notification bucket",
   "delivery.support.lastNotificationDate": "Last notification date",
@@ -1384,8 +1461,7 @@ export const en = {
     "This follow-up form is focused from a reminder checkpoint mismatch row. You can repair reminder scheduling here without leaving the current workspace view.",
   "delivery.followUpContext.resolvedBanner":
     "This reminder mismatch is currently marked as resolved for this notification context.",
-  "delivery.followUpContext.reopenNoteLabel":
-    "Optional mismatch reopen note",
+  "delivery.followUpContext.reopenNoteLabel": "Optional mismatch reopen note",
   "delivery.followUpContext.reopenNotePlaceholder":
     "Optional context explaining why the resolved mismatch should be reopened.",
   "delivery.followUpContext.reopenAction": "Reopen mismatch",
@@ -1464,15 +1540,13 @@ export const en = {
   "delivery.investigationContext.bucketDescription.unspecified": "unspecified",
   "delivery.investigationContext.noRecordedCheckpoint":
     "no recorded reminder checkpoint",
-  "delivery.investigationContext.checkpoint.withDate":
-    "{{bucket}} on {{date}}",
+  "delivery.investigationContext.checkpoint.withDate": "{{bucket}} on {{date}}",
   "delivery.investigationContext.checkpoint.withNoDate":
     "{{bucket}} with no checkpoint date",
   "delivery.investigationContext.checkpoint.unknownBucket":
     "unknown bucket on {{date}}",
   "delivery.investigationContext.followUp.unknown": "unknown",
-  "delivery.investigationContext.followUp.withDate":
-    "{{status}} on {{date}}",
+  "delivery.investigationContext.followUp.withDate": "{{status}} on {{date}}",
   "delivery.investigationContext.failedRepair.reasonRequired":
     "because clear reminder scheduling required an explicit operator reason",
   "delivery.investigationContext.failedRepair.reasonTooLong":
@@ -1481,8 +1555,7 @@ export const en = {
     "because the submitted wording was not allowed",
   "delivery.investigationContext.failedRepair.unchanged":
     "and left the follow-up state unchanged",
-  "delivery.investigationContext.failedRepair.badge":
-    "Failed reminder repair",
+  "delivery.investigationContext.failedRepair.badge": "Failed reminder repair",
   "delivery.investigationContext.failedRepair.title":
     "Why this view matters: {{workspace}} has a failed reminder repair",
   "delivery.investigationContext.failedRepair.description":
@@ -1499,8 +1572,7 @@ export const en = {
     "The focused reminder notification for {{workspace}} is still out of sync with the current workspace checkpoint. The reminder was sent for {{bucket}} context, but the workspace currently shows {{checkpoint}}. Current follow-up state is {{status}}.",
   "delivery.investigationContext.notificationBadge": "Notification {{id}}",
   "delivery.investigationStale.eyebrow": "Investigation context warning",
-  "delivery.investigationStale.keepFilters":
-    "Keep filters and clear focus",
+  "delivery.investigationStale.keepFilters": "Keep filters and clear focus",
   "delivery.investigationStale.reset": "Reset to base delivery scope",
   "delivery.investigationStale.followUp.badge": "Stale follow-up context",
   "delivery.investigationStale.followUp.title":
@@ -1633,7 +1705,8 @@ export const en = {
   "renders.variant.caption_heavy": "Caption heavy",
   "renders.variant.cta_heavy": "CTA heavy",
   "renders.platformPreset.default.label": "Default",
-  "renders.platformPreset.default.description": "General-purpose vertical export",
+  "renders.platformPreset.default.description":
+    "General-purpose vertical export",
   "renders.platformPreset.instagram_reels.label": "Instagram Reels",
   "renders.platformPreset.instagram_reels.description":
     "Optimized for Instagram Reels pacing",
@@ -1665,8 +1738,7 @@ export const en = {
   "renders.scenePlan.safeZone.default": "default-safe-zone",
   "renders.scenePlan.defaultMotion.captionLead":
     "caption-led hero reveal with {{value}}",
-  "renders.scenePlan.defaultMotion.heroReveal":
-    "hero reveal with {{value}}",
+  "renders.scenePlan.defaultMotion.heroReveal": "hero reveal with {{value}}",
   "renders.scenePlan.defaultMotion.productDetail":
     "product detail emphasis with {{value}}",
   "renders.scenePlan.defaultMotion.conversionFocused":
@@ -1675,8 +1747,7 @@ export const en = {
     "caption-rich detail emphasis with {{value}}",
   "renders.scenePlan.defaultMotion.aggressiveCta":
     "aggressive CTA transition with {{value}}",
-  "renders.scenePlan.defaultMotion.cleanCta":
-    "clean CTA close with {{value}}",
+  "renders.scenePlan.defaultMotion.cleanCta": "clean CTA close with {{value}}",
   "renders.scenePlan.caption.strongCta": "Strong CTA close: {{value}}",
   "renders.scenePlan.caption.closeWithCta": "Close with CTA: {{value}}",
   "renders.batchPanel.variantsSummary": "{{count}} variants · {{value}}",
@@ -1745,15 +1816,18 @@ export const en = {
   "settings.billing.panel.activity": "Billing activity",
   "settings.billing.panel.activityEmpty":
     "No billing events yet. Stripe webhook activity, invoices, and checkout events will appear here.",
-  "auth_unconfigured": "Auth is not configured yet.",
-  "auth_credentials_required": "Email and password are required.",
-  "auth_sign_in_failed": "Unable to sign in with those credentials.",
-  "auth_sign_up_failed": "Unable to create account right now.",
-  "auth_sign_up_confirmation_sent":
+  auth_unconfigured: "Auth is not configured yet.",
+  auth_credentials_required: "Email and password are required.",
+  auth_sign_in_failed: "Unable to sign in with those credentials.",
+  auth_sign_up_failed: "Unable to create account right now.",
+  auth_sign_up_confirmation_sent:
     "Account created. Check your email if confirmation is enabled.",
   "format.kb": "{{value}} KB",
   "format.mb": "{{value}} MB"
 } satisfies Record<string, string | { one?: string; other: string }>
 
 export type AppMessageKey = keyof typeof en
-export type AppMessageCatalog = Record<AppMessageKey, MessageCatalog[AppMessageKey]>
+export type AppMessageCatalog = Record<
+  AppMessageKey,
+  MessageCatalog[AppMessageKey]
+>

@@ -23,6 +23,7 @@ Public surfaces are intentionally separate:
 - Supabase is the durable system of record for auth, workflow state, notifications, job traces, and delivery workspace events. Schema changes live in `supabase/migrations`.
 - Billing is now a separate schema-backed domain: plan definitions, owner billing accounts, owner subscriptions, billing usage rollups, and billing event audit records all live in Supabase and are no longer inferred from `owner_guardrails`.
 - Creative activation and feedback now have a first durable foundation: exports persist `preview_asset_id`, finalized canonical exports can be prepared into internal `activation_packages`, and manually ingested `creative_performance_records` tie channel outcomes back to real creative lineage.
+- Creative Performance Intelligence is now a first-class product slice: activation packages carry durable tracking status, tracking changes write audit events, project workspaces show activation/performance/insight surfaces, and deterministic insight generation ranks creative outcomes from stored performance facts.
 - Billing deployment validation now has an operator-protected diagnostics surface at `/api/billing/operator/runtime` plus the deploy smoke harness `scripts/checks/billing-runtime-smoke.ts` for Stripe/API-plan readiness checks.
 - Repo-managed Git hooks now live under `.githooks`; the versioned pre-push hook delegates to `scripts/verify-push.sh` and currently blocks pushes when `pnpm build` fails.
 - Cloudflare R2 backs asset and media storage.
@@ -58,7 +59,7 @@ Public surfaces are intentionally separate:
 - Owner-controlled single-export share links.
 - Delivery follow-up queue, overdue reminder views, worker reminder sweeps, and reminder support/investigation tooling.
 - Owner-account subscription billing with seeded free/starter/growth/scale plans, Stripe checkout/webhooks, effective-limit enforcement across web + worker, and free-plan export watermarking.
-- Phase-1 activation and feedback foundation: activation packages for finalized canonical exports, owner/operator manual creative-performance ingestion, and dashboard creative scorecards derived from durable performance facts.
+- Creative Performance Intelligence: activation packages for finalized canonical exports, owner/operator manual creative-performance ingestion, package-level tracking states, dashboard creative scorecards, project-level tracking views, and deterministic rules-based insights derived from durable performance facts.
 
 ## Important Decisions
 
@@ -68,6 +69,7 @@ Public surfaces are intentionally separate:
 - Billing enforcement now flows through an effective-limit service that clamps plan entitlements, user safety caps, and operator ceilings before either web actions or worker execution can proceed.
 - Activation packages are internal preparation records, not direct publish integrations. They snapshot manifest/channel payload data per export/channel and remain separate from public showcase, campaign, and delivery publishing.
 - Creative performance analytics are a separate outcome domain from provider-cost usage analytics: `usage_events` remain provider/cost telemetry, while creative outcomes now live in dedicated ingestion batches and performance fact rows.
+- Activation tracking status is auditable product state on `activation_packages`; status changes are recorded in `activation_package_events` and should stay separate from delivery workspace events and provider-cost traces.
 - Stripe is the primary self-serve billing rail for cards plus stablecoin checkout; manual stablecoin settlement is a protected operator path, not the default self-serve flow.
 - Billing runtime diagnostics are operator-scoped and non-destructive: they validate Stripe API connectivity, paid-plan price readiness, and seeded billing-plan presence before live dashboard checks.
 - Contributor push safety is repo-managed rather than ad hoc: use `pnpm hooks:setup` for clone setup, `pnpm verify:push` for the shared gate, and `pnpm safe-push -- ...` as the AI-friendly wrapper around `git push`.

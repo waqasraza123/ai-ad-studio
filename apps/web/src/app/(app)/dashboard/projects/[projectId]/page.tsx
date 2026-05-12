@@ -4,6 +4,7 @@ import { DismissibleFlashBanner } from "@/components/system/dismissible-flash-ba
 import { StaleWorkspaceRefresh } from "@/components/system/stale-workspace-refresh"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { AnalyticsOverview } from "@/features/analytics/components/analytics-overview"
+import { CreativePerformanceIntelligencePanel } from "@/features/analytics/components/creative-performance-intelligence-panel"
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { ApprovalGatePanel } from "@/features/approvals/components/approval-gate-panel"
 import { BrandKitSelectorPanel } from "@/features/brand-kits/components/brand-kit-selector-panel"
@@ -32,8 +33,10 @@ import { buildScenePlanPreview } from "@/features/renders/lib/scene-plan"
 import { RenderPackSummaryPanel } from "@/features/render-packs/components/render-pack-summary-panel"
 import { TemplateSelectorPanel } from "@/features/templates/components/template-selector-panel"
 import { listUsageEventsByProjectIdForOwner } from "@/server/analytics/usage-event-repository"
+import { listActivationPackagesByProjectIdForOwner } from "@/server/activation/activation-repository"
 import { getLatestApprovalByProjectIdForOwner } from "@/server/approvals/approval-repository"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { getEffectiveOwnerLimits } from "@/server/billing/billing-service"
 import { listBrandKitsByOwner } from "@/server/brand-kits/brand-kit-repository"
 import { listConceptsByProjectIdForOwner } from "@/server/concepts/concept-repository"
 import {
@@ -41,6 +44,8 @@ import {
   listExportsByProjectIdForOwner
 } from "@/server/exports/export-repository"
 import { listJobsByProjectIdForOwner } from "@/server/jobs/job-repository"
+import { listCreativePerformanceRecordsByProjectForOwner } from "@/server/creative-performance/creative-performance-repository"
+import { buildCreativePerformanceIntelligence } from "@/server/creative-performance/performance-intelligence"
 import {
   listAssetsByProjectIdForOwner,
   listConceptPreviewAssetsByProjectIdForOwner
@@ -103,7 +108,10 @@ export default async function ProjectDetailPage({
     templates,
     brandKits,
     renderPacks,
-    renderBatches
+    renderBatches,
+    activationPackages,
+    creativePerformanceRecords,
+    billingLimits
   ] = await Promise.all([
     getProjectByIdForOwner(projectId, user.id),
     getProjectInputByProjectIdForOwner(projectId, user.id),
@@ -118,7 +126,10 @@ export default async function ProjectDetailPage({
     listTemplatesByOwner(user.id),
     listBrandKitsByOwner(user.id),
     listRenderPacksByOwner(user.id),
-    listRenderBatchesByProjectIdForOwner(projectId, user.id)
+    listRenderBatchesByProjectIdForOwner(projectId, user.id),
+    listActivationPackagesByProjectIdForOwner(projectId, user.id),
+    listCreativePerformanceRecordsByProjectForOwner(projectId, user.id),
+    getEffectiveOwnerLimits(user.id)
   ])
 
   if (!project) {
@@ -126,10 +137,14 @@ export default async function ProjectDetailPage({
   }
 
   const currentTemplate =
-    templates.find((template) => template.id === project.template_id) ?? templates[0] ?? null
+    templates.find((template) => template.id === project.template_id) ??
+    templates[0] ??
+    null
 
   const currentBrandKit =
-    brandKits.find((kit) => kit.id === project.brand_kit_id) ?? brandKits[0] ?? null
+    brandKits.find((kit) => kit.id === project.brand_kit_id) ??
+    brandKits[0] ??
+    null
 
   const summary = toProjectDetailSummary({
     assets,
@@ -145,7 +160,8 @@ export default async function ProjectDetailPage({
     previewAssetsCount: previewAssets.length
   })
 
-  const previewAssetsByConceptId = mapConceptPreviewAssetsByConceptId(previewAssets)
+  const previewAssetsByConceptId =
+    mapConceptPreviewAssetsByConceptId(previewAssets)
 
   const conceptViewModels = concepts.map((concept) =>
     toConceptCardViewModel({
@@ -156,7 +172,8 @@ export default async function ProjectDetailPage({
   )
 
   const selectedConcept =
-    concepts.find((concept) => concept.id === project.selected_concept_id) ?? null
+    concepts.find((concept) => concept.id === project.selected_concept_id) ??
+    null
 
   const renderState = toRenderState({
     hasLatestExport: Boolean(latestExport),
@@ -165,7 +182,9 @@ export default async function ProjectDetailPage({
   })
 
   const selectedVariantKey = getLatestVariantKey(latestExport?.variant_key)
-  const selectedPlatformPreset = getLatestPlatformPreset(latestExport?.platform_preset)
+  const selectedPlatformPreset = getLatestPlatformPreset(
+    latestExport?.platform_preset
+  )
   const selectedAspectRatio = latestExport?.aspect_ratio ?? "9:16"
 
   const activeRenderPack =
@@ -195,11 +214,13 @@ export default async function ProjectDetailPage({
       })
     : []
 
-  const latestExportAsset =
-    latestExport ? assets.find((asset) => asset.id === latestExport.asset_id) ?? null : null
+  const latestExportAsset = latestExport
+    ? (assets.find((asset) => asset.id === latestExport.asset_id) ?? null)
+    : null
 
   const latestPreviewDataUrl =
-    latestExportAsset && typeof latestExportAsset.metadata.previewDataUrl === "string"
+    latestExportAsset &&
+    typeof latestExportAsset.metadata.previewDataUrl === "string"
       ? latestExportAsset.metadata.previewDataUrl
       : null
 
@@ -222,6 +243,70 @@ export default async function ProjectDetailPage({
     renderBatchInFlight ||
     latestExport?.status === "queued" ||
     latestExport?.status === "rendering"
+
+  const finalizedExportIds = new Set(
+    [
+      project.canonical_export_id,
+      ...renderBatches.map((batch) => batch.finalized_export_id)
+    ].filter((value): value is string => Boolean(value))
+  )
+  const packageExportIds = new Set(
+    activationPackages.map((activationPackage) => activationPackage.export_id)
+  )
+  const intelligenceTargetExports = exports.filter(
+    (exportRecord) =>
+      exportRecord.status === "ready" &&
+      (finalizedExportIds.has(exportRecord.id) ||
+        packageExportIds.has(exportRecord.id))
+  )
+  const exportsById = new Map(
+    exports.map((exportRecord) => [exportRecord.id, exportRecord])
+  )
+  const creativePerformanceIntelligence = buildCreativePerformanceIntelligence({
+    activationPackages,
+    exports,
+    project,
+    records: creativePerformanceRecords,
+    renderBatches
+  })
+  const creativePerformanceTargetOptions = [
+    ...activationPackages
+      .filter((activationPackage) => activationPackage.status !== "superseded")
+      .map((activationPackage) => {
+        const exportRecord = exportsById.get(activationPackage.export_id)
+
+        return {
+          activationPackageId: activationPackage.id,
+          exportId: activationPackage.export_id,
+          id: `package:${activationPackage.id}:${activationPackage.export_id}:${activationPackage.channel}`,
+          label: [
+            t(
+              activationPackage.channel === "meta"
+                ? "activation.channel.meta"
+                : activationPackage.channel === "google"
+                  ? "activation.channel.google"
+                  : activationPackage.channel === "tiktok"
+                    ? "activation.channel.tiktok"
+                    : "activation.channel.internalHandoff"
+            ),
+            exportRecord?.variant_key,
+            exportRecord?.aspect_ratio
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        }
+      }),
+    ...intelligenceTargetExports.map((exportRecord) => ({
+      activationPackageId: null,
+      exportId: exportRecord.id,
+      id: `export:${exportRecord.id}`,
+      label: [
+        t("analytics.intelligence.tracking.canonical"),
+        exportRecord.variant_key,
+        exportRecord.aspect_ratio
+      ].join(" · ")
+    }))
+  ]
 
   return (
     <div className="space-y-6">
@@ -262,25 +347,33 @@ export default async function ProjectDetailPage({
           </p>
           <div className="mt-5 grid gap-4 sm:grid-cols-2">
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">{t("projects.summary.status")}</p>
+              <p className="text-sm text-slate-400">
+                {t("projects.summary.status")}
+              </p>
               <p className="mt-2 text-lg font-medium text-white">
                 {summary.projectStatus}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">{t("projects.summary.assets")}</p>
+              <p className="text-sm text-slate-400">
+                {t("projects.summary.assets")}
+              </p>
               <p className="mt-2 text-lg font-medium text-white">
                 {summary.assetCount}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">{t("projects.summary.template")}</p>
+              <p className="text-sm text-slate-400">
+                {t("projects.summary.template")}
+              </p>
               <p className="mt-2 text-lg font-medium text-white">
                 {currentTemplate?.name ?? t("projects.summary.none")}
               </p>
             </div>
             <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-4">
-              <p className="text-sm text-slate-400">{t("projects.summary.brandKit")}</p>
+              <p className="text-sm text-slate-400">
+                {t("projects.summary.brandKit")}
+              </p>
               <p className="mt-2 text-lg font-medium text-white">
                 {currentBrandKit?.name ?? t("projects.summary.none")}
               </p>
@@ -347,7 +440,10 @@ export default async function ProjectDetailPage({
         renderPacks={renderPacks}
       />
 
-      <ApprovalGatePanel approval={latestApproval} selectedConcept={selectedConcept} />
+      <ApprovalGatePanel
+        approval={latestApproval}
+        selectedConcept={selectedConcept}
+      />
 
       {latestExport ? (
         <ExportSummary
@@ -361,6 +457,17 @@ export default async function ProjectDetailPage({
       ) : null}
 
       <ProjectExportsPanel exports={exports} />
+      <CreativePerformanceIntelligencePanel
+        analyticsEnabled={
+          billingLimits.featureAccess.allowCreativePerformanceAnalytics
+        }
+        ingestionEnabled={
+          billingLimits.featureAccess.allowCreativePerformanceIngestion
+        }
+        intelligence={creativePerformanceIntelligence}
+        projectId={projectId}
+        targetOptions={creativePerformanceTargetOptions}
+      />
       <AnalyticsOverview usageEvents={usageEvents} />
       <UsageEventsTable usageEvents={usageEvents} />
 

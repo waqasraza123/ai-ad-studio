@@ -3,6 +3,8 @@ import { CreativePerformanceIngestionForm } from "@/features/analytics/component
 import { getServerI18n } from "@/lib/i18n/server"
 
 type CreativePerformanceExportOption = {
+  activationPackageId: string | null
+  exportId: string
   id: string
   label: string
 }
@@ -50,7 +52,9 @@ export async function CreativePerformanceIngestionPanel({
                 meta: t("activation.channel.meta"),
                 tiktok: t("activation.channel.tiktok")
               },
-              conversionValue: t("analytics.creative.ingestion.conversionValue"),
+              conversionValue: t(
+                "analytics.creative.ingestion.conversionValue"
+              ),
               conversions: t("analytics.creative.ingestion.conversions"),
               impressions: t("analytics.creative.ingestion.impressions"),
               metricDate: t("analytics.creative.ingestion.metricDate"),
@@ -58,7 +62,9 @@ export async function CreativePerformanceIngestionPanel({
               pending: t("analytics.creative.ingestion.pending"),
               removeRow: t("analytics.creative.ingestion.removeRow"),
               rowLabelPrefix: t("analytics.creative.ingestion.rowLabelPrefix"),
-              rowsDescription: t("analytics.creative.ingestion.rowsDescription"),
+              rowsDescription: t(
+                "analytics.creative.ingestion.rowsDescription"
+              ),
               rowsTitle: t("analytics.creative.ingestion.rowsTitle"),
               sharedContext: t("analytics.creative.ingestion.sharedContext"),
               spend: t("analytics.creative.ingestion.spend"),

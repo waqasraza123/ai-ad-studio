@@ -2,12 +2,16 @@
 
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { redirectToLoginWithFormError, redirectWithFormError } from "@/lib/server-action-redirect"
+import {
+  redirectToLoginWithFormError,
+  redirectWithFormError
+} from "@/lib/server-action-redirect"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
 import { getBillingGateDecision } from "@/server/billing/billing-service"
 import {
   CreativePerformanceError,
   ingestManualCreativePerformanceBatch,
+  parseCreativePerformanceTargetValue,
   parseManualCreativePerformanceBatchInput
 } from "@/server/creative-performance/creative-performance-service"
 
@@ -20,7 +24,10 @@ export async function submitCreativePerformanceAction(formData: FormData) {
     redirectToLoginWithFormError("auth_required")
   }
 
-  const gate = await getBillingGateDecision(user.id, "ingest_creative_performance")
+  const gate = await getBillingGateDecision(
+    user.id,
+    "ingest_creative_performance"
+  )
 
   if (!gate.allowed) {
     redirectWithFormError(
@@ -30,13 +37,29 @@ export async function submitCreativePerformanceAction(formData: FormData) {
   }
 
   try {
+    const rowTargets = formData.getAll("row_target")
+    const parsedTargets = rowTargets.map((target) =>
+      parseCreativePerformanceTargetValue(target)
+    )
     const input = parseManualCreativePerformanceBatchInput({
-      activationPackageIds: formData.getAll("activation_package_id"),
-      channels: formData.getAll("row_channel"),
+      activationPackageIds:
+        parsedTargets.length > 0
+          ? parsedTargets.map((target) => target.activationPackageId ?? "")
+          : formData.getAll("activation_package_id"),
+      channels:
+        parsedTargets.length > 0
+          ? parsedTargets.map(
+              (target, index) =>
+                target.channel ?? formData.getAll("row_channel")[index]
+            )
+          : formData.getAll("row_channel"),
       clicks: formData.getAll("row_clicks"),
       conversionValueUsd: formData.getAll("row_conversion_value_usd"),
       conversions: formData.getAll("row_conversions"),
-      exportIds: formData.getAll("row_export_id"),
+      exportIds:
+        parsedTargets.length > 0
+          ? parsedTargets.map((target) => target.exportId)
+          : formData.getAll("row_export_id"),
       externalAccountLabel: formData.get("external_account_label"),
       impressions: formData.getAll("row_impressions"),
       metricDates: formData.getAll("row_metric_date"),

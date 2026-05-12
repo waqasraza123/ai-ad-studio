@@ -9,6 +9,7 @@ import { ProviderCostBreakdown } from "@/features/analytics/components/provider-
 import { UsageEventsTable } from "@/features/analytics/components/usage-events-table"
 import { getServerI18n } from "@/lib/i18n/server"
 import { getAuthenticatedUser } from "@/server/auth/get-authenticated-user"
+import { listActivationPackagesByOwner } from "@/server/activation/activation-repository"
 import { listUsageEventsByOwner } from "@/server/analytics/usage-event-repository"
 import { listCreativePerformanceRecordsByOwner } from "@/server/creative-performance/creative-performance-repository"
 import { getEffectiveOwnerLimits } from "@/server/billing/billing-service"
@@ -27,7 +28,9 @@ function readSearchParam(
   return Array.isArray(value) ? value[0] : value
 }
 
-export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps) {
+export default async function AnalyticsPage({
+  searchParams
+}: AnalyticsPageProps) {
   const { t } = await getServerI18n()
   const user = await getAuthenticatedUser()
 
@@ -46,26 +49,70 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
     readSearchParam(resolvedSearchParams, "creative_performance_count") ?? "1"
   )
 
-  const [usageEvents, creativePerformanceRecords, projects, billingLimits, exports] =
-    await Promise.all([
+  const [
+    usageEvents,
+    creativePerformanceRecords,
+    projects,
+    billingLimits,
+    exports,
+    activationPackages
+  ] = await Promise.all([
     listUsageEventsByOwner(user.id),
     listCreativePerformanceRecordsByOwner(user.id),
     listProjectsByOwner(user.id),
     getEffectiveOwnerLimits(user.id),
-    listAllExportsByOwner(user.id)
+    listAllExportsByOwner(user.id),
+    listActivationPackagesByOwner(user.id)
   ])
 
   const projectsById = new Map(projects.map((project) => [project.id, project]))
-  const creativePerformanceSummary =
-    buildCreativePerformanceSummary(creativePerformanceRecords)
-  const exportOptions = exports.map((exportRecord) => ({
-    id: exportRecord.id,
-    label: [
-      projectsById.get(exportRecord.project_id)?.name ?? t("common.words.unknownProject"),
-      exportRecord.variant_key,
-      exportRecord.aspect_ratio
-    ].join(" · ")
-  }))
+  const exportsById = new Map(
+    exports.map((exportRecord) => [exportRecord.id, exportRecord])
+  )
+  const creativePerformanceSummary = buildCreativePerformanceSummary(
+    creativePerformanceRecords
+  )
+  const exportOptions = [
+    ...activationPackages
+      .filter((activationPackage) => activationPackage.status !== "superseded")
+      .map((activationPackage) => {
+        const exportRecord = exportsById.get(activationPackage.export_id)
+
+        return {
+          activationPackageId: activationPackage.id,
+          exportId: activationPackage.export_id,
+          id: `package:${activationPackage.id}:${activationPackage.export_id}:${activationPackage.channel}`,
+          label: [
+            projectsById.get(activationPackage.project_id)?.name ??
+              t("common.words.unknownProject"),
+            t(
+              activationPackage.channel === "meta"
+                ? "activation.channel.meta"
+                : activationPackage.channel === "google"
+                  ? "activation.channel.google"
+                  : activationPackage.channel === "tiktok"
+                    ? "activation.channel.tiktok"
+                    : "activation.channel.internalHandoff"
+            ),
+            exportRecord?.variant_key,
+            exportRecord?.aspect_ratio
+          ]
+            .filter(Boolean)
+            .join(" · ")
+        }
+      }),
+    ...exports.map((exportRecord) => ({
+      activationPackageId: null,
+      exportId: exportRecord.id,
+      id: `export:${exportRecord.id}`,
+      label: [
+        projectsById.get(exportRecord.project_id)?.name ??
+          t("common.words.unknownProject"),
+        exportRecord.variant_key,
+        exportRecord.aspect_ratio
+      ].join(" · ")
+    }))
+  ]
 
   return (
     <div className="space-y-6">
@@ -99,7 +146,10 @@ export default async function AnalyticsPage({ searchParams }: AnalyticsPageProps
 
       <AnalyticsOverview usageEvents={usageEvents} />
       <ProviderCostBreakdown usageEvents={usageEvents} />
-      <ProjectUsageBreakdown projectsById={projectsById} usageEvents={usageEvents} />
+      <ProjectUsageBreakdown
+        projectsById={projectsById}
+        usageEvents={usageEvents}
+      />
       <UsageEventsTable usageEvents={usageEvents} />
 
       <section className="rounded-[2rem] border border-white/10 bg-white/[0.04] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.25)]">

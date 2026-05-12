@@ -57,9 +57,18 @@ export type ActivationChannel =
   | "google"
   | "tiktok"
   | "internal_handoff"
-export type ActivationPackageStatus = "draft" | "ready" | "superseded" | "archived"
+export type ActivationPackageStatus =
+  | "draft"
+  | "ready"
+  | "superseded"
+  | "archived"
 export type ActivationReadinessStatus = "blocked" | "ready"
 export type ActivationPackageCreatedVia = "owner_dashboard" | "operator_api"
+export type ActivationTrackingStatus =
+  | "tracking_ready"
+  | "active"
+  | "historical"
+export type ActivationPackageEventType = "tracking_status_changed"
 export type CreativePerformanceIngestionSource =
   | "manual_owner"
   | "manual_operator"
@@ -150,7 +159,6 @@ export type DeliveryReminderBucket =
   | "overdue"
   | "due_today"
   | "upcoming"
-
 
 export type ProjectRecord = {
   id: string
@@ -516,6 +524,10 @@ export type ActivationPackageRecord = {
   status: ActivationPackageStatus
   readiness_status: ActivationReadinessStatus
   readiness_issues: string[]
+  tracking_status: ActivationTrackingStatus
+  tracking_notes: string | null
+  activated_at: string | null
+  historical_at: string | null
   manifest_version: number
   manifest_json: Record<string, unknown>
   channel_payload_json: Record<string, unknown>
@@ -524,6 +536,20 @@ export type ActivationPackageRecord = {
   created_via: ActivationPackageCreatedVia
   created_at: string
   updated_at: string
+}
+
+export type ActivationPackageEventRecord = {
+  id: string
+  owner_id: string
+  project_id: string
+  activation_package_id: string
+  export_id: string
+  event_type: ActivationPackageEventType
+  previous_tracking_status: ActivationTrackingStatus | null
+  next_tracking_status: ActivationTrackingStatus
+  notes: string | null
+  created_by_user_id: string | null
+  created_at: string
 }
 
 export type CreativePerformanceIngestionBatchRecord = {

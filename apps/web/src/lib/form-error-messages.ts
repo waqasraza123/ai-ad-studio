@@ -7,7 +7,8 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
   content_not_allowed: MODEST_WORDING_ERROR_MESSAGE,
   name_required: "Enter a project name (2–100 characters).",
   name_invalid: "Enter a project name (2–100 characters).",
-  brief_invalid: "One or more brief fields are invalid. Check field lengths and try again.",
+  brief_invalid:
+    "One or more brief fields are invalid. Check field lengths and try again.",
   project_not_found: "Project could not be found.",
   not_found: "That item could not be found.",
   asset_no_file: "Select a file before uploading.",
@@ -33,21 +34,26 @@ export const FORM_ERROR_MESSAGES: Record<string, string> = {
   save_brief_first: "Save the project brief before generating concepts.",
   concepts_first: "Generate concepts before creating previews.",
   select_concept_batch: "Select a concept before starting a variation batch.",
-  previews_batch: "Generate concept previews before starting a variation batch.",
+  previews_batch:
+    "Generate concept previews before starting a variation batch.",
   job_failed: "That action could not be completed. Try again.",
   winner_export_invalid: "That export is not part of this batch.",
-  finalize_failed: "Could not finalize this batch. Check that a winner is selected.",
+  finalize_failed:
+    "Could not finalize this batch. Check that a winner is selected.",
   promotion_ineligible: "This export is not eligible for that action yet.",
   export_not_found: "Export could not be found.",
   campaign_not_found: "Share campaign could not be found.",
   showcase_not_found: "Showcase item could not be found.",
   approval_not_found: "Approval record could not be found.",
   share_link_failed: "Could not create or update the share link.",
-  activation_export_not_found: "Export could not be found for activation packaging.",
+  activation_export_not_found:
+    "Export could not be found for activation packaging.",
   activation_export_not_finalized:
     "Only the finalized canonical export can be prepared as an activation package.",
   activation_package_failed:
     "Could not prepare the activation package. Try again.",
+  activation_tracking_invalid:
+    "Activation tracking could not be updated for that package.",
   billing_project_limit_reached:
     "Your plan has reached its active project limit. Upgrade in Billing and plan to create another project.",
   billing_concept_limit_reached:

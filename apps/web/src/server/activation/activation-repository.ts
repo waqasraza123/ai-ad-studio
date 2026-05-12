@@ -1,10 +1,17 @@
 import "server-only"
 import type { SupabaseClient } from "@supabase/supabase-js"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
-import type { ActivationPackageRecord } from "@/server/database/types"
+import type {
+  ActivationPackageEventRecord,
+  ActivationPackageRecord,
+  ActivationTrackingStatus
+} from "@/server/database/types"
 
 const activationPackageSelection =
-  "id, owner_id, project_id, render_batch_id, export_id, canonical_export_id, channel, status, readiness_status, readiness_issues, manifest_version, manifest_json, channel_payload_json, asset_bundle_json, created_by_user_id, created_via, created_at, updated_at"
+  "id, owner_id, project_id, render_batch_id, export_id, canonical_export_id, channel, status, readiness_status, readiness_issues, tracking_status, tracking_notes, activated_at, historical_at, manifest_version, manifest_json, channel_payload_json, asset_bundle_json, created_by_user_id, created_via, created_at, updated_at"
+
+const activationPackageEventSelection =
+  "id, owner_id, project_id, activation_package_id, export_id, event_type, previous_tracking_status, next_tracking_status, notes, created_by_user_id, created_at"
 
 async function resolveClient(client?: SupabaseClient) {
   return client ?? createSupabaseServerClient()
@@ -20,12 +27,14 @@ function normalizeActivationPackage(
 ) {
   return {
     ...record,
+    activated_at: record.activated_at ?? null,
     asset_bundle_json:
       record.asset_bundle_json && typeof record.asset_bundle_json === "object"
         ? (record.asset_bundle_json as Record<string, unknown>)
         : {},
     channel_payload_json:
-      record.channel_payload_json && typeof record.channel_payload_json === "object"
+      record.channel_payload_json &&
+      typeof record.channel_payload_json === "object"
         ? (record.channel_payload_json as Record<string, unknown>)
         : {},
     manifest_json:
@@ -33,8 +42,13 @@ function normalizeActivationPackage(
         ? (record.manifest_json as Record<string, unknown>)
         : {},
     readiness_issues: Array.isArray(record.readiness_issues)
-      ? record.readiness_issues.filter((value): value is string => typeof value === "string")
-      : []
+      ? record.readiness_issues.filter(
+          (value): value is string => typeof value === "string"
+        )
+      : [],
+    historical_at: record.historical_at ?? null,
+    tracking_notes: record.tracking_notes ?? null,
+    tracking_status: record.tracking_status ?? "tracking_ready"
   } satisfies ActivationPackageRecord
 }
 
@@ -48,6 +62,62 @@ export async function listActivationPackagesByExportIdForOwner(
     .from("activation_packages")
     .select(activationPackageSelection)
     .eq("export_id", exportId)
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to list activation packages")
+  }
+
+  return (data ?? []).map((record) =>
+    normalizeActivationPackage(
+      record as ActivationPackageRecord & {
+        asset_bundle_json: unknown
+        channel_payload_json: unknown
+        manifest_json: unknown
+        readiness_issues: unknown
+      }
+    )
+  )
+}
+
+export async function listActivationPackagesByProjectIdForOwner(
+  projectId: string,
+  ownerId: string,
+  client?: SupabaseClient
+) {
+  const supabase = await resolveClient(client)
+  const { data, error } = await supabase
+    .from("activation_packages")
+    .select(activationPackageSelection)
+    .eq("project_id", projectId)
+    .eq("owner_id", ownerId)
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to list project activation packages")
+  }
+
+  return (data ?? []).map((record) =>
+    normalizeActivationPackage(
+      record as ActivationPackageRecord & {
+        asset_bundle_json: unknown
+        channel_payload_json: unknown
+        manifest_json: unknown
+        readiness_issues: unknown
+      }
+    )
+  )
+}
+
+export async function listActivationPackagesByOwner(
+  ownerId: string,
+  client?: SupabaseClient
+) {
+  const supabase = await resolveClient(client)
+  const { data, error } = await supabase
+    .from("activation_packages")
+    .select(activationPackageSelection)
     .eq("owner_id", ownerId)
     .order("created_at", { ascending: false })
 
@@ -156,7 +226,8 @@ export async function createActivationPackageRecord(input: {
       readiness_issues: input.readinessIssues,
       readiness_status: input.readinessStatus,
       render_batch_id: input.renderBatchId,
-      status: input.status
+      status: input.status,
+      tracking_status: "tracking_ready"
     })
     .select(activationPackageSelection)
     .single()
@@ -173,4 +244,76 @@ export async function createActivationPackageRecord(input: {
       readiness_issues: unknown
     }
   )
+}
+
+export async function updateActivationPackageTrackingStatus(input: {
+  packageId: string
+  ownerId: string
+  trackingStatus: ActivationTrackingStatus
+  trackingNotes: string | null
+  activatedAt: string | null
+  historicalAt: string | null
+  client?: SupabaseClient
+}) {
+  const supabase = await resolveClient(input.client)
+  const { data, error } = await supabase
+    .from("activation_packages")
+    .update({
+      activated_at: input.activatedAt,
+      historical_at: input.historicalAt,
+      tracking_notes: input.trackingNotes,
+      tracking_status: input.trackingStatus
+    })
+    .eq("id", input.packageId)
+    .eq("owner_id", input.ownerId)
+    .select(activationPackageSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to update activation tracking")
+  }
+
+  return normalizeActivationPackage(
+    data as ActivationPackageRecord & {
+      asset_bundle_json: unknown
+      channel_payload_json: unknown
+      manifest_json: unknown
+      readiness_issues: unknown
+    }
+  )
+}
+
+export async function createActivationPackageEvent(input: {
+  ownerId: string
+  projectId: string
+  activationPackageId: string
+  exportId: string
+  previousTrackingStatus: ActivationTrackingStatus | null
+  nextTrackingStatus: ActivationTrackingStatus
+  notes: string | null
+  createdByUserId: string | null
+  client?: SupabaseClient
+}) {
+  const supabase = await resolveClient(input.client)
+  const { data, error } = await supabase
+    .from("activation_package_events")
+    .insert({
+      activation_package_id: input.activationPackageId,
+      created_by_user_id: input.createdByUserId,
+      event_type: "tracking_status_changed",
+      export_id: input.exportId,
+      next_tracking_status: input.nextTrackingStatus,
+      notes: input.notes,
+      owner_id: input.ownerId,
+      previous_tracking_status: input.previousTrackingStatus,
+      project_id: input.projectId
+    })
+    .select(activationPackageEventSelection)
+    .single()
+
+  if (error) {
+    throw new Error("Failed to create activation package event")
+  }
+
+  return data as ActivationPackageEventRecord
 }

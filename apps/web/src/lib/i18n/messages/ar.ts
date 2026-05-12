@@ -47,14 +47,22 @@ export const ar: AppMessageCatalog = {
   "common.words.label": "التصنيف",
   "common.words.records": "السجلات",
   "common.words.impressions": "مرات الظهور",
+  "common.words.clicks": "النقرات",
+  "common.words.conversions": "التحويلات",
   "common.words.spend": "الإنفاق",
+  "common.words.ctr": "معدل النقر",
+  "common.words.conversionRate": "معدل التحويل",
+  "common.words.cpa": "تكلفة التحويل",
   "common.words.roas": "عائد الإنفاق الإعلاني",
   "common.words.created": "أُنشئ {{value}}",
   "common.words.updated": "آخر تحديث {{value}}",
   "common.words.notSet": "غير محدد",
   "common.words.unknownProject": "مشروع غير معروف",
   "common.count.projects": { one: "{{count}} مشروع", other: "{{count}} مشروع" },
-  "common.count.itemsShown": { one: "{{count}} معروض", other: "{{count}} معروض" },
+  "common.count.itemsShown": {
+    one: "{{count}} معروض",
+    other: "{{count}} معروض"
+  },
   "header.marketing.workflow": "سير العمل",
   "header.marketing.samples": "النماذج",
   "header.marketing.plans": "الخطط",
@@ -64,7 +72,8 @@ export const ar: AppMessageCatalog = {
   "header.marketing.enterDashboard": "الدخول إلى اللوحة",
   "header.app.workspace": "مساحة العمل",
   "header.app.studioMode": "وضع الاستوديو",
-  "header.app.workspaceDescription": "توليد إعلانات بالذكاء الاصطناعي ضمن سير عمل منضبط.",
+  "header.app.workspaceDescription":
+    "توليد إعلانات بالذكاء الاصطناعي ضمن سير عمل منضبط.",
   "header.app.renderProfile": "ملف الإخراج",
   "header.app.renderProfileTitle": "إعلانات عمودية لمدة 10 ثوانٍ",
   "header.app.renderProfileDescription":
@@ -139,7 +148,8 @@ export const ar: AppMessageCatalog = {
   "marketing.hero.browseShowcase": "استعراض المعرض",
   "marketing.hero.briefs": "الموجزات",
   "marketing.hero.briefsValue": "منظمة",
-  "marketing.hero.briefsDescription": "تبقى المدخلات محصورة في عمل تسويق المنتج.",
+  "marketing.hero.briefsDescription":
+    "تبقى المدخلات محصورة في عمل تسويق المنتج.",
   "marketing.hero.reviews": "المراجعات",
   "marketing.hero.reviewsValue": "قبل الإنفاق",
   "marketing.hero.reviewsDescription":
@@ -149,8 +159,7 @@ export const ar: AppMessageCatalog = {
   "marketing.hero.deliveryDescription":
     "انقل الفائزين إلى المعرض والحملات ومسارات التسليم.",
   "marketing.featureGrid.eyebrow": "لماذا ينجح",
-  "marketing.featureGrid.title":
-    "سير عمل منتج بدل أداة توليد مفتوحة بلا ضوابط",
+  "marketing.featureGrid.title": "سير عمل منتج بدل أداة توليد مفتوحة بلا ضوابط",
   "marketing.featureGrid.description":
     "كل سطح في المنتج يعزز سير عمل واحدًا منضبطًا حتى تبقى المخرجات أسهل للمراجعة والنشر والتسليم.",
   "marketing.feature.constrained.title": "سير عمل إعلاني منضبط",
@@ -192,8 +201,7 @@ export const ar: AppMessageCatalog = {
   "dashboard.admin.brandLabel": "مجموعة العلامة",
   "dashboard.admin.guardrailsSummary":
     "المعاينة {{preview}} • الإخراج {{render}}",
-  "dashboard.admin.brandSummary":
-    "العنوان {{heading}} • المتن {{body}}",
+  "dashboard.admin.brandSummary": "العنوان {{heading}} • المتن {{body}}",
   "dashboard.admin.brandUnavailable":
     "تفاصيل مجموعة العلامة الافتراضية غير متاحة الآن.",
   "projects.list.unavailableTitle": "المشاريع غير متاحة مؤقتًا",
@@ -243,9 +251,11 @@ export const ar: AppMessageCatalog = {
   "projects.brief.placeholder.productDescription":
     "صف المنتج بوضوح حتى يتمكن خط المفاهيم من بناء الخطافات والزوايا والاتجاه البصري لاحقًا.",
   "projects.brief.placeholder.offerText": "خصم 20 بالمئة خلال أسبوع الإطلاق",
-  "projects.brief.placeholder.targetAudience": "مشترو العناية بالبشرة من 22 إلى 35",
+  "projects.brief.placeholder.targetAudience":
+    "مشترو العناية بالبشرة من 22 إلى 35",
   "projects.brief.placeholder.brandTone": "فاخر ونظيف",
-  "projects.brief.placeholder.visualStyle": "إضاءة استوديو بسيطة بإحساس فاخر ناعم",
+  "projects.brief.placeholder.visualStyle":
+    "إضاءة استوديو بسيطة بإحساس فاخر ناعم",
   "projects.brief.pending": "جارٍ حفظ الموجز…",
   "projects.brief.action": "حفظ الموجز",
   "projects.assets.eyebrow": "إدخال الأصول",
@@ -323,8 +333,7 @@ export const ar: AppMessageCatalog = {
     "تتبّع نتائج الأداء اليدوية مقابل سلسلة نسب المخرج الحقيقية حتى يتعلّم الاستوديو أي الخطافات والدعوات إلى الإجراء والمقاسات تحقق أفضل النتائج.",
   "analytics.creative.upgradeRequired":
     "خطتك الحالية لا تشمل تحليلات أداء الإبداع. قم بالترقية من الفوترة والخطة.",
-  "analytics.creative.empty":
-    "لم يتم إدخال أي سجلات أداء إبداعي بعد.",
+  "analytics.creative.empty": "لم يتم إدخال أي سجلات أداء إبداعي بعد.",
   "analytics.creative.topExports": "أفضل المخرجات والنسخ المعتمدة",
   "analytics.creative.byHook": "أفضل الخطافات",
   "analytics.creative.byCallToAction": "أفضل الدعوات إلى الإجراء",
@@ -362,17 +371,75 @@ export const ar: AppMessageCatalog = {
   "analytics.creative.ingestion.notes": "ملاحظات",
   "analytics.creative.ingestion.pending": "جارٍ تسجيل الأداء…",
   "analytics.creative.ingestion.submit": "تسجيل أداء الإبداع",
-  "analytics.creative.ingestion.success":
-    "تم تسجيل أداء الإبداع بنجاح.",
+  "analytics.creative.ingestion.success": "تم تسجيل أداء الإبداع بنجاح.",
   "analytics.creative.ingestion.successCount":
     "تم تسجيل {{count}} صفوف من أداء الإبداع بنجاح.",
+  "analytics.intelligence.eyebrow": "ذكاء أداء الإبداع",
+  "analytics.intelligence.title": "تتبع التفعيل والنتائج والخطوات التالية",
+  "analytics.intelligence.description":
+    "اربط المخرجات النهائية وحزم التفعيل بسجلات الأداء اليدوية، ثم اعرض توصيات حتمية من سلسلة نسب الإبداع الحقيقية.",
+  "analytics.intelligence.tracking.title": "تتبع التفعيل",
+  "analytics.intelligence.tracking.empty":
+    "اعتمد دفعة إخراج وأعد حزمة تفعيل قبل تتبع الأداء.",
+  "analytics.intelligence.tracking.canonical": "المخرج المعتمد",
+  "analytics.intelligence.tracking.notes": "ملاحظة التتبع",
+  "analytics.intelligence.tracking.pending": "جارٍ تحديث التتبع…",
+  "analytics.intelligence.tracking.markReady": "جاهز",
+  "analytics.intelligence.tracking.markActive": "نشط",
+  "analytics.intelligence.tracking.markHistorical": "تاريخي",
+  "analytics.intelligence.status.notTracked": "غير متتبع",
+  "analytics.intelligence.status.trackingReady": "جاهز للتتبع",
+  "analytics.intelligence.status.active": "نشط",
+  "analytics.intelligence.status.historical": "تاريخي",
+  "analytics.intelligence.dataState.noData": "لا توجد بيانات أداء",
+  "analytics.intelligence.dataState.lowSignal": "إشارة ضعيفة",
+  "analytics.intelligence.dataState.tracked": "متتبع",
+  "analytics.intelligence.lastMetric": "آخر قياس {{value}}",
+  "analytics.intelligence.noMetricDate": "لا توجد مقاييس بعد",
+  "analytics.intelligence.insights.title": "رؤى حتمية",
+  "analytics.intelligence.insights.empty":
+    "لا توجد رؤى بعد. أضف سجلات أداء كافية لتفعيل متتبع.",
+  "analytics.intelligence.insight.bestCtr.title": "أقوى أداء في معدل النقر",
+  "analytics.intelligence.insight.bestCtr.body":
+    "{{target}} يملك أقوى إشارة نقر عند {{ctr}}. روّج هذا الخطاف أو حوّله إلى دفعة متغيرات جديدة.",
+  "analytics.intelligence.insight.bestConversionRate.title":
+    "أقوى أداء في التحويل",
+  "analytics.intelligence.insight.bestConversionRate.body":
+    "{{target}} يحقق أفضل تحويل بين الإبداعات ذات النقرات الكافية. طوّر دعوته إلى الإجراء وبنية العرض.",
+  "analytics.intelligence.insight.highSpendLowConversion.title":
+    "إنفاق مرتفع دون تحويلات",
+  "analytics.intelligence.insight.highSpendLowConversion.body":
+    "{{target}} أنفق {{value}} دون تحويلات. أوقفه أو أعد اختباره بدعوة أوضح قبل زيادة الإنفاق.",
+  "analytics.intelligence.insight.lowSignal.title": "متتبع لكن الإشارة ضعيفة",
+  "analytics.intelligence.insight.lowSignal.body":
+    "{{target}} نشط دون بيانات أداء كافية. استمر في جمع المقاييس قبل اختيار فائز.",
+  "analytics.intelligence.insight.retestCandidate.title":
+    "مرشح لإعادة الاختبار",
+  "analytics.intelligence.insight.retestCandidate.body":
+    "{{target}} جاهز للتفعيل لكن لا توجد نتائج متتبعة. شغّل اختبارًا صغيرًا قبل إنتاج متغيرات أخرى.",
+  "analytics.intelligence.insight.fatigueRisk.title": "خطر إجهاد",
+  "analytics.intelligence.insight.fatigueRisk.body":
+    "{{target}} يظهر انخفاضًا في معدل النقر مقارنة بالسجلات السابقة. حدّث الخطاف أو محليّز المشهد الافتتاحي.",
+  "analytics.intelligence.action.promote": "الإجراء المقترح: ترويج",
+  "analytics.intelligence.action.iterate": "الإجراء المقترح: تطوير",
+  "analytics.intelligence.action.pause": "الإجراء المقترح: إيقاف",
+  "analytics.intelligence.action.retest": "الإجراء المقترح: إعادة اختبار",
+  "analytics.intelligence.action.collect_data":
+    "الإجراء المقترح: جمع بيانات أكثر",
+  "analytics.intelligence.topCreatives": "أفضل المخرجات الإبداعية",
+  "analytics.intelligence.weakCreatives": "أضعف كفاءة إنفاق",
+  "analytics.intelligence.dimensions.title": "مقارنة الأنماط",
+  "analytics.intelligence.dimension.angle": "الزوايا",
+  "analytics.intelligence.dimension.aspectRatio": "نسب الأبعاد",
+  "analytics.intelligence.dimension.brandTone": "نبرات العلامة",
+  "analytics.intelligence.dimension.callToAction": "الدعوات إلى الإجراء",
+  "analytics.intelligence.dimension.concept": "خطافات المفاهيم",
   "notifications.overview.total": "إجمالي الإشعارات",
   "notifications.overview.unread": "غير المقروءة",
   "notifications.overview.warnings": "التحذيرات",
   "notifications.overview.errors": "الأخطاء",
   "errors.notFound.title": "الصفحة غير موجودة",
-  "errors.notFound.description":
-    "الصفحة المطلوبة غير موجودة أو لم تعد متاحة.",
+  "errors.notFound.description": "الصفحة المطلوبة غير موجودة أو لم تعد متاحة.",
   "errors.app.title": "حدث خطأ ما",
   "errors.app.description":
     "حاول مرة أخرى أو ارجع إلى لوحة التحكم. إذا استمر ذلك، راجع سجلات الخادم.",
@@ -431,8 +498,7 @@ export const ar: AppMessageCatalog = {
   "showcase.publish.eyebrow": "المعرض العام",
   "showcase.publish.ineligible":
     "لا يمكن نشر المخرجات العامة إلا إذا كانت فائزة ومراجَعة.",
-  "showcase.publish.published":
-    "هذا المخرج منشور بالفعل في المعرض العام.",
+  "showcase.publish.published": "هذا المخرج منشور بالفعل في المعرض العام.",
   "showcase.publish.ready": "هذا المخرج الفائز جاهز للنشر في المعرض.",
   "showcase.publish.placeholder": "ملخص اختياري للعرض",
   "showcase.publish.pending": "جارٍ النشر…",
@@ -469,8 +535,7 @@ export const ar: AppMessageCatalog = {
   "delivery.activity.last": "آخر مرة: {{value}}",
   "delivery.activity.noRecipientLabel": "لا يوجد اسم مستلم",
   "delivery.activity.latestAcknowledgementNote": "أحدث ملاحظة استلام",
-  "delivery.activity.empty":
-    "لم يُسجّل أي نشاط تسليم لهذه المساحة بعد.",
+  "delivery.activity.empty": "لم يُسجّل أي نشاط تسليم لهذه المساحة بعد.",
   "delivery.activity.anonymousRecipient": "مستلم غير معروف",
   "delivery.workspace.eyebrow": "مساحة التسليم",
   "delivery.workspace.ineligible":
@@ -553,11 +618,11 @@ export const ar: AppMessageCatalog = {
   "activation.channel.internalHandoff": "تسليم داخلي",
   "activation.issue.exportNotReady": "المخرج ليس جاهزًا بعد.",
   "activation.issue.exportAssetMissing": "ملف المخرج النهائي غير موجود.",
-  "activation.issue.projectMissing": "تعذر تحديد سلسلة المشروع الخاصة بهذا المخرج.",
+  "activation.issue.projectMissing":
+    "تعذر تحديد سلسلة المشروع الخاصة بهذا المخرج.",
   "activation.issue.renderBatchMissing":
     "تعذر العثور على دفعة المراجعة الخاصة بهذا المخرج.",
-  "activation.issue.renderBatchNotFinalized":
-    "دفعة المراجعة لم تُنهَ بعد.",
+  "activation.issue.renderBatchNotFinalized": "دفعة المراجعة لم تُنهَ بعد.",
   "activation.issue.canonicalExportMissing":
     "لا يوجد مخرج معتمد محدد لهذا المشروع حتى الآن.",
   "activation.issue.exportNotCanonical":
@@ -592,7 +657,8 @@ export const ar: AppMessageCatalog = {
   "projects.workspaceMap.stageRender": "الإخراج والاعتماد",
   "projects.workspaceMap.stageExport": "المخرجات والتسليم",
   "projects.workspaceMap.jumpLabel": "انتقل عبر الاستوديو",
-  "projects.workspaceMap.adminTitle": "إدارة مساحة العمل ما زالت تؤثر في هذا المشروع",
+  "projects.workspaceMap.adminTitle":
+    "إدارة مساحة العمل ما زالت تؤثر في هذا المشروع",
   "projects.workspaceMap.adminDescription":
     "أصبحت افتراضات العلامة والوصول التجاري وحدود التشغيل داخل الإعدادات. افتح منطقة الإدارة في أي وقت دون فقدان سياق المشروع.",
   "projects.workspaceMap.adminAction": "فتح إدارة مساحة العمل",
@@ -655,8 +721,7 @@ export const ar: AppMessageCatalog = {
     "أبقِ لوحة الألوان والطباعة الافتراضية جاهزة لقوالب المشاريع والمخرجات المستقبلية.",
   "settings.overview.brand.unavailable": "مجموعة العلامة الافتراضية غير متاحة",
   "settings.overview.brand.palette": "لوحة الألوان {{value}}",
-  "settings.overview.brand.typography":
-    "العنوان {{heading}} • المتن {{body}}",
+  "settings.overview.brand.typography": "العنوان {{heading}} • المتن {{body}}",
   "settings.overview.brand.openAction": "فتح مجموعة العلامة",
   "settings.brand.unavailable":
     "مجموعة العلامة الافتراضية غير متاحة لهذه المساحة حاليًا.",
@@ -664,8 +729,7 @@ export const ar: AppMessageCatalog = {
     "تم بدء عملية الدفع بنجاح. أكمل الدفع في Stripe لتفعيل الخطة المختارة.",
   "settings.billing.feedback.cancelled":
     "تم إلغاء عملية الدفع قبل اكتمال السداد.",
-  "settings.billing.feedback.portal":
-    "تمت العودة من بوابة الفوترة.",
+  "settings.billing.feedback.portal": "تمت العودة من بوابة الفوترة.",
   "settings.billing.unavailable.checkout":
     "الدفع للخطة المدفوعة غير متاح الآن. تحقق من جاهزية Stripe وحاول مرة أخرى.",
   "settings.billing.unavailable.planChange":
@@ -690,27 +754,26 @@ export const ar: AppMessageCatalog = {
   "settings.billing.purchase.unavailableAction": "غير متاح",
   "settings.billing.purchase.checkoutAction": "اختيار {{value}}",
   "settings.billing.purchase.switchAction": "التبديل إلى {{value}}",
-  "billing_checkout_unavailable":
+  billing_checkout_unavailable:
     "صفحة الدفع غير مهيأة الآن. أضف إعدادات Stripe الخاصة بالفوترة ثم حاول مرة أخرى.",
-  "billing_plan_change_unavailable":
+  billing_plan_change_unavailable:
     "تبديل الخطط غير متاح الآن. تحقق من إعدادات Stripe الخاصة بالفوترة ثم حاول مرة أخرى.",
-  "billing_portal_unavailable":
-    "بوابة الفوترة غير متاحة لهذا الحساب بعد.",
-  "activation_export_not_found":
+  billing_portal_unavailable: "بوابة الفوترة غير متاحة لهذا الحساب بعد.",
+  activation_export_not_found:
     "تعذر العثور على المخرج المطلوب لإعداد حزمة التفعيل.",
-  "activation_export_not_finalized":
+  activation_export_not_finalized:
     "لا يمكن إعداد حزمة التفعيل إلا للمخرج النهائي المعتمد.",
-  "activation_package_failed":
-    "تعذر إعداد حزمة التفعيل. حاول مرة أخرى.",
-  "billing_upgrade_required_activation":
+  activation_package_failed: "تعذر إعداد حزمة التفعيل. حاول مرة أخرى.",
+  activation_tracking_invalid: "تعذر تحديث تتبع التفعيل لهذه الحزمة.",
+  billing_upgrade_required_activation:
     "خطتك الحالية لا تشمل حزم التفعيل. قم بالترقية من الفوترة والخطة.",
-  "billing_upgrade_required_creative_performance":
+  billing_upgrade_required_creative_performance:
     "خطتك الحالية لا تشمل إدخال أداء الإبداع وتحليلاته. قم بالترقية من الفوترة والخطة.",
-  "creative_performance_invalid":
+  creative_performance_invalid:
     "سجل أداء الإبداع غير صالح. راجع المقاييس ثم حاول مرة أخرى.",
-  "creative_performance_export_not_found":
+  creative_performance_export_not_found:
     "تعذر العثور على المخرج المحدد لتتبع أداء الإبداع.",
-  "creative_performance_package_not_found":
+  creative_performance_package_not_found:
     "تعذر العثور على حزمة التفعيل المحددة لهذا المخرج.",
   "theme.palette.eyebrow": "لوحة الألوان",
   "theme.palette.auto": "تدوير تلقائي",
@@ -729,8 +792,7 @@ export const ar: AppMessageCatalog = {
     "حرارة برتقالية ولمعة وردية فوق سطح زجاجي داكن.",
   "theme.palette.description.electricCyan":
     "سيان وأكوا نيون فوق كحلي ليلي عميق.",
-  "theme.palette.description.acidLime":
-    "لون شارترز كهربائي فوق كربون داكن.",
+  "theme.palette.description.acidLime": "لون شارترز كهربائي فوق كربون داكن.",
   "theme.palette.description.crimsonFuchsia":
     "فوشيا ساخنة وقرمزي مع تباين داكن فاخر.",
   "theme.palette.description.cobaltViolet":
@@ -851,7 +913,8 @@ export const ar: AppMessageCatalog = {
     "ينتهي الموقع الآن عند النقطة الصحيحة: مسار واضح إلى المنتج وسطح إثبات للفرق التي تريد فحص جودة المخرجات أولًا.",
   "marketing.faq.enterDashboard": "الدخول إلى اللوحة",
   "marketing.faq.browseShowcase": "استعراض المعرض",
-  "marketing.faq.questions.ads.question": "ما نوع الإعلانات التي ينشئها هذا المنتج؟",
+  "marketing.faq.questions.ads.question":
+    "ما نوع الإعلانات التي ينشئها هذا المنتج؟",
   "marketing.faq.questions.ads.answer":
     "صُمم AI Ad Studio لإعلانات تسويق المنتجات: توليد المفاهيم، ومراجعة المعاينات، والمخرجات النهائية، وأسطح التسليم العامة.",
   "marketing.faq.questions.editor.question": "هل هذا محرر عام متعدد الأغراض؟",
@@ -932,10 +995,8 @@ export const ar: AppMessageCatalog = {
   "runtime.runwayUpgrade.title": "ما الذي يتغير بعد شراء Runway",
   "runtime.runwayUpgrade.description":
     "شراء Runway يغيّر إعداد البيئة، لا سير عمل المنتج. أضف المفتاح، وأبقِ المعاينات على Runway، ثم قرر ما إذا كان الفيديو المشهدي سيبقى مستضافًا أو سينتقل إلى sidecar محلي مدعوم.",
-  "runtime.runwayUpgrade.stepOne":
-    "اشترِ خطة Runway API وأنشئ مفتاحًا سريًا.",
-  "runtime.runwayUpgrade.stepTwo":
-    "أضف RUNWAYML_API_SECRET إلى .env.local.",
+  "runtime.runwayUpgrade.stepOne": "اشترِ خطة Runway API وأنشئ مفتاحًا سريًا.",
+  "runtime.runwayUpgrade.stepTwo": "أضف RUNWAYML_API_SECRET إلى .env.local.",
   "runtime.runwayUpgrade.stepThree":
     "اضبط PREVIEW_PROVIDER=runway ثم قرر ما إذا كان SCENE_VIDEO_PROVIDER سيبقى runway أو سيتحول إلى local_http للوضع الهجين.",
   "runtime.runwayUpgrade.stepFour":
@@ -1039,8 +1100,7 @@ export const ar: AppMessageCatalog = {
     "لا توجد مخرجات متاحة لهذا الرابط الخاص بالمراجعة بعد.",
   "public.review.grid.previewUnavailable": "المعاينة غير متاحة",
   "public.review.grid.currentWinner": "الفائز الداخلي الحالي",
-  "public.review.grid.locked":
-    "تم قفل التعليقات لأن هذه المراجعة مغلقة.",
+  "public.review.grid.locked": "تم قفل التعليقات لأن هذه المراجعة مغلقة.",
   "public.review.grid.yourName": "اسمك",
   "public.review.grid.commentPlaceholder": "علّق على هذا المخرج",
   "public.review.grid.posting": "جارٍ نشر التعليق…",
@@ -1119,8 +1179,7 @@ export const ar: AppMessageCatalog = {
   "renders.links.client": "عميل",
   "renders.links.stakeholder": "صاحب مصلحة",
   "renders.links.internalReviewer": "مراجع داخلي",
-  "renders.links.messageDefault":
-    "يرجى مراجعة مخرجات الدفعة وترك قرارك.",
+  "renders.links.messageDefault": "يرجى مراجعة مخرجات الدفعة وترك قرارك.",
   "renders.links.creating": "جارٍ إنشاء الرابط…",
   "renders.links.create": "إنشاء رابط مراجعة",
   "renders.links.finalizedFrozen":
@@ -1175,13 +1234,11 @@ export const ar: AppMessageCatalog = {
   "delivery.supportActivityFilter.reminder_repairs": "إصلاحات التذكير",
   "delivery.supportActivityFilter.failed_reminder_repairs":
     "إصلاحات التذكير الفاشلة",
-  "delivery.supportActivityFilter.support_handoff_notes":
-    "ملاحظات تسليم الدعم",
+  "delivery.supportActivityFilter.support_handoff_notes": "ملاحظات تسليم الدعم",
   "delivery.mismatch.filter.all": "كل مراحل دورة الاختلاف",
   "delivery.mismatch.filter.unresolved": "اختلافات غير محلولة",
   "delivery.mismatch.filter.resolved": "اختلافات محلولة",
-  "delivery.mismatch.filter.failed_reopen_attempts":
-    "محاولات إعادة فتح فاشلة",
+  "delivery.mismatch.filter.failed_reopen_attempts": "محاولات إعادة فتح فاشلة",
   "delivery.page.eyebrow": "التسليم",
   "delivery.page.title": "مساحات تسليم العملاء المعتمدة نهائيًا",
   "delivery.page.description":
@@ -1267,13 +1324,11 @@ export const ar: AppMessageCatalog = {
   "delivery.support.checkpointState.inSync": "نقطة التحقق متطابقة",
   "delivery.support.checkpointState.resolved": "تم حل الاختلاف",
   "delivery.support.checkpointState.mismatch": "اختلاف في نقطة التحقق",
-  "delivery.support.checkpointState.workspaceMissing":
-    "مساحة العمل مفقودة",
+  "delivery.support.checkpointState.workspaceMissing": "مساحة العمل مفقودة",
   "delivery.supportActivity.title": "نشاط مساحات العمل الصادر عن الدعم",
   "delivery.supportActivity.description":
     "صفِّ الجداول الزمنية لمساحات العمل بحسب إصلاحات التذكير أو إصلاحات التذكير الفاشلة أو ملاحظات تسليم الدعم.",
-  "delivery.supportActivity.count":
-    "{{count}} حدث دعم ضمن نطاق اللوحة الحالي",
+  "delivery.supportActivity.count": "{{count}} حدث دعم ضمن نطاق اللوحة الحالي",
   "delivery.supportOps.title": "لقطة لعمليات الدعم",
   "delivery.supportOps.description":
     "تعكس الأعداد أدناه فلاتر التسليم الحالية وفلتر نشاط الدعم النشط:",
@@ -1324,8 +1379,7 @@ export const ar: AppMessageCatalog = {
   "delivery.workspaceList.showMore": "إظهار {{count}} إضافية",
   "delivery.workspaceList.showAll": "إظهار الكل",
   "delivery.workspaceList.collapse": "طيّ القائمة",
-  "delivery.workspaceList.empty":
-    "لا توجد مساحات تسليم تطابق الفلاتر الحالية.",
+  "delivery.workspaceList.empty": "لا توجد مساحات تسليم تطابق الفلاتر الحالية.",
   "delivery.workspaceList.focusedFromSupport": "محددة من دعم التذكير",
   "delivery.workspaceList.activityExcerptLabel": "ملخص النشاط",
   "delivery.workspaceList.activityExcerpt.acknowledgedBy":
@@ -1340,8 +1394,7 @@ export const ar: AppMessageCatalog = {
     "تمت المشاهدة من المستلم. بانتظار الإقرار.",
   "delivery.workspaceList.activityExcerpt.delivered":
     "تم التسليم. بانتظار أول نشاط من المستلم.",
-  "delivery.workspaceList.activityExcerpt.none":
-    "لا يوجد نشاط من المستلم بعد.",
+  "delivery.workspaceList.activityExcerpt.none": "لا يوجد نشاط من المستلم بعد.",
   "delivery.workspaceList.recipientHint":
     "تم رصد نشاط من المستلم لكن هذه المساحة لم تُقَر بعد. أضف حالة متابعة أو ملاحظة لتتبع الإجراء التالي من المالك.",
   "delivery.workspaceList.followUpFocused":
@@ -1390,12 +1443,10 @@ export const ar: AppMessageCatalog = {
   "delivery.followUpContext.clearReasonHelp":
     "هذا السبب مطلوب وسيُكتب ضمن سجل تدقيق نشاط التسليم.",
   "delivery.followUpContext.clearAction": "إلغاء جدولة التذكير",
-  "delivery.repairOutcome.action.rescheduleTomorrow":
-    "أعيدت الجدولة للغد",
+  "delivery.repairOutcome.action.rescheduleTomorrow": "أعيدت الجدولة للغد",
   "delivery.repairOutcome.action.clearReminderScheduling":
     "ألغيت جدولة التذكير",
-  "delivery.repairOutcome.success":
-    "{{action}} لمساحة العمل {{workspace}}.",
+  "delivery.repairOutcome.success": "{{action}} لمساحة العمل {{workspace}}.",
   "delivery.repairOutcome.successWithNote":
     "{{action}} لمساحة العمل {{workspace}}. تم حفظ ملاحظة تسليم الدعم في الجدول الزمني للنشاط.",
   "delivery.repairOutcome.error.reasonRequired":
@@ -1413,13 +1464,11 @@ export const ar: AppMessageCatalog = {
   "delivery.focusedStatus.followUpDueDate": "موعد استحقاق المتابعة",
   "delivery.focusedStatus.lastCheckpoint": "آخر نقطة تحقق للتذكير",
   "delivery.focusedStatus.latestSupportEvent": "أحدث حدث دعم",
-  "delivery.focusedStatus.noReminderCheckpoint":
-    "لا توجد نقطة تحقق للتذكير",
+  "delivery.focusedStatus.noReminderCheckpoint": "لا توجد نقطة تحقق للتذكير",
   "delivery.focusedStatus.unknownCheckpoint": "نقطة تحقق غير معروفة",
   "delivery.focusedStatus.checkpointWithDate": "{{bucket}} في {{date}}",
   "delivery.focusedStatus.checkpointDateOnly": "تاريخ نقطة التحقق {{date}}",
-  "delivery.focusedStatus.resolvedReminderMismatch":
-    "تم حل اختلاف التذكير",
+  "delivery.focusedStatus.resolvedReminderMismatch": "تم حل اختلاف التذكير",
   "delivery.focusedStatus.supportHandoffNote": "ملاحظة تسليم دعم",
   "delivery.focusedStatus.failedReminderRepair": "إصلاح تذكير فاشل",
   "delivery.focusedStatus.reminderRepair": "إصلاح تذكير",
@@ -1433,8 +1482,7 @@ export const ar: AppMessageCatalog = {
   "delivery.investigationView.clear": "إزالة التثبيت الحالي",
   "delivery.investigationView.empty":
     "لا يوجد سياق تحقيق مثبت بعد. طبّق فلاتر الدعم أو ركّز على مساحة عمل لتوليد عرض تحقيق قابل للمشاركة.",
-  "delivery.investigationView.summary.supportActivity":
-    "نشاط الدعم: {{value}}",
+  "delivery.investigationView.summary.supportActivity": "نشاط الدعم: {{value}}",
   "delivery.investigationView.summary.mismatchLifecycle":
     "دورة الاختلاف: {{value}}",
   "delivery.investigationView.summary.reminderSupport":
@@ -1449,22 +1497,19 @@ export const ar: AppMessageCatalog = {
   "delivery.investigationContext.bucket.dueToday": "مستحق اليوم",
   "delivery.investigationContext.bucket.overdue": "متأخر",
   "delivery.investigationContext.bucket.unspecified": "فئة غير محددة",
-  "delivery.investigationContext.bucketDescription.dueToday":
-    "استحقاق اليوم",
+  "delivery.investigationContext.bucketDescription.dueToday": "استحقاق اليوم",
   "delivery.investigationContext.bucketDescription.overdue": "التأخير",
   "delivery.investigationContext.bucketDescription.unspecified":
     "سياق غير محدد",
   "delivery.investigationContext.noRecordedCheckpoint":
     "لا توجد نقطة تحقق تذكير مسجلة",
-  "delivery.investigationContext.checkpoint.withDate":
-    "{{bucket}} في {{date}}",
+  "delivery.investigationContext.checkpoint.withDate": "{{bucket}} في {{date}}",
   "delivery.investigationContext.checkpoint.withNoDate":
     "{{bucket}} من دون تاريخ لنقطة التحقق",
   "delivery.investigationContext.checkpoint.unknownBucket":
     "فئة غير معروفة في {{date}}",
   "delivery.investigationContext.followUp.unknown": "غير معروف",
-  "delivery.investigationContext.followUp.withDate":
-    "{{status}} في {{date}}",
+  "delivery.investigationContext.followUp.withDate": "{{status}} في {{date}}",
   "delivery.investigationContext.failedRepair.reasonRequired":
     "لأن إلغاء جدولة التذكير تطلب سببًا صريحًا من المشغّل",
   "delivery.investigationContext.failedRepair.reasonTooLong":
@@ -1473,8 +1518,7 @@ export const ar: AppMessageCatalog = {
     "لأن الصياغة المرسلة لم تكن مسموحة",
   "delivery.investigationContext.failedRepair.unchanged":
     "وأبقت حالة المتابعة دون تغيير",
-  "delivery.investigationContext.failedRepair.badge":
-    "إصلاح تذكير فاشل",
+  "delivery.investigationContext.failedRepair.badge": "إصلاح تذكير فاشل",
   "delivery.investigationContext.failedRepair.title":
     "سبب أهمية هذا العرض: {{workspace}} تحتوي على إصلاح تذكير فاشل",
   "delivery.investigationContext.failedRepair.description":
@@ -1494,30 +1538,25 @@ export const ar: AppMessageCatalog = {
   "delivery.investigationStale.keepFilters":
     "الإبقاء على الفلاتر وإزالة التركيز",
   "delivery.investigationStale.reset": "إعادة الضبط إلى نطاق التسليم الأساسي",
-  "delivery.investigationStale.followUp.badge":
-    "سياق متابعة قديم",
+  "delivery.investigationStale.followUp.badge": "سياق متابعة قديم",
   "delivery.investigationStale.followUp.title":
     "سياق المتابعة المركّز خارج النطاق الظاهر الحالي للدعم",
   "delivery.investigationStale.followUp.description":
     "لا يزال عرض التحقيق مثبتًا على نموذج متابعة مركّز، لكن تلك المساحة لم تعد ظاهرة في نطاق الدعم الحالي. أبقِ الفلاتر الحالية وأزل التركيز القديم، أو أعد الضبط إلى نطاق التسليم الأساسي.",
-  "delivery.investigationStale.reminder.badge":
-    "سياق تذكير قديم",
+  "delivery.investigationStale.reminder.badge": "سياق تذكير قديم",
   "delivery.investigationStale.reminder.title":
     "التذكير المركّز خارج النطاق الظاهر الحالي لدعم التذكير",
   "delivery.investigationStale.reminder.description":
     "لا يزال عرض التحقيق مثبتًا على إشعار تذكير، لكن ذلك التذكير لم يعد ظاهرًا ضمن نطاق دعم التذكير الحالي. يحدث هذا عادةً بعد تغيير فلاتر دعم التذكير أو فلاتر نشاط الدعم.",
-  "delivery.investigationStale.workspace.badge":
-    "تركيز مساحة عمل قديم",
+  "delivery.investigationStale.workspace.badge": "تركيز مساحة عمل قديم",
   "delivery.investigationStale.workspace.title":
     "مساحة العمل المركّزة خارج النطاق الظاهر الحالي لنشاط الدعم",
   "delivery.investigationStale.workspace.description":
     "لا يزال عرض التحقيق مثبتًا على مساحة عمل لم تعد ظاهرة ضمن نطاق نشاط الدعم الحالي. أبقِ الفلاتر الحالية وأزل التركيز القديم، أو أعد الضبط إلى نطاق التسليم الأساسي.",
-  "delivery.investigationStale.workspaceBadge":
-    "مساحة العمل {{value}}",
+  "delivery.investigationStale.workspaceBadge": "مساحة العمل {{value}}",
   "delivery.investigationStale.missingWorkspaceBadge":
     "تركيز مساحة العمل مفقود",
-  "delivery.investigationStale.reminderIdBadge":
-    "التذكير {{value}}",
+  "delivery.investigationStale.reminderIdBadge": "التذكير {{value}}",
   "common.actions.dismiss": "إخفاء",
   "common.status.active": "نشط",
   "common.status.archived": "مؤرشف",
@@ -1570,7 +1609,8 @@ export const ar: AppMessageCatalog = {
   "settings.guardrails.monthlyRunwayBudget": "ميزانية رنواي الشهرية",
   "settings.guardrails.concurrentRenderJobs": "وظائف الإخراج المتزامنة",
   "settings.guardrails.concurrentPreviewJobs": "وظائف المعاينة المتزامنة",
-  "settings.guardrails.autoBlockOnBudget": "حظر الوظائف تلقائيًا عند تجاوز الميزانية",
+  "settings.guardrails.autoBlockOnBudget":
+    "حظر الوظائف تلقائيًا عند تجاوز الميزانية",
   "settings.guardrails.currentDefault": "القيمة الافتراضية الحالية {{value}}",
   "settings.guardrails.pending": "جارٍ الحفظ…",
   "settings.guardrails.save": "حفظ الحدود",
@@ -1662,8 +1702,7 @@ export const ar: AppMessageCatalog = {
   "renders.scenePlan.safeZone.default": "منطقة آمنة افتراضية",
   "renders.scenePlan.defaultMotion.captionLead":
     "كشف بطولي تقوده التسمية مع {{value}}",
-  "renders.scenePlan.defaultMotion.heroReveal":
-    "كشف بطولي مع {{value}}",
+  "renders.scenePlan.defaultMotion.heroReveal": "كشف بطولي مع {{value}}",
   "renders.scenePlan.defaultMotion.productDetail":
     "إبراز تفاصيل المنتج مع {{value}}",
   "renders.scenePlan.defaultMotion.conversionFocused":
@@ -1674,8 +1713,10 @@ export const ar: AppMessageCatalog = {
     "انتقال قوي للدعوة إلى الإجراء مع {{value}}",
   "renders.scenePlan.defaultMotion.cleanCta":
     "خاتمة نظيفة للدعوة إلى الإجراء مع {{value}}",
-  "renders.scenePlan.caption.strongCta": "خاتمة قوية للدعوة إلى الإجراء: {{value}}",
-  "renders.scenePlan.caption.closeWithCta": "اختتام مع دعوة إلى الإجراء: {{value}}",
+  "renders.scenePlan.caption.strongCta":
+    "خاتمة قوية للدعوة إلى الإجراء: {{value}}",
+  "renders.scenePlan.caption.closeWithCta":
+    "اختتام مع دعوة إلى الإجراء: {{value}}",
   "renders.batchPanel.variantsSummary": "{{count}} نسخة · {{value}}",
   "settings.billing.price.free": "مجاني",
   "settings.billing.price.monthly": "{{value}}/شهريًا",
@@ -1685,10 +1726,13 @@ export const ar: AppMessageCatalog = {
   "settings.billing.reactivate.pending": "جارٍ إعادة التفعيل…",
   "settings.billing.reactivate.action": "إعادة تفعيل الاشتراك",
   "settings.billing.planDetails.activeProjects": "{{count}} مشروعًا نشطًا",
-  "settings.billing.planDetails.conceptRuns": "{{count}} تشغيلات مفاهيم / شهريًا",
+  "settings.billing.planDetails.conceptRuns":
+    "{{count}} تشغيلات مفاهيم / شهريًا",
   "settings.billing.planDetails.previews": "{{count}} معاينات / شهريًا",
-  "settings.billing.planDetails.renderBatches": "{{count}} دفعات إخراج / شهريًا",
-  "settings.billing.planDetails.finalExports": "{{count}} مخرجات نهائية / شهريًا",
+  "settings.billing.planDetails.renderBatches":
+    "{{count}} دفعات إخراج / شهريًا",
+  "settings.billing.planDetails.finalExports":
+    "{{count}} مخرجات نهائية / شهريًا",
   "settings.billing.planDetails.storage": "تخزين {{value}}",
   "settings.billing.planDetails.concurrency":
     "{{preview}} وظائف معاينة • {{render}} وظائف إخراج",
@@ -1727,7 +1771,8 @@ export const ar: AppMessageCatalog = {
   "settings.billing.panel.projectedOverage": "التجاوز المتوقع: {{value}}",
   "settings.billing.panel.overageCap": "حد التجاوز: {{value}}",
   "settings.billing.panel.providerSafetyCap": "حد أمان المزود: {{value}}",
-  "settings.billing.panel.providerCostTracked": "تكلفة المزود المتتبعة: {{value}}",
+  "settings.billing.panel.providerCostTracked":
+    "تكلفة المزود المتتبعة: {{value}}",
   "settings.billing.panel.featureAccess": "وصول الميزات",
   "settings.billing.panel.campaignPublishing": "نشر الحملات",
   "settings.billing.panel.noCampaignPublishing": "من دون نشر الحملات",
@@ -1740,11 +1785,11 @@ export const ar: AppMessageCatalog = {
   "settings.billing.panel.activity": "نشاط الفوترة",
   "settings.billing.panel.activityEmpty":
     "لا توجد أحداث فوترة بعد. ستظهر هنا أنشطة Stripe webhooks والفواتير وأحداث الدفع.",
-  "auth_unconfigured": "المصادقة غير مهيأة بعد.",
-  "auth_credentials_required": "البريد الإلكتروني وكلمة المرور مطلوبان.",
-  "auth_sign_in_failed": "تعذر تسجيل الدخول باستخدام بيانات الاعتماد هذه.",
-  "auth_sign_up_failed": "تعذر إنشاء الحساب الآن.",
-  "auth_sign_up_confirmation_sent":
+  auth_unconfigured: "المصادقة غير مهيأة بعد.",
+  auth_credentials_required: "البريد الإلكتروني وكلمة المرور مطلوبان.",
+  auth_sign_in_failed: "تعذر تسجيل الدخول باستخدام بيانات الاعتماد هذه.",
+  auth_sign_up_failed: "تعذر إنشاء الحساب الآن.",
+  auth_sign_up_confirmation_sent:
     "تم إنشاء الحساب. تحقّق من بريدك الإلكتروني إذا كان التأكيد مفعّلًا.",
   "format.kb": "{{value}} كيلوبايت",
   "format.mb": "{{value}} ميغابايت"

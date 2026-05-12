@@ -6,6 +6,8 @@ import { submitCreativePerformanceAction } from "@/features/analytics/actions/su
 import { cn } from "@/lib/utils"
 
 type CreativePerformanceExportOption = {
+  activationPackageId: string | null
+  exportId: string
   id: string
   label: string
 }
@@ -14,7 +16,10 @@ type CreativePerformanceIngestionLabels = {
   accountLabel: string
   addRow: string
   clicks: string
-  channelLabels: Record<"google" | "internal_handoff" | "meta" | "tiktok", string>
+  channelLabels: Record<
+    "google" | "internal_handoff" | "meta" | "tiktok",
+    string
+  >
   conversionValue: string
   conversions: string
   impressions: string
@@ -92,7 +97,9 @@ export function CreativePerformanceIngestionForm({
             <p className="text-xs uppercase tracking-[0.18em] text-slate-500">
               {labels.rowsTitle}
             </p>
-            <p className="mt-2 text-sm text-slate-400">{labels.rowsDescription}</p>
+            <p className="mt-2 text-sm text-slate-400">
+              {labels.rowsDescription}
+            </p>
           </div>
 
           <button
@@ -124,7 +131,9 @@ export function CreativePerformanceIngestionForm({
                   )}
                   disabled={rows.length === 1}
                   onClick={() =>
-                    setRows((current) => current.filter((currentRow) => currentRow.id !== row.id))
+                    setRows((current) =>
+                      current.filter((currentRow) => currentRow.id !== row.id)
+                    )
                   }
                   type="button"
                 >
@@ -132,13 +141,11 @@ export function CreativePerformanceIngestionForm({
                 </button>
               </div>
 
-              <input name="activation_package_id" type="hidden" value="" />
-
               <div className="mt-4 grid gap-3 md:grid-cols-2">
                 <select
                   className="h-11 w-full rounded-2xl border border-white/10 bg-white/[0.04] px-4 text-sm text-white outline-none transition focus:border-indigo-300/40"
                   defaultValue={exportOptions[0]?.id ?? ""}
-                  name="row_export_id"
+                  name="row_target"
                 >
                   {exportOptions.map((option) => (
                     <option key={option.id} value={option.id}>

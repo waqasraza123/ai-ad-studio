@@ -20,7 +20,9 @@ describe("CreativePerformanceIngestionPanel", () => {
     const ui = await CreativePerformanceIngestionPanel({
       exportOptions: [
         {
-          id: "export-1",
+          activationPackageId: null,
+          exportId: "export-1",
+          id: "export:export-1",
           label: "Project · default · 9:16"
         }
       ],
@@ -29,8 +31,12 @@ describe("CreativePerformanceIngestionPanel", () => {
 
     render(ui)
 
-    expect(screen.getByRole("button", { name: /Record creative performance/i })).toBeEnabled()
-    expect(screen.getByDisplayValue("Project · default · 9:16")).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: /Record creative performance/i })
+    ).toBeEnabled()
+    expect(
+      screen.getByDisplayValue("Project · default · 9:16")
+    ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /Add row/i })).toBeEnabled()
   })
 
@@ -38,7 +44,9 @@ describe("CreativePerformanceIngestionPanel", () => {
     const ui = await CreativePerformanceIngestionPanel({
       exportOptions: [
         {
-          id: "export-1",
+          activationPackageId: null,
+          exportId: "export-1",
+          id: "export:export-1",
           label: "Project · default · 9:16"
         }
       ],

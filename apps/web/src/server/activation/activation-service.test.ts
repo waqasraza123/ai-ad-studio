@@ -61,4 +61,13 @@ describe("activation service", () => {
       status: "blocked"
     })
   })
+
+  it("accepts known activation tracking states", () => {
+    expect(activationServiceInternals.normalizeTrackingStatus("active")).toBe(
+      "active"
+    )
+    expect(
+      activationServiceInternals.normalizeTrackingStatus("historical")
+    ).toBe("historical")
+  })
 })

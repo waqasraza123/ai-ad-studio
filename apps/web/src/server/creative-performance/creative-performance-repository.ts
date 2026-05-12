@@ -176,3 +176,28 @@ export async function listCreativePerformanceRecordsByOwner(
     )
   )
 }
+
+export async function listCreativePerformanceRecordsByProjectForOwner(
+  projectId: string,
+  ownerId: string,
+  client?: SupabaseClient
+) {
+  const supabase = await resolveClient(client)
+  const { data, error } = await supabase
+    .from("creative_performance_records")
+    .select(creativePerformanceRecordSelection)
+    .eq("project_id", projectId)
+    .eq("owner_id", ownerId)
+    .order("metric_date", { ascending: false })
+    .order("created_at", { ascending: false })
+
+  if (error) {
+    throw new Error("Failed to list project creative performance records")
+  }
+
+  return (data ?? []).map((record) =>
+    normalizeCreativePerformanceRecord(
+      record as CreativePerformanceRecord & { metadata_json: unknown }
+    )
+  )
+}
