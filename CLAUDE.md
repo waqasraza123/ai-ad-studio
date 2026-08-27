@@ -1,8 +1,8 @@
-# AI Ad Studio — Claude Code Guide
+# AI Ad Studio — Production SaaS Starter Kit — Claude Code Guide
 
 ## Project
 
-AI Ad Studio is a premium ad-generation platform for product marketing teams. The core workflow is:
+This repository is a production-oriented SaaS starter kit with AI Ad Studio as its complete reference application. The included product serves marketing teams through this constrained workflow:
 **brief → concepts → previews → render batches → reviews → canonical winner → promotion → delivery**
 
 ## Monorepo Layout
@@ -49,6 +49,7 @@ pnpm format                # Prettier write
 ## Environment
 
 Copy `.env.example` → `.env.local` and fill in:
+
 - Supabase project URL and keys
 - Cloudflare R2 credentials
 - OpenAI API key
@@ -56,18 +57,18 @@ Copy `.env.example` → `.env.local` and fill in:
 
 ## Key Source Paths (web app)
 
-| Path | Purpose |
-|------|---------|
-| `apps/web/src/app/(app)/` | Authenticated dashboard routes |
-| `apps/web/src/app/review/[token]/` | Internal/external review pages |
-| `apps/web/src/app/campaign/[token]/` | Public campaign promotion (winner-only) |
-| `apps/web/src/app/delivery/[token]/` | Client delivery workspace |
-| `apps/web/src/app/share/[token]/` | Single-export share links |
-| `apps/web/src/features/` | Feature-scoped UI logic |
-| `apps/web/src/server/` | Server-side business logic and DB queries |
-| `apps/web/src/lib/supabase/` | Supabase client (browser/server/middleware) |
-| `apps/worker/src/jobs/handlers/` | Async job type handlers |
-| `apps/worker/src/providers/` | AI provider integrations |
+| Path                                 | Purpose                                     |
+| ------------------------------------ | ------------------------------------------- |
+| `apps/web/src/app/(app)/`            | Authenticated dashboard routes              |
+| `apps/web/src/app/review/[token]/`   | Internal/external review pages              |
+| `apps/web/src/app/campaign/[token]/` | Public campaign promotion (winner-only)     |
+| `apps/web/src/app/delivery/[token]/` | Client delivery workspace                   |
+| `apps/web/src/app/share/[token]/`    | Single-export share links                   |
+| `apps/web/src/features/`             | Feature-scoped UI logic                     |
+| `apps/web/src/server/`               | Server-side business logic and DB queries   |
+| `apps/web/src/lib/supabase/`         | Supabase client (browser/server/middleware) |
+| `apps/worker/src/jobs/handlers/`     | Async job type handlers                     |
+| `apps/worker/src/providers/`         | AI provider integrations                    |
 
 ## Architecture Notes
 

@@ -2,23 +2,15 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 import { getMessages } from "@/lib/i18n/catalog"
 import { createTranslator } from "@/lib/i18n/translator"
-import { BillingPlanCatalogError } from "@/server/billing/billing-plan-catalog"
 
-const {
-  listBillingPlans,
-  listPublishedShowcaseItems,
-  pricingSnapshotSection
-} = vi.hoisted(() => ({
-  listBillingPlans: vi.fn(),
-  listPublishedShowcaseItems: vi.fn(),
-  pricingSnapshotSection: vi.fn(({ plans }: { plans: unknown[] }) => (
-    <div data-testid="pricing-snapshot">{plans.length}</div>
-  ))
-}))
-
-vi.mock("@/server/billing/billing-service", () => ({
-  listBillingPlans
-}))
+const { featuredShowcaseSection, listPublishedShowcaseItems } = vi.hoisted(
+  () => ({
+    featuredShowcaseSection: vi.fn(({ items }: { items: unknown[] }) => (
+      <div data-testid="featured-showcase">{items.length}</div>
+    )),
+    listPublishedShowcaseItems: vi.fn()
+  })
+)
 
 vi.mock("@/server/showcase/showcase-repository", () => ({
   listPublishedShowcaseItems
@@ -37,11 +29,11 @@ vi.mock("@/components/marketing/faq-cta-section", () => ({
 }))
 
 vi.mock("@/components/marketing/feature-grid", () => ({
-  FeatureGrid: () => <div>features</div>
+  FeatureGrid: () => <div>foundation</div>
 }))
 
 vi.mock("@/components/marketing/featured-showcase-section", () => ({
-  FeaturedShowcaseSection: () => <div>showcase</div>
+  FeaturedShowcaseSection: featuredShowcaseSection
 }))
 
 vi.mock("@/components/marketing/hero-section", () => ({
@@ -52,8 +44,8 @@ vi.mock("@/components/marketing/landing-top-bar", () => ({
   LandingTopBar: () => <div>topbar</div>
 }))
 
-vi.mock("@/components/marketing/pricing-snapshot-section", () => ({
-  PricingSnapshotSection: pricingSnapshotSection
+vi.mock("@/components/marketing/starter-stack-section", () => ({
+  StarterStackSection: () => <div>stack</div>
 }))
 
 vi.mock("@/components/marketing/demo-strip", () => ({
@@ -61,45 +53,48 @@ vi.mock("@/components/marketing/demo-strip", () => ({
 }))
 
 describe("HomePage", () => {
-  it("keeps rendering when billing plans fail to load", async () => {
-    const consoleError = vi
-      .spyOn(console, "error")
-      .mockImplementation(() => undefined)
-
-    listBillingPlans.mockRejectedValue(
-      new BillingPlanCatalogError({
-        code: "schema_drift",
-        message: "Failed to list billing plans.",
-        postgresCode: "42703"
-      })
-    )
-    listPublishedShowcaseItems.mockResolvedValue([])
+  it("renders the starter homepage around mapped reference output", async () => {
+    listPublishedShowcaseItems.mockResolvedValue([
+      {
+        created_at: "2026-04-08T00:00:00.000Z",
+        export_id: "export-1",
+        id: "showcase-1",
+        is_published: true,
+        owner_id: "owner-1",
+        project_id: "project-1",
+        render_batch_id: "batch-1",
+        sort_order: 0,
+        summary: "Reference output",
+        title: "Launch creative",
+        updated_at: "2026-04-08T00:00:00.000Z"
+      }
+    ])
 
     const { default: HomePage } = await import("./page")
     const ui = await HomePage()
     render(ui)
 
-    expect(screen.getByTestId("pricing-snapshot")).toHaveTextContent("0")
-    expect(pricingSnapshotSection.mock.calls[0]?.[0]).toEqual({
-      plans: []
+    expect(screen.getByText("foundation")).toBeInTheDocument()
+    expect(screen.getByText("workflow")).toBeInTheDocument()
+    expect(screen.getByText("stack")).toBeInTheDocument()
+    expect(screen.getByTestId("featured-showcase")).toHaveTextContent("1")
+    expect(featuredShowcaseSection.mock.calls[0]?.[0]).toMatchObject({
+      items: [
+        expect.objectContaining({
+          id: "showcase-1",
+          title: "Launch creative"
+        })
+      ]
     })
-    expect(consoleError).toHaveBeenCalled()
-
-    consoleError.mockRestore()
   })
 
-  it("rethrows Next dynamic server usage errors", async () => {
-    listBillingPlans.mockRejectedValue(
-      Object.assign(new Error("Dynamic server usage: cookies"), {
-        digest: "DYNAMIC_SERVER_USAGE"
-      })
-    )
-    listPublishedShowcaseItems.mockResolvedValue([])
+  it("exposes starter-kit metadata for the public homepage", async () => {
+    const { generateMetadata } = await import("./page")
 
-    const { default: HomePage } = await import("./page")
-
-    await expect(HomePage()).rejects.toMatchObject({
-      digest: "DYNAMIC_SERVER_USAGE"
+    await expect(generateMetadata()).resolves.toMatchObject({
+      description:
+        "Production SaaS starter kit for building AI-powered ad creative workflows with Next.js, Supabase, Stripe, R2, OpenAI, and pluggable media providers.",
+      title: "AI Ad Studio — Production SaaS Starter Kit"
     })
   })
 })

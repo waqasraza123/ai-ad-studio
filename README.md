@@ -1,409 +1,304 @@
-# AI Ad Studio
+# AI Ad Studio — Production SaaS Starter Kit
 
 <p>
-  <strong>Languages:</strong>
+  <strong>Reference app languages:</strong>
   <code>English</code>
   <code>العربية</code>
 </p>
 
-<p>
-  <a href="https://runwayml.com/">
-    <img src="apps/web/public/brand/runway-icon.png" alt="Runway logo" width="72" />
-  </a>
-</p>
+AI Ad Studio is a production-oriented SaaS starter kit for teams building AI-powered creative products. It combines a complete ad-production reference application with the reusable infrastructure needed to launch, operate, and extend a modern AI SaaS.
 
-AI Ad Studio is a premium, constrained ad-generation system for product marketing teams, ecommerce brands, app founders, and agencies.
+Fork it to build your own product, replace the ad-specific workflow with another durable AI workflow, or use the included application as the foundation for an ad creative platform.
 
-Instead of trying to be a general video editor, this repository focuses on one narrow, high-quality workflow:
+The reference implementation follows one explicit path:
 
 **brief → concepts → previews → controlled render batches → review → canonical winner → promotion → delivery**
 
-That constraint is the product advantage. AI handles concepting, copy, and render planning, while the application enforces quality through templates, validations, approvals, review gates, and production-safe workflows.
+[View the reference deployment](https://ai-ad-studio-web.vercel.app)
 
-## Media providers
+## What this starter is
 
-The repo now supports three runtime modes for preview and scene-video generation:
+- A working, opinionated SaaS application rather than an empty framework scaffold.
+- A reference for durable AI workflows with persisted checkpoints, async jobs, approvals, retries, and auditable state.
+- A monorepo with a Next.js web application, Node worker, shared packages, Supabase migrations, and an optional local inference service.
+- A foundation for authentication, owner-scoped workspaces, subscription billing, entitlements, usage controls, storage, localization, public sharing, and operational diagnostics.
+- A provider-adapter architecture that can use hosted AI services, local inference, or test doubles without rewriting the product workflow.
+- A production-minded baseline with linting, unit and component tests, browser automation, build checks, runtime health checks, and deployment smoke scripts.
 
-- `Runway only`: use Runway for both previews and scene video
-- `Hybrid`: use Runway for previews and a local inference sidecar for scene video
-- `Fully local`: use the local inference sidecar for both previews and scene video
+## What this starter is not
 
-Runway is now an optional provider rather than a global requirement. If either `PREVIEW_PROVIDER` or `SCENE_VIDEO_PROVIDER` is set to `runway`, you still need an active paid [Runway](https://runwayml.com/) API subscription and a valid `RUNWAYML_API_SECRET`.
+- It is not a hosted service or a one-click deployment. You provision and operate Supabase, object storage, billing, and AI providers.
+- It is not a vendor-neutral blank slate. AI Ad Studio is a complete reference vertical, so adapting another domain means replacing its workflow language and business rules deliberately.
+- It is not a no-code product builder or general-purpose video editor.
+- It does not include provider credits, GPU capacity, cloud resources, secrets, or production data.
+- It does not make a deployment production-ready by itself. You remain responsible for security review, backups, observability, legal requirements, provider limits, and environment-specific validation.
+- It is not an unconstrained generation playground. The included product favors controlled variants, review gates, canonical outputs, and traceable decisions.
 
-The current local-model matrix is:
+## Included reference product
 
-- scene video baseline: `cogvideox1.5-5b-i2v`
-- scene video high-end: `wan2.1-i2v-14b-480p`
-- scene video fallback: `svd-img2vid`
-- preview image default: `flux-schnell`
-- preview image lighter fallback: `sdxl-turbo`
+AI Ad Studio demonstrates the starter through a short-form product advertising workflow:
+
+- structured product briefs, brand kits, and reusable templates
+- AI-assisted concepts, copy, storyboards, and previews
+- controlled multi-variant render batches
+- side-by-side review, comments, approval state, and winner selection
+- canonical export finalization and winner-only promotion
+- public campaign pages and token-scoped share links
+- client delivery workspaces anchored to finalized exports
+- activation packages and creative-performance ingestion
+- deterministic creative-performance insights tied to creative lineage
+- owner subscriptions, plan entitlements, usage rollups, and free-plan watermarking
+- background job polling, provider execution, job traces, and delivery reminder sweeps
 
 ## Screenshots
 
-![alt text](.github/screenshots/image.jpg)
-![alt text](.github/screenshots/dashboard.jpg)
-![alt text](.github/screenshots/production-workspace.jpg)
-![alt text](.github/screenshots/concept-generation-form.jpg)
-![alt text](.github/screenshots/colored-cycle-dashboard.jpg)
-![alt text](.github/screenshots/saas-launch.jpg)
-![alt text](.github/screenshots/sign-in-signup.jpg)
+![AI Ad Studio landing page](.github/screenshots/image.jpg)
+![Authenticated dashboard](.github/screenshots/dashboard.jpg)
+![Creative production workspace](.github/screenshots/production-workspace.jpg)
+![Concept generation form](.github/screenshots/concept-generation-form.jpg)
+![Alternate dashboard palette](.github/screenshots/colored-cycle-dashboard.jpg)
+![SaaS launch experience](.github/screenshots/saas-launch.jpg)
+![Sign-in and sign-up experience](.github/screenshots/sign-in-signup.jpg)
 
-## What this repository includes
+## Make it your own
 
-- structured product brief capture
-- brand kits and reusable templates
-- concept generation and storyboard preview flow
-- controlled multi-variant render batches
-- side-by-side batch review and winner selection
-- external reviewer links with comments and approval state
-- final decision locking with canonical export selection
-- winner-only public promotion workflow
-- public campaign pages
-- finalized client delivery workspace
-- owner-controlled single-export share links
+The codebase keeps customization points separated so you can change one layer without flattening the architecture.
 
-## Product scope
+### Brand and product language
 
-AI Ad Studio is designed for short-form product advertising.
+- Set the deployed application name and URL through `NEXT_PUBLIC_APP_NAME` and `NEXT_PUBLIC_APP_URL`.
+- Replace the English and Arabic catalogs under `apps/web/src/lib/i18n/messages`.
+- Update the application icon, marketing components, email/public-surface copy, and plan display names.
+- Keep visible UI copy inside the typed i18n layer so both locales and LTR/RTL layouts stay valid.
 
-Current repository direction:
+### Domain workflow
 
-- product ad concepts only
-- controlled variants instead of open-ended generation
-- short exports and platform-aware render presets
-- approval and review as first-class workflow steps
-- public promotion only after final decision
-- delivery workspace only from finalized canonical exports
+- Replace ad-specific feature modules under `apps/web/src/features`.
+- Keep authenticated mutations in server actions and durable data access under `apps/web/src/server`.
+- Model important workflow transitions in Supabase instead of long-lived browser state.
+- Add or replace job handlers under `apps/worker/src/jobs/handlers` for slow or retryable work.
 
-## Public surfaces and intended usage
+### AI and media providers
 
-The repository currently has three public token-based surfaces. They are not interchangeable.
+- Implement provider contracts in `packages/providers` and connect them through worker factories.
+- Use the existing Runway, local HTTP, and mock preview paths as integration examples.
+- Extend `packages/media` when output composition or media processing changes.
 
-### 1. Campaign pages
+### Infrastructure and commercial model
 
-Campaign pages are the primary public promotion surface.
+- Replace Supabase, R2, or Stripe behind their server-side boundaries if your stack differs.
+- Change seeded billing plans, entitlements, operator ceilings, and usage policies together so enforcement remains consistent in the web app and worker.
+- Add migrations before changing TypeScript database contracts.
 
-Use them when:
+### Public experiences
 
-- a reviewed export has been finalized
-- the export is the current canonical winner for the project
-- the goal is public-facing promotion or showcase-style sharing
-
-Rules:
-
-- winner-only
-- canonical-only
-- promotion-oriented
-
-### 2. Delivery pages
-
-Delivery pages are the primary client handoff surface.
-
-Use them when:
-
-- a reviewed export has been finalized
-- the export is the current canonical winner for the project
-- the goal is structured delivery with handoff notes, approval summary, and downloadable assets
-
-Rules:
-
-- canonical-only
-- handoff-oriented
-- supports included exports from the finalized batch, but anchored to the canonical export
-
-### 3. Share links
-
-Share links are a lighter owner-controlled utility surface for a single export.
-
-Use them when:
-
-- you want to quickly share one export for preview or internal distribution outside the main winner-only flow
-- you do not need campaign messaging
-- you do not need delivery workspace structure or approval summary
-
-Rules:
-
-- single-export utility
-- owner-created
-- separate from winner-only campaign and canonical delivery workflows
-
-## Current capabilities
-
-The current repo state supports:
-
-- brief capture, concept generation, and preview flow
-- controlled render batch generation
-- internal and external review collection
-- winner selection and final decision locking
-- current-canonical promotion gating
-- public campaign pages for canonical winners
-- public delivery workspaces for canonical winners
-- token-scoped single-export share links
-- worker polling, job claiming, and provider-backed generation flow
-- token-scoped public media delivery with authenticated owner dashboard downloads
-
-## Monorepo layout
-
-- `apps/web` — Next.js application for product workflow, review, publishing, and delivery
-- `apps/worker` — async orchestration and job execution
-- `packages/shared` — shared contracts and types
-- `packages/config` — runtime configuration utilities
-- `packages/ui` — reusable UI primitives
-- `packages/providers` — provider contracts and adapters
-- `packages/media` — media pipeline utilities
-
-## Core workflow
-
-1. Create a project and upload product assets
-2. Generate controlled concepts
-3. Generate previews
-4. Render controlled A/B variation batches
-5. Review outputs internally and externally
-6. Select a winner
-7. Finalize the canonical export
-8. Promote the finalized winner to showcase or campaign
-9. Prepare a client delivery workspace
+- Adapt campaign pages for promotion, delivery workspaces for structured handoff, and share links for lightweight distribution.
+- Preserve token scoping and canonical-output rules unless your replacement workflow defines a different trust model.
 
 ## Architecture
 
-The system follows a thin web layer plus durable database plus async worker model.
+The starter uses a thin web layer, a durable database, and an asynchronous worker.
 
-- the web app owns product UX, state transitions, approvals, and public pages
-- the worker owns slow orchestration, provider calls, and render/composition tasks
-- storage and metadata stay durable so long-running jobs can be resumed, audited, and reviewed
-- render batches, external review, promotion, and delivery all build on explicit persisted records rather than transient client state
+- **Web:** Next.js 16 App Router and React 19 own product UX, authentication, server actions, state transitions, billing, and public pages.
+- **Database and auth:** Supabase is the durable system of record for users, workflow state, jobs, approvals, notifications, billing, and analytics.
+- **Worker:** A Node/TypeScript process polls and claims jobs, calls providers, performs render orchestration, and runs reminder sweeps.
+- **Storage:** Cloudflare R2 stores uploaded and generated media; database records keep lineage and access metadata.
+- **Providers:** OpenAI supports text and speech flows. Preview and scene-video generation can use Runway or the local HTTP sidecar.
+- **Composition:** FFmpeg remains the final export compositor.
+- **Billing:** Stripe-backed subscriptions are reconciled into schema-backed plans, limits, usage, and audit records.
+- **Localization:** Typed English and Arabic catalogs support persisted locale choice and document-level LTR/RTL switching.
 
-## Local development
+Important state is persisted so long-running work can resume, fail visibly, and remain reviewable. Public surfaces are intentionally separated by purpose rather than implemented as alternate skins over one route.
+
+## Monorepo layout
+
+```text
+apps/web/                  Next.js product, dashboard, billing, and public surfaces
+apps/worker/               Async job execution and scheduled operational work
+packages/config/           Runtime configuration utilities
+packages/media/            Media pipeline and composition helpers
+packages/providers/        AI provider contracts and adapters
+packages/shared/           Shared contracts and types
+packages/ui/               Reusable UI primitives
+services/local-inference/  Optional Python HTTP inference sidecar
+supabase/migrations/       Versioned database changes
+scripts/checks/            Local, deployment, and release verification
+```
+
+## Public surfaces in the reference app
+
+The three token-backed public experiences serve different trust and product goals:
+
+1. **Campaign pages** promote the current finalized canonical winner.
+2. **Delivery pages** provide structured client handoff anchored to the canonical export, with related finalized batch exports when included.
+3. **Share links** expose one owner-selected export for lightweight preview or distribution.
+
+Campaign and delivery pages are winner/canonical-only. Share links remain a separate, owner-controlled single-export utility.
+
+## Getting started
 
 ### Prerequisites
 
 - Node.js 22 or newer
 - pnpm 10
 - a configured Supabase project
-- R2 credentials for asset upload and public media delivery
-- OpenAI credentials for text and speech generation flows
-- Python 3.11 or newer if you want the local inference sidecar
-- an active paid [Runway](https://runwayml.com/) API subscription only if you select `runway` for previews or scene video
+- Cloudflare R2 credentials for uploads and media delivery
+- OpenAI credentials for text and speech generation
+- Python 3.11 or newer when using the local inference sidecar
+- a paid Runway account and `RUNWAYML_API_SECRET` only when a selected media provider is `runway`
+- FFmpeg for final media composition
 
 ### Install
 
-Run `pnpm install`.
+```bash
+pnpm install
+cp .env.example .env.local
+```
 
-### Environment setup
+Fill in `.env.local`, then apply the migrations in `supabase/migrations` to your Supabase project using your normal Supabase deployment workflow.
 
-Create a local env file from the example with `cp .env.example .env.local`.
+The example environment file covers the primary web, worker, storage, OpenAI, Runway, and local-inference settings. Billing and operator features additionally use the optional Stripe and operator variables defined in `apps/web/src/lib/env.ts`.
 
-Fill in the values in `.env.local`.
+### Minimum web configuration
 
-### Environment matrix
+The authenticated web app needs:
 
-#### Web minimum
+```text
+NEXT_PUBLIC_APP_NAME
+NEXT_PUBLIC_APP_URL
+NEXT_PUBLIC_SUPABASE_URL
+NEXT_PUBLIC_SUPABASE_ANON_KEY
+```
 
-These values are required for the authenticated web app and Supabase-backed session handling:
+The full server-backed workflow also needs:
 
-- `NEXT_PUBLIC_APP_NAME`
-- `NEXT_PUBLIC_APP_URL`
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+```text
+SUPABASE_SERVICE_ROLE_KEY
+R2_ACCOUNT_ID
+R2_ACCESS_KEY_ID
+R2_SECRET_ACCESS_KEY
+R2_BUCKET_NAME
+```
 
-#### Web full workflow
+### Worker configuration
 
-These additional server-side values are required for the full product workflow, including token-backed public pages, share links, uploads, downloads, and storage access:
+The worker needs Supabase service-role access, R2 credentials, `OPENAI_API_KEY`, and the credentials or endpoint required by the selected media providers.
 
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `R2_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET_NAME`
+The worker reads directly from `process.env`; it does not load `.env.local` itself. Export the values in the shell that starts the worker:
 
-#### Worker required
+```bash
+set -a
+source .env.local
+set +a
+pnpm dev:worker
+```
 
-The worker reads directly from `process.env` and requires these values to claim and execute jobs:
+## Media provider modes
 
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `WORKER_POLL_INTERVAL_MS`
-- `R2_ACCOUNT_ID`
-- `R2_ACCESS_KEY_ID`
-- `R2_SECRET_ACCESS_KEY`
-- `R2_BUCKET_NAME`
-- `OPENAI_API_KEY`
+Preview and scene-video generation are selected independently:
 
-#### Worker defaults
+```text
+PREVIEW_PROVIDER=runway|local_http|mock
+SCENE_VIDEO_PROVIDER=runway|local_http
+```
 
-These values are optional because the worker code provides defaults:
+Supported combinations include:
 
-- `OPENAI_CONCEPT_MODEL` defaults to `gpt-4o-mini`
-- `OPENAI_TTS_MODEL` defaults to `gpt-4o-mini-tts`
-- `OPENAI_TTS_VOICE` defaults to `alloy`
-- `PREVIEW_PROVIDER` defaults to `runway`
-- `SCENE_VIDEO_PROVIDER` defaults to `runway`
-- `RUNWAY_IMAGE_MODEL` defaults to `gen4_image_turbo`
-- `RUNWAY_VIDEO_MODEL` defaults to `gen4_turbo`
-- `LOCAL_INFERENCE_BASE_URL` defaults to `http://127.0.0.1:8788`
-- `LOCAL_IMAGE_MODEL` defaults to `flux-schnell`
-- `LOCAL_VIDEO_MODEL` defaults to `cogvideox1.5-5b-i2v`
-- `LOCAL_DEVICE` defaults to `cuda`
-- `LOCAL_DTYPE` defaults to `bf16`
-- `LOCAL_ENABLE_CPU_OFFLOAD` defaults to `false`
-- `LOCAL_INFERENCE_TIMEOUT_MS` defaults to `900000`
-
-### Provider selector env vars
-
-The worker chooses preview and scene-video generation independently:
-
-- `PREVIEW_PROVIDER=runway|local_http|mock`
-- `SCENE_VIDEO_PROVIDER=runway|local_http`
+- **Runway only:** Runway generates previews and scene video.
+- **Hybrid:** Runway generates previews while the local sidecar generates scene video.
+- **Fully local:** The local sidecar generates previews and scene video.
+- **Lightweight development:** Mock previews avoid image-provider calls while another configured provider handles scene video.
 
 Conditional requirements:
 
-- `RUNWAYML_API_SECRET` is required only if either provider is `runway`
-- `LOCAL_INFERENCE_BASE_URL` is required only if either provider is `local_http`
-- `LOCAL_IMAGE_MODEL` matters only when `PREVIEW_PROVIDER=local_http`
-- `LOCAL_VIDEO_MODEL` matters only when `SCENE_VIDEO_PROVIDER=local_http`
+- `RUNWAYML_API_SECRET` is required when either provider is `runway`.
+- `LOCAL_INFERENCE_BASE_URL` is required when either provider is `local_http`.
+- `LOCAL_IMAGE_MODEL` applies to local previews.
+- `LOCAL_VIDEO_MODEL` applies to local scene generation.
 
-### Which local model should I use?
+Current local defaults:
 
-| Hardware tier | Preview recommendation                     | Scene video recommendation | Notes                                            |
-| ------------- | ------------------------------------------ | -------------------------- | ------------------------------------------------ |
-| 12–16GB GPU   | `sdxl-turbo` if needed                     | `cogvideox1.5-5b-i2v`      | Best starting point for mixed-tier machines      |
-| 24GB+ GPU     | `flux-schnell`                             | `wan2.1-i2v-14b-480p`      | Higher quality, heavier VRAM and runtime cost    |
-| CPU / macOS   | `mock` or `flux-schnell` only if practical | not recommended            | Treat local video as unsupported or experimental |
+| Purpose          | Default               | Alternatives                                                             |
+| ---------------- | --------------------- | ------------------------------------------------------------------------ |
+| Preview image    | `flux-schnell`        | `sdxl-turbo` for a lighter path                                          |
+| Scene video      | `cogvideox1.5-5b-i2v` | `wan2.1-i2v-14b-480p` for high-end hardware; `svd-img2vid` as a fallback |
+| Device and dtype | `cuda` / `bf16`       | Configure to match the inference host                                    |
 
-### Local inference sidecar setup
+Local video generation is GPU-intensive. CPU-only and many macOS environments should use mock previews or a hosted provider for practical development.
 
-The local sidecar lives in `services/local-inference` and exposes:
+### Local inference sidecar
 
-- `GET /health`
-- `POST /v1/preview`
-- `POST /v1/scene-video`
-- `GET /v1/artifacts/{artifactId}`
-
-Setup:
+The sidecar exposes `GET /health`, `POST /v1/preview`, `POST /v1/scene-video`, and `GET /v1/artifacts/{artifactId}`.
 
 ```bash
 cd services/local-inference
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
-
-Start the sidecar from the repo root:
-
-```bash
+cd ../..
 pnpm dev:local-inference
 ```
 
-Or directly:
+The default base URL is `http://127.0.0.1:8788`.
+
+## Run locally
+
+Start each process in its own terminal:
 
 ```bash
-python3 -m uvicorn app.main:app --app-dir services/local-inference --host 127.0.0.1 --port 8788 --reload
+pnpm dev:web
+pnpm dev:worker
+pnpm dev:local-inference # only when using local_http
 ```
 
-### Sample env blocks
+`pnpm dev` starts the workspace applications together, but the worker-required values must already be exported into that shell.
 
-Runway only:
+Build and start one application directly when needed:
 
 ```bash
-PREVIEW_PROVIDER=runway
-SCENE_VIDEO_PROVIDER=runway
-RUNWAYML_API_SECRET=your-runway-key
-RUNWAY_IMAGE_MODEL=gen4_image_turbo
-RUNWAY_VIDEO_MODEL=gen4_turbo
+pnpm --filter @ai-ad-studio/web build
+pnpm --filter @ai-ad-studio/web start
+
+pnpm --filter @ai-ad-studio/worker build
+pnpm --filter @ai-ad-studio/worker start
 ```
 
-Hybrid:
+## Verification
+
+Run the standard repository checks:
 
 ```bash
-PREVIEW_PROVIDER=runway
-SCENE_VIDEO_PROVIDER=local_http
-RUNWAYML_API_SECRET=your-runway-key
-LOCAL_INFERENCE_BASE_URL=http://127.0.0.1:8788
-LOCAL_VIDEO_MODEL=cogvideox1.5-5b-i2v
-LOCAL_DEVICE=cuda
-LOCAL_DTYPE=bf16
+pnpm lint
+pnpm test
+pnpm build
+pnpm typecheck
 ```
 
-Fully local:
+Do not run `pnpm build` and `pnpm typecheck` in parallel. Both touch `.next`, and concurrent execution can produce false-negative Next.js type-generation errors.
+
+The supported sequential wrapper is:
 
 ```bash
-PREVIEW_PROVIDER=local_http
-SCENE_VIDEO_PROVIDER=local_http
-LOCAL_INFERENCE_BASE_URL=http://127.0.0.1:8788
-LOCAL_IMAGE_MODEL=flux-schnell
-LOCAL_VIDEO_MODEL=cogvideox1.5-5b-i2v
-LOCAL_DEVICE=cuda
-LOCAL_DTYPE=bf16
-LOCAL_ENABLE_CPU_OFFLOAD=false
+pnpm verify:phase-31
 ```
 
-Preview-only local / lightweight dev:
+Browser tests use deterministic Supabase-backed fixtures and require a reachable test project with service-role access:
 
 ```bash
-PREVIEW_PROVIDER=mock
-SCENE_VIDEO_PROVIDER=local_http
-LOCAL_INFERENCE_BASE_URL=http://127.0.0.1:8788
-LOCAL_VIDEO_MODEL=cogvideox1.5-5b-i2v
+pnpm --filter @ai-ad-studio/web test:e2e:setup
+pnpm --filter @ai-ad-studio/web test:e2e:smoke
 ```
 
-### Important startup note
+## Deployment validation
 
-Next.js will load `.env.local` automatically for the web app.
+Apply migrations before starting production services, configure every runtime separately, and verify the deployed health endpoint:
 
-The worker does not use a dotenv loader in its current script. It reads from the shell environment. Before starting the worker, export the env values into the shell session that will run it.
+```bash
+curl -sS https://your-app.example.com/api/health
+SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime
+```
 
-One simple local workflow is:
-
-    set -a
-    source .env.local
-    set +a
-
-After that, start the apps in separate terminals.
-
-### Start the web app
-
-Run `pnpm dev:web`.
-
-### Start the worker
-
-Run `pnpm dev:worker`.
-
-### Start the local inference sidecar
-
-Run `pnpm dev:local-inference`.
-
-### Start both from the repo root
-
-This works only after the worker-required env variables are already exported into the shell:
-
-Run `pnpm dev`.
-
-### Run checks
-
-Run:
-
-    pnpm lint
-    pnpm test
-    pnpm build
-    pnpm typecheck
-
-Or run the full Phase 31 verification wrapper:
-
-    pnpm verify:phase-31
-
-Do not run `pnpm typecheck` and `pnpm build` in parallel for this repo. Both commands touch `.next`, and parallel execution can produce false-negative Next type generation errors.
-
-### Runtime smoke
-
-For deployed runtime validation, run:
-
-    SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime
-
-To run local verification plus optional deployed smoke checks in one pass:
-
-    SMOKE_BASE_URL=https://your-app.example.com pnpm verify:phase-31
-
-Optional smoke inputs:
+Optional token inputs extend the smoke test across public routes:
 
 - `SMOKE_SHARE_TOKEN`
 - `SMOKE_CAMPAIGN_TOKEN`
@@ -415,133 +310,36 @@ Optional smoke inputs:
 - `SMOKE_ALLOW_DEGRADED_HEALTH=true`
 - `SMOKE_REQUEST_TIMEOUT_MS=15000`
 
-`/api/health` exposes operator-safe readiness booleans for public app URL, Supabase auth, service-role availability, and R2 storage configuration. The smoke script uses that payload to fail early when requested token-surface checks depend on missing runtime configuration.
+Billing readiness can be checked separately with an operator secret:
 
-The smoke command checks `/api/health` plus any configured public token surfaces and download routes.
-
-To inspect the deployment health payload directly:
-
-    curl -sS https://your-app.example.com/api/health
-
-The expected healthy shape is:
-
-```json
-{
-  "name": "AI Ad Studio",
-  "service": "web",
-  "status": "ok",
-  "readiness": {
-    "publicAppUrlConfigured": true,
-    "supabaseAuthConfigured": true,
-    "serviceRoleConfigured": true,
-    "r2Configured": true
-  }
-}
+```bash
+SMOKE_BASE_URL=https://your-app.example.com \
+SMOKE_BILLING_OPERATOR_SECRET=... \
+pnpm smoke:billing
 ```
 
-If `status` is `degraded`, use the readiness flags to fix the missing runtime dependency before validating public routes:
-
-- `publicAppUrlConfigured: false` means `NEXT_PUBLIC_APP_URL` is missing or empty
-- `supabaseAuthConfigured: false` means `NEXT_PUBLIC_SUPABASE_URL` or `NEXT_PUBLIC_SUPABASE_ANON_KEY` is missing
-- `serviceRoleConfigured: false` means `SUPABASE_SERVICE_ROLE_KEY` is missing
-- `r2Configured: false` means one or more of `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, or `R2_BUCKET_NAME` is missing
-
-Do not treat share, campaign, or delivery downloads as production-ready while `r2Configured` is `false`.
-
-### Build and start individually
-
-Web:
-
-    pnpm --filter @ai-ad-studio/web build
-    pnpm --filter @ai-ad-studio/web start
-
-Worker:
-
-    pnpm --filter @ai-ad-studio/worker build
-    pnpm --filter @ai-ad-studio/worker start
-
-## Runtime notes
-
-- if the public Supabase keys are missing, authenticated web flows and login-dependent pages will not work
-- if the R2 variables are missing, upload and download routes will return storage configuration errors
-- if the worker-required variables are missing, the worker stays alive and keeps polling for configuration instead of processing jobs
-- if a selected provider is `runway` and `RUNWAYML_API_SECRET` is missing, the worker will refuse to start that configuration
-- if a selected provider is `local_http` and the sidecar is unreachable, preview or scene-video jobs will fail with a local inference connectivity error
-- if the local model is too large for the available VRAM, the sidecar will fail during model load or inference; switch to a lighter model or enable CPU offload
-- public campaign, share, and delivery media routes rely on token-scoped access plus server-side R2 reads
-- owner dashboard export downloads remain authenticated
-- `/api/health` now exposes operator-safe readiness booleans for auth, service-role access, R2, and public app URL configuration
-- local video support only changes scene generation; FFmpeg composition remains the final export compositor
+Do not treat token-backed media delivery as production-ready while `/api/health` reports degraded Supabase, service-role, R2, or public-URL readiness. `SMOKE_ALLOW_DEGRADED_HEALTH=true` is diagnostic only.
 
 ## Known limitations
 
-Current known limitations and truths:
+- Infrastructure provisioning and migration deployment happen outside this repository.
+- The worker must receive its environment through the launching shell or deployment runtime.
+- Provider-backed rendering can require paid API access or substantial local GPU capacity.
+- Local sidecar availability changes generation only; FFmpeg is still required for final composition.
+- Browser automation requires a reachable Supabase environment and seeded fixtures.
+- Public token routes must be smoke-tested against each real deployment and storage configuration.
+- The reference workflow is intentionally constrained; an open-ended editor would be a separate product direction.
 
-- the worker still expects its required environment variables to be present in the shell environment that launches it
-- token-backed public routes are runtime-safe by design, but they should still be smoke-validated in each deployment environment
-- repo smoke coverage is focused on critical business rules and state derivation, not full browser end-to-end automation
-- migration application and infrastructure provisioning are assumed to happen outside this repo
-- delivery analytics and client acknowledgement flows are not part of Phase 31 and are better handled in Phase 32
+## Contributing
 
-## Deployment assumptions
+Read [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), [SECURITY.md](SECURITY.md), and [SUPPORT.md](SUPPORT.md) before contributing.
 
-- the web runtime needs the public Supabase keys in every environment
-- the server-side web runtime also needs `SUPABASE_SERVICE_ROLE_KEY` and the R2 credentials for share links, public token routes, and asset delivery
-- the worker runtime needs Supabase service-role access, R2 credentials, OpenAI credentials, plus whichever media-provider credentials/endpoints match the selected env providers
-- promotion, review, delivery, and public token pages assume the database schema and migrations are already applied before the services are started
-
-## Deployment troubleshooting
-
-- if `pnpm smoke:runtime` fails because `/api/health` is `degraded`, fix the missing env vars first instead of debugging public routes
-- if `r2Configured` is `false`, expect token-backed downloads and storage-backed media delivery to fail even when the pages themselves render
-- if you only need a temporary diagnostic pass while infrastructure is being wired, rerun with `SMOKE_ALLOW_DEGRADED_HEALTH=true`, but do not treat that as release-ready
-
-## Release-candidate validation checklist
-
-Before treating the repo as release-candidate ready, verify all of the following:
-
-- `pnpm lint`
-- `pnpm test`
-- `pnpm build`
-- `pnpm typecheck`
-
-And, when validating a real deployed environment:
-
-- `SMOKE_BASE_URL=https://your-app.example.com pnpm smoke:runtime`
-
-And manually verify:
-
-- an active `/review/[token]` page is writable
-- a finalized or inactive `/review/[token]` page is frozen
-- `/campaign/[token]` plays media without login
-- `/delivery/[token]` downloads included assets without login
-- `/share/[token]` still works as a single-export share surface
-- `/api/exports/[exportId]/download` remains protected when logged out
-
-## Development standards
-
-This repository prefers:
-
-- production-grade changes over quick hacks
-- small focused modules instead of oversized files
-- strong typing and explicit validation
-- clean architectural boundaries
-- durable workflow records for anything reviewable or long-running
-- descriptive commit messages and cohesive pull requests
-
-## Contribution flow
-
-Read these files before contributing:
-
-- `CONTRIBUTING.md`
-- `CODE_OF_CONDUCT.md`
-- `SECURITY.md`
-- `SUPPORT.md`
+Install the repository-managed Git hooks with `pnpm hooks:setup`. Use `pnpm verify:push` for the shared pre-push gate or `pnpm safe-push -- <git push args>` for the repository wrapper.
 
 ## Security
 
-Please do not report vulnerabilities in public issues. See `SECURITY.md`.
+Do not report vulnerabilities in public issues. Follow the private reporting guidance in [SECURITY.md](SECURITY.md).
 
 ## License
 
-This repository is licensed under the MIT License. See `LICENSE`.
+Licensed under the [MIT License](LICENSE).

@@ -125,7 +125,9 @@ export function HeroPreview() {
 
           <aside className="theme-soft-panel rounded-[1.7rem] border p-4 sm:p-5">
             <div className="border-b border-[rgba(15,23,42,0.08)] pb-4">
-              <p className="theme-marketing-eyebrow">{t("marketing.heroPreview.checkpoints")}</p>
+              <p className="theme-marketing-eyebrow">
+                {t("marketing.heroPreview.checkpoints")}
+              </p>
               <p className="mt-2 text-base font-semibold tracking-[-0.03em] text-[var(--foreground)]">
                 {t("marketing.heroPreview.stepsCount")}
               </p>

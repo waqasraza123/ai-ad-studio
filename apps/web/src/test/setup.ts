@@ -33,7 +33,11 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup()
-  if (typeof window !== "undefined") {
+  if (
+    typeof window !== "undefined" &&
+    window.localStorage &&
+    typeof window.localStorage.clear === "function"
+  ) {
     window.localStorage.clear()
   }
 })

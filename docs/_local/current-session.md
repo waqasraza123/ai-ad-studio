@@ -2,51 +2,43 @@
 
 ## Date
 
-2026-05-12
+2026-08-27
 
 ## Current Objective
 
-Implement the next Creative Performance Intelligence product slice.
+Complete the rebrand to **AI Ad Studio — Production SaaS Starter Kit** across repository surfaces and the public homepage while preserving AI Ad Studio as the authenticated reference application.
 
-## Last Completed Step
+## Completed Work
 
-Added durable activation tracking status/events, package-aware manual performance ingestion targets, backend deterministic intelligence aggregation/insights, and a project-level Activation / Performance / Insights dashboard surface.
+- Rewrote repository-facing documentation around reuse, customization, and explicit starter-kit boundaries.
+- Updated GitHub description/topics and contributor/community branding.
+- Repositioned `/` around a GitHub-first starter-kit narrative with AI Ad Studio as working proof.
+- Replaced homepage pricing with a static production-stack/customization section and removed the homepage billing dependency.
+- Updated English and Arabic homepage copy, route metadata, responsive RTL-safe CTAs, and focused test coverage.
+- Hardened shared component-test cleanup when `localStorage` is unavailable in the Node runtime.
 
-## Changed Files
+## Homepage Changes
 
-- `docs/_local/current-session.md`
-- `docs/project-state.md`
-- `supabase/migrations/202605121000_phase_35_creative_performance_intelligence.sql`
-- `apps/web/src/server/database/types.ts`
-- `apps/web/src/server/activation/activation-repository.ts`
-- `apps/web/src/server/activation/activation-service.ts`
-- `apps/web/src/features/activation/actions/update-activation-tracking.ts`
-- `apps/web/src/server/creative-performance/creative-performance-repository.ts`
-- `apps/web/src/server/creative-performance/creative-performance-service.ts`
-- `apps/web/src/server/creative-performance/performance-intelligence.ts`
-- `apps/web/src/server/creative-performance/performance-intelligence.test.ts`
-- `apps/web/src/features/analytics/components/creative-performance-intelligence-panel.tsx`
-- `apps/web/src/app/(app)/dashboard/projects/[projectId]/page.tsx`
-- `apps/web/src/app/(app)/dashboard/analytics/page.tsx`
-- `apps/web/src/features/analytics/actions/submit-creative-performance.ts`
-- `apps/web/src/features/analytics/components/creative-performance-ingestion-form.tsx`
-- `apps/web/src/features/analytics/components/creative-performance-ingestion-panel.tsx`
+- `apps/web/src/app/page.tsx` and its test
+- `apps/web/src/components/marketing/*` homepage sections, data mapper, links, and tests
 - `apps/web/src/lib/i18n/messages/en.ts`
 - `apps/web/src/lib/i18n/messages/ar.ts`
-- `apps/web/src/lib/form-error-messages.ts`
+- `apps/web/e2e/public/homepage.spec.ts`
+- `apps/web/src/test/setup.ts`
+- removed the obsolete pricing snapshot component/test
 
-## Verification Commands
+## Verification
 
-- `pnpm --filter @ai-ad-studio/web test:unit src/server/activation/activation-service.test.ts src/server/creative-performance/creative-performance-service.test.ts src/server/creative-performance/performance-intelligence.test.ts src/features/analytics/lib/creative-performance-summary.test.ts`
-- `pnpm --filter @ai-ad-studio/web test:component src/features/activation/components/activation-package-panel.test.tsx src/features/analytics/components/creative-performance-ingestion-panel.test.tsx`
+- homepage unit and component tests
 - `pnpm --filter @ai-ad-studio/web test:i18n-audit`
+- changed-file ESLint and Prettier checks
 - `pnpm --filter @ai-ad-studio/web typecheck`
 - `pnpm --filter @ai-ad-studio/web build`
-- `pnpm --filter @ai-ad-studio/web exec eslint <changed files>`
+- desktop English and mobile Arabic/RTL Playwright screenshots against the production build
 - `git diff --check`
 
 ## Notes
 
-- Package-wide `pnpm --filter @ai-ad-studio/web lint` is still blocked by pre-existing unused-variable errors in unrelated e2e/delivery/settings files; changed-file ESLint passed.
-- SQL migration adds `activation_packages.tracking_status`, tracking note/timestamps, and `activation_package_events`.
-- Project workspace now shows activation tracking, scorecards, deterministic insight cards, top/weak creative rollups, dimension comparisons, and package-aware ingestion.
+- Authenticated UI branding, billing behavior, package names, environment defaults, health output, and generated media branding remain unchanged.
+- The public homepage no longer reads or renders the live billing-plan catalog; billing remains available inside the reference application.
+- Pre-existing Creative Performance Intelligence edits were preserved.

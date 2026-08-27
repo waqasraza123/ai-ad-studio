@@ -2,7 +2,7 @@
 
 ## Product
 
-AI Ad Studio is a constrained ad-generation system for product marketing teams. The repo is built around a fixed workflow:
+The repository is positioned as **AI Ad Studio — Production SaaS Starter Kit**: a reusable, production-oriented SaaS foundation with AI Ad Studio as its complete reference application. The shipped reference product remains a constrained ad-generation system for product marketing teams, built around a fixed workflow:
 
 `brief -> concepts -> previews -> render batches -> review -> canonical winner -> promotion -> delivery`
 
@@ -63,6 +63,7 @@ Public surfaces are intentionally separate:
 
 ## Important Decisions
 
+- Repository-facing documentation and the public homepage present the codebase as a reusable, GitHub-first production SaaS starter kit. The homepage uses AI Ad Studio as proof through its reference workflow and outputs, while authenticated runtime branding, package namespaces, and the constrained product behavior remain unchanged by default.
 - The repo uses explicit persisted workflow checkpoints instead of long-lived client state.
 - Token-scoped public surfaces are intentionally separate products with different rules, not alternate skins on one route type.
 - Delivery workspaces are anchored to the canonical finalized export even when they include multiple batch exports.

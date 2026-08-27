@@ -38,7 +38,9 @@ export async function WorkflowStrip() {
       <PublicSectionFrame>
         <div className="grid gap-10 lg:grid-cols-[0.62fr_1.38fr] lg:items-start">
           <div className="max-w-md">
-            <p className="theme-marketing-eyebrow">{t("marketing.workflow.eyebrow")}</p>
+            <p className="theme-marketing-eyebrow">
+              {t("marketing.workflow.eyebrow")}
+            </p>
             <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
               {t("marketing.workflow.title")}
             </h2>

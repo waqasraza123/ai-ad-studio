@@ -13,7 +13,19 @@ test.describe("homepage public chrome", () => {
     await gotoReady(page, "/")
 
     await expectEnglishDocument(page)
-    await expect(page.getByRole("link", { name: /sign in/i })).toBeVisible()
+    await expect(
+      page.getByRole("heading", {
+        name: /Start with a complete AI SaaS\. Make the workflow yours\./i
+      })
+    ).toBeVisible()
+    await expect(
+      page.getByRole("link", { name: /View on GitHub/i }).first()
+    ).toHaveAttribute("href", "https://github.com/waqasraza123/ai-ad-studio")
+    await expect(
+      page.getByRole("link", { name: /Open reference app/i }).first()
+    ).toHaveAttribute("href", "/dashboard")
+    await expect(page.getByRole("link", { name: "Plans" })).toHaveCount(0)
+    await expect(page.locator("#plans")).toHaveCount(0)
     await expect(
       page.getByRole("button", { name: /Runtime setup/i })
     ).toBeVisible()
@@ -36,6 +48,14 @@ test.describe("homepage public chrome", () => {
 
     await gotoReady(localizedPage, "/")
     await expectArabicDocument(localizedPage)
+    await expect(
+      localizedPage.getByRole("heading", {
+        name: /ابدأ بمنصة SaaS للذكاء الاصطناعي مكتملة/
+      })
+    ).toBeVisible()
+    await expect(
+      localizedPage.getByRole("link", { name: /عرض على GitHub/ }).first()
+    ).toBeVisible()
     await expect(
       localizedPage.getByRole("group", { name: "تغيير اللغة" })
     ).toBeVisible()

@@ -1,9 +1,10 @@
 import {
-  BadgeCheck,
-  PackageCheck,
-  Presentation,
-  Sparkles,
-  UploadCloud
+  CloudCog,
+  CreditCard,
+  Database,
+  Languages,
+  ShieldCheck,
+  Workflow
 } from "lucide-react"
 import { SurfaceCard } from "@/components/primitives/surface-card"
 import { PublicSectionFrame } from "@/components/layout/page-frame"
@@ -13,41 +14,43 @@ export async function FeatureGrid() {
   const { t } = await getServerI18n()
   const features = [
     {
-      icon: Sparkles,
+      icon: ShieldCheck,
       title: t("marketing.feature.constrained.title"),
       description: t("marketing.feature.constrained.description")
     },
     {
-      icon: Presentation,
+      icon: CreditCard,
       title: t("marketing.feature.review.title"),
       description: t("marketing.feature.review.description")
     },
     {
-      icon: BadgeCheck,
+      icon: Workflow,
       title: t("marketing.feature.winner.title"),
       description: t("marketing.feature.winner.description")
     },
     {
-      icon: PackageCheck,
+      icon: CloudCog,
       title: t("marketing.feature.delivery.title"),
       description: t("marketing.feature.delivery.description")
     },
     {
-      icon: UploadCloud,
+      icon: Database,
       title: t("marketing.feature.inputs.title"),
       description: t("marketing.feature.inputs.description")
     },
     {
-      icon: Sparkles,
+      icon: Languages,
       title: t("marketing.feature.teams.title"),
       description: t("marketing.feature.teams.description")
     }
   ]
   return (
-    <section className="pb-24 pt-8">
+    <section id="foundation" className="pb-24 pt-8">
       <PublicSectionFrame>
         <div className="max-w-2xl">
-          <p className="theme-marketing-eyebrow">{t("marketing.featureGrid.eyebrow")}</p>
+          <p className="theme-marketing-eyebrow">
+            {t("marketing.featureGrid.eyebrow")}
+          </p>
           <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
             {t("marketing.featureGrid.title")}
           </h2>

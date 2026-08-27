@@ -1,6 +1,8 @@
-Contributing to AI Ad Studio
+Contributing to AI Ad Studio — Production SaaS Starter Kit
 
-Thanks for contributing.
+Thanks for contributing to the starter kit and its AI Ad Studio reference application.
+
+Repository changes should strengthen the reusable SaaS foundation or the quality of the included reference workflow without weakening the existing architecture and production safeguards.
 
 Before you start
 

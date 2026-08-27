@@ -1,8 +1,7 @@
-
 Code of Conduct
 Our standard
 
-AI Ad Studio aims to be a respectful, constructive, and professional project space.
+AI Ad Studio — Production SaaS Starter Kit aims to be a respectful, constructive, and professional project space.
 
 By participating in this repository, you agree to engage in ways that support a welcoming and productive environment for everyone.
 
@@ -99,4 +98,3 @@ permanent ban from participation
 Final note
 
 The goal of enforcement is to protect the project and keep collaboration productive, safe, and professional.
-

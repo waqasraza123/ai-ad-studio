@@ -63,13 +63,11 @@ export const ar: AppMessageCatalog = {
     one: "{{count}} معروض",
     other: "{{count}} معروض"
   },
-  "header.marketing.workflow": "سير العمل",
+  "header.marketing.foundation": "الأساس",
+  "header.marketing.referenceApp": "التطبيق المرجعي",
   "header.marketing.samples": "النماذج",
-  "header.marketing.plans": "الخطط",
+  "header.marketing.stack": "البنية التقنية",
   "header.marketing.faq": "الأسئلة الشائعة",
-  "header.marketing.showcase": "المعرض",
-  "header.marketing.signIn": "Demo Login",
-  "header.marketing.enterDashboard": "الدخول إلى اللوحة",
   "header.app.workspace": "مساحة العمل",
   "header.app.studioMode": "وضع الاستوديو",
   "header.app.workspaceDescription":
@@ -136,50 +134,55 @@ export const ar: AppMessageCatalog = {
   "auth.configuration.dashboardTitle": "المصادقة غير مهيأة في هذه البيئة",
   "auth.configuration.dashboardDescription":
     "تم توصيل المسارات المحمية. أضف بيانات Supabase محليًا للتحقق من الجلسات الفعلية وإعادة التوجيه وتدفقات الملكية المحمية.",
-  "marketing.hero.badge": "سير عمل المنتج العام{{suffix}}",
-  "marketing.hero.badgeSuffix": " • تم إبراز {{count}} نموذجًا مباشرًا",
+  "marketing.meta.title": "AI Ad Studio — حزمة بداية SaaS للإنتاج",
+  "marketing.meta.description":
+    "حزمة بداية SaaS للإنتاج لبناء مسارات إعلانات إبداعية مدعومة بالذكاء الاصطناعي باستخدام Next.js وSupabase وStripe وR2 وOpenAI ومزودي وسائط قابلين للتبديل.",
+  "marketing.brand.starterKit": "حزمة بداية SaaS للإنتاج",
+  "marketing.actions.viewGithub": "عرض على GitHub",
+  "marketing.actions.openReferenceApp": "فتح التطبيق المرجعي",
+  "marketing.hero.badge": "حزمة بداية SaaS للإنتاج{{suffix}}",
+  "marketing.hero.badgeSuffix": " • {{count}} مخرجات مرجعية مباشرة",
   "marketing.hero.title":
-    "حوّل مدخلات المنتج إلى مخرجات إعلانية جاهزة للحملة عبر سير عمل استوديو منضبط",
+    "ابدأ بمنصة SaaS للذكاء الاصطناعي مكتملة، ثم اجعل سير العمل خاصًا بك.",
   "marketing.hero.description":
-    "يساعد AI Ad Studio فرق التسويق على الانتقال من الموجز وأصول المنتج إلى المفاهيم والمعاينات والمخرجات النهائية وأسطح التسليم العامة دون الانجراف إلى محرر مفتوح.",
-  "marketing.hero.outcomeWorkflow": "سير عمل إعلاني منضبط",
-  "marketing.hero.outcomeReview": "مراجعة قبل الإخراج النهائي",
-  "marketing.hero.outcomeDelivery": "جاهز للنشر والتسليم",
-  "marketing.hero.browseShowcase": "استعراض المعرض",
-  "marketing.hero.briefs": "الموجزات",
-  "marketing.hero.briefsValue": "منظمة",
+    "تجمع AI Ad Studio المصادقة والفوترة والمهام الدائمة والتخزين والترجمة ومحولات المزودين وفحوص النشر، وتثبتها عبر تطبيق مرجعي فعلي لإنتاج الإعلانات.",
+  "marketing.hero.outcomeWorkflow": "المصادقة والفوترة والاستحقاقات",
+  "marketing.hero.outcomeReview": "مسارات ذكاء اصطناعي غير متزامنة ودائمة",
+  "marketing.hero.outcomeDelivery": "فحوص الإنتاج مضمنة",
+  "marketing.hero.briefs": "أسس SaaS",
+  "marketing.hero.briefsValue": "مترابطة",
   "marketing.hero.briefsDescription":
-    "تبقى المدخلات محصورة في عمل تسويق المنتج.",
-  "marketing.hero.reviews": "المراجعات",
-  "marketing.hero.reviewsValue": "قبل الإنفاق",
+    "الملكية والخطط وحدود الاستخدام وأنماط الوصول العام موصولة مسبقًا.",
+  "marketing.hero.reviews": "تنسيق الذكاء الاصطناعي",
+  "marketing.hero.reviewsValue": "دائم",
   "marketing.hero.reviewsDescription":
-    "راجع المفاهيم أولًا ثم التزم بالإخراج النهائي.",
-  "marketing.hero.delivery": "التسليم",
-  "marketing.hero.deliveryValue": "جاهز",
+    "تدعم المهام وإعادة المحاولة وحدود المزودين والتتبعات الأعمال طويلة المدة.",
+  "marketing.hero.delivery": "الإطلاق",
+  "marketing.hero.deliveryValue": "قابل للتحقق",
   "marketing.hero.deliveryDescription":
-    "انقل الفائزين إلى المعرض والحملات ومسارات التسليم.",
-  "marketing.featureGrid.eyebrow": "لماذا ينجح",
-  "marketing.featureGrid.title": "سير عمل منتج بدل أداة توليد مفتوحة بلا ضوابط",
+    "ترجمة منضبطة وفحوص صحة واختبارات ومسارات تحقق ترفع معيار الإصدار.",
+  "marketing.featureGrid.eyebrow": "الأساس المضمن",
+  "marketing.featureGrid.title": "أسس الإنتاج مترابطة مسبقًا",
   "marketing.featureGrid.description":
-    "كل سطح في المنتج يعزز سير عمل واحدًا منضبطًا حتى تبقى المخرجات أسهل للمراجعة والنشر والتسليم.",
-  "marketing.feature.constrained.title": "سير عمل إعلاني منضبط",
+    "ابنِ فوق الطبقات القابلة لإعادة الاستخدام تحت AI Ad Studio بدل إعادة بناء النواة التشغيلية لمنصة SaaS للذكاء الاصطناعي.",
+  "marketing.feature.constrained.title": "المصادقة والملكية",
   "marketing.feature.constrained.description":
-    "المنتج موجّه عمدًا. تتحرك الفرق عبر الموجز والمفاهيم والمعاينات والإخراج والترقية بدل التحرير من الصفر.",
-  "marketing.feature.review.title": "مراجعة قبل تكلفة الإخراج النهائي",
+    "تحدد مصادقة Supabase وإدارة الجلسات على الخادم والمسارات المحمية والسجلات المقيدة بالمالك حدود الثقة.",
+  "marketing.feature.review.title": "الفوترة والاستحقاقات",
   "marketing.feature.review.description":
-    "يعرض النظام نقاط معاينة أولًا لكي يقارن أصحاب المصلحة بين الاتجاهات الممكنة قبل الالتزام بالوقت والميزانية.",
-  "marketing.feature.winner.title": "ترقية الفائز إلى الأسطح العامة",
+    "تشكل اشتراكات Stripe والخطط المزروعة والحدود الفعلية وتجميعات الاستخدام وضوابط المشغل طبقة تجارية حقيقية.",
+  "marketing.feature.winner.title": "مسارات ذكاء اصطناعي دائمة",
   "marketing.feature.winner.description":
-    "يمكن نقل المخرجات المعتمدة إلى المعرض وصفحات الحملات دون إعادة بناء سياق العرض.",
-  "marketing.feature.delivery.title": "جاهزية التسليم والتسليم للعميل",
+    "تحافظ نقاط التحقق المخزنة والمهام غير المتزامنة وإعادة المحاولة والتتبعات والاعتمادات والمخرجات المرجعية على قابلية التدقيق.",
+  "marketing.feature.delivery.title": "بيئة جاهزة للمزودين",
   "marketing.feature.delivery.description":
-    "تدعم المخرجات المعتمدة سير عمل التسليم وتسليم العميل وطبقات الإثبات القابلة للمشاركة بعد تثبيت الفائز.",
-  "marketing.feature.inputs.title": "مصمم لمدخلات تسويق المنتجات",
+    "توضح OpenAI وRunway والاستدلال المحلي عبر HTTP والمحولات الوهمية كيفية إبقاء المزودين خلف حدود مستقرة.",
+  "marketing.feature.inputs.title": "التخزين ونَسَب الوسائط",
   "marketing.feature.inputs.description":
-    "يفترض سير العمل وجود أصول وعروض ودعوات لاتخاذ إجراء وأنماط مستندة إلى قوالب بدل الاستكشاف الإبداعي غير المقيد.",
-  "marketing.feature.teams.title": "مصمم للفرق الاحترافية",
+    "تحافظ أصول R2 والبيانات الوصفية الصريحة والتسليم المقيد بالرموز وتركيب FFmpeg على قابلية تتبع المخرجات.",
+  "marketing.feature.teams.title": "عمليات إنتاج مترجمة",
   "marketing.feature.teams.description":
-    "يعزز الموقع العام ولوحة التحكم وأسطح النشر قصة منتج واحدة: مخرجات إعلانية أكثر اتساقًا وتحكمًا تشغيليًا أنظف.",
+    "تدعم كتالوجات الإنجليزية والعربية المنضبطة وتخطيطات RTL وطبقات الاختبار وتشخيصات الصحة وفحوص النشر إصدارات أكثر أمانًا.",
   "dashboard.home.eyebrow": "لوحة التحكم",
   "dashboard.home.title": "أصبحت مساحة عمل المشروع جاهزة",
   "dashboard.home.description":
@@ -807,9 +810,9 @@ export const ar: AppMessageCatalog = {
     "إرشادات API وGPU ومتغيرات البيئة لمسارات المزود المدعومة حاليًا",
   "runtime.modal.close": "إغلاق نافذة إعداد بيئة التشغيل",
   "header.app.signedInFallback": "تم تسجيل الدخول",
-  "marketing.heroPreview.system": "نظام الاستوديو",
+  "marketing.heroPreview.system": "تطبيق AI Ad Studio المرجعي",
   "marketing.heroPreview.systemDescription":
-    "تنتقل الحزمة المعتمدة نفسها عبر النشر والتسليم.",
+    "يثبت المجال التطبيقي المضمن المسار الكامل من الموجز إلى التسليم المعتمد.",
   "marketing.heroPreview.reviewFirst": "المراجعة أولًا",
   "marketing.heroPreview.canonicalExport": "المخرج المعتمد",
   "marketing.heroPreview.canonicalWinner": "الفائز المعتمد",
@@ -839,10 +842,10 @@ export const ar: AppMessageCatalog = {
   "marketing.heroPreview.steps.publish.title": "أطلق المخرج المعتمد",
   "marketing.heroPreview.steps.publish.detail":
     "يبقى المعرض والتسليم متطابقين.",
-  "marketing.workflow.eyebrow": "سير العمل",
-  "marketing.workflow.title": "مسار احترافي من الموجز إلى المخرج المعتمد",
+  "marketing.workflow.eyebrow": "التطبيق المرجعي",
+  "marketing.workflow.title": "سير عمل لمنتج حقيقي، لا عرض تجريبي سطحي",
   "marketing.workflow.description":
-    "يجب أن يوضح الموقع شكل المنتج مباشرة: هذا نظام منضبط لتوليد الإعلانات لفرق التسويق، وليس مساحة تحرير عامة بلا حدود.",
+    "توضح AI Ad Studio كيف تدعم الحزمة رحلة متخصصة بحالة دائمة وبوابات مراجعة وأعمال ذكاء اصطناعي بطيئة ومخرجات مرجعية وتسليم عام.",
   "marketing.workflow.steps.brief.title": "صُغ موجز الحملة",
   "marketing.workflow.steps.brief.description":
     "اجمع مدخلات المنتج والعرض والدعوة لاتخاذ إجراء والاتجاه البصري في موجز إعلاني واحد منضبط.",
@@ -855,10 +858,10 @@ export const ar: AppMessageCatalog = {
   "marketing.workflow.steps.publish.title": "انشر وسلّم",
   "marketing.workflow.steps.publish.description":
     "انقل المخرج الفائز إلى الحملة والمعرض والتسليم مع أعمال يدوية أقل.",
-  "marketing.showcase.eyebrow": "النماذج",
-  "marketing.showcase.title": "دليل مخرجات حقيقي، لا وعودًا تسويقية شكلية",
+  "marketing.showcase.eyebrow": "مخرجات مرجعية",
+  "marketing.showcase.title": "شاهد ما ينتجه المجال التطبيقي المضمن",
   "marketing.showcase.description":
-    "يجب أن يستند الموقع إلى مخرجات حقيقية من المعرض كلما توفرت. وعندما لا تتوفر، يبقى القسم محافظًا على هيكله عبر نماذج مصممة بدل شهادات زائفة أو دراسات حالة مخترعة.",
+    "يملأ الفائزون المنشورون من سير عمل AI Ad Studio طبقة الإثبات هذه تلقائيًا. وتحافظ النماذج المصممة على صدق التخطيط عندما لا تتوفر مخرجات عامة بعد.",
   "marketing.showcase.exploreFull": "استكشف المعرض كاملًا",
   "marketing.showcase.viewInShowcase": "اعرضه في المعرض",
   "marketing.showcase.publishNote":
@@ -881,53 +884,58 @@ export const ar: AppMessageCatalog = {
   "marketing.showcase.fallback.three.tagOne": "16:9",
   "marketing.showcase.fallback.three.tagTwo": "قصة علامة",
   "marketing.showcase.fallback.three.tagThree": "بساطة حديثة",
-  "marketing.pricing.eyebrow": "الخطط",
-  "marketing.pricing.title": "لقطة موجزة للتسعير مبنية على بيانات الخطط الحية",
-  "marketing.pricing.description":
-    "يجب أن يساعد الموقع الفرق على فهم شكل القيمة بسرعة من دون أن يتحول إلى تجربة إعدادات فوترة كاملة.",
-  "marketing.pricing.recommended": "موصى بها",
-  "marketing.pricing.workflowEyebrow": "ابدأ من سير العمل",
-  "marketing.pricing.workflowTitle":
-    "يجب أن يخدم التسعير قصة المنتج، لا أن يحل محلها.",
-  "marketing.pricing.enterDashboard": "الدخول إلى اللوحة",
-  "marketing.pricing.free": "مجانية",
-  "marketing.pricing.perMonth": "/شهريًا",
-  "marketing.pricing.conceptsPerMonth": "{{count}} مفهوم / شهريًا",
-  "marketing.pricing.previewsPerMonth": "{{count}} معاينة / شهريًا",
-  "marketing.pricing.rendersPerMonth": "{{count}} دفعة إخراج / شهريًا",
-  "marketing.pricing.exportsPerMonth": "{{count}} مخرج / شهريًا",
-  "marketing.pricing.publishing.full": "نشر المعرض والحملات والتسليم",
-  "marketing.pricing.publishing.delivery": "يشمل نشر التسليم",
-  "marketing.pricing.publishing.limited": "نشر عام محدود",
-  "marketing.pricing.publishing.internal": "سير عمل داخلي فقط",
-  "marketing.pricing.unavailableEyebrow": "كتالوج مباشر غير متاح",
-  "marketing.pricing.unavailableTitle": "بيانات التسعير غير متاحة مؤقتًا",
-  "marketing.pricing.unavailableDescription":
-    "لا يزال مسار العمل وسطح المنتج متاحين، لكن تعذر تحميل بيانات الخطط الحية الآن. افتح اللوحة بعد استعادة جاهزية الفوترة للاطلاع على الكتالوج الحالي.",
+  "marketing.stack.eyebrow": "بنية الإنتاج",
+  "marketing.stack.title": "واجهة مكتملة وخلفية SaaS وبيئة ذكاء اصطناعي",
+  "marketing.stack.description":
+    "يقوم المنتج المرجعي فوق حدود قابلة لإعادة الاستخدام يمكنك الاحتفاظ بها أو استبدالها أو توسيعها دون دمج كل شيء في طبقة تطبيق واحدة.",
+  "marketing.stack.product.title": "واجهة المنتج",
+  "marketing.stack.product.description": "تجربة العميل وأساس التصميم المشترك.",
+  "marketing.stack.product.itemOne": "Next.js 16 وReact 19 وTypeScript",
+  "marketing.stack.product.itemTwo": "لوحة تحكم موثقة وأسطح عامة مقيدة بالرموز",
+  "marketing.stack.product.itemThree":
+    "ترجمة منضبطة للإنجليزية والعربية مع تخطيطات LTR وRTL",
+  "marketing.stack.backend.title": "خلفية SaaS",
+  "marketing.stack.backend.description":
+    "هوية دائمة وحالة تجارية وملكية واضحة للأصول.",
+  "marketing.stack.backend.itemOne": "مصادقة Supabase وPostgres والترحيلات",
+  "marketing.stack.backend.itemTwo":
+    "اشتراكات Stripe والاستحقاقات والاستخدام وسجلات التدقيق",
+  "marketing.stack.backend.itemThree":
+    "تخزين Cloudflare R2 وتسليم الوسائط المحمي",
+  "marketing.stack.runtime.title": "بيئة الذكاء الاصطناعي",
+  "marketing.stack.runtime.description":
+    "تعمل مهام المزودين البطيئة خارج مسار الطلب والاستجابة.",
+  "marketing.stack.runtime.itemOne":
+    "عامل غير متزامن مع حجز المهام والنبضات وإعادة المحاولة والتتبعات",
+  "marketing.stack.runtime.itemTwo":
+    "مسارات OpenAI وRunway والاستدلال المحلي والمزود الوهمي",
+  "marketing.stack.runtime.itemThree":
+    "تركيب FFmpeg وتشخيصات الصحة وفحوص النشر",
+  "marketing.stack.customizeEyebrow": "اجعلها خاصة بك",
+  "marketing.stack.customizeTitle": "احتفظ بالأسس، وبدّل قرارات المنتج.",
+  "marketing.stack.customizeDescription":
+    "غيّر العلامة وسير عمل المجال ومزيج المزودين والخطط والبنية التحتية والتجارب العامة مع الاحتفاظ بالحدود التي تجعل النظام قابلًا للتشغيل.",
   "marketing.faq.eyebrow": "الأسئلة الشائعة",
-  "marketing.faq.title": "يجب الرد على الاعتراضات الرئيسية داخل الصفحة نفسها",
-  "marketing.faq.finalCtaEyebrow": "الدعوة النهائية",
+  "marketing.faq.title": "اعرف نقطة البداية التي تحصل عليها",
+  "marketing.faq.finalCtaEyebrow": "ابدأ من برنامج يعمل",
   "marketing.faq.finalCtaTitle":
-    "انتقل من موجز المنتج إلى مخرج إعلاني معتمد من دون تحويل سير العمل إلى فوضى",
+    "انسخ أساس SaaS مكتملًا للذكاء الاصطناعي، ثم اجعل سير العمل خاصًا بك",
   "marketing.faq.finalCtaDescription":
-    "ينتهي الموقع الآن عند النقطة الصحيحة: مسار واضح إلى المنتج وسطح إثبات للفرق التي تريد فحص جودة المخرجات أولًا.",
-  "marketing.faq.enterDashboard": "الدخول إلى اللوحة",
-  "marketing.faq.browseShowcase": "استعراض المعرض",
-  "marketing.faq.questions.ads.question":
-    "ما نوع الإعلانات التي ينشئها هذا المنتج؟",
-  "marketing.faq.questions.ads.answer":
-    "صُمم AI Ad Studio لإعلانات تسويق المنتجات: توليد المفاهيم، ومراجعة المعاينات، والمخرجات النهائية، وأسطح التسليم العامة.",
-  "marketing.faq.questions.editor.question": "هل هذا محرر عام متعدد الأغراض؟",
-  "marketing.faq.questions.editor.answer":
-    "لا. سير العمل مقصود أن يكون منضبطًا حتى تتحرك الفرق عبر مسار قابل للتكرار بدل إدارة محرر مفتوح على صفحة فارغة.",
-  "marketing.faq.questions.review.question":
-    "هل يمكن للفرق مراجعة المخرجات قبل الإخراج النهائي؟",
-  "marketing.faq.questions.review.answer":
-    "نعم. يتضمن سير العمل نقاط تحقق للمعاينة حتى تتمكن الفرق من مقارنة المخرجات قبل الالتزام بالإخراج النهائي.",
-  "marketing.faq.questions.surfaces.question":
-    "ما الأسطح العامة المتاحة بعد الاعتماد؟",
-  "marketing.faq.questions.surfaces.answer":
-    "يمكن نقل الفائزين المعتمدين إلى المعرض والحملات والتسليم وروابط المشاركة الأخف وفق ما تسمح به الخطة.",
+    "افحص المصدر واستكشف التطبيق المرجعي وعدّل الطبقات التي تحدد منتجك بدل إعادة بناء أساس SaaS أولًا.",
+  "marketing.faq.questions.starter.question": "ماذا تتضمن حزمة البداية؟",
+  "marketing.faq.questions.starter.answer":
+    "تطبيقًا مرجعيًا مكتملًا مع المصادقة والفوترة والبيانات الدائمة والمهام غير المتزامنة والتخزين والترجمة ومحولات المزودين والاختبارات وتشخيصات التشغيل.",
+  "marketing.faq.questions.customize.question": "ما الذي ينبغي تخصيصه؟",
+  "marketing.faq.questions.customize.answer":
+    "استبدل العلامة والنصوص الظاهرة وسير عمل المجال ومزيج المزودين والخطط وخيارات البنية التحتية التي تحدد منتجك، واحتفظ بالحدود الأساسية أو طوّرها بعناية.",
+  "marketing.faq.questions.production.question":
+    "هل تعني حزمة الإنتاج إطلاقًا بضغطة واحدة؟",
+  "marketing.faq.questions.production.answer":
+    "لا. يوفر المستودع بنية وفحوصًا موجهة للإنتاج، لكنك ما زلت مسؤولًا عن تجهيز الخدمات وإدارة الأسرار والتحقق الأمني وضبط المراقبة وفحص كل بيئة نشر.",
+  "marketing.faq.questions.reference.question":
+    "لماذا يأتي استوديو إعلانات كتطبيق مرجعي؟",
+  "marketing.faq.questions.reference.answer":
+    "تثبت AI Ad Studio الأساس عبر سير عمل حقيقي يجمع توليد الذكاء الاصطناعي وبوابات المراجعة والفوترة وتخزين الوسائط والمهام غير المتزامنة والتحليلات والتسليم العام بدل عرض تجريبي سطحي.",
   "runtime.launcher.sidebarEyebrow": "مساعدة الإعداد",
   "runtime.modes.runway.label": "Runway فقط",
   "runtime.modes.runway.eyebrow": "موصى به",

@@ -66,13 +66,11 @@ export const en = {
     one: "{{count}} shown",
     other: "{{count}} shown"
   },
-  "header.marketing.workflow": "Workflow",
+  "header.marketing.foundation": "Foundation",
+  "header.marketing.referenceApp": "Reference app",
   "header.marketing.samples": "Samples",
-  "header.marketing.plans": "Plans",
+  "header.marketing.stack": "Stack",
   "header.marketing.faq": "FAQ",
-  "header.marketing.showcase": "Showcase",
-  "header.marketing.signIn": "Demo Login",
-  "header.marketing.enterDashboard": "Enter dashboard",
   "header.app.workspace": "Workspace",
   "header.app.studioMode": "Studio mode",
   "header.app.workspaceDescription":
@@ -140,51 +138,55 @@ export const en = {
     "Auth is not configured in this environment",
   "auth.configuration.dashboardDescription":
     "Protected routes are wired. Add Supabase credentials locally to validate real sessions, redirects, and ownership-protected flows.",
-  "marketing.hero.badge": "Public product workflow{{suffix}}",
-  "marketing.hero.badgeSuffix": " • {{count}} live samples highlighted",
+  "marketing.meta.title": "AI Ad Studio — Production SaaS Starter Kit",
+  "marketing.meta.description":
+    "Production SaaS starter kit for building AI-powered ad creative workflows with Next.js, Supabase, Stripe, R2, OpenAI, and pluggable media providers.",
+  "marketing.brand.starterKit": "Production SaaS Starter Kit",
+  "marketing.actions.viewGithub": "View on GitHub",
+  "marketing.actions.openReferenceApp": "Open reference app",
+  "marketing.hero.badge": "Production SaaS Starter Kit{{suffix}}",
+  "marketing.hero.badgeSuffix": " • {{count}} reference outputs live",
   "marketing.hero.title":
-    "Turn product inputs into campaign-ready ad outputs with a controlled studio workflow",
+    "Start with a complete AI SaaS. Make the workflow yours.",
   "marketing.hero.description":
-    "AI Ad Studio helps marketing teams move from brief and product assets to concepts, previews, final exports, and public handoff surfaces without drifting into an open-ended editor.",
-  "marketing.hero.outcomeWorkflow": "Constrained ad workflow",
-  "marketing.hero.outcomeReview": "Review before final render",
-  "marketing.hero.outcomeDelivery": "Ready for publish and delivery",
-  "marketing.hero.browseShowcase": "Browse showcase",
-  "marketing.hero.briefs": "Briefs",
-  "marketing.hero.briefsValue": "Structured",
+    "AI Ad Studio bundles authentication, billing, durable jobs, storage, localization, provider adapters, and deployment checks—proven through a working ad-production reference application.",
+  "marketing.hero.outcomeWorkflow": "Auth, billing, and entitlements",
+  "marketing.hero.outcomeReview": "Durable async AI workflows",
+  "marketing.hero.outcomeDelivery": "Production checks included",
+  "marketing.hero.briefs": "SaaS rails",
+  "marketing.hero.briefsValue": "Connected",
   "marketing.hero.briefsDescription":
-    "Inputs stay constrained to product marketing work.",
-  "marketing.hero.reviews": "Reviews",
-  "marketing.hero.reviewsValue": "Before spend",
+    "Ownership, plans, usage limits, and public access patterns are already wired.",
+  "marketing.hero.reviews": "AI orchestration",
+  "marketing.hero.reviewsValue": "Durable",
   "marketing.hero.reviewsDescription":
-    "Preview concepts first, then commit to final render output.",
-  "marketing.hero.delivery": "Delivery",
-  "marketing.hero.deliveryValue": "Ready",
+    "Jobs, retries, provider boundaries, and traces support long-running work.",
+  "marketing.hero.delivery": "Shipping",
+  "marketing.hero.deliveryValue": "Verifiable",
   "marketing.hero.deliveryDescription":
-    "Promote winners to showcase, campaigns, and delivery surfaces.",
-  "marketing.featureGrid.eyebrow": "Why it works",
-  "marketing.featureGrid.title":
-    "A productized workflow instead of an open-ended generation toy",
+    "Typed localization, health checks, tests, and smoke scripts raise the release bar.",
+  "marketing.featureGrid.eyebrow": "Included foundation",
+  "marketing.featureGrid.title": "The production rails are already connected",
   "marketing.featureGrid.description":
-    "Every surface in the product reinforces one constrained workflow, so the output stays easier to review, promote, and deliver.",
-  "marketing.feature.constrained.title": "Constrained ad workflow",
+    "Build on the reusable layers beneath AI Ad Studio instead of rebuilding the operational core of an AI SaaS.",
+  "marketing.feature.constrained.title": "Authentication and ownership",
   "marketing.feature.constrained.description":
-    "The product is opinionated on purpose. Teams move through brief, concepts, previews, render, and promotion instead of editing from scratch.",
-  "marketing.feature.review.title": "Review before final render spend",
+    "Supabase Auth, server-side session handling, protected routes, and owner-scoped records establish the trust boundary.",
+  "marketing.feature.review.title": "Billing and entitlements",
   "marketing.feature.review.description":
-    "The system exposes preview checkpoints first so stakeholders can compare viable directions before committing time and budget.",
-  "marketing.feature.winner.title": "Winner promotion to public surfaces",
+    "Stripe subscriptions, seeded plans, effective limits, usage rollups, and operator controls form a real commercial layer.",
+  "marketing.feature.winner.title": "Durable AI workflows",
   "marketing.feature.winner.description":
-    "Approved exports can graduate into public showcase and campaign surfaces without rebuilding presentation context somewhere else.",
-  "marketing.feature.delivery.title": "Delivery and handoff readiness",
+    "Persisted checkpoints, async job claims, retries, traces, approvals, and canonical outputs keep slow work auditable.",
+  "marketing.feature.delivery.title": "Provider-ready runtime",
   "marketing.feature.delivery.description":
-    "Finalized outputs support delivery workflows, client handoff, and shareable proof layers after the winner is locked.",
-  "marketing.feature.inputs.title": "Built for product marketing inputs",
+    "OpenAI, Runway, local HTTP inference, and mock adapters demonstrate how providers stay behind stable boundaries.",
+  "marketing.feature.inputs.title": "Storage and media lineage",
   "marketing.feature.inputs.description":
-    "The workflow assumes real product assets, offers, CTAs, and template-driven styling rather than unrestricted creative exploration.",
-  "marketing.feature.teams.title": "Designed for professional teams",
+    "R2-backed assets, explicit metadata, token-scoped delivery, and FFmpeg composition keep generated output traceable.",
+  "marketing.feature.teams.title": "Localized production operations",
   "marketing.feature.teams.description":
-    "The public site, dashboard, and publish surfaces all reinforce one product story: consistent ad output with cleaner operational control.",
+    "Typed English and Arabic catalogs, RTL layouts, test layers, health diagnostics, and smoke checks support safer releases.",
   "dashboard.home.eyebrow": "Dashboard",
   "dashboard.home.title": "Project workspace is now active",
   "dashboard.home.description":
@@ -831,9 +833,9 @@ export const en = {
     "API, GPU, and env guidance for the current supported provider paths",
   "runtime.modal.close": "Close runtime setup modal",
   "header.app.signedInFallback": "Signed in",
-  "marketing.heroPreview.system": "Studio system",
+  "marketing.heroPreview.system": "AI Ad Studio reference app",
   "marketing.heroPreview.systemDescription":
-    "One approved package carries through publish and handoff.",
+    "The included vertical proves the full path from brief to approved delivery.",
   "marketing.heroPreview.reviewFirst": "Review first",
   "marketing.heroPreview.canonicalExport": "Canonical export",
   "marketing.heroPreview.canonicalWinner": "Canonical winner",
@@ -863,11 +865,10 @@ export const en = {
   "marketing.heroPreview.steps.publish.title": "Ship the canonical export",
   "marketing.heroPreview.steps.publish.detail":
     "Showcase and delivery stay aligned.",
-  "marketing.workflow.eyebrow": "Workflow",
-  "marketing.workflow.title":
-    "A professional path from brief to approved output",
+  "marketing.workflow.eyebrow": "Reference implementation",
+  "marketing.workflow.title": "A real product workflow, not a toy demo",
   "marketing.workflow.description":
-    "The homepage should make the product shape obvious: this is a constrained ad-generation system for marketing teams, not a general-purpose editing canvas.",
+    "AI Ad Studio demonstrates how the starter supports a domain-specific journey with durable state, review gates, slow AI work, canonical outputs, and public delivery.",
   "marketing.workflow.steps.brief.title": "Frame the campaign brief",
   "marketing.workflow.steps.brief.description":
     "Bring product inputs, offer, CTA, and visual direction into one controlled ad brief.",
@@ -880,11 +881,10 @@ export const en = {
   "marketing.workflow.steps.publish.title": "Publish and hand off",
   "marketing.workflow.steps.publish.description":
     "Promote the winning export into campaign, showcase, and delivery surfaces with less manual cleanup.",
-  "marketing.showcase.eyebrow": "Samples",
-  "marketing.showcase.title":
-    "Real output proof, not placeholder product claims",
+  "marketing.showcase.eyebrow": "Reference output",
+  "marketing.showcase.title": "See what the included vertical produces",
   "marketing.showcase.description":
-    "The homepage should be backed by real showcase output whenever it exists. When it does not, the section still holds the layout with designed sample placeholders rather than fake testimonials or invented case studies.",
+    "Published winners from the AI Ad Studio reference workflow populate this proof layer automatically. Designed placeholders keep the layout honest when no public output is available yet.",
   "marketing.showcase.exploreFull": "Explore full showcase",
   "marketing.showcase.viewInShowcase": "View in showcase",
   "marketing.showcase.publishNote":
@@ -907,56 +907,62 @@ export const en = {
   "marketing.showcase.fallback.three.tagOne": "16:9",
   "marketing.showcase.fallback.three.tagTwo": "Brand story",
   "marketing.showcase.fallback.three.tagThree": "Minimal modern",
-  "marketing.pricing.eyebrow": "Plans",
-  "marketing.pricing.title":
-    "A concise pricing snapshot built from live plan data",
-  "marketing.pricing.description":
-    "The homepage should help teams understand value shape quickly without collapsing into a full billing settings experience.",
-  "marketing.pricing.recommended": "Recommended",
-  "marketing.pricing.workflowEyebrow": "Start from the workflow",
-  "marketing.pricing.workflowTitle":
-    "Pricing should support the product story, not replace it.",
-  "marketing.pricing.enterDashboard": "Enter dashboard",
-  "marketing.pricing.free": "Free",
-  "marketing.pricing.perMonth": "/mo",
-  "marketing.pricing.conceptsPerMonth": "{{count}} concepts / month",
-  "marketing.pricing.previewsPerMonth": "{{count}} previews / month",
-  "marketing.pricing.rendersPerMonth": "{{count}} render batches / month",
-  "marketing.pricing.exportsPerMonth": "{{count}} exports / month",
-  "marketing.pricing.publishing.full":
-    "Showcase, campaign, and delivery publishing",
-  "marketing.pricing.publishing.delivery": "Delivery publishing included",
-  "marketing.pricing.publishing.limited": "Limited public publishing",
-  "marketing.pricing.publishing.internal": "Internal workflow only",
-  "marketing.pricing.unavailableEyebrow": "Live catalog unavailable",
-  "marketing.pricing.unavailableTitle":
-    "Pricing data is temporarily unavailable",
-  "marketing.pricing.unavailableDescription":
-    "The workflow and product surface are still available, but live plan data could not be loaded right now. Open the dashboard after billing runtime access is restored to inspect the current catalog.",
+  "marketing.stack.eyebrow": "Production stack",
+  "marketing.stack.title": "A complete shell, backend, and AI runtime",
+  "marketing.stack.description":
+    "The reference product sits on reusable boundaries you can keep, replace, or extend without collapsing everything into one application layer.",
+  "marketing.stack.product.title": "Product shell",
+  "marketing.stack.product.description":
+    "The customer-facing experience and shared design foundation.",
+  "marketing.stack.product.itemOne": "Next.js 16, React 19, and TypeScript",
+  "marketing.stack.product.itemTwo":
+    "Authenticated dashboard and token-scoped public surfaces",
+  "marketing.stack.product.itemThree":
+    "Typed English and Arabic i18n with LTR and RTL layouts",
+  "marketing.stack.backend.title": "SaaS backend",
+  "marketing.stack.backend.description":
+    "Durable identity, commercial state, and asset ownership.",
+  "marketing.stack.backend.itemOne": "Supabase Auth, Postgres, and migrations",
+  "marketing.stack.backend.itemTwo":
+    "Stripe subscriptions, entitlements, usage, and audit records",
+  "marketing.stack.backend.itemThree":
+    "Cloudflare R2 storage and protected media delivery",
+  "marketing.stack.runtime.title": "AI runtime",
+  "marketing.stack.runtime.description":
+    "Slow provider work runs outside the request-response path.",
+  "marketing.stack.runtime.itemOne":
+    "Async worker with job claiming, heartbeats, retries, and traces",
+  "marketing.stack.runtime.itemTwo":
+    "OpenAI, Runway, local inference, and mock provider paths",
+  "marketing.stack.runtime.itemThree":
+    "FFmpeg composition, health diagnostics, and deployment smoke checks",
+  "marketing.stack.customizeEyebrow": "Make it yours",
+  "marketing.stack.customizeTitle":
+    "Keep the rails. Replace the product decisions.",
+  "marketing.stack.customizeDescription":
+    "Change the brand, domain workflow, provider mix, plans, infrastructure, and public experiences while retaining the boundaries that make the system operable.",
   "marketing.faq.eyebrow": "FAQ",
-  "marketing.faq.title": "The main objections should be answered on the page",
-  "marketing.faq.finalCtaEyebrow": "Final CTA",
+  "marketing.faq.title": "Know what you are starting from",
+  "marketing.faq.finalCtaEyebrow": "Start from working software",
   "marketing.faq.finalCtaTitle":
-    "Move from product brief to approved ad output without turning the workflow into chaos",
+    "Fork a complete AI SaaS foundation, then make the workflow yours",
   "marketing.faq.finalCtaDescription":
-    "The homepage now ends where it should: a clear path into the product and a proof surface for teams that want to inspect output quality first.",
-  "marketing.faq.enterDashboard": "Enter dashboard",
-  "marketing.faq.browseShowcase": "Browse showcase",
-  "marketing.faq.questions.ads.question": "What kind of ads does this create?",
-  "marketing.faq.questions.ads.answer":
-    "AI Ad Studio is built for product marketing ads: concept generation, preview review, final exports, and public handoff surfaces.",
-  "marketing.faq.questions.editor.question":
-    "Is this a general-purpose editor?",
-  "marketing.faq.questions.editor.answer":
-    "No. The workflow is intentionally constrained so teams can move through a repeatable path instead of managing a blank-canvas editor.",
-  "marketing.faq.questions.review.question":
-    "Can teams review outputs before final rendering?",
-  "marketing.faq.questions.review.answer":
-    "Yes. The workflow includes preview checkpoints so teams can compare outputs before committing to final rendering.",
-  "marketing.faq.questions.surfaces.question":
-    "What public surfaces exist after approval?",
-  "marketing.faq.questions.surfaces.answer":
-    "Approved winners can move into public showcase, campaign, delivery, and lighter share-link surfaces depending on plan access.",
+    "Inspect the source, explore the reference application, and adapt the layers that define your own product rather than rebuilding the SaaS foundation first.",
+  "marketing.faq.questions.starter.question":
+    "What is included in the starter?",
+  "marketing.faq.questions.starter.answer":
+    "A complete reference application plus authentication, billing, durable data, async jobs, storage, localization, provider adapters, tests, and runtime diagnostics.",
+  "marketing.faq.questions.customize.question": "What should I customize?",
+  "marketing.faq.questions.customize.answer":
+    "Replace the brand, user-facing copy, domain workflow, provider mix, plans, and infrastructure choices that define your product. Keep or evolve the underlying boundaries deliberately.",
+  "marketing.faq.questions.production.question":
+    "Does production starter mean one-click production?",
+  "marketing.faq.questions.production.answer":
+    "No. The repository provides production-oriented architecture and checks, but you still provision services, manage secrets, validate security, configure observability, and verify each deployment.",
+  "marketing.faq.questions.reference.question":
+    "Why ship an ad studio as the reference app?",
+  "marketing.faq.questions.reference.answer":
+    "AI Ad Studio proves the foundation against a real workflow with AI generation, review gates, billing, media storage, async work, analytics, and public delivery instead of a shallow demo.",
   "runtime.launcher.sidebarEyebrow": "Setup help",
   "runtime.modes.runway.label": "Runway only",
   "runtime.modes.runway.eyebrow": "Recommended",

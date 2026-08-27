@@ -72,7 +72,9 @@ export async function FeaturedShowcaseSection({
       <PublicSectionFrame>
         <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-2xl">
-            <p className="theme-marketing-eyebrow">{t("marketing.showcase.eyebrow")}</p>
+            <p className="theme-marketing-eyebrow">
+              {t("marketing.showcase.eyebrow")}
+            </p>
             <h2 className="theme-marketing-title mt-4 text-3xl font-semibold text-[var(--foreground)] sm:text-4xl">
               {t("marketing.showcase.title")}
             </h2>

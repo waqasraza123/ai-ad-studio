@@ -1,9 +1,15 @@
 import Link from "next/link"
-import { ArrowRight, CheckCircle2, Sparkles } from "lucide-react"
+import {
+  ArrowRight,
+  ArrowUpRight,
+  CheckCircle2,
+  Github,
+  Sparkles
+} from "lucide-react"
 import { PublicSectionFrame } from "@/components/layout/page-frame"
-import { Button } from "@/components/primitives/button"
 import { getServerI18n } from "@/lib/i18n/server"
 import { HeroPreview } from "./hero-preview"
+import { AI_AD_STUDIO_REPOSITORY_URL } from "./marketing-links"
 
 type HeroSectionProps = {
   featuredSampleCount: number
@@ -52,24 +58,31 @@ export async function HeroSection({ featuredSampleCount }: HeroSectionProps) {
             </div>
 
             <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-              <Link href="/dashboard">
-                <Button size="lg">
-                  {t("header.marketing.enterDashboard")}
-                  <ArrowRight className="theme-directional-icon ms-2 h-4 w-4" />
-                </Button>
+              <Link
+                href={AI_AD_STUDIO_REPOSITORY_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="theme-button-primary inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-base font-medium"
+              >
+                <Github className="h-4 w-4" />
+                {t("marketing.actions.viewGithub")}
+                <ArrowUpRight className="theme-directional-icon h-4 w-4" />
               </Link>
 
               <Link
-                href="/showcase"
-                className="theme-inline-secondary-button inline-flex h-12 items-center justify-center rounded-full border px-6 text-sm font-medium"
+                href="/dashboard"
+                className="theme-inline-secondary-button inline-flex h-12 items-center justify-center gap-2 rounded-full border px-6 text-sm font-medium"
               >
-                {t("marketing.hero.browseShowcase")}
+                {t("marketing.actions.openReferenceApp")}
+                <ArrowRight className="theme-directional-icon h-4 w-4" />
               </Link>
             </div>
 
             <div className="mt-12 grid gap-4 sm:grid-cols-3">
               <div className="theme-soft-panel theme-marketing-card-lift rounded-[1.5rem] border p-5">
-                <p className="theme-marketing-eyebrow">{t("marketing.hero.briefs")}</p>
+                <p className="theme-marketing-eyebrow">
+                  {t("marketing.hero.briefs")}
+                </p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
                   {t("marketing.hero.briefsValue")}
                 </p>
@@ -78,7 +91,9 @@ export async function HeroSection({ featuredSampleCount }: HeroSectionProps) {
                 </p>
               </div>
               <div className="theme-soft-panel theme-marketing-card-lift rounded-[1.5rem] border p-5">
-                <p className="theme-marketing-eyebrow">{t("marketing.hero.reviews")}</p>
+                <p className="theme-marketing-eyebrow">
+                  {t("marketing.hero.reviews")}
+                </p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
                   {t("marketing.hero.reviewsValue")}
                 </p>
@@ -87,7 +102,9 @@ export async function HeroSection({ featuredSampleCount }: HeroSectionProps) {
                 </p>
               </div>
               <div className="theme-soft-panel theme-marketing-card-lift rounded-[1.5rem] border p-5">
-                <p className="theme-marketing-eyebrow">{t("marketing.hero.delivery")}</p>
+                <p className="theme-marketing-eyebrow">
+                  {t("marketing.hero.delivery")}
+                </p>
                 <p className="mt-2 text-2xl font-semibold text-[var(--foreground)]">
                   {t("marketing.hero.deliveryValue")}
                 </p>
